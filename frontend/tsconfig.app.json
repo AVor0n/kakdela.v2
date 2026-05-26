@@ -1,0 +1,32 @@
+{
+    "compilerOptions": {
+        "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+        "target": "es2023",
+        "lib": ["ES2023", "DOM"],
+        "module": "esnext",
+        "types": ["vite/client"],
+        "skipLibCheck": true,
+
+        /* Bundler mode */
+        "moduleResolution": "bundler",
+        "allowImportingTsExtensions": true,
+        "verbatimModuleSyntax": true,
+        "moduleDetection": "force",
+        "noEmit": true,
+        "jsx": "react-jsx",
+        "strict": true,
+        "noImplicitAny": true,
+        "strictNullChecks": true /* При проверке типов учитывать null и undefined'. */,
+        "strictFunctionTypes": true /* Проверка совместимости параметров и возврамых значений по подтипам в фунгкциях */,
+        "noImplicitThis": false /* Enable error reporting when 'this' is given the type 'any'. */,
+        "alwaysStrict": true /* Ensure 'use strict' is always emitted. */,
+        "noUnusedLocals": true /* Enable error reporting when local variables aren't read. */,
+        "noUnusedParameters": true /* Raise an error when a function parameter isn't read. */,
+        "allowUnreachableCode": true /* Отключение ошибок для недоступного кода. */,
+
+        /* Linting */
+        "erasableSyntaxOnly": true,
+        "noFallthroughCasesInSwitch": true
+    },
+    "include": ["src"]
+}
