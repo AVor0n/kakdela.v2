@@ -1,0 +1,36 @@
+# Compiled
+target/
+*.class
+
+# Logs
+*.log
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+
+# VS Code
+.vscode/
+
+# Neovim
+*.swp
+*.swo
+
+# Maven wrapper
+.mvn/wrapper/maven-wrapper.jar
+
+# Spring secrets
+application.properties
+application-*.properties
+application.yml
+application-*.yml
+*.env
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Backups
+*.orig
+*.bak
