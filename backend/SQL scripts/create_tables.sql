@@ -1,20 +1,19 @@
 --- Пришлось назвать так, потому что имя 'user' зарезервировано
-CREATE TABLE kd_user (
+CREATE TABLE account (
     id uuid PRIMARY KEY,
-    login varchar(32) NOT NULL,
-    email varchar(254) NOT NULL,
+    login varchar(32) NOT NULL UNIQUE,
+    email varchar(254) NOT NULL UNIQUE,
     password_hash text NOT NULL,
-    salt text NOT NULL,
     registered_at timestamp NOT NULL
 );
 
 CREATE TABLE survey (
     id uuid PRIMARY KEY,
-    author_id uuid REFERENCES kd_user (id) NOT NULL,
+    author_id uuid REFERENCES account (id) NOT NULL,
     title text NOT NULL,
     description text,
     is_authorized_only bool NOT NULL,
-    are_responses_limited_to_1 bool NOT NULL,
+    is_limited_to_one_response bool NOT NULL,
     is_published bool NOT NULL,
     is_template bool NOT NULL,
     do_notify bool NOT NULL,
@@ -23,14 +22,14 @@ CREATE TABLE survey (
 );
 
 CREATE TABLE permissions (
-    user_id uuid REFERENCES kd_user (id),
+    account_id uuid REFERENCES account (id),
     survey_id uuid REFERENCES survey (id),
     role text NOT NULL,
     do_notify bool NOT NULL,
-    PRIMARY KEY (user_id, survey_id)
+    PRIMARY KEY (account_id, survey_id)
 );
 
-CREATE TABLE page (
+CREATE TABLE survey_page (
     id uuid PRIMARY KEY,
     survey_id uuid REFERENCES survey (id) NOT NULL,
     serial_number int NOT NULL,
@@ -40,25 +39,25 @@ CREATE TABLE page (
 
 CREATE TABLE question (
     id uuid PRIMARY KEY,
-    page_id uuid REFERENCES page (id) NOT NULL,
+    survey_page_id uuid REFERENCES survey_page (id) NOT NULL,
     serial_number int NOT NULL,
     title text NOT NULL,
     description text,
     type text NOT NULL,
-    choice_order text NOT NULL,
+    answer_option_order text NOT NULL,
     is_mandatory bool NOT NULL,
     is_visible bool NOT NULL,
     condition text
 );
 
-CREATE TABLE choice (
+CREATE TABLE answer_option (
     id uuid PRIMARY KEY,
-    question_id uuid REFERENCES question (id) NOT NULL,
+    question_id uuid REFERENCES question (id) NOT NULL ON DELETE CASCADE,
     serial_number int NOT NULL,
-    choice text NOT NULL
+    answer_option_text text NOT NULL
 );
 
-CREATE TABLE completion (
+CREATE TABLE closing_page (
     survey_id uuid PRIMARY KEY REFERENCES survey (id),
     title text NOT NULL,
     description text,
@@ -67,7 +66,7 @@ CREATE TABLE completion (
 
 CREATE TABLE response (
     id uuid PRIMARY KEY,
-    user_id uuid REFERENCES kd_user (id) NOT NULL,
+    account_id uuid REFERENCES account (id),
     survey_id uuid REFERENCES survey (id) NOT NULL,
     is_complete bool NOT NULL,
     received_at timestamp NOT NULL
@@ -76,6 +75,6 @@ CREATE TABLE response (
 CREATE TABLE answer (
     response_id uuid REFERENCES response (id),
     question_id uuid REFERENCES question (id),
-    answer text NOT NULL,
+    answer_text text NOT NULL,
     PRIMARY KEY (response_id, question_id)
 );
