@@ -52,7 +52,7 @@ CREATE TABLE question (
 
 CREATE TABLE answer_option (
     id uuid PRIMARY KEY,
-    question_id uuid REFERENCES question (id) NOT NULL ON DELETE CASCADE,
+    question_id uuid REFERENCES question (id) ON DELETE CASCADE NOT NULL,
     serial_number int NOT NULL,
     answer_option_text text NOT NULL
 );
