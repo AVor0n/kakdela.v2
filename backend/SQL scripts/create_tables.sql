@@ -9,7 +9,7 @@ CREATE TABLE account (
 
 CREATE TABLE survey (
     id uuid PRIMARY KEY,
-    author_id uuid REFERENCES account (id) NOT NULL,
+    author_id uuid REFERENCES account (id) ON DELETE CASCADE NOT NULL,
     title text NOT NULL,
     description text,
     is_authorized_only bool NOT NULL,
@@ -22,8 +22,8 @@ CREATE TABLE survey (
 );
 
 CREATE TABLE permissions (
-    account_id uuid REFERENCES account (id),
-    survey_id uuid REFERENCES survey (id),
+    account_id uuid REFERENCES account (id) ON DELETE CASCADE,
+    survey_id uuid REFERENCES survey (id) ON DELETE CASCADE,
     role text NOT NULL,
     do_notify bool NOT NULL,
     PRIMARY KEY (account_id, survey_id)
@@ -31,7 +31,7 @@ CREATE TABLE permissions (
 
 CREATE TABLE survey_page (
     id uuid PRIMARY KEY,
-    survey_id uuid REFERENCES survey (id) NOT NULL,
+    survey_id uuid REFERENCES survey (id) ON DELETE CASCADE NOT NULL,
     serial_number int NOT NULL,
     title text NOT NULL,
     description text
@@ -39,7 +39,7 @@ CREATE TABLE survey_page (
 
 CREATE TABLE question (
     id uuid PRIMARY KEY,
-    survey_page_id uuid REFERENCES survey_page (id) NOT NULL,
+    survey_page_id uuid REFERENCES survey_page (id) ON DELETE CASCADE NOT NULL,
     serial_number int NOT NULL,
     title text NOT NULL,
     description text,
@@ -58,7 +58,7 @@ CREATE TABLE answer_option (
 );
 
 CREATE TABLE closing_page (
-    survey_id uuid PRIMARY KEY REFERENCES survey (id),
+    survey_id uuid PRIMARY KEY REFERENCES survey (id) ON DELETE CASCADE,
     title text NOT NULL,
     description text,
     website_url text
@@ -66,15 +66,15 @@ CREATE TABLE closing_page (
 
 CREATE TABLE response (
     id uuid PRIMARY KEY,
-    account_id uuid REFERENCES account (id),
-    survey_id uuid REFERENCES survey (id) NOT NULL,
+    account_id uuid REFERENCES account (id) ON DELETE SET NULL,
+    survey_id uuid REFERENCES survey (id) ON DELETE CASCADE NOT NULL,
     is_complete bool NOT NULL,
     received_at timestamp NOT NULL
 );
 
 CREATE TABLE answer (
-    response_id uuid REFERENCES response (id),
-    question_id uuid REFERENCES question (id),
+    response_id uuid REFERENCES response (id) ON DELETE CASCADE,
+    question_id uuid REFERENCES question (id) ON DELETE CASCADE,
     answer_text text NOT NULL,
     PRIMARY KEY (response_id, question_id)
 );
