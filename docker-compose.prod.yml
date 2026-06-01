@@ -1,0 +1,42 @@
+services:
+  backend:
+    image: 1artem11semenov1/kakdelav2-backend:stable
+    container_name: kd2-backend
+    ports:
+      - "8080:8080"
+    depends_on:
+      service-db:
+        condition: service_healthy
+    env_file:
+      - .env.prod
+    restart: unless-stopped
+
+  frontend:
+    image: 1artem11semenov1/kakdelav2-frontend:stable
+    container_name: kd2-frontend
+    ports:
+      - "4173:4173"
+    depends_on:
+      - backend
+    env_file:
+      - .env.prod
+    restart: unless-stopped
+
+  service-db:
+    image: postgres:14.7-alpine
+    container_name: kd2-postgres
+    env_file:
+      - .env.prod
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  db-data:
