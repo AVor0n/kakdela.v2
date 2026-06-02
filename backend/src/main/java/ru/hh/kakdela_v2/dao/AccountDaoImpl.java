@@ -47,7 +47,7 @@ public class AccountDaoImpl implements AccountDao {
     Optional<Transaction> tx = beginTransaction();
     try {
       Optional<Account> result = session()
-              .createQuery("FROM account a WHERE a.login = :login", Account.class)
+              .createQuery("FROM Account a WHERE a.login = :login", Account.class)
               .setParameter("login", login)
               .uniqueResultOptional();
       tx.ifPresent(Transaction::commit);
@@ -63,7 +63,7 @@ public class AccountDaoImpl implements AccountDao {
     Optional<Transaction> tx = beginTransaction();
     try {
       Optional<Account> result = session()
-              .createQuery("FROM account a WHERE a.email = :email", Account.class)
+              .createQuery("FROM Account a WHERE a.email = :email", Account.class)
               .setParameter("email", email)
               .uniqueResultOptional();
       tx.ifPresent(Transaction::commit);
@@ -79,7 +79,7 @@ public class AccountDaoImpl implements AccountDao {
     Optional<Transaction> tx = beginTransaction();
     try {
       List<Account> accounts = session()
-              .createQuery("FROM account", Account.class)
+              .createQuery("FROM Account", Account.class)
               .list();
       tx.ifPresent(Transaction::commit);
       return accounts;
@@ -133,7 +133,7 @@ public class AccountDaoImpl implements AccountDao {
     Optional<Transaction> tx = beginTransaction();
     try {
       Long count = session()
-              .createQuery("SELECT COUNT(a) FROM account a WHERE a.login = :login", Long.class)
+              .createQuery("SELECT COUNT(a) FROM Account a WHERE a.login = :login", Long.class)
               .setParameter("login", login)
               .uniqueResult();
       tx.ifPresent(Transaction::commit);
@@ -149,7 +149,7 @@ public class AccountDaoImpl implements AccountDao {
     Optional<Transaction> tx = beginTransaction();
     try {
       Long count = session()
-              .createQuery("SELECT COUNT(a) FROM account a WHERE a.email = :email", Long.class)
+              .createQuery("SELECT COUNT(a) FROM Account a WHERE a.email = :email", Long.class)
               .setParameter("email", email)
               .uniqueResult();
       tx.ifPresent(Transaction::commit);

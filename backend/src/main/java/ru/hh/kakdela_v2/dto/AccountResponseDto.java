@@ -3,6 +3,8 @@ package ru.hh.kakdela_v2.dto;
 import java.time.Instant;
 import java.util.UUID;
 
+import ru.hh.kakdela_v2.model.Account;
+
 public class AccountResponseDto {
 
   private UUID id;

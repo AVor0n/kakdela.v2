@@ -10,6 +10,8 @@ import ru.hh.kakdela_v2.model.Account;
 
 import java.util.UUID;
 
+import org.mindrot.jbcrypt.BCrypt;
+
 public class AccountService {
 
   private final AccountDao accountDao;

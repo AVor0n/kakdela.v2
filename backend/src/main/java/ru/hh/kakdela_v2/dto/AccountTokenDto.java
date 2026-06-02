@@ -1,26 +1,17 @@
 package ru.hh.kakdela_v2.dto;
 
-public class AccountUpdateDto {
+import java.util.UUID;
 
-  private String login;
-  private String email;
+public class AccountTokenDto {
 
-  public AccountUpdateDto() {
+  private String token;
+  private UUID accountId;
+
+  public AccountTokenDto(String token, UUID accountId) {
+    this.token = token;
+    this.accountId = accountId;
   }
 
-  public String getLogin() {
-    return login;
-  }
-
-  public String getEmail() {
-    return email;
-  }
-
-  public void setLogin(String login) {
-    this.login = login;
-  }
-
-  public void setEmail(String email) {
-    this.email = email;
-  }
+  public String getToken() { return token; }
+  public UUID getAccountId() { return accountId; }
 }
