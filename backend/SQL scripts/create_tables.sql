@@ -4,7 +4,7 @@ CREATE TABLE account (
     login varchar(32) NOT NULL UNIQUE,
     email varchar(254) NOT NULL UNIQUE,
     password_hash text NOT NULL,
-    registered_at timestamp NOT NULL
+    registered_at timestamptz NOT NULL
 );
 
 CREATE TABLE survey (
@@ -17,8 +17,8 @@ CREATE TABLE survey (
     is_published bool NOT NULL,
     is_template bool NOT NULL,
     do_notify bool NOT NULL,
-    expire_at timestamp,
-    created_at timestamp NOT NULL
+    expire_at timestamptz,
+    created_at timestamptz NOT NULL
 );
 
 CREATE TABLE permissions (
@@ -69,7 +69,7 @@ CREATE TABLE response (
     account_id uuid REFERENCES account (id) ON DELETE SET NULL,
     survey_id uuid REFERENCES survey (id) ON DELETE CASCADE NOT NULL,
     is_complete bool NOT NULL,
-    received_at timestamp NOT NULL
+    received_at timestamptz NOT NULL
 );
 
 CREATE TABLE answer (
