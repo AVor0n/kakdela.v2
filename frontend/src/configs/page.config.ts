@@ -7,4 +7,6 @@ export class Pages {
 
     static readonly SURVEYS: string = '/surveys';
     static readonly SURVEYS_VIEW: string = this.SURVEYS + '/view/:id';
+    static readonly SURVEYS_EDIT: string = this.SURVEYS + '/edit/:id';
+    static readonly SURVEYS_CREATE: string = this.SURVEYS + '/create';
 }
