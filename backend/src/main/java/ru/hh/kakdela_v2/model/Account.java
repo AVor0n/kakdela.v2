@@ -7,7 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 @Data
@@ -34,5 +34,5 @@ public class Account {
 
     @CreationTimestamp
     @Column(name = "registered_at", updatable = false, nullable = false)
-    private LocalDateTime registeredAt;
+    private Instant registeredAt;
 }
