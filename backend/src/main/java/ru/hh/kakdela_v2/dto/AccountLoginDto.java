@@ -1,3 +1,5 @@
+package ru.hh.kakdela_v2.dto;
+
 public class AccountLoginDto {
   private String login;
   private String rawPassword;
