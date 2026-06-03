@@ -1,5 +1,5 @@
 import { Skeleton } from '@hh.ru/magritte-ui';
-import '@/styles/App.css';
+import './App.css';
 
 function App() {
     return (
