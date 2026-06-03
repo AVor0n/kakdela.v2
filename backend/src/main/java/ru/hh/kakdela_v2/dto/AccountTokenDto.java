@@ -1,17 +1,14 @@
 package ru.hh.kakdela_v2.dto;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
 import java.util.UUID;
 
+@Getter
+@AllArgsConstructor
 public class AccountTokenDto {
 
   private String token;
   private UUID accountId;
-
-  public AccountTokenDto(String token, UUID accountId) {
-    this.token = token;
-    this.accountId = accountId;
-  }
-
-  public String getToken() { return token; }
-  public UUID getAccountId() { return accountId; }
 }

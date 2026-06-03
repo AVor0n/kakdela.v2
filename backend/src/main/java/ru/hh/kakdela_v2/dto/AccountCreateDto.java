@@ -1,29 +1,16 @@
 package ru.hh.kakdela_v2.dto;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
 public class AccountCreateDto {
 
   private String login;
   private String email;
   private String rawPassword;
-
-  public AccountCreateDto() {
-  }
-
-  public AccountCreateDto(String login, String email, String rawPassword) {
-    this.login = login;
-    this.email = email;
-    this.rawPassword = rawPassword;
-  }
-
-  public String getLogin() {
-    return login;
-  }
-
-  public String getEmail() {
-    return email;
-  }
-
-  public String getRawPassword() {
-    return rawPassword;
-  }
+  private String rawPasswordConfirmation;
 }
