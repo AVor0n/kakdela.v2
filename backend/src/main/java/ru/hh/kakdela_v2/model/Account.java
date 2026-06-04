@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -35,4 +37,16 @@ public class Account {
     @CreationTimestamp
     @Column(name = "registered_at", updatable = false, nullable = false)
     private Instant registeredAt;
+
+    @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<Survey> authoredSurveys = new ArrayList<>();
+
+    @OneToMany(mappedBy = "account", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<Permission> permissions = new ArrayList<>();
+
+    @OneToMany(mappedBy = "account")
+    @Builder.Default
+    private List<Response> responses = new ArrayList<>();
 }
