@@ -14,7 +14,11 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "answer")
+@Table(name = "answer",
+        indexes = {
+                @Index(name = "idx_answer_question_id", columnList = "question_id")
+        }
+)
 public class Answer {
 
     @EmbeddedId

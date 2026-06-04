@@ -19,7 +19,10 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "survey")
+@Table(name = "survey", indexes = {
+        @Index(name = "idx_survey_author_id", columnList = "author_id")
+    }
+)
 public class Survey {
 
     @Id
@@ -68,7 +71,7 @@ public class Survey {
     @Builder.Default
     private List<SurveyPage> pages = new ArrayList<>();
 
-    @OneToOne(mappedBy = "survey", cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional = false)
+    @OneToOne(mappedBy = "survey", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private ClosingPage closingPage;
 
     @OneToMany(mappedBy = "survey")

@@ -20,7 +20,12 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "response")
+@Table(name = "response",
+        indexes = {
+                @Index(name = "idx_response_survey_id", columnList = "survey_id"),
+                @Index(name = "idx_response_account_id", columnList = "account_id")
+        }
+)
 public class Response {
 
     @Id

@@ -16,7 +16,12 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "answer_option")
+@Table(name = "answer_option",
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uk_answer_option_question_serial",
+                        columnNames = {"question_id", "serial_number"})
+        }
+)
 public class AnswerOption {
 
     @Id

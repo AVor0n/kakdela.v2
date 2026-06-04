@@ -17,7 +17,15 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "survey_page")
+@Table(name = "survey_page",
+        indexes = {
+                @Index(name = "idx_survey_page_survey_id", columnList = "survey_id")
+        },
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uk_page_survey_serial",
+                        columnNames = {"survey_id", "serial_number"})
+        }
+)
 public class SurveyPage {
 
     @Id
