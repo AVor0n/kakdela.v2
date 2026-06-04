@@ -34,7 +34,7 @@ public class Permission {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Survey survey;
 
-    @Column(name = "role", nullable = false, length = 20)
+    @Column(name = "role", nullable = false)
     @Enumerated(EnumType.STRING)
     private SurveyRole role;
 
@@ -55,11 +55,7 @@ public class Permission {
     }
 
     public enum SurveyRole {
-        VIEWER, // только смотреть опрос (без прохождения и редактирования)
-        RESPONDENT, // проходить опрос
-        CONTRIBUTOR, // добавлять новые вопросы (но не менять/удалять чужие)
-        EDITOR, // изменять существующие вопросы
-        MANAGER, // менять, добавлять, удалять любые вопросы
-        ADMIN // полный доступ + управление правами других пользователей
+        EDITOR,
+        ANALYST
     }
 }

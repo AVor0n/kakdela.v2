@@ -44,7 +44,7 @@ public class Question {
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
-    @Column(name = "type", nullable = false, length = 20)
+    @Column(name = "type", nullable = false)
     @Enumerated(EnumType.STRING)
     private QuestionType type;
 
