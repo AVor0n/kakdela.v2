@@ -24,7 +24,7 @@ CREATE TABLE survey (
 CREATE TABLE permissions (
     account_id uuid REFERENCES account (id) ON DELETE CASCADE,
     survey_id uuid REFERENCES survey (id) ON DELETE CASCADE,
-    role varchar NOT NULL,
+    role varchar(255) NOT NULL,
     do_notify bool NOT NULL,
     PRIMARY KEY (account_id, survey_id)
 );
@@ -43,7 +43,7 @@ CREATE TABLE question (
     serial_number int NOT NULL,
     title varchar(200) NOT NULL,
     description text,
-    type varchar NOT NULL,
+    type varchar(255) NOT NULL,
     answer_option_order text NOT NULL,
     is_mandatory bool NOT NULL,
     is_visible bool NOT NULL,
