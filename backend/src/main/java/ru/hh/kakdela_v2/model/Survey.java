@@ -35,7 +35,7 @@ public class Survey {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Account author;
 
-    @Column(name = "title", columnDefinition = "TEXT", nullable = false)
+    @Column(name = "title", length = 200, nullable = false)
     private String title;
 
     @Column(name = "description", columnDefinition = "TEXT")

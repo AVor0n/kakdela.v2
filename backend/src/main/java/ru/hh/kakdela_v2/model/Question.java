@@ -38,14 +38,15 @@ public class Question {
     @Column(name = "serial_number", nullable = false)
     private Integer serialNumber;
 
-    @Column(name = "title", nullable = false, columnDefinition = "TEXT")
+    @Column(name = "title", nullable = false, length = 200)
     private String title;
 
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
-    @Column(name = "type", nullable = false, columnDefinition = "TEXT")
-    private String type;
+    @Column(name = "type", nullable = false, length = 20)
+    @Enumerated(EnumType.STRING)
+    private QuestionType type;
 
     @Column(name = "answer_option_order", nullable = false, columnDefinition = "TEXT")
     private String answerOptionOrder;
@@ -66,4 +67,11 @@ public class Question {
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<Answer> answers = new ArrayList<>();
+
+    public enum QuestionType {
+        SINGLE_CHOICE,
+        MULTIPLE_CHOICE,
+        SHORT_TEXT,
+        LONG_TEXT
+    }
 }
