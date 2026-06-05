@@ -22,7 +22,7 @@ public class AccountDaoImpl implements AccountDao {
 
   @Override
   public Optional<Account> findById(UUID id) {
-    return Optional.ofNullable(session().get(Account.class, id));
+    return Optional.ofNullable(session().find(Account.class, id));
   }
 
   @Override
@@ -45,7 +45,7 @@ public class AccountDaoImpl implements AccountDao {
   public List<Account> findAll() {
     return session()
             .createQuery("FROM Account", Account.class)
-            .list();
+            .getResultList();
   }
 
   @Override
@@ -60,7 +60,7 @@ public class AccountDaoImpl implements AccountDao {
 
   @Override
   public void delete(UUID id) {
-    Account account = session().get(Account.class, id);
+    Account account = session().find(Account.class, id);
     if (account != null) {
       session().remove(account);
     }
@@ -68,19 +68,21 @@ public class AccountDaoImpl implements AccountDao {
 
   @Override
   public boolean existsByLogin(String login) {
-    Long count = session()
+    return session()
             .createQuery("SELECT COUNT(a) FROM Account a WHERE a.login = :login", Long.class)
             .setParameter("login", login)
-            .uniqueResult();
-    return count != null && count > 0;
+            .uniqueResultOptional()
+            .map(count -> count > 0)
+            .orElse(false);
   }
 
   @Override
   public boolean existsByEmail(String email) {
-    Long count = session()
+    return session()
             .createQuery("SELECT COUNT(a) FROM Account a WHERE a.email = :email", Long.class)
             .setParameter("email", email)
-            .uniqueResult();
-    return count != null && count > 0;
+            .uniqueResultOptional()
+            .map(count -> count > 0)
+            .orElse(false);
   }
 }
