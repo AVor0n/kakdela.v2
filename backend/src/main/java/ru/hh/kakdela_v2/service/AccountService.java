@@ -2,7 +2,7 @@ package ru.hh.kakdela_v2.service;
 
 import org.mindrot.jbcrypt.BCrypt;
 import ru.hh.kakdela_v2.dao.AccountDao;
-import ru.hh.kakdela_v2.dto.*;
+import ru.hh.kakdela_v2.dto.account.*;
 import ru.hh.kakdela_v2.model.Account;
 import ru.hh.kakdela_v2.util.TransactionHelper;
 

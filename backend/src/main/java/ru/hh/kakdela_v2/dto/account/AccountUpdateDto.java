@@ -1,14 +1,15 @@
-package ru.hh.kakdela_v2.dto;
+package ru.hh.kakdela_v2.dto.account;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
+@Setter
 @NoArgsConstructor
-@AllArgsConstructor
-public class AccountLoginDto {
+public class AccountUpdateDto {
 
   private String login;
+  private String email;
   private String rawPassword;
 }
