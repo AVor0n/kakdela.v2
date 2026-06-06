@@ -13,9 +13,9 @@ public class SurveyUpdateDto {
 
   private String title;
   private String description;
-  private Boolean isAuthorizedOnly;
-  private Boolean isLimitedToOneResponse;
-  private Boolean isPublished;
+  private Boolean authorizedOnly;
+  private Boolean limitedToOneResponse;
+  private Boolean published;
   private Boolean doNotify;
   private Instant expireAt;
 }

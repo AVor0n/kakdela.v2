@@ -14,7 +14,7 @@ public class QuestionUpdateDto {
   private String description;
   private String type;
   private String answerOptionOrder;
-  private Boolean isMandatory;
-  private Boolean isVisible;
+  private Boolean mandatory;
+  private Boolean visible;
   private String condition;
 }
