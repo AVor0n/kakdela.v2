@@ -1,7 +1,7 @@
 package ru.hh.kakdela_v2.dao;
 
-import lombok.RequiredArgsConstructor;
-import org.hibernate.SessionFactory;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Repository;
 import ru.hh.kakdela_v2.model.Account;
 
@@ -9,75 +9,71 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-@RequiredArgsConstructor
 @Repository
 public class AccountDaoImpl implements AccountDao {
 
-  private final SessionFactory sessionFactory;
-
-  private org.hibernate.Session session() {
-    return sessionFactory.getCurrentSession();
-  }
+  @PersistenceContext
+  private EntityManager entityManager;
 
   @Override
   public Optional<Account> findById(UUID id) {
-    return Optional.ofNullable(session().find(Account.class, id));
+    return Optional.ofNullable(entityManager.find(Account.class, id));
   }
 
   @Override
   public Optional<Account> findByLogin(String login) {
-    return session()
+    return Optional.ofNullable(entityManager
             .createQuery("FROM Account a WHERE a.login = :login", Account.class)
             .setParameter("login", login)
-            .uniqueResultOptional();
+            .getSingleResult());
   }
 
   @Override
   public Optional<Account> findByEmail(String email) {
-    return session()
+    return Optional.ofNullable(entityManager
             .createQuery("FROM Account a WHERE a.email = :email", Account.class)
             .setParameter("email", email)
-            .uniqueResultOptional();
+            .getSingleResult());
   }
 
   @Override
   public List<Account> findAll() {
-    return session()
+    return entityManager
             .createQuery("FROM Account", Account.class)
             .getResultList();
   }
 
   @Override
   public void save(Account account) {
-    session().persist(account);
+    entityManager.persist(account);
   }
 
   @Override
   public void update(Account account) {
-    session().merge(account);
+    entityManager.merge(account);
   }
 
   @Override
   public void delete(Account account)  {
-    session().remove(account);
+    entityManager.remove(account);
   }
 
   @Override
   public boolean existsByLogin(String login) {
-    return session()
+    return Optional.ofNullable(entityManager
             .createQuery("SELECT COUNT(a) FROM Account a WHERE a.login = :login", Long.class)
             .setParameter("login", login)
-            .uniqueResultOptional()
+            .getSingleResult())
             .map(count -> count > 0)
             .orElse(false);
   }
 
   @Override
   public boolean existsByEmail(String email) {
-    return session()
+    return Optional.ofNullable(entityManager
             .createQuery("SELECT COUNT(a) FROM Account a WHERE a.email = :email", Long.class)
             .setParameter("email", email)
-            .uniqueResultOptional()
+            .getSingleResult())
             .map(count -> count > 0)
             .orElse(false);
   }
