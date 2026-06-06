@@ -23,17 +23,9 @@ public class JwtUtil {
     return extractClaim(token, Claims::getSubject);
   }
 
-  public Date extractExpiration(String token) {
-    return extractClaim(token, Claims::getExpiration);
-  }
-
   public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
     final Claims claims = Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
     return claimsResolver.apply(claims);
-  }
-
-  private Boolean isTokenExpired(String token) {
-    return extractExpiration(token).before(new Date());
   }
 
   public String generateAccessToken(UserDetails userDetails) {
@@ -43,9 +35,5 @@ public class JwtUtil {
         .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 15))
         .signWith(key)
         .compact();
-  }
-
-  public Boolean validateToken(String token, UserDetails userDetails) {
-    return (extractLogin(token).equals(userDetails.getUsername()) && !isTokenExpired(token));
   }
 }

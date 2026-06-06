@@ -1,5 +1,6 @@
 package ru.hh.kakdela_v2.filter;
 
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import lombok.RequiredArgsConstructor;
@@ -26,23 +27,26 @@ public class JwtRequestFilter extends OncePerRequestFilter {
       throws ServletException, IOException {
 
     final String header = request.getHeader("Authorization");
-    String login = null;
     String token = null;
 
     if (header != null && header.startsWith("Bearer ")) {
       token = header.substring(7);
-      login = jwtUtil.extractLogin(token);
     }
 
-    if (login != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-      UserDetails userDetails = userDetailsService.loadUserByUsername(login);
-      if (jwtUtil.validateToken(token, userDetails)) {
-        UsernamePasswordAuthenticationToken authToken =
-            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-        authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-        SecurityContextHolder.getContext().setAuthentication(authToken);
+    try {
+      if (token != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+          String login = jwtUtil.extractLogin(token);
+          UserDetails userDetails = userDetailsService.loadUserByUsername(login);
+          UsernamePasswordAuthenticationToken authToken =
+              new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+          authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+          SecurityContextHolder.getContext().setAuthentication(authToken);
       }
+
+      chain.doFilter(request, response);
+    } catch (ExpiredJwtException e) {
+      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+      response.getWriter().write("Срок действия токена аутентификации истёк");
     }
-    chain.doFilter(request, response);
   }
 }
