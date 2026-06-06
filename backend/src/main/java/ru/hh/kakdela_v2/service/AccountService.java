@@ -12,11 +12,13 @@ import ru.hh.kakdela_v2.util.TransactionHelper;
 
 import java.util.UUID;
 
+@Service
 public class AccountService {
 
   private final AccountDao accountDao;
   private final TransactionHelper transactionHelper;
 
+  @Autowired
   public AccountService(AccountDao accountDao, TransactionHelper transactionHelper) {
     this.accountDao = accountDao;
     this.transactionHelper = transactionHelper;
