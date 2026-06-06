@@ -11,6 +11,6 @@ public class RegisterDto {
 
   private String login;
   private String email;
-  private String rawPassword;
-  private String rawPasswordConfirmation;
+  private String password;
+  private String passwordConfirmation;
 }

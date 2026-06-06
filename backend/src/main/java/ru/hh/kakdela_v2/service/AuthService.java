@@ -24,20 +24,20 @@ public class AuthService {
   private final JwtUtil jwtUtil;
 
   public LoginResponseDto login(LoginDto loginDto) {
-    authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginDto.getLogin(), loginDto.getRawPassword()));
+    authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginDto.getLogin(), loginDto.getPassword()));
     UserDetails userDetails = userDetailsService.loadUserByUsername(loginDto.getLogin());
     return new LoginResponseDto(jwtUtil.generateAccessToken(userDetails), null);
   }
 
   public void register(RegisterDto registerDto) {
-    if (!registerDto.getRawPassword().equals(registerDto.getRawPasswordConfirmation())) {
+    if (!registerDto.getPassword().equals(registerDto.getPasswordConfirmation())) {
       throw new RuntimeException("Пароли не совпадают");
     }
 
     AccountCreateDto accountCreateDto = new AccountCreateDto(
       registerDto.getLogin(),
       registerDto.getEmail(),
-      passwordEncoder.encode(registerDto.getRawPassword())
+      passwordEncoder.encode(registerDto.getPassword())
     );
 
     try {
