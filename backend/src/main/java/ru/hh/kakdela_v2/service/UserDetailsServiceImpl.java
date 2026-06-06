@@ -1,5 +1,6 @@
 package ru.hh.kakdela_v2.service;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -10,15 +11,11 @@ import ru.hh.kakdela_v2.model.Account;
 
 import java.util.HashSet;
 
+@RequiredArgsConstructor
 @Service(value = "userDetailsService")
 public class UserDetailsServiceImpl implements UserDetailsService {
 
   private final AccountDao accountDao;
-
-  @Autowired
-  public UserDetailsServiceImpl(AccountDao accountDao) {
-    this.accountDao = accountDao;
-  }
 
   @Override
   public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {

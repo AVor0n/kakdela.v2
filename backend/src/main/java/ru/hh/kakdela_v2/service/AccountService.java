@@ -1,5 +1,6 @@
 package ru.hh.kakdela_v2.service;
 
+import lombok.RequiredArgsConstructor;
 import ru.hh.kakdela_v2.dto.AccountCreateDto;
 import ru.hh.kakdela_v2.dto.AccountResponseDto;
 import ru.hh.kakdela_v2.dto.AccountUpdateDto;
@@ -11,17 +12,12 @@ import ru.hh.kakdela_v2.util.TransactionHelper;
 
 import java.util.UUID;
 
+@RequiredArgsConstructor
 @Service
 public class AccountService {
 
   private final AccountDao accountDao;
   private final TransactionHelper transactionHelper;
-
-  @Autowired
-  public AccountService(AccountDao accountDao, TransactionHelper transactionHelper) {
-    this.accountDao = accountDao;
-    this.transactionHelper = transactionHelper;
-  }
 
   public AccountResponseDto getById(UUID id) {
     return transactionHelper.inTransaction(() -> {

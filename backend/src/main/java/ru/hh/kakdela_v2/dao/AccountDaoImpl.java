@@ -1,5 +1,6 @@
 package ru.hh.kakdela_v2.dao;
 
+import lombok.RequiredArgsConstructor;
 import org.hibernate.SessionFactory;
 import org.springframework.stereotype.Repository;
 import ru.hh.kakdela_v2.model.Account;
@@ -8,14 +9,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@RequiredArgsConstructor
 @Repository
 public class AccountDaoImpl implements AccountDao {
 
   private final SessionFactory sessionFactory;
-
-  public AccountDaoImpl(SessionFactory sessionFactory) {
-    this.sessionFactory = sessionFactory;
-  }
 
   private org.hibernate.Session session() {
     return sessionFactory.getCurrentSession();
