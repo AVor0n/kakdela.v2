@@ -1,6 +1,7 @@
 package ru.hh.kakdela_v2.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
@@ -9,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 public class TestController {
 
   @GetMapping("/hello")
-  public String hello() {
-    return "Hello! Kak dela?";
+  public ResponseEntity<?> hello() {
+    return ResponseEntity.ok("Hello! Kak dela?");
   }
 }
