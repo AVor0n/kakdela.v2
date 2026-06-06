@@ -54,4 +54,18 @@ public class QuestionDaoImpl implements QuestionDao {
       session().remove(question);
     }
   }
+
+  @Override
+  public boolean existsByPageIdAndSerialNumber(UUID pageId, Integer serialNumber) {
+    return session()
+            .createQuery("""
+                    SELECT COUNT(q) FROM Question q
+                    WHERE q.surveyPage.id = :pageId AND q.serialNumber = :serialNumber
+                    """, Long.class)
+            .setParameter("pageId", pageId)
+            .setParameter("serialNumber", serialNumber)
+            .uniqueResultOptional()
+            .map(count -> count > 0)
+            .orElse(false);
+  }
 }

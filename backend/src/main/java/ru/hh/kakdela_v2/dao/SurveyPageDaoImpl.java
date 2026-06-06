@@ -54,4 +54,18 @@ public class SurveyPageDaoImpl implements SurveyPageDao {
       session().remove(page);
     }
   }
+
+  @Override
+  public boolean existsBySurveyIdAndSerialNumber(UUID surveyId, Integer serialNumber) {
+    return session()
+            .createQuery("""
+                    SELECT COUNT(p) FROM SurveyPage p
+                    WHERE p.survey.id = :surveyId AND p.serialNumber = :serialNumber
+                    """, Long.class)
+            .setParameter("surveyId", surveyId)
+            .setParameter("serialNumber", serialNumber)
+            .uniqueResultOptional()
+            .map(count -> count > 0)
+            .orElse(false);
+  }
 }

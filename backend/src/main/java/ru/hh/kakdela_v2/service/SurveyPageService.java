@@ -9,6 +9,9 @@ import ru.hh.kakdela_v2.model.Survey;
 import ru.hh.kakdela_v2.model.SurveyPage;
 import ru.hh.kakdela_v2.util.TransactionHelper;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -27,7 +30,7 @@ public class SurveyPageService {
   public SurveyPageResponseDto getById(UUID id) {
     return transactionHelper.inTransaction(() -> {
       SurveyPage page = surveyPageDao.findById(id)
-              .orElseThrow(() -> new RuntimeException("Страница не найдена: " + id));
+              .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Страница не найдена: " + id));
       return new SurveyPageResponseDto(page);
     });
   }
@@ -43,7 +46,14 @@ public class SurveyPageService {
   public SurveyPageResponseDto create(UUID surveyId, SurveyPageCreateDto dto) {
     return transactionHelper.inTransaction(() -> {
       Survey survey = surveyDao.findById(surveyId)
-              .orElseThrow(() -> new RuntimeException("Опрос не найден: " + surveyId));
+              .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
+
+      if (surveyPageDao.existsBySurveyIdAndSerialNumber(surveyId, dto.getSerialNumber())) {
+        throw new ResponseStatusException(
+                HttpStatus.CONFLICT,
+                "Страница с номером " + dto.getSerialNumber() + " уже существует в этом опросе"
+        );
+      }
 
       SurveyPage page = SurveyPage.builder()
               .survey(survey)
@@ -51,7 +61,6 @@ public class SurveyPageService {
               .title(dto.getTitle())
               .description(dto.getDescription())
               .build();
-
       surveyPageDao.save(page);
       return new SurveyPageResponseDto(page);
     });
@@ -60,7 +69,7 @@ public class SurveyPageService {
   public SurveyPageResponseDto update(UUID id, SurveyPageUpdateDto dto) {
     return transactionHelper.inTransaction(() -> {
       SurveyPage page = surveyPageDao.findById(id)
-              .orElseThrow(() -> new RuntimeException("Страница не найдена: " + id));
+              .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Страница не найдена: " + id));
 
       if (dto.getSerialNumber() != null) page.setSerialNumber(dto.getSerialNumber());
       if (dto.getTitle() != null) page.setTitle(dto.getTitle());

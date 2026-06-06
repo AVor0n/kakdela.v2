@@ -10,6 +10,9 @@ import ru.hh.kakdela_v2.model.Account;
 import ru.hh.kakdela_v2.model.Survey;
 import ru.hh.kakdela_v2.util.TransactionHelper;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -28,7 +31,7 @@ public class SurveyService {
   public SurveyResponseDto getById(UUID id) {
     return transactionHelper.inTransaction(() -> {
       Survey survey = surveyDao.findById(id)
-              .orElseThrow(() -> new RuntimeException("Опрос не найден: " + id));
+              .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Опрос не найден: " + id));
       return new SurveyResponseDto(survey);
     });
   }
@@ -52,7 +55,7 @@ public class SurveyService {
   public SurveyResponseDto create(UUID authorId, SurveyCreateDto dto) {
     return transactionHelper.inTransaction(() -> {
       Account author = accountDao.findById(authorId)
-              .orElseThrow(() -> new RuntimeException("Аккаунт не найден: " + authorId));
+              .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Аккаунт не найден: " + authorId));
 
       Survey survey = Survey.builder()
               .author(author)
@@ -74,7 +77,7 @@ public class SurveyService {
   public SurveyResponseDto update(UUID id, SurveyUpdateDto dto) {
     return transactionHelper.inTransaction(() -> {
       Survey survey = surveyDao.findById(id)
-              .orElseThrow(() -> new RuntimeException("Опрос не найден: " + id));
+              .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Опрос не найден: " + id));
 
       if (dto.getTitle() != null) survey.setTitle(dto.getTitle());
       if (dto.getDescription() != null) survey.setDescription(dto.getDescription());

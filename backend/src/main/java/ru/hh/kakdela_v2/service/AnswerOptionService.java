@@ -8,6 +8,9 @@ import ru.hh.kakdela_v2.model.AnswerOption;
 import ru.hh.kakdela_v2.model.Question;
 import ru.hh.kakdela_v2.util.TransactionHelper;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -34,7 +37,7 @@ public class AnswerOptionService {
   public AnswerOptionResponseDto create(UUID questionId, AnswerOptionCreateDto dto) {
     return transactionHelper.inTransaction(() -> {
       Question question = questionDao.findById(questionId)
-              .orElseThrow(() -> new RuntimeException("Вопрос не найден: " + questionId));
+              .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Вопрос не найден: " + questionId));
 
       AnswerOption option = AnswerOption.builder()
               .question(question)

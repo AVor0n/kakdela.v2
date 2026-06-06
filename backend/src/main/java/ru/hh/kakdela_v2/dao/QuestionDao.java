@@ -17,4 +17,6 @@ public interface QuestionDao {
   void update(Question question);
 
   void delete(UUID id);
+
+  boolean existsByPageIdAndSerialNumber(UUID pageId, Integer serialNumber);
 }
