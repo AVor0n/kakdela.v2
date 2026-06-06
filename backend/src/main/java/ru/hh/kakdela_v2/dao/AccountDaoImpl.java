@@ -1,8 +1,8 @@
 package ru.hh.kakdela_v2.dao;
 
 import org.hibernate.SessionFactory;
+import org.springframework.stereotype.Repository;
 import ru.hh.kakdela_v2.model.Account;
-import ru.hh.kakdela_v2.util.TransactionHelper;
 
 import java.util.List;
 import java.util.Optional;
@@ -59,11 +59,8 @@ public class AccountDaoImpl implements AccountDao {
   }
 
   @Override
-  public void delete(UUID id) {
-    Account account = session().find(Account.class, id);
-    if (account != null) {
-      session().remove(account);
-    }
+  public void delete(Account account)  {
+    session().remove(account);
   }
 
   @Override
