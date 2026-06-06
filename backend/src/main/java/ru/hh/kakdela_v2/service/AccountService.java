@@ -3,7 +3,6 @@ package ru.hh.kakdela_v2.service;
 import ru.hh.kakdela_v2.dto.AccountCreateDto;
 import ru.hh.kakdela_v2.dto.AccountResponseDto;
 import ru.hh.kakdela_v2.dto.AccountUpdateDto;
-import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.hh.kakdela_v2.dao.AccountDao;
@@ -40,14 +39,11 @@ public class AccountService {
       if (accountDao.existsByEmail(dto.getEmail())) {
         throw new RuntimeException("Такой email уже зарегистрирован: " + dto.getEmail());
       }
-      if (!dto.getRawPassword().equals(dto.getRawPasswordConfirmation())) {
-        throw new RuntimeException("Пароли не совпадают");
-      }
 
       Account account = Account.builder()
               .login(dto.getLogin())
               .email(dto.getEmail())
-              .passwordHash(BCrypt.hashpw(dto.getRawPassword(), BCrypt.gensalt()))
+              .passwordHash(dto.getHashPassword())
               .build();
 
       accountDao.save(account);
@@ -60,15 +56,19 @@ public class AccountService {
       Account account = accountDao.findById(id)
               .orElseThrow(() -> new RuntimeException("Аккаунт не найден: id=" + id));
 
-      if (dto.getLogin() != null) account.setLogin(dto.getLogin());
-      if (dto.getEmail() != null) account.setEmail(dto.getEmail());
-      if (dto.getOldRawPassword() != null && dto.getNewRawPassword() != null && dto.getNewRawPasswordConfirmation() != null) {
-        if (!dto.getNewRawPassword().equals(dto.getNewRawPasswordConfirmation())) {
-          account.setPasswordHash(BCrypt.hashpw(dto.getNewRawPassword(), BCrypt.gensalt()));
-        } else {
-          throw new RuntimeException("Пароли не совпадают");
+      if (dto.getLogin() != null) {
+        if (accountDao.existsByLogin(dto.getLogin())) {
+          throw new RuntimeException("Такой логин уже используется: " + dto.getLogin());
         }
+        account.setLogin(dto.getLogin());
       }
+      if (dto.getEmail() != null) {
+        if (accountDao.existsByEmail(dto.getEmail())) {
+          throw new RuntimeException("Такой email уже зарегистрирован: " + dto.getEmail());
+        }
+        account.setEmail(dto.getEmail());
+      }
+      if (dto.getHashPassword() != null) account.setPasswordHash(dto.getHashPassword());
 
       accountDao.update(account);
       return new AccountResponseDto(account);

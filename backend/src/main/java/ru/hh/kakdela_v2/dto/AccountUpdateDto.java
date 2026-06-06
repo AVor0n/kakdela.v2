@@ -11,7 +11,5 @@ public class AccountUpdateDto {
 
   private String login;
   private String email;
-  private String oldRawPassword;
-  private String newRawPassword;
-  private String newRawPasswordConfirmation;
+  private String hashPassword;
 }
