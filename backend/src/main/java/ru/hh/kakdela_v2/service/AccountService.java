@@ -11,6 +11,9 @@ import org.springframework.stereotype.Service;
 import ru.hh.kakdela_v2.dao.AccountDao;
 import ru.hh.kakdela_v2.model.Account;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
+
 import java.util.UUID;
 
 @RequiredArgsConstructor
