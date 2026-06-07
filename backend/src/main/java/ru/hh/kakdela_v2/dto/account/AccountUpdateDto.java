@@ -1,4 +1,4 @@
-package ru.hh.kakdela_v2.dto;
+package ru.hh.kakdela_v2.dto.account;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
