@@ -73,7 +73,7 @@ public class AccountService {
   public AccountTokenDto login(AccountLoginDto dto) {
     return transactionHelper.inTransaction(() -> {
       Account account = accountDao.findByLogin(dto.getLogin())
-              .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Неверный логин или пароль");
+              .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Неверный логин или пароль"));
 
       if (!BCrypt.checkpw(dto.getRawPassword(), account.getPasswordHash())) {
         throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Неверный логин или пароль");
