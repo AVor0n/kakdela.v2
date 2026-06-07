@@ -1,4 +1,4 @@
-package ru.hh.kakdela_v2.dto.account;
+package ru.hh.kakdela_v2.dto.auth;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -7,8 +7,8 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class AccountLoginDto {
+public class LoginDto {
 
   private String login;
-  private String rawPassword;
+  private String password;
 }
