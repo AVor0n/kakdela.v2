@@ -2,10 +2,12 @@ package ru.hh.kakdela_v2.util;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
+import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 import java.util.function.Supplier;
 
+@Component
 public class TransactionHelper {
 
   private final SessionFactory sessionFactory;

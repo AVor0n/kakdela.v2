@@ -20,7 +20,7 @@ public interface AccountDao {
 
   void update(Account account);
 
-  void delete(UUID id);
+  void delete(Account account);
 
   boolean existsByLogin(String login);
 
