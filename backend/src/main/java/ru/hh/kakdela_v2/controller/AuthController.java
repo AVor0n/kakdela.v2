@@ -1,5 +1,6 @@
 package ru.hh.kakdela_v2.controller;
 
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +22,9 @@ public class AuthController {
   @PostMapping("/register")
   public ResponseEntity<?> register(@Valid @RequestBody RegisterDto registerDto) {
     authService.register(registerDto);
-    return ResponseEntity.ok("Пользователь успешно зарегистрирован");
+    return ResponseEntity
+        .status(HttpServletResponse.SC_CREATED)
+        .body("Пользователь успешно зарегистрирован");
   }
 
   @PostMapping("/login")
