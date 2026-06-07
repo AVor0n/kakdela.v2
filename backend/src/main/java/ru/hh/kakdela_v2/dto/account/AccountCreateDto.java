@@ -1,13 +1,13 @@
-package ru.hh.kakdela_v2.dto;
+package ru.hh.kakdela_v2.dto.account;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Getter
-@Setter
 @NoArgsConstructor
-public class AccountUpdateDto {
+@AllArgsConstructor
+public class AccountCreateDto {
 
   private String login;
   private String email;

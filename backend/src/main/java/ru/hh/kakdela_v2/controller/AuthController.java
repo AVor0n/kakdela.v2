@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import ru.hh.kakdela_v2.dto.LoginDto;
-import ru.hh.kakdela_v2.dto.RegisterDto;
+import ru.hh.kakdela_v2.dto.auth.LoginDto;
+import ru.hh.kakdela_v2.dto.auth.RegisterDto;
 import ru.hh.kakdela_v2.service.AuthService;
 
 @RequiredArgsConstructor

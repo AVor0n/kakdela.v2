@@ -1,4 +1,4 @@
-package ru.hh.kakdela_v2.dto;
+package ru.hh.kakdela_v2.dto.auth;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

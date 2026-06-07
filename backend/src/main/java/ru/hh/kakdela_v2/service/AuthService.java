@@ -10,10 +10,10 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-import ru.hh.kakdela_v2.dto.AccountCreateDto;
-import ru.hh.kakdela_v2.dto.LoginDto;
-import ru.hh.kakdela_v2.dto.LoginResponseDto;
-import ru.hh.kakdela_v2.dto.RegisterDto;
+import ru.hh.kakdela_v2.dto.account.AccountCreateDto;
+import ru.hh.kakdela_v2.dto.auth.LoginDto;
+import ru.hh.kakdela_v2.dto.auth.LoginResponseDto;
+import ru.hh.kakdela_v2.dto.auth.RegisterDto;
 import ru.hh.kakdela_v2.util.JwtUtil;
 
 @RequiredArgsConstructor
@@ -34,7 +34,7 @@ public class AuthService {
 
   public void register(RegisterDto registerDto) {
     if (!registerDto.getPassword().equals(registerDto.getPasswordConfirmation())) {
-      throw new ResponseStatusException(HttpStatusCode.valueOf(HttpServletResponse.SC_BAD_REQUEST));
+      throw new ResponseStatusException(HttpStatusCode.valueOf(HttpServletResponse.SC_BAD_REQUEST), "Пароли не совпадают");
     }
 
     AccountCreateDto accountCreateDto = new AccountCreateDto(

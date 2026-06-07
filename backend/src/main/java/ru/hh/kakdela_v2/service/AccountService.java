@@ -2,9 +2,9 @@ package ru.hh.kakdela_v2.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
-import ru.hh.kakdela_v2.dto.AccountCreateDto;
-import ru.hh.kakdela_v2.dto.AccountResponseDto;
-import ru.hh.kakdela_v2.dto.AccountUpdateDto;
+import ru.hh.kakdela_v2.dto.account.AccountCreateDto;
+import ru.hh.kakdela_v2.dto.account.AccountResponseDto;
+import ru.hh.kakdela_v2.dto.account.AccountUpdateDto;
 import org.springframework.stereotype.Service;
 import ru.hh.kakdela_v2.dao.AccountDao;
 import ru.hh.kakdela_v2.model.Account;
