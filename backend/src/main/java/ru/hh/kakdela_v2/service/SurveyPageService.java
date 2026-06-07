@@ -5,6 +5,7 @@ import ru.hh.kakdela_v2.dao.SurveyPageDao;
 import ru.hh.kakdela_v2.dto.survey_page.SurveyPageCreateDto;
 import ru.hh.kakdela_v2.dto.survey_page.SurveyPageResponseDto;
 import ru.hh.kakdela_v2.dto.survey_page.SurveyPageUpdateDto;
+import ru.hh.kakdela_v2.model.Permission.SurveyRole;
 import ru.hh.kakdela_v2.model.Survey;
 import ru.hh.kakdela_v2.model.SurveyPage;
 import ru.hh.kakdela_v2.util.TransactionHelper;
@@ -18,11 +19,13 @@ import java.util.UUID;
 public class SurveyPageService {
 
   private final SurveyPageDao surveyPageDao;
+  private final PermissionService permissionService;
   private final SurveyDao surveyDao;
   private final TransactionHelper transactionHelper;
 
-  public SurveyPageService(SurveyPageDao surveyPageDao, SurveyDao surveyDao, TransactionHelper transactionHelper) {
+  public SurveyPageService(SurveyPageDao surveyPageDao,PermissionService permissionService, SurveyDao surveyDao, TransactionHelper transactionHelper) {
     this.surveyPageDao = surveyPageDao;
+    this.permissionService = permissionService;
     this.surveyDao = surveyDao;
     this.transactionHelper = transactionHelper;
   }
@@ -43,8 +46,10 @@ public class SurveyPageService {
     );
   }
 
-  public SurveyPageResponseDto create(UUID surveyId, SurveyPageCreateDto dto) {
+  public SurveyPageResponseDto create(UUID surveyId, SurveyPageCreateDto dto, UUID userId) {
     return transactionHelper.inTransaction(() -> {
+       permissionService.checkAccess(surveyId, userId, SurveyRole.EDITOR);
+
       Survey survey = surveyDao.findById(surveyId)
               .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
 
@@ -66,10 +71,12 @@ public class SurveyPageService {
     });
   }
 
-  public SurveyPageResponseDto update(UUID id, SurveyPageUpdateDto dto) {
+  public SurveyPageResponseDto update(UUID id, SurveyPageUpdateDto dto, UUID userId) {
     return transactionHelper.inTransaction(() -> {
       SurveyPage page = surveyPageDao.findById(id)
               .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Страница не найдена: " + id));
+
+      permissionService.checkAccess(page.getSurvey().getId(), userId, SurveyRole.EDITOR);
 
       if (dto.getSerialNumber() != null) page.setSerialNumber(dto.getSerialNumber());
       if (dto.getTitle() != null) page.setTitle(dto.getTitle());
@@ -80,8 +87,12 @@ public class SurveyPageService {
     });
   }
 
-  public void delete(UUID id) {
+  public void delete(UUID id, UUID userId) {
     transactionHelper.inTransaction(() -> {
+      SurveyPage page = surveyPageDao.findById(id)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Страница не найдена: " + id));
+
+            permissionService.checkOwnership(page.getSurvey().getId(), userId);
       surveyPageDao.delete(id);
     });
   }
