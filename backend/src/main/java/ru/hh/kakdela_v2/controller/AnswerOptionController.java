@@ -7,6 +7,9 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import ru.hh.kakdela_v2.dto.answer_option.AnswerOptionCreateDto;
 import ru.hh.kakdela_v2.dto.answer_option.AnswerOptionResponseDto;
+import ru.hh.kakdela_v2.dto.answer_option.AnswerOptionUpdateDto;
+import ru.hh.kakdela_v2.dto.question.QuestionResponseDto;
+import ru.hh.kakdela_v2.dto.question.QuestionUpdateDto;
 import ru.hh.kakdela_v2.model.Account;
 import ru.hh.kakdela_v2.service.AnswerOptionService;
 
@@ -33,6 +36,15 @@ public class AnswerOptionController {
             @AuthenticationPrincipal Account currentUser
     ) {
         return answerOptionService.create(questionId, createDto, currentUser.getId());
+    }
+
+    @PutMapping("/{optionId}")
+    public AnswerOptionResponseDto update(
+            @PathVariable UUID optionId,
+            @Valid @RequestBody AnswerOptionUpdateDto updateDto,
+            @AuthenticationPrincipal Account currentUser
+    ) {
+        return answerOptionService.update(optionId, updateDto, currentUser.getId());
     }
 
     @DeleteMapping("/{optionId}")
