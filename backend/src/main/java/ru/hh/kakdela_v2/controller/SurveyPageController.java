@@ -15,13 +15,13 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/survey-pages")
+@RequestMapping("/api/page")
 @RequiredArgsConstructor
 public class SurveyPageController {
 
     private final SurveyPageService surveyPageService;
 
-    @GetMapping("/survey/{surveyId}")
+    @GetMapping("/survey/{surveyId}/page")
     public List<SurveyPageResponseDto> getAllBySurveyId(@PathVariable UUID surveyId) {
         return surveyPageService.getAllBySurveyId(surveyId);
     }
@@ -31,7 +31,7 @@ public class SurveyPageController {
         return surveyPageService.getById(pageId);
     }
 
-    @PostMapping("/survey/{surveyId}")
+    @PostMapping("/survey/{surveyId}/page")
     @ResponseStatus(HttpStatus.CREATED)
     public SurveyPageResponseDto create(
             @PathVariable UUID surveyId,

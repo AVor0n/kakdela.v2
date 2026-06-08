@@ -15,13 +15,13 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/questions")
+@RequestMapping("/api/question")
 @RequiredArgsConstructor
 public class QuestionController {
 
     private final QuestionService questionService;
 
-    @GetMapping("/page/{pageId}")
+    @GetMapping("/page/{pageId}/question")
     public List<QuestionResponseDto> getAllByPageId(@PathVariable UUID pageId) {
         return questionService.getAllByPageId(pageId);
     }
@@ -31,7 +31,7 @@ public class QuestionController {
         return questionService.getById(questionId);
     }
 
-    @PostMapping("/page/{pageId}")
+    @PostMapping("/page/{pageId}/question")
     @ResponseStatus(HttpStatus.CREATED)
     public QuestionResponseDto create(
             @PathVariable UUID pageId,

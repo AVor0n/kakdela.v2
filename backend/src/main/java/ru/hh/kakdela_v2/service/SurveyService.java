@@ -1,5 +1,7 @@
 package ru.hh.kakdela_v2.service;
 
+import org.springframework.stereotype.Service;
+import lombok.RequiredArgsConstructor;
 import ru.hh.kakdela_v2.dao.SurveyDao;
 import ru.hh.kakdela_v2.dao.AccountDao;
 import ru.hh.kakdela_v2.dto.survey.SurveyCreateDto;
@@ -18,6 +20,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Service
+@RequiredArgsConstructor
 public class SurveyService {
 
   private final SurveyDao surveyDao;
@@ -25,17 +29,8 @@ public class SurveyService {
   private final TransactionHelper transactionHelper;
   private final AccountDao accountDao;
 
-  public SurveyService(SurveyDao surveyDao, PermissionService permissionService, AccountDao accountDao,
-      TransactionHelper transactionHelper) {
-    this.surveyDao = surveyDao;
-    this.permissionService = permissionService;
-    this.accountDao = accountDao;
-    this.transactionHelper = transactionHelper;
-  }
-
-  public SurveyResponseDto getById(UUID surveyId, UUID userId) {
+  public SurveyResponseDto getById(UUID surveyId, UUID accountId) {
     return transactionHelper.inTransaction(() -> {
-      permissionService.checkAccess(surveyId, userId, SurveyRole.ANALYST);
 
       Survey survey = surveyDao.findById(surveyId)
           .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
@@ -52,8 +47,8 @@ public class SurveyService {
     );
   }
 
-  public List<SurveyShortResponseDto> getMySurveys(UUID userId) {
-    List<Survey> surveys = permissionService.getAccessibleSurveys(userId);
+  public List<SurveyShortResponseDto> getMySurveys(UUID accountId) {
+    List<Survey> surveys = permissionService.getAccessibleSurveys(accountId);
     return surveys.stream()
         .map(SurveyShortResponseDto::new)
         .collect(Collectors.toList());
@@ -89,9 +84,9 @@ public class SurveyService {
     });
   }
 
-  public SurveyResponseDto update(UUID surveyId, SurveyUpdateDto dto, UUID userId) {
+  public SurveyResponseDto update(UUID surveyId, SurveyUpdateDto dto, UUID accountId) {
     return transactionHelper.inTransaction(() -> {
-      permissionService.checkAccess(surveyId, userId, SurveyRole.EDITOR);
+      permissionService.checkAccess(surveyId, accountId, SurveyRole.EDITOR);
       Survey survey = surveyDao.findById(surveyId)
           .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
 
@@ -108,9 +103,9 @@ public class SurveyService {
     });
   }
 
-  public void delete(UUID surveyId, UUID userId) {
+  public void delete(UUID surveyId, UUID accountId) {
     transactionHelper.inTransaction(() -> {
-      permissionService.checkOwnership(surveyId, userId);
+      permissionService.checkOwnership(surveyId, accountId);
       surveyDao.delete(surveyId);
     });
   }

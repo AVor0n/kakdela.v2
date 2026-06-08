@@ -1,5 +1,7 @@
 package ru.hh.kakdela_v2.service;
 
+import org.springframework.stereotype.Service;
+import lombok.RequiredArgsConstructor;
 import ru.hh.kakdela_v2.dao.PermissionDao;
 import ru.hh.kakdela_v2.dao.SurveyDao;
 import ru.hh.kakdela_v2.dao.AccountDao;
@@ -21,6 +23,8 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@Service
+@RequiredArgsConstructor
 public class PermissionService {
 
     private final PermissionDao permissionDao;
@@ -28,22 +32,15 @@ public class PermissionService {
     private final AccountDao accountDao;
     private final TransactionHelper transactionHelper;
 
-    public PermissionService(PermissionDao permissionDao, SurveyDao surveyDao, AccountDao accountDao, TransactionHelper transactionHelper) {
-        this.permissionDao = permissionDao;
-        this.surveyDao = surveyDao;
-        this.accountDao = accountDao;
-        this.transactionHelper = transactionHelper;
-    }
-
-    public void checkAccess(UUID surveyId, UUID userId, SurveyRole requiredRole) {
+    public void checkAccess(UUID surveyId, UUID accountId, SurveyRole requiredRole) {
         Survey survey = surveyDao.findById(surveyId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
 
-        if (survey.getAuthor().getId().equals(userId)) {
+        if (survey.getAuthor().getId().equals(accountId)) {
             return;
         }
 
-        Permission permission = permissionDao.findBySurveyIdAndAccountId(surveyId, userId)
+        Permission permission = permissionDao.findBySurveyIdAndAccountId(surveyId, accountId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Нет доступа к опросу"));
 
         if (!hasEnoughRole(permission.getRole(), requiredRole)) {
@@ -52,11 +49,11 @@ public class PermissionService {
         }
     }
 
-    public void checkOwnership(UUID surveyId, UUID userId) {
+    public void checkOwnership(UUID surveyId, UUID accountId) {
         Survey survey = surveyDao.findById(surveyId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
 
-        if (!survey.getAuthor().getId().equals(userId)) {
+        if (!survey.getAuthor().getId().equals(accountId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Вы не являетесь автором опроса");
         }
     }
@@ -141,10 +138,10 @@ public class PermissionService {
         });
     }
 
-   public List<Survey> getAccessibleSurveys(UUID userId) {
+   public List<Survey> getAccessibleSurveys(UUID accountId) {
     return transactionHelper.inTransaction(() -> {
-        List<Survey> authored = surveyDao.findAllByAuthorId(userId);
-        List<Survey> shared = permissionDao.findAllByAccountId(userId).stream()
+        List<Survey> authored = surveyDao.findAllByAuthorId(accountId);
+        List<Survey> shared = permissionDao.findAllByAccountId(accountId).stream()
             .map(Permission::getSurvey)
             .toList();
 

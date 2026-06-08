@@ -1,5 +1,7 @@
 package ru.hh.kakdela_v2.service;
 
+import org.springframework.stereotype.Service;
+import lombok.RequiredArgsConstructor;
 import ru.hh.kakdela_v2.dao.AnswerOptionDao;
 import ru.hh.kakdela_v2.dao.QuestionDao;
 import ru.hh.kakdela_v2.dto.answer_option.AnswerOptionCreateDto;
@@ -15,19 +17,14 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 import java.util.UUID;
 
+@Service
+@RequiredArgsConstructor
 public class AnswerOptionService {
 
   private final AnswerOptionDao answerOptionDao;
   private final PermissionService permissionService;
   private final QuestionDao questionDao;
   private final TransactionHelper transactionHelper;
-
-  public AnswerOptionService(AnswerOptionDao answerOptionDao,PermissionService permissionService, QuestionDao questionDao, TransactionHelper transactionHelper) {
-    this.answerOptionDao = answerOptionDao;
-    this.permissionService = permissionService;
-    this.questionDao = questionDao;
-    this.transactionHelper = transactionHelper;
-  }
 
   public List<AnswerOptionResponseDto> getAllByQuestionId(UUID questionId) {
     return transactionHelper.inTransaction(() ->
@@ -37,12 +34,12 @@ public class AnswerOptionService {
     );
   }
 
-  public AnswerOptionResponseDto create(UUID questionId, AnswerOptionCreateDto dto, UUID userId) {
+  public AnswerOptionResponseDto create(UUID questionId, AnswerOptionCreateDto dto, UUID accountId) {
     return transactionHelper.inTransaction(() -> {
       Question question = questionDao.findById(questionId)
               .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Вопрос не найден: " + questionId));
 
-      permissionService.checkAccess(question.getSurveyPage().getSurvey().getId(), userId, SurveyRole.EDITOR);        
+      permissionService.checkAccess(question.getSurveyPage().getSurvey().getId(), accountId, SurveyRole.EDITOR);        
 
       AnswerOption option = AnswerOption.builder()
               .question(question)
@@ -55,13 +52,13 @@ public class AnswerOptionService {
     });
   }
 
-  public void delete(UUID id, UUID userId) {
+  public void delete(UUID id, UUID accountId) {
     transactionHelper.inTransaction(() -> {
       AnswerOption option = answerOptionDao.findById(id)
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Вариант ответа не найден: " + id));
             
             
-      permissionService.checkOwnership(option.getQuestion().getSurveyPage().getSurvey().getId(), userId);
+      permissionService.checkOwnership(option.getQuestion().getSurveyPage().getSurvey().getId(), accountId);
       answerOptionDao.delete(id);
     });
   }
