@@ -89,7 +89,7 @@ public class SurveyPageService {
       SurveyPage page = surveyPageDao.findById(id)
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Страница не найдена: " + id));
 
-            permissionService.checkOwnership(page.getSurvey().getId(), accountId);
+      permissionService.checkAccess(page.getSurvey().getId(), accountId, SurveyRole.EDITOR);
       surveyPageDao.delete(id);
     });
   }

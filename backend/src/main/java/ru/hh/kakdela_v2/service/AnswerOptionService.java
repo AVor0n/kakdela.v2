@@ -6,6 +6,7 @@ import ru.hh.kakdela_v2.dao.AnswerOptionDao;
 import ru.hh.kakdela_v2.dao.QuestionDao;
 import ru.hh.kakdela_v2.dto.answer_option.AnswerOptionCreateDto;
 import ru.hh.kakdela_v2.dto.answer_option.AnswerOptionResponseDto;
+import ru.hh.kakdela_v2.dto.answer_option.AnswerOptionUpdateDto;
 import ru.hh.kakdela_v2.model.AnswerOption;
 import ru.hh.kakdela_v2.model.Permission.SurveyRole;
 import ru.hh.kakdela_v2.model.Question;
@@ -58,7 +59,7 @@ public class AnswerOptionService {
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Вариант ответа не найден: " + id));
             
             
-      permissionService.checkOwnership(option.getQuestion().getSurveyPage().getSurvey().getId(), accountId);
+      permissionService.checkAccess(option.getQuestion().getSurveyPage().getSurvey().getId(), accountId, SurveyRole.EDITOR);
       answerOptionDao.delete(id);
     });
   }

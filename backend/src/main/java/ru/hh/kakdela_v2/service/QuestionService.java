@@ -100,7 +100,7 @@ public class QuestionService {
       Question question = questionDao.findById(id)
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Вопрос не найден: " + id));
             
-            permissionService.checkOwnership(question.getSurveyPage().getSurvey().getId(), accountId);
+            permissionService.checkAccess(question.getSurveyPage().getSurvey().getId(), accountId, SurveyRole.EDITOR);
       questionDao.delete(id);
     });
   }
