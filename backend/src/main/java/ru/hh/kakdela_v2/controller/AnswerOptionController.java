@@ -20,12 +20,12 @@ public class AnswerOptionController {
 
     private final AnswerOptionService answerOptionService;
 
-    @GetMapping("/question/{questionId}/answer-option")
+    @GetMapping("../question/{questionId}/answer-option")
     public List<AnswerOptionResponseDto> getAllByQuestionId(@PathVariable UUID questionId) {
         return answerOptionService.getAllByQuestionId(questionId);
     }
 
-    @PostMapping("/question/{questionId}/answer-option")
+    @PostMapping("../question/{questionId}/answer-option")
     @ResponseStatus(HttpStatus.CREATED)
     public AnswerOptionResponseDto create(
             @PathVariable UUID questionId,
