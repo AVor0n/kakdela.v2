@@ -21,7 +21,7 @@ public class SurveyPageController {
 
     private final SurveyPageService surveyPageService;
 
-    @GetMapping("/survey/{surveyId}/page")
+    @GetMapping("../survey/{surveyId}/page")
     public List<SurveyPageResponseDto> getAllBySurveyId(@PathVariable UUID surveyId) {
         return surveyPageService.getAllBySurveyId(surveyId);
     }
@@ -31,7 +31,7 @@ public class SurveyPageController {
         return surveyPageService.getById(pageId);
     }
 
-    @PostMapping("/survey/{surveyId}/page")
+    @PostMapping("../survey/{surveyId}/page")
     @ResponseStatus(HttpStatus.CREATED)
     public SurveyPageResponseDto create(
             @PathVariable UUID surveyId,
