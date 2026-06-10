@@ -8,10 +8,8 @@ import org.springframework.web.bind.annotation.*;
 import ru.hh.kakdela_v2.dto.answer_option.AnswerOptionCreateDto;
 import ru.hh.kakdela_v2.dto.answer_option.AnswerOptionResponseDto;
 import ru.hh.kakdela_v2.dto.answer_option.AnswerOptionUpdateDto;
-import ru.hh.kakdela_v2.dto.question.QuestionResponseDto;
-import ru.hh.kakdela_v2.dto.question.QuestionUpdateDto;
-import ru.hh.kakdela_v2.model.Account;
 import ru.hh.kakdela_v2.service.AnswerOptionService;
+import ru.hh.kakdela_v2.util.CustomUserDetails;
 
 import java.util.List;
 import java.util.UUID;
@@ -33,7 +31,7 @@ public class AnswerOptionController {
     public AnswerOptionResponseDto create(
             @PathVariable UUID questionId,
             @Valid @RequestBody AnswerOptionCreateDto createDto,
-            @AuthenticationPrincipal Account currentUser
+            @AuthenticationPrincipal CustomUserDetails currentUser
     ) {
         return answerOptionService.create(questionId, createDto, currentUser.getId());
     }
@@ -42,7 +40,7 @@ public class AnswerOptionController {
     public AnswerOptionResponseDto update(
             @PathVariable UUID optionId,
             @Valid @RequestBody AnswerOptionUpdateDto updateDto,
-            @AuthenticationPrincipal Account currentUser
+            @AuthenticationPrincipal CustomUserDetails currentUser
     ) {
         return answerOptionService.update(optionId, updateDto, currentUser.getId());
     }
@@ -51,7 +49,7 @@ public class AnswerOptionController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(
             @PathVariable UUID optionId,
-            @AuthenticationPrincipal Account currentUser
+            @AuthenticationPrincipal CustomUserDetails currentUser
     ) {
         answerOptionService.delete(optionId, currentUser.getId());
     }

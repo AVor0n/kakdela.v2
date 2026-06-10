@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.*;
 import ru.hh.kakdela_v2.dto.question.QuestionCreateDto;
 import ru.hh.kakdela_v2.dto.question.QuestionResponseDto;
 import ru.hh.kakdela_v2.dto.question.QuestionUpdateDto;
-import ru.hh.kakdela_v2.model.Account;
 import ru.hh.kakdela_v2.service.QuestionService;
+import ru.hh.kakdela_v2.util.CustomUserDetails;
 
 import java.util.List;
 import java.util.UUID;
@@ -36,7 +36,7 @@ public class QuestionController {
     public QuestionResponseDto create(
             @PathVariable UUID pageId,
             @Valid @RequestBody QuestionCreateDto createDto,
-            @AuthenticationPrincipal Account currentUser
+            @AuthenticationPrincipal CustomUserDetails currentUser
     ) {
         return questionService.create(pageId, createDto, currentUser.getId());
     }
@@ -45,7 +45,7 @@ public class QuestionController {
     public QuestionResponseDto update(
             @PathVariable UUID questionId,
             @Valid @RequestBody QuestionUpdateDto updateDto,
-            @AuthenticationPrincipal Account currentUser
+            @AuthenticationPrincipal CustomUserDetails currentUser
     ) {
         return questionService.update(questionId, updateDto, currentUser.getId());
     }
@@ -54,7 +54,7 @@ public class QuestionController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(
             @PathVariable UUID questionId,
-            @AuthenticationPrincipal Account currentUser
+            @AuthenticationPrincipal CustomUserDetails currentUser
     ) {
         questionService.delete(questionId, currentUser.getId());
     }

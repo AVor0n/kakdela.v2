@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.*;
 import ru.hh.kakdela_v2.dto.survey_page.SurveyPageCreateDto;
 import ru.hh.kakdela_v2.dto.survey_page.SurveyPageResponseDto;
 import ru.hh.kakdela_v2.dto.survey_page.SurveyPageUpdateDto;
-import ru.hh.kakdela_v2.model.Account;
 import ru.hh.kakdela_v2.service.SurveyPageService;
+import ru.hh.kakdela_v2.util.CustomUserDetails;
 
 import java.util.List;
 import java.util.UUID;
@@ -36,7 +36,7 @@ public class SurveyPageController {
     public SurveyPageResponseDto create(
             @PathVariable UUID surveyId,
             @Valid @RequestBody SurveyPageCreateDto createDto,
-            @AuthenticationPrincipal Account currentUser
+            @AuthenticationPrincipal CustomUserDetails currentUser
     ) {
         return surveyPageService.create(surveyId, createDto, currentUser.getId());
     }
@@ -45,7 +45,7 @@ public class SurveyPageController {
     public SurveyPageResponseDto update(
             @PathVariable UUID pageId,
             @Valid @RequestBody SurveyPageUpdateDto updateDto,
-            @AuthenticationPrincipal Account currentUser
+            @AuthenticationPrincipal CustomUserDetails currentUser
     ) {
         return surveyPageService.update(pageId, updateDto, currentUser.getId());
     }
@@ -54,7 +54,7 @@ public class SurveyPageController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(
             @PathVariable UUID pageId,
-            @AuthenticationPrincipal Account currentUser
+            @AuthenticationPrincipal CustomUserDetails currentUser
     ) {
         surveyPageService.delete(pageId, currentUser.getId());
     }

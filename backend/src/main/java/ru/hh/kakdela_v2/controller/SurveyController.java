@@ -9,8 +9,8 @@ import ru.hh.kakdela_v2.dto.survey.SurveyCreateDto;
 import ru.hh.kakdela_v2.dto.survey.SurveyResponseDto;
 import ru.hh.kakdela_v2.dto.survey.SurveyShortResponseDto;
 import ru.hh.kakdela_v2.dto.survey.SurveyUpdateDto;
-import ru.hh.kakdela_v2.model.Account;
 import ru.hh.kakdela_v2.service.SurveyService;
+import ru.hh.kakdela_v2.util.CustomUserDetails;
 
 import java.util.List;
 import java.util.UUID;
@@ -28,7 +28,7 @@ public class SurveyController {
     }
 
     @GetMapping("../accounts/me/surveys")
-    public List<SurveyShortResponseDto> getMySurveys(@AuthenticationPrincipal Account currentUser) {
+    public List<SurveyShortResponseDto> getMySurveys(@AuthenticationPrincipal CustomUserDetails currentUser) {
         return surveyService.getMySurveys(currentUser.getId());
     }
 
@@ -40,7 +40,7 @@ public class SurveyController {
     @GetMapping("/{surveyId}")
     public SurveyResponseDto getById(
             @PathVariable UUID surveyId,
-            @AuthenticationPrincipal Account currentUser) {
+            @AuthenticationPrincipal CustomUserDetails currentUser) {
         return surveyService.getById(surveyId, currentUser.getId());
     }
 
@@ -48,7 +48,7 @@ public class SurveyController {
     @ResponseStatus(HttpStatus.CREATED)
     public SurveyResponseDto create(
             @Valid @RequestBody SurveyCreateDto createDto,
-            @AuthenticationPrincipal Account currentUser) {
+            @AuthenticationPrincipal CustomUserDetails currentUser) {
         return surveyService.create(currentUser.getId(), createDto);
     }
 
@@ -56,7 +56,7 @@ public class SurveyController {
     public SurveyResponseDto update(
             @PathVariable UUID surveyId,
             @Valid @RequestBody SurveyUpdateDto updateDto,
-            @AuthenticationPrincipal Account currentUser) {
+            @AuthenticationPrincipal CustomUserDetails currentUser) {
         return surveyService.update(surveyId, updateDto, currentUser.getId());
     }
 
@@ -64,7 +64,7 @@ public class SurveyController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(
             @PathVariable UUID surveyId,
-            @AuthenticationPrincipal Account currentUser) {
+            @AuthenticationPrincipal CustomUserDetails currentUser) {
         surveyService.delete(surveyId, currentUser.getId());
     }
 }
