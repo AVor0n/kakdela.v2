@@ -17,18 +17,18 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/answer-option")
+@RequestMapping("/api/answer-options")
 @RequiredArgsConstructor
 public class AnswerOptionController {
 
     private final AnswerOptionService answerOptionService;
 
-    @GetMapping("../question/{questionId}/answer-option")
+    @GetMapping("../questions/{questionId}/answer-options")
     public List<AnswerOptionResponseDto> getAllByQuestionId(@PathVariable UUID questionId) {
         return answerOptionService.getAllByQuestionId(questionId);
     }
 
-    @PostMapping("../question/{questionId}/answer-option")
+    @PostMapping("../questions/{questionId}/answer-options")
     @ResponseStatus(HttpStatus.CREATED)
     public AnswerOptionResponseDto create(
             @PathVariable UUID questionId,

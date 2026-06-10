@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/survey")
+@RequestMapping("/api/surveys")
 @RequiredArgsConstructor
 public class SurveyController {
 
@@ -27,12 +27,12 @@ public class SurveyController {
         return surveyService.getAllPublished();
     }
 
-    @GetMapping("/me")
+    @GetMapping("../accounts/me/surveys")
     public List<SurveyShortResponseDto> getMySurveys(@AuthenticationPrincipal Account currentUser) {
         return surveyService.getMySurveys(currentUser.getId());
     }
 
-    @GetMapping("/author/{authorId}")
+    @GetMapping("../accounts/{authorId}/surveys")
     public List<SurveyShortResponseDto> getByAuthor(@PathVariable UUID authorId) {
         return surveyService.getAllByAuthorId(authorId);
     }
