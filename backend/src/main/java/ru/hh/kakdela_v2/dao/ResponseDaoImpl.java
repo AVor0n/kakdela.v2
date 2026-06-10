@@ -2,12 +2,14 @@ package ru.hh.kakdela_v2.dao;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.springframework.stereotype.Repository;
 import ru.hh.kakdela_v2.model.Response;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Repository
 public class ResponseDaoImpl implements ResponseDao {
 
   private final SessionFactory sessionFactory;
@@ -35,10 +37,7 @@ public class ResponseDaoImpl implements ResponseDao {
   @Override
   public List<Response> findAllBySurveyId(UUID surveyId) {
     return session()
-            .createQuery("""
-                    FROM Response r
-                    WHERE r.survey.id = :surveyId
-                    """, Response.class)
+            .createQuery("FROM Response r WHERE r.survey.id = :surveyId", Response.class)
             .setParameter("surveyId", surveyId)
             .getResultList();
   }
@@ -46,10 +45,7 @@ public class ResponseDaoImpl implements ResponseDao {
   @Override
   public List<Response> findAllByAccountId(UUID accountId) {
     return session()
-            .createQuery("""
-                    FROM Response r
-                    WHERE r.account.id = :accountId
-                    """, Response.class)
+            .createQuery("FROM Response r WHERE r.account.id = :accountId", Response.class)
             .setParameter("accountId", accountId)
             .getResultList();
   }

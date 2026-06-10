@@ -2,12 +2,14 @@ package ru.hh.kakdela_v2.dao;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.springframework.stereotype.Repository;
 import ru.hh.kakdela_v2.model.Permission;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Repository
 public class PermissionDaoImpl implements PermissionDao {
 
   private final SessionFactory sessionFactory;
@@ -26,12 +28,21 @@ public class PermissionDaoImpl implements PermissionDao {
   }
 
   @Override
-  public List<Permission> findAllBySurveyId(UUID surveyId) {
+  public Optional<Permission> findBySurveyIdAndAccountId(UUID surveyId, UUID accountId) {
     return session()
             .createQuery("""
                     FROM Permission p
-                    WHERE p.id.surveyId = :surveyId
+                    WHERE p.id.surveyId = :surveyId AND p.id.accountId = :accountId
                     """, Permission.class)
+            .setParameter("surveyId", surveyId)
+            .setParameter("accountId", accountId)
+            .uniqueResultOptional();
+  }
+
+  @Override
+  public List<Permission> findAllBySurveyId(UUID surveyId) {
+    return session()
+            .createQuery("FROM Permission p WHERE p.id.surveyId = :surveyId", Permission.class)
             .setParameter("surveyId", surveyId)
             .getResultList();
   }
@@ -39,10 +50,7 @@ public class PermissionDaoImpl implements PermissionDao {
   @Override
   public List<Permission> findAllByAccountId(UUID accountId) {
     return session()
-            .createQuery("""
-                    FROM Permission p
-                    WHERE p.id.accountId = :accountId
-                    """, Permission.class)
+            .createQuery("FROM Permission p WHERE p.id.accountId = :accountId", Permission.class)
             .setParameter("accountId", accountId)
             .getResultList();
   }
@@ -56,6 +64,20 @@ public class PermissionDaoImpl implements PermissionDao {
                     """, Long.class)
             .setParameter("accountId", id.getAccountId())
             .setParameter("surveyId", id.getSurveyId())
+            .uniqueResultOptional()
+            .map(count -> count > 0)
+            .orElse(false);
+  }
+
+  @Override
+  public boolean existsBySurveyIdAndAccountId(UUID surveyId, UUID accountId) {
+    return session()
+            .createQuery("""
+                    SELECT COUNT(p) FROM Permission p
+                    WHERE p.id.surveyId = :surveyId AND p.id.accountId = :accountId
+                    """, Long.class)
+            .setParameter("surveyId", surveyId)
+            .setParameter("accountId", accountId)
             .uniqueResultOptional()
             .map(count -> count > 0)
             .orElse(false);
@@ -77,5 +99,17 @@ public class PermissionDaoImpl implements PermissionDao {
     if (permission != null) {
       session().remove(permission);
     }
+  }
+
+  @Override
+  public void deleteBySurveyIdAndAccountId(UUID surveyId, UUID accountId) {
+    session()
+            .createMutationQuery("""
+                    DELETE FROM Permission p
+                    WHERE p.id.surveyId = :surveyId AND p.id.accountId = :accountId
+                    """)
+            .setParameter("surveyId", surveyId)
+            .setParameter("accountId", accountId)
+            .executeUpdate();
   }
 }

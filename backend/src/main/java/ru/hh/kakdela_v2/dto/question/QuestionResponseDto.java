@@ -4,6 +4,7 @@ import lombok.Getter;
 import ru.hh.kakdela_v2.dto.answer_option.AnswerOptionResponseDto;
 import ru.hh.kakdela_v2.model.Question;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
@@ -27,11 +28,14 @@ public class QuestionResponseDto {
     this.title = question.getTitle();
     this.description = question.getDescription();
     this.type = question.getType().name();
-    this.answerOptionOrder = question.getAnswerOptionOrder();
+    this.answerOptionOrder = question.getAnswerOptionOrder() != null
+            ? question.getAnswerOptionOrder().name()
+            : null;
     this.isMandatory = question.isMandatory();
     this.isVisible = question.isVisible();
     this.condition = question.getCondition();
     this.answerOptions = question.getAnswerOptions().stream()
+            .sorted(Comparator.comparingInt(a -> a.getSerialNumber()))
             .map(AnswerOptionResponseDto::new)
             .toList();
   }

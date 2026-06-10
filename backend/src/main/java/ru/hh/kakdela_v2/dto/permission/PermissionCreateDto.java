@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
+import ru.hh.kakdela_v2.model.Permission;
+
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -17,7 +19,7 @@ public class PermissionCreateDto {
   private UUID accountId;
 
   @NotBlank(message = "Роль обязательна")
-  private String role;   // "EDITOR" или "ANALYST"
+  private Permission.SurveyRole role;
 
   private boolean doNotify;
 }

@@ -2,12 +2,14 @@ package ru.hh.kakdela_v2.dao;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.springframework.stereotype.Repository;
 import ru.hh.kakdela_v2.model.Survey;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Repository
 public class SurveyDaoImpl implements SurveyDao {
 
   private final SessionFactory sessionFactory;
@@ -22,17 +24,28 @@ public class SurveyDaoImpl implements SurveyDao {
 
   @Override
   public Optional<Survey> findById(UUID id) {
-    return session()
+    Optional<Survey> result = session()
             .createQuery("""
                     SELECT s FROM Survey s
                     LEFT JOIN FETCH s.pages p
-                    LEFT JOIN FETCH p.questions q
-                    LEFT JOIN FETCH q.answerOptions
+                    LEFT JOIN FETCH p.questions
                     LEFT JOIN FETCH s.closingPage
                     WHERE s.id = :id
                     """, Survey.class)
             .setParameter("id", id)
             .uniqueResultOptional();
+    result.ifPresent(survey ->
+            session().createQuery("""
+                            SELECT s FROM Survey s
+                            LEFT JOIN FETCH s.pages p
+                            LEFT JOIN FETCH p.questions q
+                            LEFT JOIN FETCH q.answerOptions
+                            WHERE s.id = :id
+                            """, Survey.class)
+                    .setParameter("id", id)
+                    .uniqueResultOptional()
+    );
+    return result;
   }
 
   @Override
