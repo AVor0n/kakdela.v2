@@ -14,9 +14,11 @@ public class CustomUserDetails extends org.springframework.security.core.userdet
 
   public CustomUserDetails(UUID id, String username, @Nullable String password, Collection<? extends GrantedAuthority> authorities) {
     super(username, password, authorities);
+    this.id = id;
   }
 
   public CustomUserDetails(UUID id, String username, @Nullable String password, boolean enabled, boolean accountNonExpired, boolean credentialsNonExpired, boolean accountNonLocked, Collection<? extends GrantedAuthority> authorities) {
     super(username, password, enabled, accountNonExpired, credentialsNonExpired, accountNonLocked, authorities);
+    this.id = id;
   }
 }
