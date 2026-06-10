@@ -38,10 +38,10 @@ public class Question {
     @Column(name = "serial_number", nullable = false)
     private Integer serialNumber;
 
-    @Column(name = "title", nullable = false, length = 200)
+    @Column(name = "title", length = 200, nullable = false)
     private String title;
 
-    @Column(name = "description", columnDefinition = "TEXT")
+    @Column(name = "description", length = 5000)
     private String description;
 
     @Column(name = "type", nullable = false)

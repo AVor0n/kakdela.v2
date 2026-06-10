@@ -41,10 +41,10 @@ public class SurveyPage {
     @Column(name = "serial_number", nullable = false)
     private Integer serialNumber;
 
-    @Column(name = "title", length = 150, nullable = false)
+    @Column(name = "title", length = 200, nullable = false)
     private String title;
 
-    @Column(name = "description", columnDefinition = "TEXT")
+    @Column(name = "description", length = 5000)
     private String description;
 
     @OneToMany(mappedBy = "surveyPage", cascade = CascadeType.ALL, orphanRemoval = true)
