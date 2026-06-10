@@ -15,23 +15,23 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/questions")
+@RequestMapping("/api")
 @RequiredArgsConstructor
 public class QuestionController {
 
     private final QuestionService questionService;
 
-    @GetMapping("../pages/{pageId}/questions")
+    @GetMapping("/pages/{pageId}/questions")
     public List<QuestionResponseDto> getAllByPageId(@PathVariable UUID pageId) {
         return questionService.getAllByPageId(pageId);
     }
 
-    @GetMapping("/{questionId}")
+    @GetMapping("/questions/{questionId}")
     public QuestionResponseDto getById(@PathVariable UUID questionId) {
         return questionService.getById(questionId);
     }
 
-    @PostMapping("../pages/{pageId}/questions")
+    @PostMapping("/pages/{pageId}/questions")
     @ResponseStatus(HttpStatus.CREATED)
     public QuestionResponseDto create(
             @PathVariable UUID pageId,
@@ -41,7 +41,7 @@ public class QuestionController {
         return questionService.create(pageId, createDto, currentUser.getId());
     }
 
-    @PutMapping("/{questionId}")
+    @PutMapping("/questions/{questionId}")
     public QuestionResponseDto update(
             @PathVariable UUID questionId,
             @Valid @RequestBody QuestionUpdateDto updateDto,
@@ -50,7 +50,7 @@ public class QuestionController {
         return questionService.update(questionId, updateDto, currentUser.getId());
     }
 
-    @DeleteMapping("/{questionId}")
+    @DeleteMapping("/questions/{questionId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(
             @PathVariable UUID questionId,

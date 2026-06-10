@@ -3,6 +3,7 @@ package ru.hh.kakdela_v2.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import ru.hh.kakdela_v2.dto.survey.SurveyCreateDto;
@@ -16,28 +17,28 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/surveys")
+@RequestMapping("/api")
 @RequiredArgsConstructor
 public class SurveyController {
 
     private final SurveyService surveyService;
 
-    @GetMapping("/public")
+    @GetMapping("/surveys/public")
     public List<SurveyShortResponseDto> getPublished() {
         return surveyService.getAllPublished();
     }
 
-    @GetMapping("../accounts/me/surveys")
+    @GetMapping("/accounts/me/surveys")
     public List<SurveyShortResponseDto> getMySurveys(@AuthenticationPrincipal CustomUserDetails currentUser) {
         return surveyService.getMySurveys(currentUser.getId());
     }
 
-    @GetMapping("../accounts/{authorId}/surveys")
+    @GetMapping("/accounts/{authorId}/surveys")
     public List<SurveyShortResponseDto> getByAuthor(@PathVariable UUID authorId) {
         return surveyService.getAllByAuthorId(authorId);
     }
 
-    @GetMapping("/{surveyId}")
+    @GetMapping("/surveys/{surveyId}")
     public SurveyResponseDto getById(
             @PathVariable UUID surveyId,
             @AuthenticationPrincipal CustomUserDetails currentUser) {
@@ -52,7 +53,7 @@ public class SurveyController {
         return surveyService.create(currentUser.getId(), createDto);
     }
 
-    @PutMapping("/{surveyId}")
+    @PutMapping("/surveys/{surveyId}")
     public SurveyResponseDto update(
             @PathVariable UUID surveyId,
             @Valid @RequestBody SurveyUpdateDto updateDto,
@@ -60,7 +61,7 @@ public class SurveyController {
         return surveyService.update(surveyId, updateDto, currentUser.getId());
     }
 
-    @DeleteMapping("/{surveyId}")
+    @DeleteMapping("/surveys/{surveyId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(
             @PathVariable UUID surveyId,

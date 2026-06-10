@@ -21,12 +21,12 @@ public class AnswerOptionController {
 
     private final AnswerOptionService answerOptionService;
 
-    @GetMapping("../questions/{questionId}/answer-options")
+    @GetMapping("/questions/{questionId}/answer-options")
     public List<AnswerOptionResponseDto> getAllByQuestionId(@PathVariable UUID questionId) {
         return answerOptionService.getAllByQuestionId(questionId);
     }
 
-    @PostMapping("../questions/{questionId}/answer-options")
+    @PostMapping("/questions/{questionId}/answer-options")
     @ResponseStatus(HttpStatus.CREATED)
     public AnswerOptionResponseDto create(
             @PathVariable UUID questionId,
@@ -36,7 +36,7 @@ public class AnswerOptionController {
         return answerOptionService.create(questionId, createDto, currentUser.getId());
     }
 
-    @PutMapping("/{optionId}")
+    @PutMapping("answer-options/{optionId}")
     public AnswerOptionResponseDto update(
             @PathVariable UUID optionId,
             @Valid @RequestBody AnswerOptionUpdateDto updateDto,
@@ -45,7 +45,7 @@ public class AnswerOptionController {
         return answerOptionService.update(optionId, updateDto, currentUser.getId());
     }
 
-    @DeleteMapping("/{optionId}")
+    @DeleteMapping("answer-options/{optionId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(
             @PathVariable UUID optionId,

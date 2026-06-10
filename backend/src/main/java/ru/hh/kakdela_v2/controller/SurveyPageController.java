@@ -15,23 +15,23 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/pages")
+@RequestMapping("/api")
 @RequiredArgsConstructor
 public class SurveyPageController {
 
     private final SurveyPageService surveyPageService;
 
-    @GetMapping("../surveys/{surveyId}/pages")
+    @GetMapping("/surveys/{surveyId}/pages")
     public List<SurveyPageResponseDto> getAllBySurveyId(@PathVariable UUID surveyId) {
         return surveyPageService.getAllBySurveyId(surveyId);
     }
 
-    @GetMapping("/{pageId}")
+    @GetMapping("/pages/{pageId}")
     public SurveyPageResponseDto getById(@PathVariable UUID pageId) {
         return surveyPageService.getById(pageId);
     }
 
-    @PostMapping("../surveys/{surveyId}/pages")
+    @PostMapping("/surveys/{surveyId}/pages")
     @ResponseStatus(HttpStatus.CREATED)
     public SurveyPageResponseDto create(
             @PathVariable UUID surveyId,
@@ -41,7 +41,7 @@ public class SurveyPageController {
         return surveyPageService.create(surveyId, createDto, currentUser.getId());
     }
 
-    @PutMapping("/{pageId}")
+    @PutMapping("/pages/{pageId}")
     public SurveyPageResponseDto update(
             @PathVariable UUID pageId,
             @Valid @RequestBody SurveyPageUpdateDto updateDto,
@@ -50,7 +50,7 @@ public class SurveyPageController {
         return surveyPageService.update(pageId, updateDto, currentUser.getId());
     }
 
-    @DeleteMapping("/{pageId}")
+    @DeleteMapping("/pages/{pageId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(
             @PathVariable UUID pageId,
