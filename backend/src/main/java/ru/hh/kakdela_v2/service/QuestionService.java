@@ -10,6 +10,7 @@ import ru.hh.kakdela_v2.dao.SurveyPageDao;
 import ru.hh.kakdela_v2.dto.question.QuestionCreateDto;
 import ru.hh.kakdela_v2.dto.question.QuestionResponseDto;
 import ru.hh.kakdela_v2.dto.question.QuestionUpdateDto;
+import ru.hh.kakdela_v2.model.Permission.SurveyRole;
 import ru.hh.kakdela_v2.model.Question;
 import ru.hh.kakdela_v2.model.SurveyPage;
 
@@ -21,6 +22,7 @@ import java.util.UUID;
 public class QuestionService {
 
   private final QuestionDao questionDao;
+  private final PermissionService permissionService;
   private final SurveyPageDao surveyPageDao;
 
   @Transactional(readOnly = true)

@@ -4,6 +4,7 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.stereotype.Repository;
 import ru.hh.kakdela_v2.model.Permission;
+import ru.hh.kakdela_v2.model.Permission.PermissionId;
 
 import java.util.List;
 import java.util.Optional;

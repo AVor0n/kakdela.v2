@@ -1,24 +1,27 @@
 package ru.hh.kakdela_v2.service;
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
-import ru.hh.kakdela_v2.dao.AccountDao;
+import lombok.RequiredArgsConstructor;
 import ru.hh.kakdela_v2.dao.PermissionDao;
 import ru.hh.kakdela_v2.dao.SurveyDao;
-import ru.hh.kakdela_v2.dto.permission.PermissionCreateDto;
+import ru.hh.kakdela_v2.dao.AccountDao;
+import ru.hh.kakdela_v2.dto.permission.PermissionRequestDto;
 import ru.hh.kakdela_v2.dto.permission.PermissionResponseDto;
-import ru.hh.kakdela_v2.dto.permission.PermissionUpdateDto;
-import ru.hh.kakdela_v2.model.Account;
+import ru.hh.kakdela_v2.dto.permission.PermissionsListResponseDto;
 import ru.hh.kakdela_v2.model.Permission;
 import ru.hh.kakdela_v2.model.Permission.PermissionId;
 import ru.hh.kakdela_v2.model.Permission.SurveyRole;
 import ru.hh.kakdela_v2.model.Survey;
+import ru.hh.kakdela_v2.model.Account;
+import ru.hh.kakdela_v2.util.TransactionHelper;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -138,5 +141,17 @@ public class PermissionService {
   public void delete(UUID surveyId, UUID accountId, UUID currentUserId) {
     checkOwnership(surveyId, currentUserId);
     permissionDao.deleteBySurveyIdAndAccountId(surveyId, accountId);
+  }
+  
+  @Transactional(readOnly = true)
+  public List<Survey> getAccessibleSurveys(UUID accountId) {
+    List<Survey> authored = surveyDao.findAllByAuthorId(accountId);
+    List<Survey> shared = permissionDao.findAllByAccountId(accountId).stream()
+      .map(Permission::getSurvey)
+      .toList();
+
+    return Stream.concat(authored.stream(), shared.stream())
+      .distinct()
+      .collect(Collectors.toList());
   }
 }

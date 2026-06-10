@@ -12,6 +12,7 @@ import java.util.UUID;
 public class SurveyPageResponseDto {
 
   private final UUID id;
+  private final UUID surveyId;
   private final Integer serialNumber;
   private final String title;
   private final String description;
@@ -19,6 +20,7 @@ public class SurveyPageResponseDto {
 
   public SurveyPageResponseDto(SurveyPage page) {
     this.id = page.getId();
+    this.surveyId = page.getSurvey().getId();
     this.serialNumber = page.getSerialNumber();
     this.title = page.getTitle();
     this.description = page.getDescription();
