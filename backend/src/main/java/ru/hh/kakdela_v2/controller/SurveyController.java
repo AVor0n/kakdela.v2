@@ -45,7 +45,7 @@ public class SurveyController {
         return surveyService.getById(surveyId, currentUser.getId());
     }
 
-    @PostMapping
+    @PostMapping("/surveys")
     @ResponseStatus(HttpStatus.CREATED)
     public SurveyResponseDto create(
             @Valid @RequestBody SurveyCreateDto createDto,
