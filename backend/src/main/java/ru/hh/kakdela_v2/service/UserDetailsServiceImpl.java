@@ -7,6 +7,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import ru.hh.kakdela_v2.dao.AccountDao;
 import ru.hh.kakdela_v2.model.Account;
+import ru.hh.kakdela_v2.util.CustomUserDetails;
 
 import java.util.HashSet;
 
@@ -20,7 +21,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
   public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
     Account account = accountDao.findByLogin(username)
         .orElseThrow(() -> new UsernameNotFoundException("Аккаунт не найден: login=" + username));
-    return new org.springframework.security.core.userdetails.User(account.getLogin(), account.getPasswordHash(), new HashSet<>());
+    return new CustomUserDetails(account.getId(), account.getLogin(), account.getPasswordHash(), new HashSet<>());
   }
 
 }
