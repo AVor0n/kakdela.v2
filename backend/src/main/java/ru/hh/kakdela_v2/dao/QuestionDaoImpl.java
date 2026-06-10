@@ -2,12 +2,14 @@ package ru.hh.kakdela_v2.dao;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.springframework.stereotype.Repository;
 import ru.hh.kakdela_v2.model.Question;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Repository
 public class QuestionDaoImpl implements QuestionDao {
 
   private final SessionFactory sessionFactory;
