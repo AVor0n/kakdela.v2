@@ -48,7 +48,7 @@ export function AppRouter() {
                                 }
                             >
                                 <Route path='settings' element={<div>Settings</div>} />
-                                <Route path='questions' element={<div>Questions</div>} />
+                                <Route path='questions' element={<SurveyModify />} />
                                 <Route path='answers' element={<div>Answers</div>} />
                             </Route>
                             <Route

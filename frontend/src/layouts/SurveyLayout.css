@@ -1,0 +1,12 @@
+.header__surveys_actions {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    align-items: center;
+    padding: 20px;
+}
+
+.navbar {
+    display: flex;
+    gap: 20px;
+    justify-content: end;
+}

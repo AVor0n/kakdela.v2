@@ -29,11 +29,7 @@ export function SurveyList() {
             } catch (requestError) {
                 const status = axios.isAxiosError(requestError) ? requestError.response?.status : undefined;
 
-                if (
-                    isMounted &&
-                    status !== 401 &&
-                    status !== 403
-                ) {
+                if (isMounted && status !== 401 && status !== 403) {
                     setError('Не удалось загрузить список опросов');
                 }
             } finally {
@@ -61,20 +57,20 @@ export function SurveyList() {
     return (
         <div className={styles.page}>
             <div className={styles.content}>
-                <Title Element="h1" size="large">
+                <Title Element='h1' size='large'>
                     Список опросов
                 </Title>
 
                 <Box p={24} className={styles.card}>
                     {isLoading ? (
                         <div className={styles.message}>
-                            <Text typography="paragraph-2-regular" style="secondary">
+                            <Text typography='paragraph-2-regular' style='secondary'>
                                 Загружаем опросы
                             </Text>
                         </div>
                     ) : error ? (
                         <div className={styles.message}>
-                            <Text typography="paragraph-2-regular" style="negative">
+                            <Text typography='paragraph-2-regular' style='negative'>
                                 {error}
                             </Text>
                         </div>
