@@ -13,7 +13,7 @@ import java.util.HashSet;
 
 @RequiredArgsConstructor
 @Service(value = "userDetailsService")
-public class UserDetailsServiceImpl implements UserDetailsService {
+public class CustomUserDetailsService implements UserDetailsService {
 
   private final AccountDao accountDao;
 
