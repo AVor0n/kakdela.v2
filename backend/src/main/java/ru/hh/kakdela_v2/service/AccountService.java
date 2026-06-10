@@ -18,17 +18,18 @@ import java.util.UUID;
 
 @RequiredArgsConstructor
 @Service
-@Transactional
 public class AccountService {
 
   private final AccountDao accountDao;
 
+  @Transactional(readOnly = true)
   public AccountResponseDto getById(UUID id) {
     Account account = accountDao.findById(id)
         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Аккаунт не найден: " + id));
     return new AccountResponseDto(account);
   }
 
+  @Transactional
   public AccountResponseDto create(AccountCreateDto dto) {
     if (accountDao.existsByLogin(dto.getLogin())) {
       throw new ResponseStatusException(HttpStatus.CONFLICT, "Такой логин уже используется: " + dto.getLogin());
@@ -47,6 +48,7 @@ public class AccountService {
     return new AccountResponseDto(account);
   }
 
+  @Transactional
   public AccountResponseDto update(UUID id, AccountUpdateDto dto) {
     Account account = accountDao.findById(id)
         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Аккаунт не найден: " + id));
@@ -69,6 +71,7 @@ public class AccountService {
     return new AccountResponseDto(account);
   }
 
+  @Transactional
   public void delete(UUID id) {
     Account account = accountDao.findById(id)
         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Аккаунт не найден: " + id));
