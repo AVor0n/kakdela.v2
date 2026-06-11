@@ -18,5 +18,5 @@ public interface SurveyDao {
 
   void update(Survey survey);
 
-  void delete(UUID id);
+  void delete(Survey survey);
 }

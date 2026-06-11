@@ -1,7 +1,7 @@
 package ru.hh.kakdela_v2.dao;
 
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Repository;
 import ru.hh.kakdela_v2.model.SurveyPage;
 
@@ -12,24 +12,17 @@ import java.util.UUID;
 @Repository
 public class SurveyPageDaoImpl implements SurveyPageDao {
 
-  private final SessionFactory sessionFactory;
-
-  public SurveyPageDaoImpl(SessionFactory sessionFactory) {
-    this.sessionFactory = sessionFactory;
-  }
-
-  private Session session() {
-    return sessionFactory.getCurrentSession();
-  }
+  @PersistenceContext
+  private EntityManager entityManager;
 
   @Override
   public Optional<SurveyPage> findById(UUID id) {
-    return Optional.ofNullable(session().find(SurveyPage.class, id));
+    return Optional.ofNullable(entityManager.find(SurveyPage.class, id));
   }
 
   @Override
   public List<SurveyPage> findAllBySurveyId(UUID surveyId) {
-    return session()
+    return entityManager
             .createQuery("""
                     FROM SurveyPage p
                     WHERE p.survey.id = :surveyId
@@ -41,32 +34,29 @@ public class SurveyPageDaoImpl implements SurveyPageDao {
 
   @Override
   public void save(SurveyPage page) {
-    session().persist(page);
+    entityManager.persist(page);
   }
 
   @Override
   public void update(SurveyPage page) {
-    session().merge(page);
+    entityManager.merge(page);
   }
 
   @Override
-  public void delete(UUID id) {
-    SurveyPage page = session().find(SurveyPage.class, id);
-    if (page != null) {
-      session().remove(page);
-    }
+  public void delete(SurveyPage page) {
+    entityManager.remove(page);
   }
 
   @Override
   public boolean existsBySurveyIdAndSerialNumber(UUID surveyId, Integer serialNumber) {
-    return session()
-            .createQuery("""
-                    SELECT COUNT(p) FROM SurveyPage p
-                    WHERE p.survey.id = :surveyId AND p.serialNumber = :serialNumber
-                    """, Long.class)
-            .setParameter("surveyId", surveyId)
-            .setParameter("serialNumber", serialNumber)
-            .uniqueResultOptional()
+    return Optional.of(entityManager
+                    .createQuery("""
+                            SELECT COUNT(p) FROM SurveyPage p
+                            WHERE p.survey.id = :surveyId AND p.serialNumber = :serialNumber
+                            """, Long.class)
+                    .setParameter("surveyId", surveyId)
+                    .setParameter("serialNumber", serialNumber)
+                    .getSingleResult())
             .map(count -> count > 0)
             .orElse(false);
   }

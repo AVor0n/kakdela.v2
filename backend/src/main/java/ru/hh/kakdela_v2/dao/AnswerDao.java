@@ -16,5 +16,5 @@ public interface AnswerDao {
 
   void update(Answer answer);
 
-  void delete(Answer.AnswerId id);
+  void delete(Answer answer);
 }

@@ -79,6 +79,8 @@ public class SurveyPageService {
 
   @Transactional
   public void delete(UUID id) {
-    surveyPageDao.delete(id);
+    SurveyPage page = surveyPageDao.findById(id)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Страница не найдена: " + id));
+    surveyPageDao.delete(page);
   }
 }

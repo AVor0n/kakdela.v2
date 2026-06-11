@@ -90,6 +90,8 @@ public class SurveyService {
 
   @Transactional
   public void delete(UUID id) {
-    surveyDao.delete(id);
+    Survey survey = surveyDao.findById(id)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Опрос не найден: " + id));
+    surveyDao.delete(survey);
   }
 }

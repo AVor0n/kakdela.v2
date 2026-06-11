@@ -1,7 +1,7 @@
 package ru.hh.kakdela_v2.dao;
 
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Repository;
 import ru.hh.kakdela_v2.model.AnswerOption;
 
@@ -12,24 +12,17 @@ import java.util.UUID;
 @Repository
 public class AnswerOptionDaoImpl implements AnswerOptionDao {
 
-  private final SessionFactory sessionFactory;
-
-  public AnswerOptionDaoImpl(SessionFactory sessionFactory) {
-    this.sessionFactory = sessionFactory;
-  }
-
-  private Session session() {
-    return sessionFactory.getCurrentSession();
-  }
+  @PersistenceContext
+  private EntityManager entityManager;
 
   @Override
   public Optional<AnswerOption> findById(UUID id) {
-    return Optional.ofNullable(session().find(AnswerOption.class, id));
+    return Optional.ofNullable(entityManager.find(AnswerOption.class, id));
   }
 
   @Override
   public List<AnswerOption> findAllByQuestionId(UUID questionId) {
-    return session()
+    return entityManager
             .createQuery("""
                     FROM AnswerOption o
                     WHERE o.question.id = :questionId
@@ -41,19 +34,16 @@ public class AnswerOptionDaoImpl implements AnswerOptionDao {
 
   @Override
   public void save(AnswerOption option) {
-    session().persist(option);
+    entityManager.persist(option);
   }
 
   @Override
   public void update(AnswerOption option) {
-    session().merge(option);
+    entityManager.merge(option);
   }
 
   @Override
-  public void delete(UUID id) {
-    AnswerOption option = session().find(AnswerOption.class, id);
-    if (option != null) {
-      session().remove(option);
-    }
+  public void delete(AnswerOption option) {
+    entityManager.remove(option);
   }
 }

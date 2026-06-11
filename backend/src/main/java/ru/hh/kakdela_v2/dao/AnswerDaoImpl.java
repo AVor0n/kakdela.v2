@@ -1,7 +1,7 @@
 package ru.hh.kakdela_v2.dao;
 
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Repository;
 import ru.hh.kakdela_v2.model.Answer;
 
@@ -12,24 +12,17 @@ import java.util.UUID;
 @Repository
 public class AnswerDaoImpl implements AnswerDao {
 
-  private final SessionFactory sessionFactory;
-
-  public AnswerDaoImpl(SessionFactory sessionFactory) {
-    this.sessionFactory = sessionFactory;
-  }
-
-  private Session session() {
-    return sessionFactory.getCurrentSession();
-  }
+  @PersistenceContext
+  private EntityManager entityManager;
 
   @Override
   public Optional<Answer> findById(Answer.AnswerId id) {
-    return Optional.ofNullable(session().find(Answer.class, id));
+    return Optional.ofNullable(entityManager.find(Answer.class, id));
   }
 
   @Override
   public List<Answer> findAllByResponseId(UUID responseId) {
-    return session()
+    return entityManager
             .createQuery("FROM Answer a WHERE a.id.responseId = :responseId", Answer.class)
             .setParameter("responseId", responseId)
             .getResultList();
@@ -37,19 +30,16 @@ public class AnswerDaoImpl implements AnswerDao {
 
   @Override
   public void save(Answer answer) {
-    session().persist(answer);
+    entityManager.persist(answer);
   }
 
   @Override
   public void update(Answer answer) {
-    session().merge(answer);
+    entityManager.merge(answer);
   }
 
   @Override
-  public void delete(Answer.AnswerId id) {
-    Answer answer = session().find(Answer.class, id);
-    if (answer != null) {
-      session().remove(answer);
-    }
+  public void delete(Answer answer) {
+    entityManager.remove(answer);
   }
 }

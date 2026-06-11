@@ -1,10 +1,10 @@
 package ru.hh.kakdela_v2.dao;
 
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Repository;
 import ru.hh.kakdela_v2.model.Permission;
-import ru.hh.kakdela_v2.model.Permission.PermissionId;
 
 import java.util.List;
 import java.util.Optional;
@@ -13,36 +13,33 @@ import java.util.UUID;
 @Repository
 public class PermissionDaoImpl implements PermissionDao {
 
-  private final SessionFactory sessionFactory;
-
-  public PermissionDaoImpl(SessionFactory sessionFactory) {
-    this.sessionFactory = sessionFactory;
-  }
-
-  private Session session() {
-    return sessionFactory.getCurrentSession();
-  }
+  @PersistenceContext
+  private EntityManager entityManager;
 
   @Override
   public Optional<Permission> findById(Permission.PermissionId id) {
-    return Optional.ofNullable(session().find(Permission.class, id));
+    return Optional.ofNullable(entityManager.find(Permission.class, id));
   }
 
   @Override
   public Optional<Permission> findBySurveyIdAndAccountId(UUID surveyId, UUID accountId) {
-    return session()
-            .createQuery("""
-                    FROM Permission p
-                    WHERE p.id.surveyId = :surveyId AND p.id.accountId = :accountId
-                    """, Permission.class)
-            .setParameter("surveyId", surveyId)
-            .setParameter("accountId", accountId)
-            .uniqueResultOptional();
+    try {
+      return Optional.of(entityManager
+              .createQuery("""
+                      FROM Permission p
+                      WHERE p.id.surveyId = :surveyId AND p.id.accountId = :accountId
+                      """, Permission.class)
+              .setParameter("surveyId", surveyId)
+              .setParameter("accountId", accountId)
+              .getSingleResult());
+    } catch (NoResultException e) {
+      return Optional.empty();
+    }
   }
 
   @Override
   public List<Permission> findAllBySurveyId(UUID surveyId) {
-    return session()
+    return entityManager
             .createQuery("FROM Permission p WHERE p.id.surveyId = :surveyId", Permission.class)
             .setParameter("surveyId", surveyId)
             .getResultList();
@@ -50,7 +47,7 @@ public class PermissionDaoImpl implements PermissionDao {
 
   @Override
   public List<Permission> findAllByAccountId(UUID accountId) {
-    return session()
+    return entityManager
             .createQuery("FROM Permission p WHERE p.id.accountId = :accountId", Permission.class)
             .setParameter("accountId", accountId)
             .getResultList();
@@ -58,54 +55,51 @@ public class PermissionDaoImpl implements PermissionDao {
 
   @Override
   public boolean existsById(Permission.PermissionId id) {
-    return session()
-            .createQuery("""
-                    SELECT COUNT(p) FROM Permission p
-                    WHERE p.id.accountId = :accountId AND p.id.surveyId = :surveyId
-                    """, Long.class)
-            .setParameter("accountId", id.getAccountId())
-            .setParameter("surveyId", id.getSurveyId())
-            .uniqueResultOptional()
+    return Optional.of(entityManager
+                    .createQuery("""
+                            SELECT COUNT(p) FROM Permission p
+                            WHERE p.id.accountId = :accountId AND p.id.surveyId = :surveyId
+                            """, Long.class)
+                    .setParameter("accountId", id.getAccountId())
+                    .setParameter("surveyId", id.getSurveyId())
+                    .getSingleResult())
             .map(count -> count > 0)
             .orElse(false);
   }
 
   @Override
   public boolean existsBySurveyIdAndAccountId(UUID surveyId, UUID accountId) {
-    return session()
-            .createQuery("""
-                    SELECT COUNT(p) FROM Permission p
-                    WHERE p.id.surveyId = :surveyId AND p.id.accountId = :accountId
-                    """, Long.class)
-            .setParameter("surveyId", surveyId)
-            .setParameter("accountId", accountId)
-            .uniqueResultOptional()
+    return Optional.of(entityManager
+                    .createQuery("""
+                            SELECT COUNT(p) FROM Permission p
+                            WHERE p.id.surveyId = :surveyId AND p.id.accountId = :accountId
+                            """, Long.class)
+                    .setParameter("surveyId", surveyId)
+                    .setParameter("accountId", accountId)
+                    .getSingleResult())
             .map(count -> count > 0)
             .orElse(false);
   }
 
   @Override
   public void save(Permission permission) {
-    session().persist(permission);
+    entityManager.persist(permission);
   }
 
   @Override
   public void update(Permission permission) {
-    session().merge(permission);
+    entityManager.merge(permission);
   }
 
   @Override
-  public void delete(Permission.PermissionId id) {
-    Permission permission = session().find(Permission.class, id);
-    if (permission != null) {
-      session().remove(permission);
-    }
+  public void delete(Permission permission) {
+    entityManager.remove(permission);
   }
 
   @Override
   public void deleteBySurveyIdAndAccountId(UUID surveyId, UUID accountId) {
-    session()
-            .createMutationQuery("""
+    entityManager
+            .createQuery("""
                     DELETE FROM Permission p
                     WHERE p.id.surveyId = :surveyId AND p.id.accountId = :accountId
                     """)

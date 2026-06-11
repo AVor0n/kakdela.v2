@@ -49,22 +49,24 @@ public class AnswerOptionService {
     answerOptionDao.save(option);
     return new AnswerOptionResponseDto(option);
   }
-  
+
   @Transactional
   public AnswerOptionResponseDto update(UUID id, AnswerOptionUpdateDto dto, UUID accountId) {
-      AnswerOption option = answerOptionDao.findById(id)
-              .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Вопрос не найден: " + id));
+    AnswerOption option = answerOptionDao.findById(id)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Вопрос не найден: " + id));
 
-      permissionService.checkAccess(option.getQuestion().getSurveyPage().getSurvey().getId(), accountId, SurveyRole.EDITOR);
+    permissionService.checkAccess(option.getQuestion().getSurveyPage().getSurvey().getId(), accountId, SurveyRole.EDITOR);
 
-      if (dto.getSerialNumber() != null) option.setSerialNumber(dto.getSerialNumber());
-      if (dto.getAnswerOptionText() != null) option.setAnswerOptionText(dto.getAnswerOptionText());
-      answerOptionDao.update(option);
-      return new AnswerOptionResponseDto(option);
+    if (dto.getSerialNumber() != null) option.setSerialNumber(dto.getSerialNumber());
+    if (dto.getAnswerOptionText() != null) option.setAnswerOptionText(dto.getAnswerOptionText());
+    answerOptionDao.update(option);
+    return new AnswerOptionResponseDto(option);
   }
 
   @Transactional
   public void delete(UUID id) {
-    answerOptionDao.delete(id);
+    AnswerOption option = answerOptionDao.findById(id)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Вопрос не найден: " + id));
+    answerOptionDao.delete(option);
   }
 }

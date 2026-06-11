@@ -89,6 +89,8 @@ public class QuestionService {
 
   @Transactional
   public void delete(UUID id) {
-    questionDao.delete(id);
+    Question question = questionDao.findById(id)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Вопрос не найден: " + id));
+    questionDao.delete(question);
   }
 }
