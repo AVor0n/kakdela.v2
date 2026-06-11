@@ -44,7 +44,7 @@ CREATE TABLE question (
     title varchar(200) NOT NULL,
     description text,
     type varchar(255) NOT NULL,
-    answer_option_order text NOT NULL,
+    answer_option_order text,
     is_mandatory bool NOT NULL,
     is_visible bool NOT NULL,
     condition text

@@ -48,7 +48,7 @@ public class Question {
     @Enumerated(EnumType.STRING)
     private QuestionType type;
 
-    @Column(name = "answer_option_order", nullable = false, columnDefinition = "TEXT")
+    @Column(name = "answer_option_order", columnDefinition = "TEXT")
     private String answerOptionOrder;
 
     @Column(name = "is_mandatory", nullable = false)
