@@ -9,6 +9,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
+import ru.hh.kakdela_v2.model.Question;
+
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -23,8 +25,8 @@ public class QuestionCreateDto {
   @Size(max = 5000, message = "Описание не может быть длиннее 5000 символов")
   private String description;
   @NotBlank(message = "Тип вопроса обязателен")
-  private String type;
-  private String answerOptionOrder;
+  private Question.QuestionType type;
+  private Question.AnswerOptionOrder answerOptionOrder;
   private boolean isMandatory;
   private boolean isVisible;
   private String condition;

@@ -4,6 +4,7 @@ import lombok.Getter;
 import ru.hh.kakdela_v2.dto.question.QuestionResponseDto;
 import ru.hh.kakdela_v2.model.SurveyPage;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
@@ -24,6 +25,7 @@ public class SurveyPageResponseDto {
     this.title = page.getTitle();
     this.description = page.getDescription();
     this.questions = page.getQuestions().stream()
+            .sorted(Comparator.comparingInt(q -> q.getSerialNumber()))
             .map(QuestionResponseDto::new)
             .toList();
   }

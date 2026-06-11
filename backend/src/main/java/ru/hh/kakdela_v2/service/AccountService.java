@@ -25,7 +25,7 @@ public class AccountService {
 
   public AccountResponseDto getById(UUID id) {
     Account account = accountDao.findById(id)
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Аккаунт не найден: " + id));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Аккаунт не найден: " + id));
     return new AccountResponseDto(account);
   }
 
@@ -49,7 +49,7 @@ public class AccountService {
 
   public AccountResponseDto update(UUID id, AccountUpdateDto dto) {
     Account account = accountDao.findById(id)
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Аккаунт не найден: " + id));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Аккаунт не найден: " + id));
 
     if (dto.getLogin() != null) {
       if (accountDao.existsByLogin(dto.getLogin())) {
@@ -71,7 +71,7 @@ public class AccountService {
 
   public void delete(UUID id) {
     Account account = accountDao.findById(id)
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Аккаунт не найден: " + id));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Аккаунт не найден: " + id));
     accountDao.delete(account);
   }
 }

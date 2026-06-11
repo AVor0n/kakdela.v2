@@ -54,16 +54,16 @@ public class AccountDaoImpl implements AccountDao {
   }
 
   @Override
-  public void delete(Account account)  {
+  public void delete(Account account) {
     entityManager.remove(account);
   }
 
   @Override
   public boolean existsByLogin(String login) {
     return Optional.ofNullable(entityManager
-            .createQuery("SELECT COUNT(a) FROM Account a WHERE a.login = :login", Long.class)
-            .setParameter("login", login)
-            .getSingleResult())
+                    .createQuery("SELECT COUNT(a) FROM Account a WHERE a.login = :login", Long.class)
+                    .setParameter("login", login)
+                    .getSingleResult())
             .map(count -> count > 0)
             .orElse(false);
   }
@@ -71,9 +71,9 @@ public class AccountDaoImpl implements AccountDao {
   @Override
   public boolean existsByEmail(String email) {
     return Optional.ofNullable(entityManager
-            .createQuery("SELECT COUNT(a) FROM Account a WHERE a.email = :email", Long.class)
-            .setParameter("email", email)
-            .getSingleResult())
+                    .createQuery("SELECT COUNT(a) FROM Account a WHERE a.email = :email", Long.class)
+                    .setParameter("email", email)
+                    .getSingleResult())
             .map(count -> count > 0)
             .orElse(false);
   }

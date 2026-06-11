@@ -24,17 +24,7 @@ public class SurveyDaoImpl implements SurveyDao {
 
   @Override
   public Optional<Survey> findById(UUID id) {
-    return session()
-            .createQuery("""
-                    SELECT s FROM Survey s
-                    LEFT JOIN FETCH s.pages p
-                    LEFT JOIN FETCH p.questions q
-                    LEFT JOIN FETCH q.answerOptions
-                    LEFT JOIN FETCH s.closingPage
-                    WHERE s.id = :id
-                    """, Survey.class)
-            .setParameter("id", id)
-            .uniqueResultOptional();
+    return Optional.ofNullable(session().find(Survey.class, id))
   }
 
   @Override
