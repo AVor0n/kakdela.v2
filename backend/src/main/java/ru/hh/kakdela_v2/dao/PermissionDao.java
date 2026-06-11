@@ -9,23 +9,23 @@ import java.util.UUID;
 
 public interface PermissionDao {
 
-    Optional<Permission> findById(PermissionId id);
+  Optional<Permission> findById(Permission.PermissionId id);
 
-    Optional<Permission> findBySurveyIdAndAccountId(UUID surveyId, UUID accountId);
+  Optional<Permission> findBySurveyIdAndAccountId(UUID surveyId, UUID accountId);
 
-    List<Permission> findAllBySurveyId(UUID surveyId);
+  List<Permission> findAllBySurveyId(UUID surveyId);
 
-    List<Permission> findAllByAccountId(UUID accountId);
+  List<Permission> findAllByAccountId(UUID accountId);
 
-    List<Permission> findAll();
+  boolean existsById(Permission.PermissionId id);
 
-    void save(Permission permission);
+  boolean existsBySurveyIdAndAccountId(UUID surveyId, UUID accountId);
 
-    void update(Permission permission);
+  void save(Permission permission);
 
-    void delete(PermissionId id);
+  void update(Permission permission);
 
-    void deleteBySurveyIdAndAccountId(UUID surveyId, UUID accountId);
+  void delete(Permission.PermissionId id);
 
-    boolean existsBySurveyIdAndAccountId(UUID surveyId, UUID accountId);
+  void deleteBySurveyIdAndAccountId(UUID surveyId, UUID accountId);
 }

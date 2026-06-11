@@ -8,8 +8,6 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -28,18 +26,18 @@ import java.util.UUID;
 )
 public class SurveyPage {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "id", updatable = false, nullable = false)
-    private UUID id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.UUID)
+  @Column(name = "id", updatable = false, nullable = false)
+  private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "survey_id", nullable = false)
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    private Survey survey;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "survey_id", nullable = false)
+  @OnDelete(action = OnDeleteAction.CASCADE)
+  private Survey survey;
 
-    @Column(name = "serial_number", nullable = false)
-    private Integer serialNumber;
+  @Column(name = "serial_number", nullable = false)
+  private Integer serialNumber;
 
     @Column(name = "title", length = 200, nullable = false)
     private String title;
