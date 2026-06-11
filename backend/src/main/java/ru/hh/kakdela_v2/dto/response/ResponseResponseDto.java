@@ -1,6 +1,7 @@
 package ru.hh.kakdela_v2.dto.response;
 
 import lombok.Getter;
+import ru.hh.kakdela_v2.dto.answer.AnswerResponseDto;
 import ru.hh.kakdela_v2.model.Response;
 
 import java.time.Instant;
