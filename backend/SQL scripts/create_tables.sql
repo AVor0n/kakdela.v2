@@ -11,7 +11,7 @@ CREATE TABLE survey (
     id uuid PRIMARY KEY,
     author_id uuid REFERENCES account (id) ON DELETE CASCADE NOT NULL,
     title varchar(200) NOT NULL,
-    description text,
+    description varchar(5000),
     is_authorized_only bool NOT NULL,
     is_limited_to_one_response bool NOT NULL,
     is_published bool NOT NULL,
@@ -33,8 +33,8 @@ CREATE TABLE survey_page (
     id uuid PRIMARY KEY,
     survey_id uuid REFERENCES survey (id) ON DELETE CASCADE NOT NULL,
     serial_number int NOT NULL,
-    title varchar(150) NOT NULL,
-    description text
+    title varchar(200) NOT NULL,
+    description varchar(5000)
 );
 
 CREATE TABLE question (
@@ -44,7 +44,7 @@ CREATE TABLE question (
     title varchar(200) NOT NULL,
     description text,
     type varchar(255) NOT NULL,
-    answer_option_order text NOT NULL,
+    answer_option_order text,
     is_mandatory bool NOT NULL,
     is_visible bool NOT NULL,
     condition text
@@ -59,8 +59,8 @@ CREATE TABLE answer_option (
 
 CREATE TABLE closing_page (
     survey_id uuid PRIMARY KEY REFERENCES survey (id) ON DELETE CASCADE,
-    title varchar(150) NOT NULL,
-    description text,
+    title varchar(200) NOT NULL,
+    description varchar(5000),
     website_url text
 );
 

@@ -12,9 +12,9 @@ import ru.hh.kakdela_v2.util.ValidPassword;
 @AllArgsConstructor
 public class RegisterDto {
 
-  @NotBlank
+  @NotBlank(message = "Логин не может быть пустым")
   private String login;
-  @Email
+  @Email(message = "Электронная почта должна соответствовать формату")
   private String email;
   @ValidPassword
   private String password;

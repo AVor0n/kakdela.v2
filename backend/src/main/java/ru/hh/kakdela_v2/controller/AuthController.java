@@ -14,12 +14,12 @@ import ru.hh.kakdela_v2.service.AuthService;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/api")
 public class AuthController {
 
   private final AuthService authService;
 
-  @PostMapping("/register")
+  @PostMapping("/auth/register")
   public ResponseEntity<?> register(@Valid @RequestBody RegisterDto registerDto) {
     authService.register(registerDto);
     return ResponseEntity
@@ -27,7 +27,7 @@ public class AuthController {
         .body("Пользователь успешно зарегистрирован");
   }
 
-  @PostMapping("/login")
+  @PostMapping("/auth/login")
   public ResponseEntity<?> login(@RequestBody LoginDto loginDto) {
     return ResponseEntity.ok(authService.login(loginDto));
   }
