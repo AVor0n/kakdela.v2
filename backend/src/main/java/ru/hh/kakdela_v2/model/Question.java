@@ -46,7 +46,7 @@ public class Question {
   @Enumerated(EnumType.STRING)
   private QuestionType type;
 
-  @Column(name = "answer_option_order", nullable = false)
+  @Column(name = "answer_option_order")
   @Enumerated(EnumType.STRING)
   private AnswerOptionOrder answerOptionOrder;
 
