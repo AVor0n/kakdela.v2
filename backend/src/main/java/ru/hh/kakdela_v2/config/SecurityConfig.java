@@ -4,6 +4,7 @@ import jakarta.servlet.DispatcherType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -45,6 +46,10 @@ public class SecurityConfig {
             auth -> auth
             .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
             .requestMatchers("/api/auth/**").permitAll()
+            .requestMatchers(HttpMethod.GET, "/api/surveys/{surveyId}/**").permitAll()
+            .requestMatchers(HttpMethod.GET, "/api/pages/{pageId}/**").permitAll()
+            .requestMatchers(HttpMethod.GET, "/api/questions/{questionId}/**").permitAll()
+            .requestMatchers(HttpMethod.GET, "/api/answer-options/{answerOptionId}/**").permitAll()
             .anyRequest().authenticated()
         );
     http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
