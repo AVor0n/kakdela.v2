@@ -10,8 +10,6 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.Instant;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.UUID;
 
 @Data
@@ -64,16 +62,16 @@ public class Survey {
 
   @OneToMany(mappedBy = "survey", cascade = CascadeType.ALL, orphanRemoval = true)
   @Builder.Default
-  private Set<Permission> permissions = new HashSet<>();
+  private List<Permission> permissions = new ArrayList<>();
 
   @OneToMany(mappedBy = "survey", cascade = CascadeType.ALL, orphanRemoval = true)
   @Builder.Default
-  private Set<SurveyPage> pages = new HashSet<>();
+  private List<SurveyPage> pages = new ArrayList<>();
 
   @OneToOne(mappedBy = "survey", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
   private ClosingPage closingPage;
 
   @OneToMany(mappedBy = "survey")
   @Builder.Default
-  private Set<Response> responses = new HashSet<>();
+  private List<Response> responses = new ArrayList<>();
 }

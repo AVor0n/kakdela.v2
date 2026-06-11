@@ -9,8 +9,6 @@ import jakarta.persistence.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
-import java.util.HashSet;
-import java.util.Set;
 import java.util.UUID;
 
 @Data
@@ -63,11 +61,11 @@ public class Question {
 
   @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
   @Builder.Default
-  private Set<AnswerOption> answerOptions = new HashSet<>();
+  private List<AnswerOption> answerOptions = new ArrayList<>();
 
   @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
   @Builder.Default
-  private Set<Answer> answers = new HashSet<>();
+  private List<Answer> answers = new ArrayList<>();
 
   public enum QuestionType {
     SINGLE_CHOICE,

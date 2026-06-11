@@ -8,8 +8,6 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
-import java.util.HashSet;
-import java.util.Set;
 import java.util.UUID;
 
 @Data
@@ -49,5 +47,5 @@ public class SurveyPage {
 
   @OneToMany(mappedBy = "surveyPage", cascade = CascadeType.ALL, orphanRemoval = true)
   @Builder.Default
-  private Set<Question> questions = new HashSet<>();
+  private List<Question> questions = new ArrayList<>();
 }
