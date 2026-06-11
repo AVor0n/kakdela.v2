@@ -41,7 +41,8 @@ public class SurveyPageService {
   }
 
   @Transactional
-  public SurveyPageResponseDto create(UUID surveyId, SurveyPageCreateDto dto) {
+  public SurveyPageResponseDto create(UUID surveyId, SurveyPageCreateDto dto, UUID accountId) {
+    permissionService.checkAccess(surveyId, accountId, SurveyRole.EDITOR);
     if (surveyPageDao.existsBySurveyIdAndSerialNumber(surveyId, dto.getSerialNumber())) {
       throw new ResponseStatusException(
               HttpStatus.CONFLICT,
@@ -64,10 +65,12 @@ public class SurveyPageService {
   }
 
   @Transactional
-  public SurveyPageResponseDto update(UUID id, SurveyPageUpdateDto dto) {
-    SurveyPage page = surveyPageDao.findById(id)
+  public SurveyPageResponseDto update(UUID surveyPageId, SurveyPageUpdateDto dto,  UUID accountId) {
+    SurveyPage page = surveyPageDao.findById(surveyPageId)
             .orElseThrow(() -> new ResponseStatusException(
-                    HttpStatus.NOT_FOUND, "Страница не найдена: " + id));
+                    HttpStatus.NOT_FOUND, "Страница не найдена: " + surveyPageId));
+
+    permissionService.checkAccess(page.getSurvey().getId(), accountId, SurveyRole.EDITOR);
 
     if (dto.getSerialNumber() != null) page.setSerialNumber(dto.getSerialNumber());
     if (dto.getTitle() != null) page.setTitle(dto.getTitle());
@@ -78,7 +81,11 @@ public class SurveyPageService {
   }
 
   @Transactional
-  public void delete(UUID id) {
-    surveyPageDao.delete(id);
+  public void delete(UUID surveyPageId,  UUID accountId) {
+    SurveyPage page = surveyPageDao.findById(surveyPageId)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Страница не найдена: " + surveyPageId));
+
+    permissionService.checkAccess(page.getSurvey().getId(), accountId, SurveyRole.EDITOR);
+    surveyPageDao.delete(surveyPageId);
   }
 }

@@ -35,10 +35,12 @@ public class AnswerOptionService {
   }
 
   @Transactional
-  public AnswerOptionResponseDto create(UUID questionId, AnswerOptionCreateDto dto) {
+  public AnswerOptionResponseDto create(UUID questionId, AnswerOptionCreateDto dto,UUID accountId ) {
     Question question = questionDao.findById(questionId)
             .orElseThrow(() -> new ResponseStatusException(
                     HttpStatus.NOT_FOUND, "Вопрос не найден: " + questionId));
+
+    permissionService.checkAccess(question.getSurveyPage().getSurvey().getId(), accountId, SurveyRole.EDITOR);   
 
     AnswerOption option = AnswerOption.builder()
             .question(question)
@@ -64,7 +66,12 @@ public class AnswerOptionService {
   }
 
   @Transactional
-  public void delete(UUID id) {
-    answerOptionDao.delete(id);
+  public void delete(UUID answerOptionId,UUID accountId) {
+    AnswerOption option = answerOptionDao.findById(answerOptionId)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Вариант ответа не найден: " + answerOptionId));
+            
+            
+    permissionService.checkAccess(option.getQuestion().getSurveyPage().getSurvey().getId(), accountId, SurveyRole.EDITOR);
+    answerOptionDao.delete(answerOptionId);
   }
 }
