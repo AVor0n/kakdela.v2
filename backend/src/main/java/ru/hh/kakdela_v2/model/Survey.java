@@ -68,6 +68,7 @@ public class Survey {
     private List<Permission> permissions = new ArrayList<>();
 
     @OneToMany(mappedBy = "survey", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("serial_number ASC")
     @Builder.Default
     private List<SurveyPage> pages = new ArrayList<>();
 
