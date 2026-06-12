@@ -105,6 +105,8 @@ public class AnswerService {
             .responseId(responseId)
             .questionId(questionId)
             .build();
-    answerDao.delete(id);
+    Answer answer = answerDao.findById(id)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Ответ не найден: " + id));
+    answerDao.delete(answer);
   }
 }

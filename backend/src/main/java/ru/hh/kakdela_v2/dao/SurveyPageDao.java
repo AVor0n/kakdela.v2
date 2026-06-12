@@ -16,7 +16,7 @@ public interface SurveyPageDao {
 
   void update(SurveyPage page);
 
-  void delete(UUID id);
+  void delete(SurveyPage page);
 
   boolean existsBySurveyIdAndSerialNumber(UUID surveyId, Integer serialNumber);
 }

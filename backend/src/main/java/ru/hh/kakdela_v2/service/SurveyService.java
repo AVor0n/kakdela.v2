@@ -99,8 +99,10 @@ public class SurveyService {
   }
 
   @Transactional
-  public void delete(UUID surveyId, UUID accountId) {
-    permissionService.checkOwnership(surveyId, accountId);
-    surveyDao.delete(surveyId);
+  public void delete(UUID id, UUID accountId) {
+    permissionService.checkOwnership(id, accountId);
+    Survey survey = surveyDao.findById(id)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Опрос не найден: " + id));
+    surveyDao.delete(survey);
   }
 }

@@ -14,11 +14,11 @@ public interface ResponseDao {
 
   List<Response> findAllByAccountId(UUID accountId);
 
-  boolean existsByAccountIdAndSurveyId(UUID accountId, UUID surveyId);  // для проверки "один ответ"
+  boolean existsByAccountIdAndSurveyId(UUID accountId, UUID surveyId);
 
   void save(Response response);
 
   void update(Response response);
 
-  void delete(UUID id);
+  void delete(Response response);
 }

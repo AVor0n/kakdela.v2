@@ -81,11 +81,10 @@ public class SurveyPageService {
   }
 
   @Transactional
-  public void delete(UUID surveyPageId,  UUID accountId) {
-    SurveyPage page = surveyPageDao.findById(surveyPageId)
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Страница не найдена: " + surveyPageId));
-
+  public void delete(UUID id,  UUID accountId) {
+    SurveyPage page = surveyPageDao.findById(id)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Страница не найдена: " + id));
     permissionService.checkAccess(page.getSurvey().getId(), accountId, SurveyRole.EDITOR);
-    surveyPageDao.delete(surveyPageId);
+    surveyPageDao.delete(page);
   }
 }

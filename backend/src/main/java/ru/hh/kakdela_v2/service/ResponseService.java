@@ -93,6 +93,8 @@ public class ResponseService {
 
   @Transactional
   public void delete(UUID id) {
-    responseDao.delete(id);
+    Response response = responseDao.findById(id)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Ответ не найден: " + id));
+    responseDao.delete(response);
   }
 }

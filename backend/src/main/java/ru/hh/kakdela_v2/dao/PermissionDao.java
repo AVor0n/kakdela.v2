@@ -1,7 +1,6 @@
 package ru.hh.kakdela_v2.dao;
 
 import ru.hh.kakdela_v2.model.Permission;
-import ru.hh.kakdela_v2.model.Permission.PermissionId;
 
 import java.util.List;
 import java.util.Optional;
@@ -25,7 +24,7 @@ public interface PermissionDao {
 
   void update(Permission permission);
 
-  void delete(Permission.PermissionId id);
+  void delete(Permission permission);
 
   void deleteBySurveyIdAndAccountId(UUID surveyId, UUID accountId);
 }

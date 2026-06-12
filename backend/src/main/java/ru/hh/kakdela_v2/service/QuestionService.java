@@ -92,11 +92,10 @@ public class QuestionService {
   }
 
   @Transactional
-  public void delete(UUID questionId, UUID accountId) {
-    Question question = questionDao.findById(questionId)
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Вопрос не найден: " + questionId));
-            
-            permissionService.checkAccess(question.getSurveyPage().getSurvey().getId(), accountId, SurveyRole.EDITOR);
-    questionDao.delete(questionId);
+  public void delete(UUID id, UUID accountId) {
+    Question question = questionDao.findById(id)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Вопрос не найден: " + id));
+    permissionService.checkAccess(question.getSurveyPage().getSurvey().getId(), accountId, SurveyRole.EDITOR);
+    questionDao.delete(question);
   }
 }

@@ -16,5 +16,5 @@ public interface AnswerOptionDao {
 
   void update(AnswerOption option);
 
-  void delete(UUID id);
+  void delete(AnswerOption option);
 }

@@ -1,7 +1,7 @@
 package ru.hh.kakdela_v2.dao;
 
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Repository;
 import ru.hh.kakdela_v2.model.Survey;
 
@@ -12,24 +12,17 @@ import java.util.UUID;
 @Repository
 public class SurveyDaoImpl implements SurveyDao {
 
-  private final SessionFactory sessionFactory;
-
-  public SurveyDaoImpl(SessionFactory sessionFactory) {
-    this.sessionFactory = sessionFactory;
-  }
-
-  private Session session() {
-    return sessionFactory.getCurrentSession();
-  }
+  @PersistenceContext
+  private EntityManager entityManager;
 
   @Override
   public Optional<Survey> findById(UUID id) {
-    return Optional.ofNullable(session().find(Survey.class, id));
+    return Optional.ofNullable(entityManager.find(Survey.class, id));
   }
 
   @Override
   public List<Survey> findAllByAuthorId(UUID authorId) {
-    return session()
+    return entityManager
             .createQuery("FROM Survey s WHERE s.author.id = :authorId", Survey.class)
             .setParameter("authorId", authorId)
             .getResultList();
@@ -37,26 +30,23 @@ public class SurveyDaoImpl implements SurveyDao {
 
   @Override
   public List<Survey> findAllPublished() {
-    return session()
+    return entityManager
             .createQuery("FROM Survey s WHERE s.isPublished = true", Survey.class)
             .getResultList();
   }
 
   @Override
   public void save(Survey survey) {
-    session().persist(survey);
+    entityManager.persist(survey);
   }
 
   @Override
   public void update(Survey survey) {
-    session().merge(survey);
+    entityManager.merge(survey);
   }
 
   @Override
-  public void delete(UUID id) {
-    Survey survey = session().find(Survey.class, id);
-    if (survey != null) {
-      session().remove(survey);
-    }
+  public void delete(Survey survey) {
+    entityManager.remove(survey);
   }
 }
