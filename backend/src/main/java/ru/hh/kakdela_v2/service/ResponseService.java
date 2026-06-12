@@ -23,6 +23,7 @@ public class ResponseService {
   private final ResponseDao responseDao;
   private final SurveyDao surveyDao;
   private final AccountDao accountDao;
+  private final PermissionService permissionService;
 
   @Transactional(readOnly = true)
   public ResponseResponseDto getById(UUID id) {
@@ -33,7 +34,8 @@ public class ResponseService {
   }
 
   @Transactional(readOnly = true)
-  public List<ResponseResponseDto> getCompleteBySurveyId(UUID surveyId) {
+  public List<ResponseResponseDto> getCompleteBySurveyId(UUID surveyId, UUID accountId) {
+    permissionService.checkAccess(surveyId, accountId, Permission.SurveyRole.ANALYST);
     return responseDao.findCompleteBySurveyId(surveyId).stream()
             .map(ResponseResponseDto::new)
             .toList();
@@ -89,13 +91,19 @@ public class ResponseService {
   }
 
   @Transactional
-  public ResponseResponseDto complete(UUID id) {
+  public ResponseResponseDto complete(UUID id, UUID accountId) {
     Response response = responseDao.findById(id)
             .orElseThrow(() -> new ResponseStatusException(
                     HttpStatus.NOT_FOUND, "Ответ не найден: " + id));
 
+    if (!response.getAccount().getId().equals(accountId)) {
+      throw new ResponseStatusException(
+          HttpStatus.FORBIDDEN, "Вы не являетесь автором ответа");
+    }
+
     if (!responseDao.areAllMandatoryQuestionsAnswered(id)) {
-      throw new ResponseStatusException(HttpStatus.CONFLICT, "Не все обязательные вопросы заполнены");
+      throw new ResponseStatusException(
+          HttpStatus.CONFLICT, "Не все обязательные вопросы заполнены");
     }
 
     if (response.isComplete()) {
@@ -111,7 +119,8 @@ public class ResponseService {
   @Transactional
   public void delete(UUID id) {
     Response response = responseDao.findById(id)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Ответ не найден: " + id));
+            .orElseThrow(() -> new ResponseStatusException(
+                HttpStatus.NOT_FOUND, "Ответ не найден: " + id));
     responseDao.delete(response);
   }
 }

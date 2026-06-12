@@ -27,8 +27,9 @@ public class ResponseController {
   }
 
   @PostMapping("/responses/{responseId}/complete")
-  public ResponseEntity<?> complete(@PathVariable UUID responseId) {
-    responseService.complete(responseId);
+  public ResponseEntity<?> complete(@PathVariable UUID responseId,
+                                    @AuthenticationPrincipal CustomUserDetails currentUser) {
+    responseService.complete(responseId, (currentUser != null ? currentUser.getId() : null));
     return ResponseEntity.ok("Ответ записан");
   }
 
