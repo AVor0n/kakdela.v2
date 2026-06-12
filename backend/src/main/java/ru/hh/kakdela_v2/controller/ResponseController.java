@@ -1,5 +1,6 @@
 package ru.hh.kakdela_v2.controller;
 
+import java.util.List;
 import java.util.UUID;
 
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,8 @@ public class ResponseController {
 
   private final ResponseService responseService;
 
+  // User side
+
   @PostMapping("/api/surveys/{surveyId}")
   public ResponseResponseDto create(@RequestBody ResponseCreateDto responseCreateDto,
                                     @PathVariable UUID surveyId,
@@ -30,5 +33,16 @@ public class ResponseController {
                                     @AuthenticationPrincipal CustomUserDetails currentUser) {
     responseService.complete(responseId);
     return ResponseEntity.ok("Ответ записан");
+  }
+
+  @GetMapping("/api/surveys/{surveyId}/my-incomplete-responses")
+  public List<ResponseResponseDto> findIncomplete(@PathVariable UUID surveyId,
+                                                  @AuthenticationPrincipal CustomUserDetails currentUser) {
+    return responseService.getIncompleteBySurveyIdAndAccountId(surveyId, currentUser.getId());
+  }
+
+  @GetMapping("/api/accounts/me/responses")
+  public List<ResponseResponseDto> getMyResponses(@AuthenticationPrincipal CustomUserDetails currentUser) {
+    return responseService.getAllByAccountId(currentUser.getId());
   }
 }

@@ -51,6 +51,7 @@ public class SecurityConfig {
             auth -> auth
             .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
             .requestMatchers("/api/auth/**").permitAll()
+            .requestMatchers(HttpMethod.GET, "/api/surveys/{surveyId}/my-incomplete-responses").authenticated()
             .requestMatchers(HttpMethod.GET, "/api/surveys/{surveyId}/**").permitAll()
             .requestMatchers(HttpMethod.GET, "/api/pages/{pageId}/**").permitAll()
             .requestMatchers(HttpMethod.GET, "/api/questions/{questionId}/**").permitAll()
