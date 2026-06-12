@@ -1,14 +1,18 @@
 package ru.hh.kakdela_v2.exception;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
 import ru.hh.kakdela_v2.dto.response.ErrorResponse;
 
@@ -46,7 +50,7 @@ public class GlobalExceptionHandler {
                 HttpStatus.BAD_REQUEST.value(),
                 "Validation Error",
                 ex.getMessage(),
-                request.getDescription(false),
+                getPath(request),
                 null
         );
 
@@ -64,7 +68,7 @@ public class GlobalExceptionHandler {
                 HttpStatus.NOT_FOUND.value(),
                 "Not Found",
                 ex.getMessage(),
-                request.getDescription(false),
+                getPath(request),
                 null
         );
 
@@ -82,12 +86,44 @@ public class GlobalExceptionHandler {
                 HttpStatus.BAD_REQUEST.value(),
                 "Illegal Argument",
                 ex.getMessage(),
-                request.getDescription(false),
+                getPath(request),
                 null
         );
 
         log.error("Illegal argument: {}", ex.getMessage());
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ResponseEntity<ErrorResponse> handleBadCredentials(BadCredentialsException ex, WebRequest request) {
+        ErrorResponse error = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.UNAUTHORIZED.value(),
+                "Authentication Failed",
+                "Invalid username or password",
+                getPath(request),
+                null
+        );
+
+        log.error("Bad credentials: ", ex);
+        return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ResponseEntity<ErrorResponse> handleAccessDenied(AccessDeniedException ex, WebRequest request) {
+        ErrorResponse error = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.FORBIDDEN.value(),
+                "Access Denied",
+                "You don't have permission to access this resource",
+                getPath(request),
+                null
+        );
+
+        log.error("Access denied: ", ex);
+        return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
     }
 
     @ExceptionHandler(Exception.class)
@@ -100,11 +136,19 @@ public class GlobalExceptionHandler {
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
                 "Internal Server Error",
                 "An unexpected error occurred",
-                request.getDescription(false),
+                getPath(request),
                 ex.getMessage()
         );
 
         log.error("Unexpected error: ", ex);
         return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    private String getPath(WebRequest request) {
+        if (request instanceof ServletWebRequest) {
+            HttpServletRequest servletRequest = ((ServletWebRequest) request).getRequest();
+            return servletRequest.getRequestURI();
+        }
+        return null;
     }
 }
