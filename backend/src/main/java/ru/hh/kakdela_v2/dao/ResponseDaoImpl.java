@@ -50,16 +50,15 @@ public class ResponseDaoImpl implements ResponseDao {
 
   @Override
   public boolean existsByAccountIdAndSurveyId(UUID accountId, UUID surveyId) {
-    return Optional.of(entityManager
-                    .createQuery("""
-                            SELECT COUNT(r) FROM Response r
-                            WHERE r.account.id = :accountId AND r.survey.id = :surveyId
-                            """, Long.class)
-                    .setParameter("accountId", accountId)
-                    .setParameter("surveyId", surveyId)
-                    .getSingleResult())
-            .map(count -> count > 0)
-            .orElse(false);
+    return entityManager
+        .createQuery(
+            """
+            SELECT COUNT(r) FROM Response r
+            WHERE r.account.id = :accountId AND r.survey.id = :surveyId
+            """, Long.class)
+        .setParameter("accountId", accountId)
+        .setParameter("surveyId", surveyId)
+        .getSingleResult() > 0;
   }
 
   @Override
