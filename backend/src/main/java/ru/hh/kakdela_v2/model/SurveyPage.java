@@ -8,6 +8,9 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
+import java.util.List;
+import java.util.ArrayList;
+
 import java.util.UUID;
 
 @Data
@@ -39,13 +42,14 @@ public class SurveyPage {
   @Column(name = "serial_number", nullable = false)
   private Integer serialNumber;
 
-  @Column(name = "title", length = 150, nullable = false)
-  private String title;
+    @Column(name = "title", length = 200, nullable = false)
+    private String title;
 
-  @Column(name = "description", columnDefinition = "TEXT")
-  private String description;
+    @Column(name = "description", length = 5000)
+    private String description;
 
-  @OneToMany(mappedBy = "surveyPage", cascade = CascadeType.ALL, orphanRemoval = true)
-  @Builder.Default
-  private List<Question> questions = new ArrayList<>();
+    @OneToMany(mappedBy = "surveyPage", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("serial_number ASC")
+    @Builder.Default
+    private List<Question> questions = new ArrayList<>();
 }

@@ -25,6 +25,7 @@ public class SurveyService {
 
   private final SurveyDao surveyDao;
   private final AccountDao accountDao;
+  private final PermissionService permissionService;
 
   @Transactional(readOnly = true)
   public SurveyResponseDto getById(UUID id) {
@@ -39,6 +40,14 @@ public class SurveyService {
     return surveyDao.findAllByAuthorId(authorId).stream()
             .map(SurveyShortResponseDto::new)
             .toList();
+  }
+
+  @Transactional( readOnly = true)
+  public List<SurveyShortResponseDto> getMySurveys(UUID accountId) {
+    List<Survey> surveys = permissionService.getAccessibleSurveys(accountId);
+    return surveys.stream()
+        .map(SurveyShortResponseDto::new)
+        .collect(Collectors.toList());
   }
 
   @Transactional(readOnly = true)
@@ -71,10 +80,11 @@ public class SurveyService {
   }
 
   @Transactional
-  public SurveyResponseDto update(UUID id, SurveyUpdateDto dto) {
-    Survey survey = surveyDao.findById(id)
+  public SurveyResponseDto update(UUID surveyId, SurveyUpdateDto dto, UUID accountId) {
+    permissionService.checkAccess(surveyId, accountId, SurveyRole.EDITOR);
+    Survey survey = surveyDao.findById(surveyId)
             .orElseThrow(() -> new ResponseStatusException(
-                    HttpStatus.NOT_FOUND, "Опрос не найден: " + id));
+                    HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
 
     if (dto.getTitle() != null) survey.setTitle(dto.getTitle());
     if (dto.getDescription() != null) survey.setDescription(dto.getDescription());
@@ -89,7 +99,8 @@ public class SurveyService {
   }
 
   @Transactional
-  public void delete(UUID id) {
+  public void delete(UUID surveyId, UUID accountId) {
+    permissionService.checkOwnership(surveyId, accountId);
     Survey survey = surveyDao.findById(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Опрос не найден: " + id));
     surveyDao.delete(survey);

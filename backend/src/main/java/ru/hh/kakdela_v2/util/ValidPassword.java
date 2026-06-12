@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = PasswordConstraintValidator.class)
 public @interface ValidPassword {
-  String message() default "The password must be at least 8 characters long and include numbers, letters, and special characters";
+  String message() default "Пароль должен иметь длину не менее 8 символов и состоять из букв, цифр и специальных символов";
   Class<?>[] groups() default {};
   Class<? extends Payload>[] payload() default {};
 }

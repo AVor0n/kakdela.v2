@@ -10,6 +10,8 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.Instant;
+import java.util.List;
+import java.util.ArrayList;
 import java.util.UUID;
 
 @Data
@@ -35,8 +37,8 @@ public class Survey {
   @Column(name = "title", length = 200, nullable = false)
   private String title;
 
-  @Column(name = "description", columnDefinition = "TEXT")
-  private String description;
+    @Column(name = "description", length = 5000)
+    private String description;
 
   @Column(name = "is_authorized_only", nullable = false)
   private boolean isAuthorizedOnly;
@@ -64,9 +66,10 @@ public class Survey {
   @Builder.Default
   private List<Permission> permissions = new ArrayList<>();
 
-  @OneToMany(mappedBy = "survey", cascade = CascadeType.ALL, orphanRemoval = true)
-  @Builder.Default
-  private List<SurveyPage> pages = new ArrayList<>();
+    @OneToMany(mappedBy = "survey", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("serial_number ASC")
+    @Builder.Default
+    private List<SurveyPage> pages = new ArrayList<>();
 
   @OneToOne(mappedBy = "survey", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
   private ClosingPage closingPage;

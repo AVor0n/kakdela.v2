@@ -41,7 +41,7 @@ public class QuestionService {
   }
 
   @Transactional
-  public QuestionResponseDto create(UUID pageId, QuestionCreateDto dto) {
+  public QuestionResponseDto create(UUID pageId, QuestionCreateDto dto, UUID accountId) {
     if (questionDao.existsByPageIdAndSerialNumber(pageId, dto.getSerialNumber())) {
       throw new ResponseStatusException(
               HttpStatus.CONFLICT,
@@ -51,6 +51,8 @@ public class QuestionService {
     SurveyPage page = surveyPageDao.findById(pageId)
             .orElseThrow(() -> new ResponseStatusException(
                     HttpStatus.NOT_FOUND, "Страница не найдена: " + pageId));
+    
+    permissionService.checkAccess(page.getSurvey().getId(), accountId, SurveyRole.EDITOR);
 
     Question question = Question.builder()
             .surveyPage(page)
@@ -69,10 +71,12 @@ public class QuestionService {
   }
 
   @Transactional
-  public QuestionResponseDto update(UUID id, QuestionUpdateDto dto) {
-    Question question = questionDao.findById(id)
+  public QuestionResponseDto update(UUID questionId, QuestionUpdateDto dto, UUID accountId) {
+    Question question = questionDao.findById(questionId)
             .orElseThrow(() -> new ResponseStatusException(
-                    HttpStatus.NOT_FOUND, "Вопрос не найден: " + id));
+                    HttpStatus.NOT_FOUND, "Вопрос не найден: " + questionId));
+                    
+    permissionService.checkAccess(question.getSurveyPage().getSurvey().getId(), accountId, SurveyRole.EDITOR);
 
     if (dto.getSerialNumber() != null) question.setSerialNumber(dto.getSerialNumber());
     if (dto.getTitle() != null) question.setTitle(dto.getTitle());
@@ -88,7 +92,8 @@ public class QuestionService {
   }
 
   @Transactional
-  public void delete(UUID id) {
+  public void delete(UUID id, UUID accountId) {
+    permissionService.checkAccess(question.getSurveyPage().getSurvey().getId(), accountId, SurveyRole.EDITOR);
     Question question = questionDao.findById(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Вопрос не найден: " + id));
     questionDao.delete(question);

@@ -9,6 +9,8 @@ import jakarta.persistence.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
+import java.util.List;
+import java.util.ArrayList;
 import java.util.UUID;
 
 @Data
@@ -36,17 +38,17 @@ public class Question {
   @Column(name = "serial_number", nullable = false)
   private Integer serialNumber;
 
-  @Column(name = "title", nullable = false, length = 200)
-  private String title;
+    @Column(name = "title", length = 200, nullable = false)
+    private String title;
 
-  @Column(name = "description", columnDefinition = "TEXT")
-  private String description;
+    @Column(name = "description", length = 5000)
+    private String description;
 
   @Column(name = "type", nullable = false)
   @Enumerated(EnumType.STRING)
   private QuestionType type;
 
-  @Column(name = "answer_option_order", nullable = false, columnDefinition = "TEXT")
+  @Column(name = "answer_option_order")
   @Enumerated(EnumType.STRING)
   private AnswerOptionOrder answerOptionOrder;
 
@@ -59,9 +61,10 @@ public class Question {
   @Column(name = "condition", columnDefinition = "TEXT")
   private String condition;
 
-  @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
-  @Builder.Default
-  private List<AnswerOption> answerOptions = new ArrayList<>();
+    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("serial_number ASC")
+    @Builder.Default
+    private List<AnswerOption> answerOptions = new ArrayList<>();
 
   @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
   @Builder.Default
