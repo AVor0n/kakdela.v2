@@ -43,4 +43,13 @@ public class ResponseController {
   public List<ResponseResponseDto> getMyResponses(@AuthenticationPrincipal CustomUserDetails currentUser) {
     return responseService.getAllByAccountId(currentUser.getId());
   }
+
+  // Author side
+
+  @GetMapping("/surveys/{surveyId}/responses")
+  public List<ResponseResponseDto> getResponsesBySurvey(@PathVariable UUID surveyId,
+                                                        @AuthenticationPrincipal CustomUserDetails currentUser) {
+    return responseService.getCompleteBySurveyId(surveyId, currentUser.getId());
+  }
+
 }
