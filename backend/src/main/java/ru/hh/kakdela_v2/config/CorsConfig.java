@@ -1,14 +1,20 @@
 package ru.hh.kakdela_v2.config;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import jakarta.annotation.PostConstruct;
+
 import org.springframework.web.cors.CorsConfigurationSource;
 
+import java.util.Arrays;
 import java.util.List;
 
+@Slf4j
 @Configuration
 public class CorsConfig {
 
@@ -21,7 +27,7 @@ public class CorsConfig {
     @Value("${cors.allowed-headers:*}")
     private String[] allowedHeaders;
 
-    @Value("${cors.exposed-headers:Authorization}")
+    @Value("${cors.exposed-headers:}")
     private String[] exposedHeaders;
 
     @Value("${cors.allow-credentials:false}")
@@ -29,6 +35,20 @@ public class CorsConfig {
 
     @Value("${cors.max-age:3600}")
     private long maxAge;
+
+    @PostConstruct
+    private void validateCorsConfiguration() {
+        if (allowCredentials) {
+            List<String> origins = parseOrigins(allowedOrigins);
+            if (origins.contains("*")) {
+                throw new IllegalStateException(
+                        "When allowCredentials=true, allowedOrigins cannot contain '*'");
+            }
+            if (List.of(allowedHeaders).contains("*")) {
+                log.warn("Using '*' with allowCredentials=true may cause CORS issues");
+            }
+        }
+    }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
@@ -40,7 +60,7 @@ public class CorsConfig {
 
         configuration.setAllowedHeaders(List.of(allowedHeaders));
 
-        configuration.setExposedHeaders(List.of(exposedHeaders));
+       // configuration.setExposedHeaders(List.of(exposedHeaders)); пока что закомментированно
 
         configuration.setAllowCredentials(allowCredentials);
 
@@ -53,12 +73,12 @@ public class CorsConfig {
     }
 
     private List<String> parseOrigins(String origins) {
-        if (origins == null || origins.trim().isEmpty()) {
+        if (origins == null || origins.isBlank()) {
             return List.of();
         }
-        if ("*".equals(origins)) {
-            return List.of("*");
-        }
-        return List.of(origins.split(","));
+
+        return Arrays.stream(origins.split(","))
+                .map(String::trim)
+                .toList();
     }
 }
