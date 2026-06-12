@@ -63,6 +63,30 @@ public class ResponseDaoImpl implements ResponseDao {
   }
 
   @Override
+  public boolean areAllMandatoryQuestionsAnswered(UUID responseId) {
+    return entityManager
+        .createQuery(
+            """
+            SELECT COUNT(q)
+            FROM Question q
+            WHERE q.isMandatory = true
+              AND q.surveyPage.survey = (
+                  SELECT r.survey
+                  FROM Response r
+                  WHERE r.id = :responseId
+              )
+              AND q.id NOT IN (
+                  SELECT a.question.id
+                  FROM Answer a
+                  WHERE a.response.id = :responseId
+              )
+            """, Long.class)
+        .setParameter("responseId", responseId)
+        .getSingleResult()
+        .equals(0L);
+  }
+
+  @Override
   public void save(Response response) {
     entityManager.persist(response);
   }

@@ -18,6 +18,8 @@ public interface ResponseDao {
 
   boolean existsByAccountIdAndSurveyId(UUID accountId, UUID surveyId);
 
+  boolean areAllMandatoryQuestionsAnswered(UUID responseId);
+
   void save(Response response);
 
   void update(Response response);

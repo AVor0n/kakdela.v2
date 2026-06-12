@@ -40,6 +40,20 @@ public class ResponseService {
             .toList();
   }
 
+  @Transactional(readOnly = true)
+  public List<ResponseResponseDto> getAllByAccountId(UUID accountId) {
+    return responseDao.findAllByAccountId(accountId).stream()
+        .map(ResponseResponseDto::new)
+        .toList();
+  }
+
+  @Transactional(readOnly = true)
+  public List<ResponseResponseDto> getIncompleteBySurveyIdAndAccountId(UUID surveyId, UUID accountId) {
+    return responseDao.findIncompleteBySurveyIdAndAccountId(surveyId, accountId).stream()
+        .map(ResponseResponseDto::new)
+        .toList();
+  }
+
   @Transactional
   public ResponseResponseDto create(UUID accountId, ResponseCreateDto dto) {
     Survey survey = surveyDao.findById(dto.getSurveyId())
