@@ -23,12 +23,11 @@ public class ResponseController {
   @PostMapping("/surveys/{surveyId}/responses")
   public ResponseResponseDto create(@PathVariable UUID surveyId,
                                     @AuthenticationPrincipal CustomUserDetails currentUser) {
-    return responseService.create((currentUser != null ? currentUser.getId() : null), surveyId);
+    return responseService.create(surveyId, (currentUser != null ? currentUser.getId() : null));
   }
 
   @PostMapping("/responses/{responseId}/complete")
-  public ResponseEntity<?> complete(@PathVariable UUID responseId,
-                                    @AuthenticationPrincipal CustomUserDetails currentUser) {
+  public ResponseEntity<?> complete(@PathVariable UUID responseId) {
     responseService.complete(responseId);
     return ResponseEntity.ok("Ответ записан");
   }

@@ -33,8 +33,8 @@ public class ResponseService {
   }
 
   @Transactional(readOnly = true)
-  public List<ResponseResponseDto> getAllBySurveyId(UUID surveyId) {
-    return responseDao.findAllBySurveyId(surveyId).stream()
+  public List<ResponseResponseDto> getCompleteBySurveyId(UUID surveyId) {
+    return responseDao.findCompleteBySurveyId(surveyId).stream()
             .map(ResponseResponseDto::new)
             .toList();
   }
@@ -54,10 +54,10 @@ public class ResponseService {
   }
 
   @Transactional
-  public ResponseResponseDto create(UUID accountId, ResponseCreateDto dto) {
-    Survey survey = surveyDao.findById(dto.getSurveyId())
+  public ResponseResponseDto create(UUID surveyId, UUID accountId) {
+    Survey survey = surveyDao.findById(surveyId)
             .orElseThrow(() -> new ResponseStatusException(
-                    HttpStatus.NOT_FOUND, "Опрос не найден: " + dto.getSurveyId()));
+                    HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
 
     if (!survey.isPublished()) {
       throw new ResponseStatusException(
@@ -65,7 +65,7 @@ public class ResponseService {
     }
 
     if (survey.isLimitedToOneResponse() && accountId != null) {
-      if (responseDao.existsByAccountIdAndSurveyId(accountId, dto.getSurveyId())) {
+      if (responseDao.existsBySurveyIdAndAccountId(surveyId, accountId)) {
         throw new ResponseStatusException(
                 HttpStatus.CONFLICT, "Вы уже проходили этот опрос");
       }
