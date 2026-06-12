@@ -37,6 +37,18 @@ public class ResponseDaoImpl implements ResponseDao {
   }
 
   @Override
+  public List<Response> findIncompleteBySurveyIdAndAccountId(UUID surveyId, UUID accountId) {
+    return entityManager
+            .createQuery("""
+                            FROM Response r
+                            WHERE r.account.id = :accountId AND r.survey.id = :surveyId AND r.isComplete = false
+                            """, Response.class)
+            .setParameter("accountId", accountId)
+            .setParameter("surveyId", surveyId)
+            .getResultList();
+  }
+
+  @Override
   public boolean existsByAccountIdAndSurveyId(UUID accountId, UUID surveyId) {
     return Optional.of(entityManager
                     .createQuery("""
