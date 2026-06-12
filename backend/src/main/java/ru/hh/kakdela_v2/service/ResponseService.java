@@ -10,10 +10,9 @@ import ru.hh.kakdela_v2.dao.ResponseDao;
 import ru.hh.kakdela_v2.dao.SurveyDao;
 import ru.hh.kakdela_v2.dto.response.ResponseCreateDto;
 import ru.hh.kakdela_v2.dto.response.ResponseResponseDto;
-import ru.hh.kakdela_v2.model.Account;
-import ru.hh.kakdela_v2.model.Response;
-import ru.hh.kakdela_v2.model.Survey;
+import ru.hh.kakdela_v2.model.*;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 
@@ -94,6 +93,10 @@ public class ResponseService {
     Response response = responseDao.findById(id)
             .orElseThrow(() -> new ResponseStatusException(
                     HttpStatus.NOT_FOUND, "Ответ не найден: " + id));
+
+    if (!responseDao.areAllMandatoryQuestionsAnswered(id)) {
+      throw new ResponseStatusException(HttpStatus.CONFLICT, "Не все обязательные вопросы заполнены");
+    }
 
     if (response.isComplete()) {
       throw new ResponseStatusException(
