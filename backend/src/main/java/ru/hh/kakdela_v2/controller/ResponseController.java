@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import ru.hh.kakdela_v2.dto.response.ResponseCreateDto;
 import ru.hh.kakdela_v2.dto.response.ResponseResponseDto;
 import ru.hh.kakdela_v2.service.ResponseService;
 import ru.hh.kakdela_v2.util.CustomUserDetails;
@@ -21,27 +20,26 @@ public class ResponseController {
 
   // User side
 
-  @PostMapping("/api/surveys/{surveyId}")
-  public ResponseResponseDto create(@RequestBody ResponseCreateDto responseCreateDto,
-                                    @PathVariable UUID surveyId,
+  @PostMapping("/surveys/{surveyId}/responses")
+  public ResponseResponseDto create(@PathVariable UUID surveyId,
                                     @AuthenticationPrincipal CustomUserDetails currentUser) {
-    return responseService.create((currentUser != null ? currentUser.getId() : null), responseCreateDto);
+    return responseService.create((currentUser != null ? currentUser.getId() : null), surveyId);
   }
 
-  @PostMapping("/api/responses/{responseId}/complete")
+  @PostMapping("/responses/{responseId}/complete")
   public ResponseEntity<?> complete(@PathVariable UUID responseId,
                                     @AuthenticationPrincipal CustomUserDetails currentUser) {
     responseService.complete(responseId);
     return ResponseEntity.ok("Ответ записан");
   }
 
-  @GetMapping("/api/surveys/{surveyId}/my-incomplete-responses")
+  @GetMapping("/surveys/{surveyId}/my-incomplete-responses")
   public List<ResponseResponseDto> findIncomplete(@PathVariable UUID surveyId,
                                                   @AuthenticationPrincipal CustomUserDetails currentUser) {
     return responseService.getIncompleteBySurveyIdAndAccountId(surveyId, currentUser.getId());
   }
 
-  @GetMapping("/api/accounts/me/responses")
+  @GetMapping("/accounts/me/responses")
   public List<ResponseResponseDto> getMyResponses(@AuthenticationPrincipal CustomUserDetails currentUser) {
     return responseService.getAllByAccountId(currentUser.getId());
   }
