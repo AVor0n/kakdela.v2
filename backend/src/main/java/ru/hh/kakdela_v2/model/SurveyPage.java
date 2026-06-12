@@ -8,6 +8,9 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
+import java.util.List;
+import java.util.ArrayList;
+
 import java.util.UUID;
 
 @Data

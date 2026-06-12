@@ -24,7 +24,7 @@ public class SurveyDaoImpl implements SurveyDao {
 
   @Override
   public Optional<Survey> findById(UUID id) {
-    return Optional.ofNullable(session().find(Survey.class, id))
+    return Optional.ofNullable(session().find(Survey.class, id));
   }
 
   @Override
