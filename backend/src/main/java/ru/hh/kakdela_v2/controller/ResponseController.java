@@ -34,9 +34,9 @@ public class ResponseController {
   }
 
   @GetMapping("/surveys/{surveyId}/my-incomplete-responses")
-  public List<ResponseResponseDto> findIncomplete(@PathVariable UUID surveyId,
+  public List<ResponseResponseDto> findIncompleted(@PathVariable UUID surveyId,
                                                   @AuthenticationPrincipal CustomUserDetails currentUser) {
-    return responseService.getIncompleteBySurveyIdAndAccountId(surveyId, currentUser.getId());
+    return responseService.getIncompletedBySurveyIdAndAccountId(surveyId, currentUser.getId());
   }
 
   @GetMapping("/accounts/me/responses")
@@ -49,7 +49,7 @@ public class ResponseController {
   @GetMapping("/surveys/{surveyId}/responses")
   public List<ResponseResponseDto> getResponsesBySurvey(@PathVariable UUID surveyId,
                                                         @AuthenticationPrincipal CustomUserDetails currentUser) {
-    return responseService.getCompleteBySurveyId(surveyId, currentUser.getId());
+    return responseService.getCompletedBySurveyId(surveyId, currentUser.getId());
   }
 
 }

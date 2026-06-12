@@ -34,9 +34,9 @@ public class ResponseService {
   }
 
   @Transactional(readOnly = true)
-  public List<ResponseResponseDto> getCompleteBySurveyId(UUID surveyId, UUID accountId) {
+  public List<ResponseResponseDto> getCompletedBySurveyId(UUID surveyId, UUID accountId) {
     permissionService.checkAccess(surveyId, accountId, Permission.SurveyRole.ANALYST);
-    return responseDao.findCompleteBySurveyId(surveyId).stream()
+    return responseDao.findCompletedBySurveyId(surveyId).stream()
             .map(ResponseResponseDto::new)
             .toList();
   }
@@ -49,8 +49,8 @@ public class ResponseService {
   }
 
   @Transactional(readOnly = true)
-  public List<ResponseResponseDto> getIncompleteBySurveyIdAndAccountId(UUID surveyId, UUID accountId) {
-    return responseDao.findIncompleteBySurveyIdAndAccountId(surveyId, accountId).stream()
+  public List<ResponseResponseDto> getIncompletedBySurveyIdAndAccountId(UUID surveyId, UUID accountId) {
+    return responseDao.findIncompletedBySurveyIdAndAccountId(surveyId, accountId).stream()
         .map(ResponseResponseDto::new)
         .toList();
   }

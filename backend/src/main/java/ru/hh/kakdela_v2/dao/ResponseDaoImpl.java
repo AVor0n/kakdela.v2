@@ -21,7 +21,7 @@ public class ResponseDaoImpl implements ResponseDao {
   }
 
   @Override
-  public List<Response> findCompleteBySurveyId(UUID surveyId) {
+  public List<Response> findCompletedBySurveyId(UUID surveyId) {
     return entityManager
             .createQuery("FROM Response r WHERE r.survey.id = :surveyId AND r.isComplete = true", Response.class)
             .setParameter("surveyId", surveyId)
@@ -37,7 +37,7 @@ public class ResponseDaoImpl implements ResponseDao {
   }
 
   @Override
-  public List<Response> findIncompleteBySurveyIdAndAccountId(UUID surveyId, UUID accountId) {
+  public List<Response> findIncompletedBySurveyIdAndAccountId(UUID surveyId, UUID accountId) {
     return entityManager
             .createQuery("""
                             FROM Response r
