@@ -1,5 +1,11 @@
+@import '@hh.ru/magritte-reset-css/reset.css';
+@import '@hh.ru/magritte-fonts/hh_sans.css';
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+}
+
+body {
+    font-family: 'hh sans';
 }
