@@ -66,10 +66,10 @@ public class AnswerOptionService {
   }
 
   @Transactional
-  public void delete(UUID answerOptionId, UUID accountId) {
-    permissionService.checkAccess(option.getQuestion().getSurveyPage().getSurvey().getId(), accountId, SurveyRole.EDITOR);
+  public void delete(UUID id, UUID accountId) {
     AnswerOption option = answerOptionDao.findById(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Вопрос не найден: " + id));
+    permissionService.checkAccess(option.getQuestion().getSurveyPage().getSurvey().getId(), accountId, SurveyRole.EDITOR);
     answerOptionDao.delete(option);
   }
 }
