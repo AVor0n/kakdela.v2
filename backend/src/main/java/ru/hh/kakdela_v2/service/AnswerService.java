@@ -33,12 +33,16 @@ public class AnswerService {
             .orElseThrow(() -> new ResponseStatusException(
                     HttpStatus.NOT_FOUND, "Прохождение не найдено: " + responseId));
 
-    if (response.getAccount() != null
-            && !response.getAccount().getId().equals(accountId)
-            || response.getAccount() == null
-            && !Objects.equals(jwtUtil.extractSubject(token), responseId.toString())) {
-      throw new ResponseStatusException(
-              HttpStatus.FORBIDDEN, "Вы не являетесь автором ответа");
+    if (response.getAccount() != null) {
+      if (!response.getAccount().getId().equals(accountId)) {
+        throw new ResponseStatusException(
+                HttpStatus.FORBIDDEN, "Вы не являетесь автором ответа");
+      }
+    } else {
+      if (!Objects.equals(jwtUtil.extractSubject(token), responseId.toString())) {
+        throw new ResponseStatusException(
+                HttpStatus.FORBIDDEN, "Вы не являетесь автором ответа");
+      }
     }
 
     return response;

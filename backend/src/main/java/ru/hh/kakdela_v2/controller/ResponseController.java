@@ -47,7 +47,7 @@ public class ResponseController {
               responseWithTokenDto.getResponseAccessToken())
           .httpOnly(true)
           .sameSite("strict")
-          .path("/api/answers")
+          .path("/api/responses")
           .maxAge(60 * 60 * 24 * 7)
           .build();
 
