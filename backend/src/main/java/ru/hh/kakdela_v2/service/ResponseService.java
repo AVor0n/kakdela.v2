@@ -8,9 +8,10 @@ import org.springframework.web.server.ResponseStatusException;
 import ru.hh.kakdela_v2.dao.AccountDao;
 import ru.hh.kakdela_v2.dao.ResponseDao;
 import ru.hh.kakdela_v2.dao.SurveyDao;
-import ru.hh.kakdela_v2.dto.response.ResponseCreateDto;
+import ru.hh.kakdela_v2.dto.response.ResponseCreateResponseDto;
 import ru.hh.kakdela_v2.dto.response.ResponseResponseDto;
 import ru.hh.kakdela_v2.model.*;
+import ru.hh.kakdela_v2.util.JwtUtil;
 
 import java.util.HashSet;
 import java.util.List;
@@ -24,6 +25,7 @@ public class ResponseService {
   private final SurveyDao surveyDao;
   private final AccountDao accountDao;
   private final PermissionService permissionService;
+  private final JwtUtil jwtUtil;
 
   @Transactional(readOnly = true)
   public ResponseResponseDto getById(UUID id) {
@@ -56,7 +58,7 @@ public class ResponseService {
   }
 
   @Transactional
-  public ResponseResponseDto create(UUID surveyId, UUID accountId) {
+  public ResponseCreateResponseDto create(UUID surveyId, UUID accountId) {
     Survey survey = surveyDao.findById(surveyId)
             .orElseThrow(() -> new ResponseStatusException(
                     HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
@@ -87,7 +89,13 @@ public class ResponseService {
             .build();
 
     responseDao.save(response);
-    return new ResponseResponseDto(response);
+
+    if (accountId == null) {
+      return new ResponseCreateResponseDto(response.getId(),
+          jwtUtil.generateResponseEditToken(response.getId()));
+    }
+
+    return new ResponseCreateResponseDto(response.getId(), null);
   }
 
   @Transactional

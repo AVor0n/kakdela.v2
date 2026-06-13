@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import ru.hh.kakdela_v2.dto.response.ResponseCreateResponseDto;
 import ru.hh.kakdela_v2.dto.response.ResponseResponseDto;
 import ru.hh.kakdela_v2.service.ResponseService;
 import ru.hh.kakdela_v2.util.CustomUserDetails;
@@ -21,8 +22,8 @@ public class ResponseController {
   // User side
 
   @PostMapping("/surveys/{surveyId}/responses")
-  public ResponseResponseDto create(@PathVariable UUID surveyId,
-                                    @AuthenticationPrincipal CustomUserDetails currentUser) {
+  public ResponseCreateResponseDto create(@PathVariable UUID surveyId,
+                                          @AuthenticationPrincipal CustomUserDetails currentUser) {
     return responseService.create(surveyId, (currentUser != null ? currentUser.getId() : null));
   }
 
