@@ -35,7 +35,8 @@ public class ResponseService {
             .orElseThrow(() -> new ResponseStatusException(
                     HttpStatus.NOT_FOUND, "Ответ не найден: " + id));
 
-    if (!Objects.equals(response.getAccount().getId(), accountId)
+    if (response.getAccount() != null
+        && !response.getAccount().getId().equals(accountId)
         || !Objects.equals(jwtUtil.extractSubject(token), id.toString())) {
       throw new ResponseStatusException(
           HttpStatus.FORBIDDEN, "Вы не являетесь автором ответа");
@@ -118,7 +119,8 @@ public class ResponseService {
             .orElseThrow(() -> new ResponseStatusException(
                     HttpStatus.NOT_FOUND, "Ответ не найден: " + id));
 
-    if (!Objects.equals(response.getAccount().getId(), accountId)
+    if (response.getAccount() != null
+        && !response.getAccount().getId().equals(accountId)
         || !Objects.equals(jwtUtil.extractSubject(token), id.toString())) {
       throw new ResponseStatusException(
           HttpStatus.FORBIDDEN, "Вы не являетесь автором ответа");
