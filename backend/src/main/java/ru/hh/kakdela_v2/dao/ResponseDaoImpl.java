@@ -23,17 +23,21 @@ public class ResponseDaoImpl implements ResponseDao {
   @Override
   public List<Response> findCompletedBySurveyId(UUID surveyId) {
     return entityManager
-            .createQuery("FROM Response r WHERE r.survey.id = :surveyId AND r.isComplete = true", Response.class)
-            .setParameter("surveyId", surveyId)
-            .getResultList();
+        .createQuery(
+            """
+            FROM Response r 
+            WHERE r.survey.id = :surveyId AND r.isComplete = true
+            """, Response.class)
+        .setParameter("surveyId", surveyId)
+        .getResultList();
   }
 
   @Override
   public List<Response> findAllByAccountId(UUID accountId) {
     return entityManager
-            .createQuery("FROM Response r WHERE r.account.id = :accountId", Response.class)
-            .setParameter("accountId", accountId)
-            .getResultList();
+        .createQuery("FROM Response r WHERE r.account.id = :accountId", Response.class)
+        .setParameter("accountId", accountId)
+        .getResultList();
   }
 
   @Override
