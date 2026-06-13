@@ -35,7 +35,8 @@ public class AnswerService {
 
     if (response.getAccount() != null
             && !response.getAccount().getId().equals(accountId)
-            || !Objects.equals(jwtUtil.extractSubject(token), responseId.toString())) {
+            || response.getAccount() == null
+            && !Objects.equals(jwtUtil.extractSubject(token), responseId.toString())) {
       throw new ResponseStatusException(
               HttpStatus.FORBIDDEN, "Вы не являетесь автором ответа");
     }
