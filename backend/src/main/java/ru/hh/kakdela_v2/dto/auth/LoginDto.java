@@ -1,14 +1,14 @@
 package ru.hh.kakdela_v2.dto.auth;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Getter
 @NoArgsConstructor
-@AllArgsConstructor
+@Getter
+@Setter
 public class LoginDto {
 
-  private String login;
-  private String password;
+  String login;
+  String password;
 }

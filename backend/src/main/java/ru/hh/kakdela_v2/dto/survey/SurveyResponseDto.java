@@ -1,5 +1,6 @@
 package ru.hh.kakdela_v2.dto.survey;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import ru.hh.kakdela_v2.dto.closing_page.ClosingPageResponseDto;
 import ru.hh.kakdela_v2.dto.survey_page.SurveyPageResponseDto;
@@ -9,6 +10,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
+@AllArgsConstructor
 @Getter
 public class SurveyResponseDto {
 
@@ -39,10 +41,10 @@ public class SurveyResponseDto {
     this.expireAt = survey.getExpireAt();
     this.createdAt = survey.getCreatedAt();
     this.pages = survey.getPages().stream()
-            .map(SurveyPageResponseDto::new)
-            .toList();
+        .map(SurveyPageResponseDto::new)
+        .toList();
     this.closingPage = survey.getClosingPage() != null
-            ? new ClosingPageResponseDto(survey.getClosingPage())
-            : null;
+        ? new ClosingPageResponseDto(survey.getClosingPage())
+        : null;
   }
 }

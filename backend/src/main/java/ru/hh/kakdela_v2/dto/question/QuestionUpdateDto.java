@@ -6,9 +6,9 @@ import lombok.Setter;
 
 import ru.hh.kakdela_v2.model.Question;
 
+@NoArgsConstructor
 @Getter
 @Setter
-@NoArgsConstructor
 public class QuestionUpdateDto {
 
   private Integer serialNumber;

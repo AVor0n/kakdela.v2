@@ -1,17 +1,16 @@
 package ru.hh.kakdela_v2.dto.survey;
 
+import jakarta.validation.constraints.FutureOrPresent;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.Instant;
 
-import jakarta.validation.constraints.Size;
-import jakarta.validation.constraints.FutureOrPresent;
-
+@NoArgsConstructor
 @Getter
 @Setter
-@NoArgsConstructor
 public class SurveyUpdateDto {
 
   @Size(min = 1, max = 200, message = "Заголовок не может быть пустым или длиннее 200 символов")

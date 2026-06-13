@@ -36,11 +36,11 @@ public class AuthService {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Пароли не совпадают");
     }
 
-    AccountCreateDto accountCreateDto = new AccountCreateDto(
-      registerDto.getLogin(),
-      registerDto.getEmail(),
-      passwordEncoder.encode(registerDto.getPassword())
-    );
+    AccountCreateDto accountCreateDto = new AccountCreateDto();
+
+    accountCreateDto.setLogin(registerDto.getLogin());
+    accountCreateDto.setEmail(registerDto.getEmail());
+    accountCreateDto.setHashPassword(passwordEncoder.encode(registerDto.getPassword()));
 
     accountService.create(accountCreateDto);
   }

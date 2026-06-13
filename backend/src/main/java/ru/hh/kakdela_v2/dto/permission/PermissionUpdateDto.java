@@ -6,9 +6,9 @@ import lombok.Setter;
 
 import ru.hh.kakdela_v2.model.Permission;
 
+@NoArgsConstructor
 @Getter
 @Setter
-@NoArgsConstructor
 public class PermissionUpdateDto {
 
   private Permission.SurveyRole role;

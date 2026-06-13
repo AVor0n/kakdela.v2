@@ -7,14 +7,14 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+@NoArgsConstructor
 @Getter
 @Setter
-@NoArgsConstructor
 public class AnswerOptionUpdateDto {
 
-    @NotNull(message = "Порядковый номер обязателен")
-    @Min(value = 1, message = "Порядковый номер должен быть больше 0")
-    private Integer serialNumber;
-    @NotBlank(message = "Текст варианта ответа не может быть пустым")
-    private String answerOptionText;
+  @NotNull(message = "Порядковый номер обязателен")
+  @Min(value = 1, message = "Порядковый номер должен быть больше 0")
+  private Integer serialNumber;
+  @NotBlank(message = "Текст варианта ответа не может быть пустым")
+  private String answerOptionText;
 }
