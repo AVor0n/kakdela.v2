@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.server.ResponseStatusException;
 import ru.hh.kakdela_v2.dto.response.ErrorResponse;
 
 import java.time.LocalDateTime;
@@ -124,6 +125,28 @@ public class GlobalExceptionHandler {
 
         log.error("Access denied: ", ex);
         return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<ErrorResponse> handleResponseStatusException(ResponseStatusException ex, WebRequest request) {
+        HttpStatus status = HttpStatus.resolve(ex.getStatusCode().value());
+        String errorName = null;
+        if (status != null) {
+            errorName = status.getReasonPhrase();
+            System.out.println(errorName);
+        }
+
+        ErrorResponse error = new ErrorResponse(
+                LocalDateTime.now(),
+                ex.getStatusCode().value(),
+                (errorName != null) ? errorName : ex.getReason(),
+                ex.getMessage(),
+                getPath(request),
+                null
+        );
+
+        log.error("{}: ", ex.getReason(), ex);
+        return new ResponseEntity<>(error, ex.getStatusCode());
     }
 
     @ExceptionHandler(Exception.class)
