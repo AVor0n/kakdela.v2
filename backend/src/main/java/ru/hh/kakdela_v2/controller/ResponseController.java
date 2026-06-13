@@ -9,6 +9,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import ru.hh.kakdela_v2.dto.response.ResponseCreateResponseDto;
 import ru.hh.kakdela_v2.dto.response.ResponseResponseDto;
+import ru.hh.kakdela_v2.dto.response.ResponseWithTokenDto;
 import ru.hh.kakdela_v2.service.ResponseService;
 import ru.hh.kakdela_v2.util.CustomUserDetails;
 
@@ -24,7 +25,10 @@ public class ResponseController {
   @PostMapping("/surveys/{surveyId}/responses")
   public ResponseCreateResponseDto create(@PathVariable UUID surveyId,
                                           @AuthenticationPrincipal CustomUserDetails currentUser) {
-    return responseService.create(surveyId, (currentUser != null ? currentUser.getId() : null));
+    ResponseWithTokenDto responseWithTokenDto = responseService.create(surveyId,
+        (currentUser != null ? currentUser.getId() : null));
+
+    return new ResponseCreateResponseDto(responseWithTokenDto.getResponseId());
   }
 
   @PostMapping("/responses/{responseId}/complete")

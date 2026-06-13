@@ -1,11 +1,11 @@
 package ru.hh.kakdela_v2.dto.response;
 
 import lombok.Value;
-import ru.hh.kakdela_v2.model.Response;
 
 import java.util.UUID;
 
 @Value
-public class ResponseCreateResponseDto {
+public class ResponseWithTokenDto {
   UUID responseId;
+  String responseEditToken;
 }

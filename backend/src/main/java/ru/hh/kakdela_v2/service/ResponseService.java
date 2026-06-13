@@ -10,6 +10,7 @@ import ru.hh.kakdela_v2.dao.ResponseDao;
 import ru.hh.kakdela_v2.dao.SurveyDao;
 import ru.hh.kakdela_v2.dto.response.ResponseCreateResponseDto;
 import ru.hh.kakdela_v2.dto.response.ResponseResponseDto;
+import ru.hh.kakdela_v2.dto.response.ResponseWithTokenDto;
 import ru.hh.kakdela_v2.model.*;
 import ru.hh.kakdela_v2.util.JwtUtil;
 
@@ -58,7 +59,7 @@ public class ResponseService {
   }
 
   @Transactional
-  public ResponseCreateResponseDto create(UUID surveyId, UUID accountId) {
+  public ResponseWithTokenDto create(UUID surveyId, UUID accountId) {
     Survey survey = surveyDao.findById(surveyId)
             .orElseThrow(() -> new ResponseStatusException(
                     HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
@@ -89,7 +90,13 @@ public class ResponseService {
             .build();
 
     responseDao.save(response);
-    return new ResponseCreateResponseDto(response);
+
+    if (accountId == null) {
+      return  new ResponseWithTokenDto(response.getId(),
+          jwtUtil.generateResponseEditToken(response.getId()));
+    }
+
+    return new ResponseWithTokenDto(response.getId(), null);
   }
 
   @Transactional
