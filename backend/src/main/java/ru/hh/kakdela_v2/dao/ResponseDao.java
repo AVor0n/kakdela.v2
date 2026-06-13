@@ -10,11 +10,19 @@ public interface ResponseDao {
 
   Optional<Response> findById(UUID id);
 
-  List<Response> findAllBySurveyId(UUID surveyId);
+  List<Response> findCompletedBySurveyId(UUID surveyId);
 
   List<Response> findAllByAccountId(UUID accountId);
 
-  boolean existsByAccountIdAndSurveyId(UUID accountId, UUID surveyId);
+  long countAllBySurveyId(UUID surveyId);
+
+  long countIncompletedBySurveyId(UUID surveyId);
+
+  List<Response> findIncompletedBySurveyIdAndAccountId(UUID surveyId, UUID accountId);
+
+  boolean existsBySurveyIdAndAccountId(UUID accountId, UUID surveyId);
+
+  boolean areAllMandatoryQuestionsAnswered(UUID responseId);
 
   void save(Response response);
 

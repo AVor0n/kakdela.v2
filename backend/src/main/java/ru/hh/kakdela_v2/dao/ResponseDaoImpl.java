@@ -21,33 +21,99 @@ public class ResponseDaoImpl implements ResponseDao {
   }
 
   @Override
-  public List<Response> findAllBySurveyId(UUID surveyId) {
+  public List<Response> findCompletedBySurveyId(UUID surveyId) {
     return entityManager
-            .createQuery("FROM Response r WHERE r.survey.id = :surveyId", Response.class)
-            .setParameter("surveyId", surveyId)
-            .getResultList();
+        .createQuery(
+            """
+            FROM Response r 
+            WHERE r.survey.id = :surveyId AND r.isComplete = true
+            """, Response.class)
+        .setParameter("surveyId", surveyId)
+        .getResultList();
   }
 
   @Override
   public List<Response> findAllByAccountId(UUID accountId) {
     return entityManager
-            .createQuery("FROM Response r WHERE r.account.id = :accountId", Response.class)
-            .setParameter("accountId", accountId)
-            .getResultList();
+        .createQuery("FROM Response r WHERE r.account.id = :accountId", Response.class)
+        .setParameter("accountId", accountId)
+        .getResultList();
   }
 
   @Override
-  public boolean existsByAccountIdAndSurveyId(UUID accountId, UUID surveyId) {
-    return Optional.of(entityManager
-                    .createQuery("""
-                            SELECT COUNT(r) FROM Response r
-                            WHERE r.account.id = :accountId AND r.survey.id = :surveyId
-                            """, Long.class)
-                    .setParameter("accountId", accountId)
-                    .setParameter("surveyId", surveyId)
-                    .getSingleResult())
-            .map(count -> count > 0)
-            .orElse(false);
+  public long countAllBySurveyId(UUID surveyId) {
+    return entityManager
+        .createQuery(
+            """
+            SELECT COUNT(r)
+            FROM Response r 
+            WHERE r.survey.id = :surveyId
+            """, Long.class)
+        .setParameter("surveyId", surveyId)
+        .getSingleResult();
+  }
+
+  @Override
+  public long countIncompletedBySurveyId(UUID surveyId) {
+    return entityManager
+        .createQuery(
+            """
+            SELECT COUNT(r)
+            FROM Response r 
+            WHERE r.survey.id = :surveyId AND r.isComplete = false
+            """, Long.class)
+        .setParameter("surveyId", surveyId)
+        .getSingleResult();
+  }
+
+  @Override
+  public List<Response> findIncompletedBySurveyIdAndAccountId(UUID surveyId, UUID accountId) {
+    return entityManager
+        .createQuery(
+            """
+            FROM Response r
+            WHERE r.account.id = :accountId AND r.survey.id = :surveyId AND r.isComplete = false
+            """, Response.class)
+        .setParameter("accountId", accountId)
+        .setParameter("surveyId", surveyId)
+        .getResultList();
+  }
+
+  @Override
+  public boolean existsBySurveyIdAndAccountId(UUID accountId, UUID surveyId) {
+    return entityManager
+        .createQuery(
+            """
+            SELECT COUNT(r) FROM Response r
+            WHERE r.account.id = :accountId AND r.survey.id = :surveyId
+            """, Long.class)
+        .setParameter("accountId", accountId)
+        .setParameter("surveyId", surveyId)
+        .getSingleResult() > 0;
+  }
+
+  @Override
+  public boolean areAllMandatoryQuestionsAnswered(UUID responseId) {
+    return entityManager
+        .createQuery(
+            """
+            SELECT COUNT(q)
+            FROM Question q
+            WHERE q.isMandatory = true
+              AND q.surveyPage.survey = (
+                  SELECT r.survey
+                  FROM Response r
+                  WHERE r.id = :responseId
+              )
+              AND q.id NOT IN (
+                  SELECT a.question.id
+                  FROM Answer a
+                  WHERE a.response.id = :responseId
+              )
+            """, Long.class)
+        .setParameter("responseId", responseId)
+        .getSingleResult()
+        .equals(0L);
   }
 
   @Override

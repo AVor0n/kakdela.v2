@@ -10,7 +10,7 @@ import javax.crypto.SecretKey;
 import java.util.*;
 import java.util.function.Function;
 
-@Service
+@Service()
 public class JwtUtil {
 
   private final SecretKey key;
@@ -19,7 +19,17 @@ public class JwtUtil {
     key = Keys.hmacShaKeyFor(SECRET.getBytes());
   }
 
-  public String extractLogin(String token) {
+  public String extractTokenFromHeader(String header) {
+    String token = null;
+
+    if (header != null && header.startsWith("Bearer ")) {
+      token = header.substring(7);
+    }
+
+    return token;
+  }
+
+  public String extractSubject(String token) {
     return extractClaim(token, Claims::getSubject);
   }
 
@@ -33,6 +43,15 @@ public class JwtUtil {
         .subject(userDetails.getUsername())
         .issuedAt(new Date(System.currentTimeMillis()))
         .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 15))
+        .signWith(key)
+        .compact();
+  }
+
+  public String generateResponseEditToken(UUID responseId) {
+    return Jwts.builder()
+        .subject(responseId.toString())
+        .issuedAt(new Date(System.currentTimeMillis()))
+        .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24 * 7))
         .signWith(key)
         .compact();
   }
