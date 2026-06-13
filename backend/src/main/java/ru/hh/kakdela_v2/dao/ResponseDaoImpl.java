@@ -50,7 +50,7 @@ public class ResponseDaoImpl implements ResponseDao {
             WHERE r.survey.id = :surveyId
             """, Long.class)
         .setParameter("surveyId", surveyId)
-        .getSingleResult();
+        .getSingleResultOrNull();
   }
 
   @Override
@@ -63,7 +63,7 @@ public class ResponseDaoImpl implements ResponseDao {
             WHERE r.survey.id = :surveyId AND r.isComplete = false
             """, Long.class)
         .setParameter("surveyId", surveyId)
-        .getSingleResult();
+        .getSingleResultOrNull();
   }
 
   @Override
@@ -89,7 +89,7 @@ public class ResponseDaoImpl implements ResponseDao {
             """, Long.class)
         .setParameter("accountId", accountId)
         .setParameter("surveyId", surveyId)
-        .getSingleResult() > 0;
+        .getSingleResultOrNull() > 0;
   }
 
   @Override
@@ -112,7 +112,7 @@ public class ResponseDaoImpl implements ResponseDao {
               )
             """, Long.class)
         .setParameter("responseId", responseId)
-        .getSingleResult()
+        .getSingleResultOrNull()
         .equals(0L);
   }
 

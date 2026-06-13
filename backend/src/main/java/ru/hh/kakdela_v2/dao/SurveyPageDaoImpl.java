@@ -56,7 +56,7 @@ public class SurveyPageDaoImpl implements SurveyPageDao {
                             """, Long.class)
                     .setParameter("surveyId", surveyId)
                     .setParameter("serialNumber", serialNumber)
-                    .getSingleResult())
+                    .getSingleResultOrNull())
             .map(count -> count > 0)
             .orElse(false);
   }

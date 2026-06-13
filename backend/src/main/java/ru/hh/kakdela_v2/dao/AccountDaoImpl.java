@@ -25,7 +25,7 @@ public class AccountDaoImpl implements AccountDao {
     return Optional.ofNullable(entityManager
             .createQuery("FROM Account a WHERE a.login = :login", Account.class)
             .setParameter("login", login)
-            .getSingleResult());
+            .getSingleResultOrNull());
   }
 
   @Override
@@ -33,7 +33,7 @@ public class AccountDaoImpl implements AccountDao {
     return Optional.ofNullable(entityManager
             .createQuery("FROM Account a WHERE a.email = :email", Account.class)
             .setParameter("email", email)
-            .getSingleResult());
+            .getSingleResultOrNull());
   }
 
   @Override
@@ -63,7 +63,7 @@ public class AccountDaoImpl implements AccountDao {
     return Optional.ofNullable(entityManager
                     .createQuery("SELECT COUNT(a) FROM Account a WHERE a.login = :login", Long.class)
                     .setParameter("login", login)
-                    .getSingleResult())
+                    .getSingleResultOrNull())
             .map(count -> count > 0)
             .orElse(false);
   }
@@ -73,7 +73,7 @@ public class AccountDaoImpl implements AccountDao {
     return Optional.ofNullable(entityManager
                     .createQuery("SELECT COUNT(a) FROM Account a WHERE a.email = :email", Long.class)
                     .setParameter("email", email)
-                    .getSingleResult())
+                    .getSingleResultOrNull())
             .map(count -> count > 0)
             .orElse(false);
   }
