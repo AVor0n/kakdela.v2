@@ -7,5 +7,5 @@ import java.util.UUID;
 @Value
 public class ResponseWithTokenDto {
   UUID responseId;
-  String responseEditToken;
+  String responseAccessToken;
 }

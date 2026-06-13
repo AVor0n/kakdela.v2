@@ -33,10 +33,10 @@ public class ResponseController {
     ResponseWithTokenDto responseWithTokenDto = responseService.create(surveyId,
         (currentUser != null ? currentUser.getId() : null));
 
-    if (responseWithTokenDto.getResponseEditToken() != null) {
+    if (responseWithTokenDto.getResponseAccessToken() != null) {
 
       ResponseCookie responseCompleteTokenCookie = ResponseCookie.from("responseAccessToken",
-              responseWithTokenDto.getResponseEditToken())
+              responseWithTokenDto.getResponseAccessToken())
           .httpOnly(true)
           .sameSite("strict")
           .path("/api/responses/complete")
@@ -44,7 +44,7 @@ public class ResponseController {
           .build();
 
       ResponseCookie answerEditTokenCookie = ResponseCookie.from("answerAccessToken",
-              responseWithTokenDto.getResponseEditToken())
+              responseWithTokenDto.getResponseAccessToken())
           .httpOnly(true)
           .sameSite("strict")
           .path("/api/answers")
