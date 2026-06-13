@@ -35,7 +35,7 @@ public class ResponseController {
 
     if (responseWithTokenDto.getResponseEditToken() != null) {
 
-      ResponseCookie responseCompleteTokenCookie = ResponseCookie.from("responseCompleteToken",
+      ResponseCookie responseCompleteTokenCookie = ResponseCookie.from("responseAccessToken",
               responseWithTokenDto.getResponseEditToken())
           .httpOnly(true)
           .sameSite("strict")
@@ -43,7 +43,7 @@ public class ResponseController {
           .maxAge(60 * 60 * 24 * 7)
           .build();
 
-      ResponseCookie answerEditTokenCookie = ResponseCookie.from("answerEditToken",
+      ResponseCookie answerEditTokenCookie = ResponseCookie.from("answerAccessToken",
               responseWithTokenDto.getResponseEditToken())
           .httpOnly(true)
           .sameSite("strict")
@@ -61,7 +61,7 @@ public class ResponseController {
   @PostMapping("/responses/{responseId}/complete")
   public ResponseEntity<?> complete(@PathVariable UUID responseId,
                                     @AuthenticationPrincipal CustomUserDetails currentUser,
-                                    @CookieValue(value = "responseCompleteToken",
+                                    @CookieValue(value = "responseAccessToken",
                                         required = false) String token) {
     responseService.complete(responseId, (currentUser != null ? currentUser.getId() : null), token);
     return ResponseEntity.ok("Ответ записан");
