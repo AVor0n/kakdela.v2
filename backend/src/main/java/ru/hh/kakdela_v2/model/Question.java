@@ -1,16 +1,16 @@
 package ru.hh.kakdela_v2.model;
 
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import jakarta.persistence.*;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -19,9 +19,9 @@ import java.util.UUID;
 @AllArgsConstructor
 @Entity
 @Table(name = "question",
-        indexes = {
-                @Index(name = "idx_question_survey_page_id", columnList = "survey_page_id")
-        }
+    indexes = {
+        @Index(name = "idx_question_survey_page_id", columnList = "survey_page_id")
+    }
 )
 public class Question {
 
@@ -38,11 +38,11 @@ public class Question {
   @Column(name = "serial_number", nullable = false)
   private Integer serialNumber;
 
-    @Column(name = "title", length = 200, nullable = false)
-    private String title;
+  @Column(name = "title", length = 200, nullable = false)
+  private String title;
 
-    @Column(name = "description", length = 5000)
-    private String description;
+  @Column(name = "description", length = 5000)
+  private String description;
 
   @Column(name = "type", nullable = false)
   @Enumerated(EnumType.STRING)
@@ -53,18 +53,20 @@ public class Question {
   private AnswerOptionOrder answerOptionOrder;
 
   @Column(name = "is_mandatory", nullable = false)
+  @ColumnDefault("true")
   private boolean isMandatory;
 
   @Column(name = "is_visible", nullable = false)
+  @ColumnDefault("true")
   private boolean isVisible;
 
   @Column(name = "condition", columnDefinition = "TEXT")
   private String condition;
 
-    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
-    @OrderBy("serial_number ASC")
-    @Builder.Default
-    private List<AnswerOption> answerOptions = new ArrayList<>();
+  @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
+  @OrderBy("serial_number ASC")
+  @Builder.Default
+  private List<AnswerOption> answerOptions = new ArrayList<>();
 
   @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
   @Builder.Default

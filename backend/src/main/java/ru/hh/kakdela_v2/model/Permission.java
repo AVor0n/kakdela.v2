@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -19,43 +20,44 @@ import java.util.UUID;
 @Table(name = "permissions")
 public class Permission {
 
-    @EmbeddedId
-    private PermissionId id;
+  @EmbeddedId
+  private PermissionId id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("accountId")
-    @JoinColumn(name = "account_id", nullable = false)
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    private Account account;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @MapsId("accountId")
+  @JoinColumn(name = "account_id", nullable = false)
+  @OnDelete(action = OnDeleteAction.CASCADE)
+  private Account account;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("surveyId")
-    @JoinColumn(name = "survey_id", nullable = false)
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    private Survey survey;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @MapsId("surveyId")
+  @JoinColumn(name = "survey_id", nullable = false)
+  @OnDelete(action = OnDeleteAction.CASCADE)
+  private Survey survey;
 
-    @Column(name = "role", nullable = false)
-    @Enumerated(EnumType.STRING)
-    private SurveyRole role;
+  @Column(name = "role", nullable = false)
+  @Enumerated(EnumType.STRING)
+  private SurveyRole role;
 
-    @Column(name = "do_notify", nullable = false)
-    private boolean doNotify;
+  @Column(name = "do_notify", nullable = false)
+  @ColumnDefault("true")
+  private boolean doNotify;
 
-    @Embeddable
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class PermissionId implements Serializable {
-        @Column(name = "account_id")
-        private UUID accountId;
+  @Embeddable
+  @Data
+  @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
+  public static class PermissionId implements Serializable {
+    @Column(name = "account_id")
+    private UUID accountId;
 
-        @Column(name = "survey_id")
-        private UUID surveyId;
-    }
+    @Column(name = "survey_id")
+    private UUID surveyId;
+  }
 
-    public enum SurveyRole {
-        EDITOR,
-        ANALYST
-    }
+  public enum SurveyRole {
+    EDITOR,
+    ANALYST
+  }
 }
