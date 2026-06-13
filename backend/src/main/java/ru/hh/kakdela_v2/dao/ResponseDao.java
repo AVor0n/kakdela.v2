@@ -14,6 +14,10 @@ public interface ResponseDao {
 
   List<Response> findAllByAccountId(UUID accountId);
 
+  long countAllBySurveyId(UUID surveyId);
+
+  long countIncompletedBySurveyId(UUID surveyId);
+
   List<Response> findIncompletedBySurveyIdAndAccountId(UUID surveyId, UUID accountId);
 
   boolean existsBySurveyIdAndAccountId(UUID accountId, UUID surveyId);

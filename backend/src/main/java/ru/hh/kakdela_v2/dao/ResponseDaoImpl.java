@@ -37,15 +37,42 @@ public class ResponseDaoImpl implements ResponseDao {
   }
 
   @Override
+  public long countAllBySurveyId(UUID surveyId) {
+    return entityManager
+        .createQuery(
+            """
+            SELECT COUNT(r)
+            FROM Response r 
+            WHERE r.survey.id = :surveyId
+            """, Long.class)
+        .setParameter("surveyId", surveyId)
+        .getSingleResult();
+  }
+
+  @Override
+  public long countIncompletedBySurveyId(UUID surveyId) {
+    return entityManager
+        .createQuery(
+            """
+            SELECT COUNT(r)
+            FROM Response r 
+            WHERE r.survey.id = :surveyId AND r.isComplete = false
+            """, Long.class)
+        .setParameter("surveyId", surveyId)
+        .getSingleResult();
+  }
+
+  @Override
   public List<Response> findIncompletedBySurveyIdAndAccountId(UUID surveyId, UUID accountId) {
     return entityManager
-            .createQuery("""
-                            FROM Response r
-                            WHERE r.account.id = :accountId AND r.survey.id = :surveyId AND r.isComplete = false
-                            """, Response.class)
-            .setParameter("accountId", accountId)
-            .setParameter("surveyId", surveyId)
-            .getResultList();
+        .createQuery(
+            """
+            FROM Response r
+            WHERE r.account.id = :accountId AND r.survey.id = :surveyId AND r.isComplete = false
+            """, Response.class)
+        .setParameter("accountId", accountId)
+        .setParameter("surveyId", surveyId)
+        .getResultList();
   }
 
   @Override
