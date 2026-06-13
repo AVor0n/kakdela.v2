@@ -10,13 +10,23 @@ import javax.crypto.SecretKey;
 import java.util.*;
 import java.util.function.Function;
 
-@Service
+@Service()
 public class JwtUtil {
 
   private final SecretKey key;
 
   public JwtUtil(@Value("${app.jwt-secret}") String SECRET) {
     key = Keys.hmacShaKeyFor(SECRET.getBytes());
+  }
+
+  public String extractTokenFromHeader(String header) {
+    String token = null;
+
+    if (header != null && header.startsWith("Bearer ")) {
+      token = header.substring(7);
+    }
+
+    return token;
   }
 
   public String extractSubject(String token) {
