@@ -70,7 +70,7 @@ public class ResponseController {
   @GetMapping("/responses/{responseId}")
   public ResponseResponseDto getById(@PathVariable UUID responseId,
                                     @AuthenticationPrincipal CustomUserDetails currentUser,
-                                    @CookieValue(value = "responseCompleteToken",
+                                    @CookieValue(value = "responseAccessToken",
                                         required = false) String token) {
     return responseService.getById(responseId, (currentUser != null ? currentUser.getId() : null), token);
   }
