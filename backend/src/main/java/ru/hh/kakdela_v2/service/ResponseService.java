@@ -16,6 +16,7 @@ import ru.hh.kakdela_v2.util.JwtUtil;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -29,10 +30,22 @@ public class ResponseService {
   private final JwtUtil jwtUtil;
 
   @Transactional(readOnly = true)
-  public ResponseResponseDto getById(UUID id) {
+  public ResponseResponseDto getById(UUID id, UUID accountId, String token) {
     Response response = responseDao.findById(id)
             .orElseThrow(() -> new ResponseStatusException(
                     HttpStatus.NOT_FOUND, "Ответ не найден: " + id));
+
+    if (!Objects.equals(response.getAccount().getId(), accountId)
+        || !Objects.equals(jwtUtil.extractSubject(token), id.toString())) {
+      throw new ResponseStatusException(
+          HttpStatus.FORBIDDEN, "Вы не являетесь автором ответа");
+    }
+
+    if (response.getAccount() == null && response.isComplete()) {
+      throw new ResponseStatusException(
+          HttpStatus.FORBIDDEN, "Просмотр завершённых анонимных ответов запрещён");
+    }
+
     return new ResponseResponseDto(response);
   }
 
@@ -105,8 +118,8 @@ public class ResponseService {
             .orElseThrow(() -> new ResponseStatusException(
                     HttpStatus.NOT_FOUND, "Ответ не найден: " + id));
 
-    if (!response.getAccount().getId().equals(accountId)
-        || !jwtUtil.extractSubject(token).equals(id.toString())) {
+    if (!Objects.equals(response.getAccount().getId(), accountId)
+        || !Objects.equals(jwtUtil.extractSubject(token), id.toString())) {
       throw new ResponseStatusException(
           HttpStatus.FORBIDDEN, "Вы не являетесь автором ответа");
     }

@@ -67,6 +67,14 @@ public class ResponseController {
     return ResponseEntity.ok("Ответ записан");
   }
 
+  @GetMapping("/responses/{responseId}")
+  public ResponseResponseDto getById(@PathVariable UUID responseId,
+                                    @AuthenticationPrincipal CustomUserDetails currentUser,
+                                    @CookieValue(value = "responseCompleteToken",
+                                        required = false) String token) {
+    return responseService.getById(responseId, (currentUser != null ? currentUser.getId() : null), token);
+  }
+
   @GetMapping("/surveys/{surveyId}/my-incomplete-responses")
   public List<ResponseResponseDto> findIncompleted(@PathVariable UUID surveyId,
                                                   @AuthenticationPrincipal CustomUserDetails currentUser) {
