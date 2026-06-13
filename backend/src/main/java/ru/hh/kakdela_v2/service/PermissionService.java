@@ -15,7 +15,6 @@ import ru.hh.kakdela_v2.model.Permission.PermissionId;
 import ru.hh.kakdela_v2.model.Permission.SurveyRole;
 import ru.hh.kakdela_v2.model.Survey;
 import ru.hh.kakdela_v2.model.Account;
-import ru.hh.kakdela_v2.util.TransactionHelper;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
