@@ -60,8 +60,10 @@ public class ResponseController {
 
   @PostMapping("/responses/{responseId}/complete")
   public ResponseEntity<?> complete(@PathVariable UUID responseId,
-                                    @AuthenticationPrincipal CustomUserDetails currentUser) {
-    responseService.complete(responseId, (currentUser != null ? currentUser.getId() : null));
+                                    @AuthenticationPrincipal CustomUserDetails currentUser,
+                                    @CookieValue(value = "responseCompleteToken",
+                                        required = false) String token) {
+    responseService.complete(responseId, (currentUser != null ? currentUser.getId() : null), token);
     return ResponseEntity.ok("Ответ записан");
   }
 

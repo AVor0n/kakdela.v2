@@ -100,12 +100,13 @@ public class ResponseService {
   }
 
   @Transactional
-  public ResponseResponseDto complete(UUID id, UUID accountId) {
+  public ResponseResponseDto complete(UUID id, UUID accountId, String token) {
     Response response = responseDao.findById(id)
             .orElseThrow(() -> new ResponseStatusException(
                     HttpStatus.NOT_FOUND, "Ответ не найден: " + id));
 
-    if (!response.getAccount().getId().equals(accountId)) {
+    if (!response.getAccount().getId().equals(accountId)
+        || !jwtUtil.extractSubject(token).equals(id.toString())) {
       throw new ResponseStatusException(
           HttpStatus.FORBIDDEN, "Вы не являетесь автором ответа");
     }
