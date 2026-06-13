@@ -3,7 +3,9 @@ package ru.hh.kakdela_v2.controller;
 import java.util.List;
 import java.util.UUID;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -12,6 +14,8 @@ import ru.hh.kakdela_v2.dto.response.ResponseResponseDto;
 import ru.hh.kakdela_v2.dto.response.ResponseWithTokenDto;
 import ru.hh.kakdela_v2.service.ResponseService;
 import ru.hh.kakdela_v2.util.CustomUserDetails;
+
+import javax.xml.datatype.Duration;
 
 @RestController
 @RequestMapping("/api")
@@ -24,9 +28,32 @@ public class ResponseController {
 
   @PostMapping("/surveys/{surveyId}/responses")
   public ResponseCreateResponseDto create(@PathVariable UUID surveyId,
-                                          @AuthenticationPrincipal CustomUserDetails currentUser) {
+                                          @AuthenticationPrincipal CustomUserDetails currentUser,
+                                          HttpServletResponse response) {
     ResponseWithTokenDto responseWithTokenDto = responseService.create(surveyId,
         (currentUser != null ? currentUser.getId() : null));
+
+    if (responseWithTokenDto.getResponseEditToken() != null) {
+
+      ResponseCookie responseCompleteTokenCookie = ResponseCookie.from("responseCompleteToken",
+              responseWithTokenDto.getResponseEditToken())
+          .httpOnly(true)
+          .sameSite("strict")
+          .path("/api/responses/complete")
+          .maxAge(60 * 60 * 24 * 7)
+          .build();
+
+      ResponseCookie answerEditTokenCookie = ResponseCookie.from("answerEditToken",
+              responseWithTokenDto.getResponseEditToken())
+          .httpOnly(true)
+          .sameSite("strict")
+          .path("/api/answers")
+          .maxAge(60 * 60 * 24 * 7)
+          .build();
+
+      response.addHeader("Set-Cookie", responseCompleteTokenCookie.toString());
+      response.addHeader("Set-Cookie", answerEditTokenCookie.toString());
+    }
 
     return new ResponseCreateResponseDto(responseWithTokenDto.getResponseId());
   }
