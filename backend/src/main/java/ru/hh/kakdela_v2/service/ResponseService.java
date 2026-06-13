@@ -89,13 +89,7 @@ public class ResponseService {
             .build();
 
     responseDao.save(response);
-
-    if (accountId == null) {
-      return new ResponseCreateResponseDto(response.getId(),
-          jwtUtil.generateResponseEditToken(response.getId()));
-    }
-
-    return new ResponseCreateResponseDto(response.getId(), null);
+    return new ResponseCreateResponseDto(response);
   }
 
   @Transactional

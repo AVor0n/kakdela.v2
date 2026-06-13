@@ -8,5 +8,8 @@ import java.util.UUID;
 @Value
 public class ResponseCreateResponseDto {
   UUID responseId;
-  String responseEditToken;
+
+  public ResponseCreateResponseDto(Response response) {
+    this.responseId = response.getId();
+  }
 }
