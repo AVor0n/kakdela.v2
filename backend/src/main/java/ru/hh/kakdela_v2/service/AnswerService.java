@@ -13,8 +13,10 @@ import ru.hh.kakdela_v2.dto.answer.AnswerResponseDto;
 import ru.hh.kakdela_v2.model.Answer;
 import ru.hh.kakdela_v2.model.Question;
 import ru.hh.kakdela_v2.model.Response;
+import ru.hh.kakdela_v2.util.JwtUtil;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -24,19 +26,35 @@ public class AnswerService {
   private final AnswerDao answerDao;
   private final ResponseDao responseDao;
   private final QuestionDao questionDao;
+  private final JwtUtil jwtUtil;
+
+  private Response checkAccessAndGetResponse(UUID responseId, UUID accountId, String token) {
+    Response response = responseDao.findById(responseId)
+            .orElseThrow(() -> new ResponseStatusException(
+                    HttpStatus.NOT_FOUND, "Прохождение не найдено: " + responseId));
+
+    if (response.getAccount() != null
+            && !response.getAccount().getId().equals(accountId)
+            || !Objects.equals(jwtUtil.extractSubject(token), responseId.toString())) {
+      throw new ResponseStatusException(
+              HttpStatus.FORBIDDEN, "Вы не являетесь автором ответа");
+    }
+
+    return response;
+  }
 
   @Transactional(readOnly = true)
-  public List<AnswerResponseDto> getAllByResponseId(UUID responseId) {
+  public List<AnswerResponseDto> getAllByResponseId(UUID responseId, UUID accountId, String token) {
+    checkAccessAndGetResponse(responseId, accountId, token);
+
     return answerDao.findAllByResponseId(responseId).stream()
             .map(AnswerResponseDto::new)
             .toList();
   }
 
   @Transactional
-  public AnswerResponseDto create(UUID responseId, AnswerCreateDto dto) {
-    Response response = responseDao.findById(responseId)
-            .orElseThrow(() -> new ResponseStatusException(
-                    HttpStatus.NOT_FOUND, "Прохождение не найдено: " + responseId));
+  public AnswerResponseDto create(UUID responseId, AnswerCreateDto dto, UUID accountId, String token) {
+    Response response = checkAccessAndGetResponse(responseId, accountId, token);
 
     if (response.isComplete()) {
       throw new ResponseStatusException(
@@ -75,10 +93,9 @@ public class AnswerService {
   }
 
   @Transactional
-  public AnswerResponseDto update(UUID responseId, UUID questionId, String newAnswerText) {
-    Response response = responseDao.findById(responseId)
-            .orElseThrow(() -> new ResponseStatusException(
-                    HttpStatus.NOT_FOUND, "Прохождение не найдено: " + responseId));
+  public AnswerResponseDto update(UUID responseId, UUID questionId, String newAnswerText,
+                                  UUID accountId, String token) {
+    Response response = checkAccessAndGetResponse(responseId, accountId, token);
 
     if (response.isComplete()) {
       throw new ResponseStatusException(
@@ -100,13 +117,18 @@ public class AnswerService {
   }
 
   @Transactional
-  public void delete(UUID responseId, UUID questionId) {
+  public void delete(UUID responseId, UUID questionId, UUID accountId, String token) {
+    checkAccessAndGetResponse(responseId, accountId, token);
+
     Answer.AnswerId id = Answer.AnswerId.builder()
             .responseId(responseId)
             .questionId(questionId)
             .build();
+
     Answer answer = answerDao.findById(id)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Ответ не найден: " + id));
+            .orElseThrow(() -> new ResponseStatusException(
+                    HttpStatus.NOT_FOUND, "Ответ не найден: " + id));
+
     answerDao.delete(answer);
   }
 }
