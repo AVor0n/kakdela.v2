@@ -1,60 +1,35 @@
 import { Box, Title } from '@hh.ru/magritte-ui';
+import { useNavigate } from 'react-router-dom';
+import { routes } from '@/app/routes';
 import { mockSurveys } from '@/pages/Survey/components/SurveyList/mockSurveys';
 import { SurveyCreateCard } from '@/pages/Survey/components/SurveyList/SurveyCreateCard';
 import { SurveyItem } from '@/pages/Survey/components/SurveyList/SurveyItem';
+import './SurveyList.css';
 
 export function SurveyList() {
+    const navigate = useNavigate();
+
     const handleCreateClick = () => {
-        // TODO: перейти к созданию опроса, когда экран будет готов.
+        navigate(routes.surveyCreate());
     };
 
-    const handleSurveyClick = () => {
-        // TODO: перейти к опросу, когда экран будет готов.
+    const handleSurveyClick = (surveyId: string) => {
+        navigate(routes.surveyView(surveyId));
     };
 
     return (
-        <div
-            style={{
-                width: '100%',
-                minHeight: '100dvh',
-                backgroundColor: '#f4f6f8',
-                padding: '40px 24px',
-            }}
-        >
-            <div
-                style={{
-                    width: '100%',
-                    maxWidth: 1180,
-                    margin: '0 auto',
-                }}
-            >
+        <div className="survey-list-page">
+            <div className="survey-list-content">
                 <Title Element="h1" size="large">
                     Список опросов
                 </Title>
 
-                <Box
-                    p={24}
-                    style={{
-                        width: '100%',
-                        boxSizing: 'border-box',
-                        marginTop: 20,
-                        backgroundColor: 'white',
-                        borderRadius: '24px',
-                        border: '1px solid #eee',
-                    }}
-                >
-                    <div
-                        style={{
-                            display: 'grid',
-                            gridTemplateColumns: 'repeat(auto-fit, minmax(min(220px, 100%), 1fr))',
-                            gap: 24,
-                            width: '100%',
-                        }}
-                    >
+                <Box p={24} className="survey-list-card">
+                    <div className="survey-list-grid">
                         <SurveyCreateCard onClick={handleCreateClick} />
 
                         {mockSurveys.map((survey) => (
-                            <SurveyItem key={survey.id} survey={survey} onClick={handleSurveyClick} />
+                            <SurveyItem key={survey.id} survey={survey} onClick={() => handleSurveyClick(survey.id)} />
                         ))}
                     </div>
                 </Box>

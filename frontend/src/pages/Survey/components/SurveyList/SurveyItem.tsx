@@ -11,21 +11,7 @@ export function SurveyItem({ survey, onClick }: SurveyItemProps) {
         <button
             type="button"
             onClick={onClick}
-            style={{
-                width: '100%',
-                minHeight: 232,
-                padding: 20,
-                border: 0,
-                borderRadius: 8,
-                backgroundColor: '#ffffff',
-                cursor: 'pointer',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 16,
-                textAlign: 'center',
-            }}
+            className="survey-list-item-button survey-list-item-button_centered"
         >
             <svg width="250" height="200" viewBox="0 0 250 200" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <rect x="1.5" y="1.5" width="247" height="197" rx="28.5" fill="#d5dce5" />
