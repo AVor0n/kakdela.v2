@@ -38,7 +38,7 @@ public class AnswerService {
             .orElseThrow(() -> new ResponseStatusException(
                     HttpStatus.NOT_FOUND, "Прохождение не найдено: " + responseId));
 
-    if (response.isComplete()) {
+    if (response.isCompleted()) {
       throw new ResponseStatusException(
               HttpStatus.CONFLICT, "Прохождение уже завершено");
     }
@@ -80,7 +80,7 @@ public class AnswerService {
             .orElseThrow(() -> new ResponseStatusException(
                     HttpStatus.NOT_FOUND, "Прохождение не найдено: " + responseId));
 
-    if (response.isComplete()) {
+    if (response.isCompleted()) {
       throw new ResponseStatusException(
               HttpStatus.CONFLICT, "Нельзя изменить ответ — прохождение уже завершено");
     }

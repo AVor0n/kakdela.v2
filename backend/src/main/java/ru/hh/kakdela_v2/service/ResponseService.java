@@ -41,7 +41,7 @@ public class ResponseService {
           HttpStatus.FORBIDDEN, "Вы не являетесь автором ответа");
     }
 
-    if (response.getAccount() == null && response.isComplete()) {
+    if (response.getAccount() == null && response.isCompleted()) {
       throw new ResponseStatusException(
           HttpStatus.FORBIDDEN, "Просмотр завершённых анонимных ответов запрещён");
     }
@@ -99,7 +99,7 @@ public class ResponseService {
     Response response = Response.builder()
             .account(account)
             .survey(survey)
-            .isComplete(false)
+            .isCompleted(false)
             .build();
 
     responseDao.save(response);
@@ -129,12 +129,12 @@ public class ResponseService {
           HttpStatus.CONFLICT, "Не все обязательные вопросы заполнены");
     }
 
-    if (response.isComplete()) {
+    if (response.isCompleted()) {
       throw new ResponseStatusException(
               HttpStatus.CONFLICT, "Прохождение уже завершено");
     }
 
-    response.setComplete(true);
+    response.setCompleted(true);
     responseDao.update(response);
     return new ResponseResponseDto(response);
   }

@@ -16,7 +16,7 @@ public class ResponseResponseDto {
   private final UUID responseId;
   private final UUID accountId;   // может быть null — анонимное прохождение
   private final UUID surveyId;
-  private final boolean isComplete;
+  private final boolean isCompleted;
   private final Instant receivedAt;
   private final List<AnswerResponseDto> answers;
 
@@ -26,7 +26,7 @@ public class ResponseResponseDto {
         ? response.getAccount().getId()
         : null;
     this.surveyId = response.getSurvey().getId();
-    this.isComplete = response.isComplete();
+    this.isCompleted = response.isCompleted();
     this.receivedAt = response.getReceivedAt();
     this.answers = response.getAnswers().stream()
         .map(AnswerResponseDto::new)

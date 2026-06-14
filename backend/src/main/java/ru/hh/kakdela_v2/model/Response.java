@@ -42,9 +42,9 @@ public class Response {
   @JoinColumn(name = "survey_id", nullable = false)
   private Survey survey;
 
-  @Column(name = "is_complete", nullable = false)
+  @Column(name = "is_completed", nullable = false)
   @ColumnDefault("false")
-  private boolean isComplete;
+  private boolean isCompleted;
 
   @CreationTimestamp
   @Column(name = "received_at", updatable = false, nullable = false)
