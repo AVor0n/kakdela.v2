@@ -41,30 +41,27 @@ public class SecurityConfig {
   @Bean
   public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     http
-            .cors(cors -> cors.configurationSource(corsConfigurationSource))
-            .csrf(AbstractHttpConfigurer::disable)
-            .sessionManagement(
-                    session -> session
-                            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            )
-            .authorizeHttpRequests(
-                    auth -> auth
-                            .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
-                            .requestMatchers("/api/auth/**").permitAll()
-                            .requestMatchers(HttpMethod.GET, "/api/surveys/{surveyId}/my-incomplete-responses").authenticated()
-                            .requestMatchers(HttpMethod.GET, "/api/surveys/{surveyId}/**").permitAll()
-                            .requestMatchers(HttpMethod.GET, "/api/pages/{pageId}/**").permitAll()
-                            .requestMatchers(HttpMethod.GET, "/api/questions/{questionId}/**").permitAll()
-                            .requestMatchers(HttpMethod.GET, "/api/answer-options/{answerOptionId}/**").permitAll()
-                            .requestMatchers(HttpMethod.POST, "/api/surveys/*/responses").permitAll()
-                            .requestMatchers(HttpMethod.POST, "/api/responses/*/answers").permitAll()
-                            .requestMatchers(HttpMethod.GET, "/api/responses/*/answers").permitAll()
-                            .requestMatchers(HttpMethod.PUT, "/api/responses/*/answers/*").permitAll()
-                            .requestMatchers(HttpMethod.DELETE, "/api/responses/*/answers/*").permitAll()
-                            .requestMatchers(HttpMethod.POST, "/api/responses/*/complete").permitAll()
-                            .requestMatchers(HttpMethod.GET, "/api/responses/*").permitAll()
-                            .anyRequest().authenticated()
-            );
+        .cors(cors -> cors.configurationSource(corsConfigurationSource))
+        .csrf(AbstractHttpConfigurer::disable)
+        .sessionManagement(
+            session -> session
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+        )
+        .authorizeHttpRequests(
+            auth -> auth
+                .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
+                .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/surveys/{surveyId}/my-incomplete-responses").authenticated()
+                .requestMatchers(HttpMethod.GET, "/api/surveys/{surveyId}/**").permitAll()
+                .requestMatchers("/api/surveys/{surveyId}/responses").permitAll()
+                .requestMatchers("/api/responses/{responseId}/answers").permitAll()
+                .requestMatchers("/api/responses/{responseId}/complete").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/responses/{responseId}").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/pages/{pageId}/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/questions/{questionId}/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/answer-options/{answerOptionId}/**").permitAll()
+                .anyRequest().authenticated()
+        );
     http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 
     return http.build();
