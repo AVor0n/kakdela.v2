@@ -17,7 +17,7 @@ import java.util.UUID;
 @Entity
 @Table(name = "answer_option",
     uniqueConstraints = {
-        @UniqueConstraint(name = "uk_answer_option_question_serial",
+        @UniqueConstraint(name = "uq_answer_option_question_serial",
             columnNames = {"question_id", "serial_number"})
     }
 )
