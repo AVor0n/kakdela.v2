@@ -1,7 +1,5 @@
 package ru.hh.kakdela_v2.dto.closing_page;
 
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import ru.hh.kakdela_v2.model.ClosingPage;
