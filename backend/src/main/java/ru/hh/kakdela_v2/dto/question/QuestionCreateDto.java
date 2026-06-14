@@ -24,7 +24,7 @@ public class QuestionCreateDto {
   private String title;
   @Size(max = 5000, message = "Описание не может быть длиннее 5000 символов")
   private String description;
-  @NotBlank(message = "Тип вопроса обязателен")
+  @NotNull(message = "Тип вопроса обязателен")
   private Question.QuestionType type;
   private Question.AnswerOptionOrder answerOptionOrder;
   private boolean isMandatory;

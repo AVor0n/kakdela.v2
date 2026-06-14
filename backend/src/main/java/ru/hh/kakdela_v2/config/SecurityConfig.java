@@ -45,22 +45,25 @@ public class SecurityConfig {
         .csrf(AbstractHttpConfigurer::disable)
         .sessionManagement(
             session -> session
-            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         )
         .authorizeHttpRequests(
             auth -> auth
-            .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
-            .requestMatchers("/api/auth/**").permitAll()
-            .requestMatchers(HttpMethod.GET, "/api/surveys/{surveyId}/my-incomplete-responses").authenticated()
-            .requestMatchers(HttpMethod.GET, "/api/surveys/{surveyId}/**").permitAll()
-            .requestMatchers(HttpMethod.GET, "/api/pages/{pageId}/**").permitAll()
-            .requestMatchers(HttpMethod.GET, "/api/questions/{questionId}/**").permitAll()
-            .requestMatchers(HttpMethod.GET, "/api/answer-options/{answerOptionId}/**").permitAll()
-            .anyRequest().authenticated()
+                .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
+                .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/surveys/{surveyId}/my-incomplete-responses").authenticated()
+                .requestMatchers(HttpMethod.GET, "/api/surveys/{surveyId}/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/surveys/{surveyId}/responses").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/responses/{responseId}").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/responses/{responseId}/complete").permitAll()
+                .requestMatchers("/api/responses/{responseId}/answers").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/pages/{pageId}/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/questions/{questionId}/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/answer-options/{answerOptionId}/**").permitAll()
+                .anyRequest().authenticated()
         );
     http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 
     return http.build();
   }
 }
-
