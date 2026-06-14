@@ -19,9 +19,9 @@ public class SurveyUpdateDto {
   private String title;
   @Size(max = 5000, message = "Описание не должен быть длиннее 5000 символов")
   private String description;
-  private Boolean authorizedOnly;
-  private Boolean limitedToOneResponse;
-  private Boolean published;
+  private Boolean isAuthorizedOnly;
+  private Boolean isLimitedToOneResponse;
+  private Boolean isPublished;
   private Boolean doNotify;
   @FutureOrPresent(message = "Дедлайн не должен быть в прошлом")
   private Instant expireAt;

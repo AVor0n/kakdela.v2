@@ -90,8 +90,8 @@ public class QuestionService {
     if (dto.getDescription() != null) question.setDescription(dto.getDescription());
     if (dto.getType() != null) question.setType(dto.getType());
     if (dto.getAnswerOptionOrder() != null) question.setAnswerOptionOrder(dto.getAnswerOptionOrder());
-    if (dto.getMandatory() != null) question.setMandatory(dto.getMandatory());
-    if (dto.getVisible() != null) question.setVisible(dto.getVisible());
+    if (dto.getIsMandatory() != null) question.setMandatory(dto.getIsMandatory());
+    if (dto.getIsVisible() != null) question.setVisible(dto.getIsVisible());
     if (dto.getCondition() != null) question.setCondition(dto.getCondition());
 
     questionDao.update(question);

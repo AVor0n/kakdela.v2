@@ -97,9 +97,9 @@ public class SurveyService {
 
     if (dto.getTitle() != null) survey.setTitle(dto.getTitle());
     if (dto.getDescription() != null) survey.setDescription(dto.getDescription());
-    if (dto.getAuthorizedOnly() != null) survey.setAuthorizedOnly(dto.getAuthorizedOnly());
-    if (dto.getLimitedToOneResponse() != null) survey.setLimitedToOneResponse(dto.getLimitedToOneResponse());
-    if (dto.getPublished() != null) survey.setPublished(dto.getPublished());
+    if (dto.getIsAuthorizedOnly() != null) survey.setAuthorizedOnly(dto.getIsAuthorizedOnly());
+    if (dto.getIsLimitedToOneResponse() != null) survey.setLimitedToOneResponse(dto.getIsLimitedToOneResponse());
+    if (dto.getIsPublished() != null) survey.setPublished(dto.getIsPublished());
     if (dto.getDoNotify() != null) survey.setDoNotify(dto.getDoNotify());
     if (dto.getExpireAt() != null) survey.setExpireAt(dto.getExpireAt());
 
