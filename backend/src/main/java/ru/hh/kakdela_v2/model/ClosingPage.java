@@ -31,6 +31,6 @@ public class ClosingPage {
   @Column(name = "description", length = 5000)
   private String description;
 
-  @Column(name = "website_url", length = 5000)
+  @Column(name = "website_url", length = 2000)
   private String websiteUrl;
 }
