@@ -86,7 +86,7 @@ CREATE TABLE response (
 CREATE INDEX idx_response_survey_id
 ON response (survey_id);
 
-CREATE idx_response_account_id
+CREATE INDEX idx_response_account_id
 ON response (account_id);
 
 CREATE TABLE answer (
