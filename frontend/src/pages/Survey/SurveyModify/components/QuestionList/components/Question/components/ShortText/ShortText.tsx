@@ -3,5 +3,5 @@ import { useState } from 'react';
 
 export function ShortText() {
     const [value, setValue] = useState('');
-    return <Input value={value} onChange={(e) => setValue(e)} placeholder='Короткий текст' disabled />;
+    return <Input value={value} onChange={(e) => setValue(e)} placeholder='Короткий текст' size='large' disabled />;
 }

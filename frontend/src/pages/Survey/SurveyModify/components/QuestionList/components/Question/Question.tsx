@@ -1,11 +1,12 @@
-import type { Question } from '@/shared/types/Question.type';
-import { Button, createStaticDataProvider, Input, Select } from '@hh.ru/magritte-ui';
-import { useCallback, useState } from 'react';
+import type { Question, QuestionType } from '@/shared/types/Question.type';
+import { Button, createStaticDataProvider, Input, Select, type StaticDataFetcherItem } from '@hh.ru/magritte-ui';
+import { useCallback, useMemo } from 'react';
 import './Question.css';
 import { ShortText } from './components/ShortText/ShortText';
 import { LongText } from './components/LongText/LongText';
-import { SingleChoice } from './components/SingleChoice/SingleChoice';
-import { MultipleChoice } from './components/MultipleChoice/MultipleChoice';
+import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { updateQuestionTitle, updateQuestionType } from '@/entities/Survey/Survey.slice';
+import { Choice } from './components/Choice/Choice';
 interface Props {
     question: Question;
     isEditMode?: boolean;
@@ -13,17 +14,17 @@ interface Props {
 }
 
 export function Question({ question, onClick, isEditMode = false }: Props) {
-    const [value, setValue] = useState(question.title);
+    const dispatch = useAppDispatch();
 
-    const OPTIONS = [
-        { id: 'SHORT_TEXT', value: 'Короткий текст', disabled: false },
-        { id: 'LONG_TEXT', value: 'Длинный текст', disabled: false },
-        { id: 'SINGLE_CHOICE', value: 'Один из списка', disabled: false },
-        { id: 'MULTIPLE_CHOICE', value: 'Несколько из списка', disabled: false },
+    const OPTIONS: StaticDataFetcherItem[] = [
+        { value: 'SHORT_TEXT', text: 'Короткий текст' },
+        { value: 'LONG_TEXT', text: 'Длинный текст' },
+        { value: 'SINGLE_CHOICE', text: 'Один из списка' },
+        { value: 'MULTIPLE_CHOICE', text: 'Несколько из списка' },
     ];
-    const [questionType, setQuestionType] = useState(
-        OPTIONS.find((option) => option.id === question.type) || OPTIONS[0],
-    );
+    const questionType = useMemo(() => {
+        return OPTIONS.find((option) => option.value === question.type);
+    }, [question.type]);
 
     const questionContent = useCallback(() => {
         switch (question.type) {
@@ -32,35 +33,43 @@ export function Question({ question, onClick, isEditMode = false }: Props) {
             case 'LONG_TEXT':
                 return <LongText />;
             case 'SINGLE_CHOICE':
-                return <SingleChoice options={question.answerOptions!} />;
+                return <Choice options={question.answerOptions!} type='radio' />;
             case 'MULTIPLE_CHOICE':
-                return <MultipleChoice options={question.answerOptions!} />;
+                return <Choice options={question.answerOptions!} type='checkbox' />;
             default:
                 return null;
         }
-    }, [question.type]);
+    }, [question]);
 
     return (
         <div className={isEditMode ? 'question editing' : 'question'} onClick={onClick}>
             <section className='question__settings'>
                 <Input
                     placeholder='Вопрос'
-                    value={value}
-                    onChange={(e) => setValue(e)}
+                    value={question.title}
+                    onChange={(e) => {
+                        dispatch(updateQuestionTitle({ id: question.id, title: e }));
+                    }}
                     className='question__settings_title'
+                    disabled={!isEditMode}
                 />
                 <div className='question__settings_img'>img</div>
                 <Select
                     type='label'
                     value={questionType}
                     dataProvider={createStaticDataProvider(OPTIONS, 'Тип вопроса')}
-                    name='questionType'
+                    name='area'
                     onChange={(e) => {
-                        setQuestionType(e);
+                        dispatch(
+                            updateQuestionType({
+                                type: e.value as QuestionType,
+                            }),
+                        );
                     }}
-                    pickerDesktopType='drop'
-                    widthEqualToActivator
-                ></Select>
+                    triggerProps={{
+                        'aria-label': 'Выбор языка',
+                    }}
+                />
             </section>
 
             <section className='question__content'>
@@ -73,7 +82,7 @@ export function Question({ question, onClick, isEditMode = false }: Props) {
                         Дублировать
                     </Button>
                     <Button mode='secondary' style='negative' type='button'>
-                        Удлить
+                        Удалить
                     </Button>
                 </div>
             </section>

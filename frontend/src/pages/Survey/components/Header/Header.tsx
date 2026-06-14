@@ -1,10 +1,11 @@
+import { Avatar } from '@hh.ru/magritte-ui';
 import './Header.css';
 
 export function Header() {
     return (
         <header className='header'>
             <span className='header__username'>username</span>
-            <img src='https://picsum.photos/200/300' alt='avatar' className='header__avatar' />
+            <Avatar aria-label='avatar' mode='letters' letters='US' size={48} style='color-9' />
         </header>
     );
 }

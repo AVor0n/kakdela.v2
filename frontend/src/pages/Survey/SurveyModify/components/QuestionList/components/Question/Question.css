@@ -27,3 +27,28 @@
     gap: 20px;
     align-self: end;
 }
+
+.question.editing .question__content_actions {
+    opacity: 1;
+}
+
+.question__content_actions {
+    transition: opacity 0.3s ease;
+    opacity: 0;
+}
+
+.question__content_add-option {
+    display: none;
+}
+
+.question.editing .question__content_add-option {
+    display: block;
+}
+
+.option__container button {
+    display: none;
+}
+
+.question.editing .option__container button {
+    display: block;
+}

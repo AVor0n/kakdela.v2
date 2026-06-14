@@ -1,0 +1,17 @@
+.option__container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.option__list {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.option {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
