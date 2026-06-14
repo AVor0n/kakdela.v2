@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -34,7 +33,6 @@ public class Account {
   @Column(name = "password_hash", columnDefinition = "TEXT", nullable = false)
   private String passwordHash;
 
-  @CreationTimestamp
   @Column(name = "registered_at", updatable = false, nullable = false)
   private Instant registeredAt;
 

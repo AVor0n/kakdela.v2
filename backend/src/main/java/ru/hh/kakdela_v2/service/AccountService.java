@@ -1,5 +1,6 @@
 package ru.hh.kakdela_v2.service;
 
+import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,6 +15,7 @@ import ru.hh.kakdela_v2.model.Account;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.Instant;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -42,6 +44,7 @@ public class AccountService {
             .login(dto.getLogin())
             .email(dto.getEmail())
             .passwordHash(dto.getHashPassword())
+            .registeredAt(Instant.now())
             .build();
 
     accountDao.save(account);

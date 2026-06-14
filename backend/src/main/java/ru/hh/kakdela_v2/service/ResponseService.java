@@ -14,6 +14,7 @@ import ru.hh.kakdela_v2.dto.response.ResponseWithTokenDto;
 import ru.hh.kakdela_v2.model.*;
 import ru.hh.kakdela_v2.util.JwtUtil;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -132,7 +133,10 @@ public class ResponseService {
     }
 
     response.setCompleted(true);
+    response.setReceivedAt(Instant.now());
+
     responseDao.update(response);
+
     return new ResponseResponseDto(response);
   }
 

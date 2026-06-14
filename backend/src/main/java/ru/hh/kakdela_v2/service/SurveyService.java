@@ -15,6 +15,7 @@ import ru.hh.kakdela_v2.model.Account;
 import ru.hh.kakdela_v2.model.Permission.SurveyRole;
 import ru.hh.kakdela_v2.model.Survey;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -70,7 +71,8 @@ public class SurveyService {
         .description(dto.getDescription())
         .isPublished(false)
         .isTemplate(false)
-        .expireAt(dto.getExpireAt());
+        .expireAt(dto.getExpireAt())
+        .createdAt(Instant.now());
 
     if (dto.getIsAuthorizedOnly() != null) {
       surveyBuilder.isAuthorizedOnly(dto.getIsAuthorizedOnly());

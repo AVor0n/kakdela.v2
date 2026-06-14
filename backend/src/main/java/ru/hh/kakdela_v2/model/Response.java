@@ -46,8 +46,7 @@ public class Response {
   @ColumnDefault("false")
   private boolean isCompleted;
 
-  @CreationTimestamp
-  @Column(name = "received_at", updatable = false, nullable = false)
+  @Column(name = "received_at")
   private Instant receivedAt;
 
   @OneToMany(mappedBy = "response", cascade = CascadeType.ALL, orphanRemoval = true)

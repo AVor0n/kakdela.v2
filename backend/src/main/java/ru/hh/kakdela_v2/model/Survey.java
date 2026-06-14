@@ -5,8 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.ColumnDefault;
-import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -42,29 +40,23 @@ public class Survey {
   private String description;
 
   @Column(name = "is_authorized_only", nullable = false)
-  @ColumnDefault("false")
   private boolean isAuthorizedOnly;
 
   @Column(name = "is_limited_to_one_response", nullable = false)
-  @ColumnDefault("false")
   private boolean isLimitedToOneResponse;
 
   @Column(name = "is_published", nullable = false)
-  @ColumnDefault("false")
   private boolean isPublished;
 
   @Column(name = "is_template", nullable = false)
-  @ColumnDefault("false")
   private boolean isTemplate;
 
   @Column(name = "do_notify", nullable = false)
-  @ColumnDefault("true")
   private boolean doNotify;
 
   @Column(name = "expire_at")
   private Instant expireAt;
 
-  @CreationTimestamp
   @Column(name = "created_at", updatable = false, nullable = false)
   private Instant createdAt;
 

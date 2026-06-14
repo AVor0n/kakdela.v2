@@ -81,7 +81,7 @@ CREATE TABLE response (
     account_id uuid REFERENCES account (id) ON DELETE SET NULL,
     survey_id uuid REFERENCES survey (id) ON DELETE CASCADE NOT NULL,
     is_completed bool NOT NULL DEFAULT false,
-    received_at timestamptz NOT NULL
+    received_at timestamptz
 );
 
 CREATE INDEX idx_response_survey_id
