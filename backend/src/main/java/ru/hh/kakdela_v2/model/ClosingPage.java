@@ -25,7 +25,7 @@ public class ClosingPage {
   @JoinColumn(name = "survey_id", nullable = false)
   private Survey survey;
 
-  @Column(name = "title", length = 200, nullable = false)
+  @Column(name = "title", length = 200)
   private String title;
 
   @Column(name = "description", length = 5000)

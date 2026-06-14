@@ -58,7 +58,7 @@ CREATE TABLE answer_option (
 
 CREATE TABLE closing_page (
     survey_id uuid PRIMARY KEY REFERENCES survey (id) ON DELETE CASCADE,
-    title varchar(200) NOT NULL,
+    title varchar(200),
     description varchar(5000),
     website_url varchar(5000)
 );
