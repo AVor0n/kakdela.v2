@@ -52,7 +52,7 @@ public class AnswerService {
   }
 
   @Transactional
-  public AnswerResponseDto create(UUID responseId, AnswerCreateDto dto, UUID accountId, String token) {
+  public AnswerResponseDto create(UUID responseId, UUID questionId, AnswerCreateDto dto, UUID accountId, String token) {
     Response response = checkAccessAndGetResponse(responseId, accountId, token);
 
     if (response.isComplete()) {
@@ -60,9 +60,9 @@ public class AnswerService {
           HttpStatus.CONFLICT, "Прохождение уже завершено");
     }
 
-    Question question = questionDao.findById(dto.getQuestionId())
+    Question question = questionDao.findById(questionId)
         .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Вопрос не найден: " + dto.getQuestionId()));
+            HttpStatus.NOT_FOUND, "Вопрос не найден: " + questionId));
 
     if (!question.getSurveyPage().getSurvey().getId()
         .equals(response.getSurvey().getId())) {
@@ -72,7 +72,7 @@ public class AnswerService {
 
     Answer.AnswerId answerId = Answer.AnswerId.builder()
         .responseId(responseId)
-        .questionId(dto.getQuestionId())
+        .questionId(questionId)
         .build();
 
     if (answerDao.findById(answerId).isPresent()) {

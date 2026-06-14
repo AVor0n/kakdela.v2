@@ -38,12 +38,14 @@ public class AnswerController {
   @ResponseStatus(HttpStatus.CREATED)
   public AnswerResponseDto create(
       @PathVariable UUID responseId,
+      @RequestParam UUID questionId,
       @Valid @RequestBody AnswerCreateDto createDto,
       @AuthenticationPrincipal CustomUserDetails currentUser,
       @CookieValue(value = "responseAccessToken", required = false) String token
   ) {
     return answerService.create(
         responseId,
+        questionId,
         createDto,
         currentUser != null ? currentUser.getId() : null,
         token
