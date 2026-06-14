@@ -3,6 +3,7 @@ package ru.hh.kakdela_v2.dto.question;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import ru.hh.kakdela_v2.dto.answer_option.AnswerOptionResponseDto;
+import ru.hh.kakdela_v2.model.AnswerOption;
 import ru.hh.kakdela_v2.model.Question;
 
 import java.util.Comparator;
@@ -37,7 +38,7 @@ public class QuestionResponseDto {
     this.isVisible = question.isVisible();
     this.condition = question.getCondition();
     this.answerOptions = question.getAnswerOptions().stream()
-        .sorted(Comparator.comparingInt(a -> a.getSerialNumber()))
+        .sorted(Comparator.comparingInt(AnswerOption::getSerialNumber))
         .map(AnswerOptionResponseDto::new)
         .toList();
   }

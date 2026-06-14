@@ -3,6 +3,7 @@ package ru.hh.kakdela_v2.dto.survey_page;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import ru.hh.kakdela_v2.dto.question.QuestionResponseDto;
+import ru.hh.kakdela_v2.model.Question;
 import ru.hh.kakdela_v2.model.SurveyPage;
 
 import java.util.Comparator;
@@ -27,7 +28,7 @@ public class SurveyPageResponseDto {
     this.title = page.getTitle();
     this.description = page.getDescription();
     this.questions = page.getQuestions().stream()
-        .sorted(Comparator.comparingInt(q -> q.getSerialNumber()))
+        .sorted(Comparator.comparingInt(Question::getSerialNumber))
         .map(QuestionResponseDto::new)
         .toList();
   }

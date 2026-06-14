@@ -5,8 +5,10 @@ import lombok.Getter;
 import ru.hh.kakdela_v2.dto.closing_page.ClosingPageResponseDto;
 import ru.hh.kakdela_v2.dto.survey_page.SurveyPageResponseDto;
 import ru.hh.kakdela_v2.model.Survey;
+import ru.hh.kakdela_v2.model.SurveyPage;
 
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
@@ -41,6 +43,7 @@ public class SurveyResponseDto {
     this.expireAt = survey.getExpireAt();
     this.createdAt = survey.getCreatedAt();
     this.pages = survey.getPages().stream()
+        .sorted(Comparator.comparingInt(SurveyPage::getSerialNumber))
         .map(SurveyPageResponseDto::new)
         .toList();
     this.closingPage = survey.getClosingPage() != null
