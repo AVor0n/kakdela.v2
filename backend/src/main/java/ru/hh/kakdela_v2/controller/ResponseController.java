@@ -43,16 +43,7 @@ public class ResponseController {
           .maxAge(60 * 60 * 24 * 7)
           .build();
 
-      ResponseCookie answerEditTokenCookie = ResponseCookie.from("answerAccessToken",
-              responseWithTokenDto.getResponseAccessToken())
-          .httpOnly(true)
-          .sameSite("strict")
-          .path("/api/responses")
-          .maxAge(60 * 60 * 24 * 7)
-          .build();
-
       response.addHeader("Set-Cookie", responseCompleteTokenCookie.toString());
-      response.addHeader("Set-Cookie", answerEditTokenCookie.toString());
     }
 
     return new ResponseCreateResponseDto(responseWithTokenDto.getResponseId());
@@ -69,15 +60,15 @@ public class ResponseController {
 
   @GetMapping("/responses/{responseId}")
   public ResponseResponseDto getById(@PathVariable UUID responseId,
-                                    @AuthenticationPrincipal CustomUserDetails currentUser,
-                                    @CookieValue(value = "responseAccessToken",
-                                        required = false) String token) {
+                                     @AuthenticationPrincipal CustomUserDetails currentUser,
+                                     @CookieValue(value = "responseAccessToken",
+                                         required = false) String token) {
     return responseService.getById(responseId, (currentUser != null ? currentUser.getId() : null), token);
   }
 
   @GetMapping("/surveys/{surveyId}/my-incomplete-responses")
   public List<ResponseResponseDto> findIncompleted(@PathVariable UUID surveyId,
-                                                  @AuthenticationPrincipal CustomUserDetails currentUser) {
+                                                   @AuthenticationPrincipal CustomUserDetails currentUser) {
     return responseService.getIncompletedBySurveyIdAndAccountId(surveyId, currentUser.getId());
   }
 
