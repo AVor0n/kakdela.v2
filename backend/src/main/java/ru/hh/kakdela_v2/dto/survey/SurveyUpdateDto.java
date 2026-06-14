@@ -1,11 +1,11 @@
 package ru.hh.kakdela_v2.dto.survey;
 
 import jakarta.validation.constraints.FutureOrPresent;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import ru.hh.kakdela_v2.util.NullOrNotBlank;
 
 import java.time.Instant;
 
@@ -14,7 +14,7 @@ import java.time.Instant;
 @Setter
 public class SurveyUpdateDto {
 
-  @NotBlank(message = "Заголовок не должен быть пустым")
+  @NullOrNotBlank(message = "Заголовок не должен быть пустым")
   @Size(max = 200, message = "Заголовок не должен быть длиннее 200 символов")
   private String title;
   @Size(max = 5000, message = "Описание не должен быть длиннее 5000 символов")
