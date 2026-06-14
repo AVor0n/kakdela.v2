@@ -119,7 +119,7 @@ public class AnswerService {
   public void delete(UUID responseId, UUID questionId, UUID accountId, String token) {
     Response response = checkAccessAndGetResponse(responseId, accountId, token);
 
-    if (response.isComplete()) {
+    if (response.isCompleted()) {
       throw new ResponseStatusException(
           HttpStatus.CONFLICT, "Нельзя удалить ответ — прохождение уже завершено");
     }
