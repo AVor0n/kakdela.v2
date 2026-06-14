@@ -66,6 +66,14 @@ export function validatePassword(value: string): string {
     return '';
 }
 
+export function validateLoginPassword(value: string): string {
+    if (!value) {
+        return 'Введите пароль';
+    }
+
+    return '';
+}
+
 export function validatePasswordConfirmation(value: string, password: string): string {
     if (!value) {
         return 'Повторите пароль';

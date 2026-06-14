@@ -1,4 +1,4 @@
-import axios from 'axios';
+import { apiClient } from '@/api/client';
 
 export type LoginRequest = {
     login: string;
@@ -18,13 +18,13 @@ export type RegisterRequest = {
 };
 
 export async function login(payload: LoginRequest): Promise<LoginResponse> {
-    const { data } = await axios.post<LoginResponse>('/api/auth/login', payload);
+    const { data } = await apiClient.post<LoginResponse>('/api/auth/login', payload);
 
     return data;
 }
 
 export async function register(payload: RegisterRequest): Promise<string> {
-    const { data } = await axios.post<string>('/api/auth/register', payload);
+    const { data } = await apiClient.post<string>('/api/auth/register', payload);
 
     return data;
 }

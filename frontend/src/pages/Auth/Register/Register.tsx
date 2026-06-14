@@ -23,6 +23,10 @@ type RegisterFormValues = {
 type RegisterFormTouched = Record<keyof RegisterFormValues, boolean>;
 type RegisterFormErrors = Record<keyof RegisterFormValues, string>;
 
+type ApiErrorResponse = {
+    error?: unknown;
+};
+
 const initialValues: RegisterFormValues = {
     login: '',
     email: '',
@@ -115,23 +119,13 @@ export function Register() {
 
         const responseData = error.response?.data;
 
-        if (typeof responseData === 'string') {
-            return responseData;
+        if (!responseData || typeof responseData !== 'object') {
+            return '';
         }
 
-        if (responseData && typeof responseData === 'object') {
-            const { message, error: errorMessage } = responseData as { message?: unknown; error?: unknown };
+        const { error: errorText } = responseData as ApiErrorResponse;
 
-            if (typeof message === 'string') {
-                return message;
-            }
-
-            if (typeof errorMessage === 'string') {
-                return errorMessage;
-            }
-        }
-
-        return '';
+        return typeof errorText === 'string' ? errorText : '';
     };
 
     const handleSubmit = async () => {

@@ -9,13 +9,21 @@ export default defineConfig({
         react(),
         checker({
             typescript: {
-                tsconfigPath: './tsconfig.app.json', // или tsconfig.json
+                tsconfigPath: './tsconfig.app.json',
             },
         }),
     ],
     resolve: {
         alias: {
             '@': path.resolve(__dirname, './src'),
+        },
+    },
+    server: {
+        proxy: {
+            '/api': {
+                target: 'http://backend:8080',
+                changeOrigin: true,
+            },
         },
     },
 });

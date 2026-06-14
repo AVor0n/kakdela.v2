@@ -1,12 +1,14 @@
 import axios from 'axios';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { login } from '@/api/auth';
+import { useAppDispatch } from '@/app/hooks';
 import { routes } from '@/app/routes';
+import { setAccessToken } from '@/features/auth/authSlice';
 import { AuthCard } from '@/pages/Auth/components/AuthCard';
 import { AuthPageLayout } from '@/pages/Auth/components/AuthPageLayout';
 import { LoginForm } from '@/pages/Auth/Login/LoginForm';
-import { validateLogin, validatePassword } from '@/pages/Auth/validation';
+import { validateLogin, validateLoginPassword } from '@/pages/Auth/validation';
 
 type LoginFormValues = {
     login: string;
@@ -15,6 +17,14 @@ type LoginFormValues = {
 
 type LoginFormTouched = Record<keyof LoginFormValues, boolean>;
 type LoginFormErrors = Record<keyof LoginFormValues, string>;
+
+type LoginLocationState = {
+    from?: {
+        pathname?: string;
+        search?: string;
+        hash?: string;
+    };
+};
 
 const initialValues: LoginFormValues = {
     login: '',
@@ -33,6 +43,8 @@ const initialErrors: LoginFormErrors = {
 
 export function Login() {
     const navigate = useNavigate();
+    const location = useLocation();
+    const dispatch = useAppDispatch();
     const [values, setValues] = useState<LoginFormValues>(initialValues);
     const [touched, setTouched] = useState<LoginFormTouched>(initialTouched);
     const [errors, setErrors] = useState<LoginFormErrors>(initialErrors);
@@ -43,7 +55,7 @@ export function Login() {
             return validateLogin(value);
         }
 
-        return validatePassword(value);
+        return validateLoginPassword(value);
     };
 
     const handleFieldChange = (field: keyof LoginFormValues, value: string) => {
@@ -76,7 +88,7 @@ export function Login() {
     const handleSubmit = async () => {
         const nextErrors: LoginFormErrors = {
             login: validateLogin(values.login),
-            password: validatePassword(values.password),
+            password: validateLoginPassword(values.password),
         };
 
         setTouched({
@@ -93,8 +105,13 @@ export function Login() {
             setFormError('');
             const { accessToken } = await login(values);
 
-            localStorage.setItem('accessToken', accessToken);
-            // TODO: редирект после успешного логина
+            dispatch(setAccessToken(accessToken));
+            const from = (location.state as LoginLocationState | null)?.from;
+            const redirectPath = from
+                ? `${from.pathname ?? routes.survey()}${from.search ?? ''}${from.hash ?? ''}`
+                : routes.survey();
+
+            navigate(redirectPath, { replace: true });
         } catch (error) {
             if (axios.isAxiosError(error) && (error.response?.status === 401 || error.response?.status === 403)) {
                 setFormError('Неверный логин или пароль');

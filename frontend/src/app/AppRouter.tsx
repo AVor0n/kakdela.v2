@@ -8,6 +8,7 @@ import { SurveyView } from '@/pages/Survey/SurveyView/SurveyView';
 import { SurveyModify } from '@/pages/Survey/SurveyModify/SurveyModify';
 import { SurveyCreate } from '@/pages/Survey/SurveyCreate/SurveyCreate';
 import { SurveyLayout } from '@/layouts/SurveyLayout';
+import { RequireAuth } from '@/features/auth/RequireAuth';
 
 export function AppRouter() {
     return (
@@ -20,7 +21,14 @@ export function AppRouter() {
                 </Route>
 
                 <Route path={routePatterns.surveys}>
-                    <Route path={routePatterns.surveys} element={<SurveyList />} />
+                    <Route
+                        path={routePatterns.surveys}
+                        element={
+                            <RequireAuth>
+                                <SurveyList />
+                            </RequireAuth>
+                        }
+                    />
                     <Route
                         element={
                             <div>
@@ -31,12 +39,26 @@ export function AppRouter() {
                     >
                         <Route path={routePatterns.surveysView} element={<SurveyView />} />
                         <Route element={<SurveyLayout />}>
-                            <Route path={routePatterns.surveyModify} element={<SurveyModify />}>
+                            <Route
+                                path={routePatterns.surveyModify}
+                                element={
+                                    <RequireAuth>
+                                        <SurveyModify />
+                                    </RequireAuth>
+                                }
+                            >
                                 <Route path='settings' element={<div>Settings</div>} />
                                 <Route path='questions' element={<div>Questions</div>} />
                                 <Route path='answers' element={<div>Answers</div>} />
                             </Route>
-                            <Route path={routePatterns.surveyCreate} element={<SurveyCreate />}>
+                            <Route
+                                path={routePatterns.surveyCreate}
+                                element={
+                                    <RequireAuth>
+                                        <SurveyCreate />
+                                    </RequireAuth>
+                                }
+                            >
                                 <Route path='settings' element={<div>Settings</div>} />
                                 <Route path='questions' element={<div>Questions</div>} />
                                 <Route path='answers' element={<div>Answers</div>} />
