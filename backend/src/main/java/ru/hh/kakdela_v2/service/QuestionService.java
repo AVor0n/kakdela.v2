@@ -54,17 +54,24 @@ public class QuestionService {
     
     permissionService.checkAccess(page.getSurvey().getId(), accountId, SurveyRole.EDITOR);
 
-    Question question = Question.builder()
-            .surveyPage(page)
-            .serialNumber(dto.getSerialNumber())
-            .title(dto.getTitle())
-            .description(dto.getDescription())
-            .type(dto.getType())
-            .answerOptionOrder(dto.getAnswerOptionOrder())
-            .isMandatory(dto.isMandatory())
-            .isVisible(dto.isVisible())
-            .condition(dto.getCondition())
-            .build();
+    Question.QuestionBuilder questionBuilder = Question.builder();
+
+    questionBuilder.surveyPage(page)
+        .serialNumber(dto.getSerialNumber())
+        .title(dto.getTitle())
+        .description(dto.getDescription())
+        .type(dto.getType())
+        .answerOptionOrder(dto.getAnswerOptionOrder())
+        .condition(dto.getCondition());
+
+    if (dto.getIsMandatory() != null) {
+      questionBuilder.isMandatory(dto.getIsMandatory());
+    }
+    if (dto.getIsVisible() != null) {
+      questionBuilder.isMandatory(dto.getIsVisible());
+    }
+
+    Question question = questionBuilder.build();
 
     questionDao.save(question);
     return new QuestionResponseDto(question);

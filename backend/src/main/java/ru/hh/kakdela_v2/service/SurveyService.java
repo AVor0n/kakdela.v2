@@ -63,17 +63,26 @@ public class SurveyService {
             .orElseThrow(() -> new ResponseStatusException(
                     HttpStatus.NOT_FOUND, "Аккаунт не найден: " + authorId));
 
-    Survey survey = Survey.builder()
-            .author(author)
-            .title(dto.getTitle())
-            .description(dto.getDescription())
-            .isAuthorizedOnly(dto.isAuthorizedOnly())
-            .isLimitedToOneResponse(dto.isLimitedToOneResponse())
-            .isPublished(false)
-            .isTemplate(false)
-            .doNotify(dto.isDoNotify())
-            .expireAt(dto.getExpireAt())
-            .build();
+    Survey.SurveyBuilder surveyBuilder = Survey.builder();
+
+    surveyBuilder.author(author)
+        .title(dto.getTitle())
+        .description(dto.getDescription())
+        .isPublished(false)
+        .isTemplate(false)
+        .expireAt(dto.getExpireAt());
+
+    if (dto.getIsAuthorizedOnly() != null) {
+      surveyBuilder.isAuthorizedOnly(dto.getIsAuthorizedOnly());
+    }
+    if (dto.getIsLimitedToOneResponse() != null) {
+      surveyBuilder.isLimitedToOneResponse(dto.getIsLimitedToOneResponse());
+    }
+    if (dto.getDoNotify() != null) {
+      surveyBuilder.doNotify(dto.getDoNotify());
+    }
+
+    Survey survey = surveyBuilder.build();
 
     surveyDao.save(survey);
     return new SurveyResponseDto(survey);
