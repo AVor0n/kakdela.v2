@@ -14,7 +14,6 @@ import ru.hh.kakdela_v2.dto.response.ResponseWithTokenDto;
 import ru.hh.kakdela_v2.model.*;
 import ru.hh.kakdela_v2.util.JwtUtil;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -29,27 +28,27 @@ public class ResponseService {
   private final PermissionService permissionService;
   private final JwtUtil jwtUtil;
 
+  private Response checkAccessAndGetResponse(UUID responseId, UUID accountId, String token) {
+    Response response = responseDao.findById(responseId)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Ответ не найден: " + responseId));
+
+    if (response.getAccount() != null && !response.getAccount().getId().equals(accountId)
+        || token != null && !Objects.equals(jwtUtil.extractSubject(token), responseId.toString())) {
+      throw new ResponseStatusException(
+          HttpStatus.FORBIDDEN, "Вы не являетесь автором ответа");
+    }
+
+    return response;
+  }
+
   @Transactional(readOnly = true)
   public ResponseResponseDto getById(UUID id, UUID accountId, String token) {
-    Response response = responseDao.findById(id)
-            .orElseThrow(() -> new ResponseStatusException(
-                    HttpStatus.NOT_FOUND, "Ответ не найден: " + id));
-
-    if (response.getAccount() != null) {
-      if (!response.getAccount().getId().equals(accountId)) {
-        throw new ResponseStatusException(
-                HttpStatus.FORBIDDEN, "Вы не являетесь автором ответа");
-      }
-    } else {
-      if (!Objects.equals(jwtUtil.extractSubject(token), id.toString())) {
-        throw new ResponseStatusException(
-                HttpStatus.FORBIDDEN, "Вы не являетесь автором ответа");
-      }
-    }
+    Response response = checkAccessAndGetResponse(id, accountId, token);
 
     if (response.getAccount() == null && response.isComplete()) {
       throw new ResponseStatusException(
-              HttpStatus.FORBIDDEN, "Просмотр завершённых анонимных ответов запрещён");
+          HttpStatus.FORBIDDEN, "Просмотр завершённых анонимных ответов запрещён");
     }
 
     return new ResponseResponseDto(response);
@@ -59,60 +58,60 @@ public class ResponseService {
   public List<ResponseResponseDto> getCompletedBySurveyId(UUID surveyId, UUID accountId) {
     permissionService.checkAccess(surveyId, accountId, Permission.SurveyRole.ANALYST);
     return responseDao.findCompletedBySurveyId(surveyId).stream()
-            .map(ResponseResponseDto::new)
-            .toList();
+        .map(ResponseResponseDto::new)
+        .toList();
   }
 
   @Transactional(readOnly = true)
   public List<ResponseResponseDto> getAllByAccountId(UUID accountId) {
     return responseDao.findAllByAccountId(accountId).stream()
-            .map(ResponseResponseDto::new)
-            .toList();
+        .map(ResponseResponseDto::new)
+        .toList();
   }
 
   @Transactional(readOnly = true)
   public List<ResponseResponseDto> getIncompletedBySurveyIdAndAccountId(UUID surveyId, UUID accountId) {
     return responseDao.findIncompletedBySurveyIdAndAccountId(surveyId, accountId).stream()
-            .map(ResponseResponseDto::new)
-            .toList();
+        .map(ResponseResponseDto::new)
+        .toList();
   }
 
   @Transactional
   public ResponseWithTokenDto create(UUID surveyId, UUID accountId) {
     Survey survey = surveyDao.findById(surveyId)
-            .orElseThrow(() -> new ResponseStatusException(
-                    HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
 
     if (!survey.isPublished()) {
       throw new ResponseStatusException(
-              HttpStatus.BAD_REQUEST, "Опрос ещё не опубликован");
+          HttpStatus.BAD_REQUEST, "Опрос ещё не опубликован");
     }
 
     if (survey.isLimitedToOneResponse() && accountId != null) {
       if (responseDao.existsBySurveyIdAndAccountId(surveyId, accountId)) {
         throw new ResponseStatusException(
-                HttpStatus.CONFLICT, "Вы уже проходили этот опрос");
+            HttpStatus.CONFLICT, "Вы уже проходили этот опрос");
       }
     }
 
     Account account = null;
     if (accountId != null) {
       account = accountDao.findById(accountId)
-              .orElseThrow(() -> new ResponseStatusException(
-                      HttpStatus.NOT_FOUND, "Аккаунт не найден: " + accountId));
+          .orElseThrow(() -> new ResponseStatusException(
+              HttpStatus.NOT_FOUND, "Аккаунт не найден: " + accountId));
     }
 
     Response response = Response.builder()
-            .account(account)
-            .survey(survey)
-            .isComplete(false)
-            .build();
+        .account(account)
+        .survey(survey)
+        .isComplete(false)
+        .build();
 
     responseDao.save(response);
 
     if (accountId == null) {
       return new ResponseWithTokenDto(response.getId(),
-              jwtUtil.generateResponseEditToken(response.getId()));
+          jwtUtil.generateResponseEditToken(response.getId()));
     }
 
     return new ResponseWithTokenDto(response.getId(), null);
@@ -120,25 +119,16 @@ public class ResponseService {
 
   @Transactional
   public ResponseResponseDto complete(UUID id, UUID accountId, String token) {
-    Response response = responseDao.findById(id)
-            .orElseThrow(() -> new ResponseStatusException(
-                    HttpStatus.NOT_FOUND, "Ответ не найден: " + id));
-
-    if (response.getAccount() != null
-            && !response.getAccount().getId().equals(accountId)
-            || !Objects.equals(jwtUtil.extractSubject(token), id.toString())) {
-      throw new ResponseStatusException(
-              HttpStatus.FORBIDDEN, "Вы не являетесь автором ответа");
-    }
+    Response response = checkAccessAndGetResponse(id, accountId, token);
 
     if (!responseDao.areAllMandatoryQuestionsAnswered(id)) {
       throw new ResponseStatusException(
-              HttpStatus.CONFLICT, "Не все обязательные вопросы заполнены");
+          HttpStatus.CONFLICT, "Не все обязательные вопросы заполнены");
     }
 
     if (response.isComplete()) {
       throw new ResponseStatusException(
-              HttpStatus.CONFLICT, "Прохождение уже завершено");
+          HttpStatus.CONFLICT, "Прохождение уже завершено");
     }
 
     response.setComplete(true);
@@ -149,8 +139,8 @@ public class ResponseService {
   @Transactional
   public void delete(UUID id) {
     Response response = responseDao.findById(id)
-            .orElseThrow(() -> new ResponseStatusException(
-                    HttpStatus.NOT_FOUND, "Ответ не найден: " + id));
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Ответ не найден: " + id));
     responseDao.delete(response);
   }
 }
