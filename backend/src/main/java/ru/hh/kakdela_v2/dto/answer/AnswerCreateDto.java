@@ -16,7 +16,6 @@ public class AnswerCreateDto {
 
   @NotNull(message = "ID вопроса обязателен")
   private UUID questionId;
-
   @NotBlank(message = "Текст ответа не должен быть пустым")
   @Max(value = 5000, message = "Текст ответа не должен быть длиннее 5000 символов")
   private String answerText;

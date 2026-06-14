@@ -16,7 +16,7 @@ public class SurveyPageCreateDto {
   @NotNull(message = "Порядковый номер обязателен")
   @Min(value = 1, message = "Порядковый номер должен быть больше 0")
   private Integer serialNumber;
-  @Size(max = 200, message = "Заголовок не может быть длиннее 200 символов")
+  @Size(max = 200, message = "Заголовок не должен быть длиннее 200 символов")
   private String title;
   @Size(max = 5000, message = "Описание не должен быть длиннее 5000 символов")
   private String description;
