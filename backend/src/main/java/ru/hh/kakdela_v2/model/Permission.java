@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -40,7 +39,6 @@ public class Permission {
   private SurveyRole role;
 
   @Column(name = "do_notify", nullable = false)
-  @ColumnDefault("true")
   private boolean doNotify;
 
   @Embeddable

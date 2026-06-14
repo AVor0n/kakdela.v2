@@ -11,11 +11,11 @@ CREATE TABLE survey (
     author_id uuid REFERENCES account (id) ON DELETE CASCADE NOT NULL,
     title varchar(200) NOT NULL,
     description varchar(5000),
-    is_authorized_only bool NOT NULL DEFAULT false,
-    is_limited_to_one_response bool NOT NULL DEFAULT false,
-    is_published bool NOT NULL DEFAULT false,
-    is_template bool NOT NULL DEFAULT false,
-    do_notify bool NOT NULL DEFAULT true,
+    is_authorized_only bool NOT NULL,
+    is_limited_to_one_response bool NOT NULL,
+    is_published bool NOT NULL,
+    is_template bool NOT NULL,
+    do_notify bool NOT NULL,
     expire_at timestamptz,
     created_at timestamptz NOT NULL
 );
@@ -51,8 +51,8 @@ CREATE TABLE question (
     description varchar(5000),
     type varchar(255) NOT NULL,
     answer_option_order varchar(255),
-    is_mandatory bool NOT NULL DEFAULT true,
-    is_visible bool NOT NULL DEFAULT true,
+    is_mandatory bool NOT NULL,
+    is_visible bool NOT NULL,
     condition text,
     CONSTRAINT uq_question_page_serial UNIQUE (survey_page_id, serial_number)
 );
@@ -80,7 +80,7 @@ CREATE TABLE response (
     id uuid PRIMARY KEY,
     account_id uuid REFERENCES account (id) ON DELETE SET NULL,
     survey_id uuid REFERENCES survey (id) ON DELETE CASCADE NOT NULL,
-    is_completed bool NOT NULL DEFAULT false,
+    is_completed bool NOT NULL,
     received_at timestamptz
 );
 

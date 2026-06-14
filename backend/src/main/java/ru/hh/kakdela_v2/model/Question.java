@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -57,11 +56,9 @@ public class Question {
   private AnswerOptionOrder answerOptionOrder;
 
   @Column(name = "is_mandatory", nullable = false)
-  @ColumnDefault("true")
   private boolean isMandatory;
 
   @Column(name = "is_visible", nullable = false)
-  @ColumnDefault("true")
   private boolean isVisible;
 
   @Column(name = "condition", columnDefinition = "TEXT")
