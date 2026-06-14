@@ -23,63 +23,63 @@ public class AnswerController {
 
   @GetMapping("/responses/{responseId}/answers")
   public List<AnswerResponseDto> getAllByResponseId(
-          @PathVariable UUID responseId,
-          @AuthenticationPrincipal CustomUserDetails currentUser,
-          @CookieValue(value = "answerAccessToken", required = false) String token
+      @PathVariable UUID responseId,
+      @AuthenticationPrincipal CustomUserDetails currentUser,
+      @CookieValue(value = "responseAccessToken", required = false) String token
   ) {
     return answerService.getAllByResponseId(
-            responseId,
-            currentUser != null ? currentUser.getId() : null,
-            token
+        responseId,
+        currentUser != null ? currentUser.getId() : null,
+        token
     );
   }
 
   @PostMapping("/responses/{responseId}/answers")
   @ResponseStatus(HttpStatus.CREATED)
   public AnswerResponseDto create(
-          @PathVariable UUID responseId,
-          @Valid @RequestBody AnswerCreateDto createDto,
-          @AuthenticationPrincipal CustomUserDetails currentUser,
-          @CookieValue(value = "answerAccessToken", required = false) String token
+      @PathVariable UUID responseId,
+      @Valid @RequestBody AnswerCreateDto createDto,
+      @AuthenticationPrincipal CustomUserDetails currentUser,
+      @CookieValue(value = "responseAccessToken", required = false) String token
   ) {
     return answerService.create(
-            responseId,
-            createDto,
-            currentUser != null ? currentUser.getId() : null,
-            token
+        responseId,
+        createDto,
+        currentUser != null ? currentUser.getId() : null,
+        token
     );
   }
 
-  @PutMapping("/responses/{responseId}/answers/{questionId}")
+  @PutMapping("/responses/{responseId}/answers")
   public AnswerResponseDto update(
-          @PathVariable UUID responseId,
-          @PathVariable UUID questionId,
-          @Valid @RequestBody AnswerUpdateDto updateDto,
-          @AuthenticationPrincipal CustomUserDetails currentUser,
-          @CookieValue(value = "answerAccessToken", required = false) String token
+      @PathVariable UUID responseId,
+      @RequestParam UUID questionId,
+      @Valid @RequestBody AnswerUpdateDto updateDto,
+      @AuthenticationPrincipal CustomUserDetails currentUser,
+      @CookieValue(value = "responseAccessToken", required = false) String token
   ) {
     return answerService.update(
-            responseId,
-            questionId,
-            updateDto.getAnswerText(),
-            currentUser != null ? currentUser.getId() : null,
-            token
+        responseId,
+        questionId,
+        updateDto.getAnswerText(),
+        currentUser != null ? currentUser.getId() : null,
+        token
     );
   }
 
-  @DeleteMapping("/responses/{responseId}/answers/{questionId}")
+  @DeleteMapping("/responses/{responseId}/answers")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void delete(
-          @PathVariable UUID responseId,
-          @PathVariable UUID questionId,
-          @AuthenticationPrincipal CustomUserDetails currentUser,
-          @CookieValue(value = "answerAccessToken", required = false) String token
+      @PathVariable UUID responseId,
+      @RequestParam UUID questionId,
+      @AuthenticationPrincipal CustomUserDetails currentUser,
+      @CookieValue(value = "responseAccessToken", required = false) String token
   ) {
     answerService.delete(
-            responseId,
-            questionId,
-            currentUser != null ? currentUser.getId() : null,
-            token
+        responseId,
+        questionId,
+        currentUser != null ? currentUser.getId() : null,
+        token
     );
   }
 }
