@@ -68,7 +68,7 @@ public class QuestionService {
       questionBuilder.isMandatory(dto.getIsMandatory());
     }
     if (dto.getIsVisible() != null) {
-      questionBuilder.isMandatory(dto.getIsVisible());
+      questionBuilder.isVisible(dto.getIsVisible());
     }
 
     Question question = questionBuilder.build();
