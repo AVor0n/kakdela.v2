@@ -56,7 +56,7 @@ public class QuestionDaoImpl implements QuestionDao {
                             """, Long.class)
                     .setParameter("pageId", pageId)
                     .setParameter("serialNumber", serialNumber)
-                    .getSingleResult())
+                    .getSingleResultOrNull())
             .map(count -> count > 0)
             .orElse(false);
   }

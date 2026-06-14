@@ -31,7 +31,7 @@ public class PermissionDaoImpl implements PermissionDao {
                       """, Permission.class)
               .setParameter("surveyId", surveyId)
               .setParameter("accountId", accountId)
-              .getSingleResult());
+              .getSingleResultOrNull());
     } catch (NoResultException e) {
       return Optional.empty();
     }
@@ -62,7 +62,7 @@ public class PermissionDaoImpl implements PermissionDao {
                             """, Long.class)
                     .setParameter("accountId", id.getAccountId())
                     .setParameter("surveyId", id.getSurveyId())
-                    .getSingleResult())
+                    .getSingleResultOrNull())
             .map(count -> count > 0)
             .orElse(false);
   }
@@ -76,7 +76,7 @@ public class PermissionDaoImpl implements PermissionDao {
                             """, Long.class)
                     .setParameter("surveyId", surveyId)
                     .setParameter("accountId", accountId)
-                    .getSingleResult())
+                    .getSingleResultOrNull())
             .map(count -> count > 0)
             .orElse(false);
   }
