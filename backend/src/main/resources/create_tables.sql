@@ -32,7 +32,7 @@ CREATE TABLE survey_page (
     id uuid PRIMARY KEY,
     survey_id uuid REFERENCES survey (id) ON DELETE CASCADE NOT NULL,
     serial_number int NOT NULL,
-    title varchar(200) NOT NULL,
+    title varchar(200),
     description varchar(5000)
 );
 

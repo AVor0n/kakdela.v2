@@ -41,7 +41,7 @@ public class SurveyPage {
   @Column(name = "serial_number", nullable = false)
   private Integer serialNumber;
 
-  @Column(name = "title", length = 200, nullable = false)
+  @Column(name = "title", length = 200)
   private String title;
 
   @Column(name = "description", length = 5000)
