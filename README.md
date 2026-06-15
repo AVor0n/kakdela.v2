@@ -36,7 +36,10 @@
 - Tomcat
 - Lombok
 #### Frontend:
-- wip
+- React
+- Redux Toolkit
+- @hh.ru/magrite-ui
+- Axios
 
 ## Инструкции по запуску
 Приложение поднимается одной командой из под docker
