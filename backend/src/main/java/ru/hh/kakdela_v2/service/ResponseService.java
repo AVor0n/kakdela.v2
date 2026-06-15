@@ -8,7 +8,6 @@ import org.springframework.web.server.ResponseStatusException;
 import ru.hh.kakdela_v2.dao.AccountDao;
 import ru.hh.kakdela_v2.dao.ResponseDao;
 import ru.hh.kakdela_v2.dao.SurveyDao;
-import ru.hh.kakdela_v2.dto.response.ResponseCreateResponseDto;
 import ru.hh.kakdela_v2.dto.response.ResponseResponseDto;
 import ru.hh.kakdela_v2.dto.response.ResponseWithTokenDto;
 import ru.hh.kakdela_v2.model.*;
@@ -33,6 +32,12 @@ public class ResponseService {
     Response response = responseDao.findById(responseId)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Ответ не найден: " + responseId));
+
+    if (response.getAccount() == null && token == null) {
+      throw new ResponseStatusException(
+          HttpStatus.UNAUTHORIZED, "Не предоставлены учётные данные для доступа к прохождению"
+      );
+    }
 
     if (response.getAccount() != null && !response.getAccount().getId().equals(accountId)
         || token != null && !Objects.equals(jwtUtil.extractSubject(token), responseId.toString())) {

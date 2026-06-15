@@ -33,6 +33,12 @@ public class AnswerService {
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Прохождение не найдено: " + responseId));
 
+    if (response.getAccount() == null && token == null) {
+      throw new ResponseStatusException(
+          HttpStatus.UNAUTHORIZED, "Не предоставлены учётные данные для доступа к прохождению"
+      );
+    }
+
     if (response.getAccount() != null && !response.getAccount().getId().equals(accountId)
         || token != null && !Objects.equals(jwtUtil.extractSubject(token), responseId.toString())) {
       throw new ResponseStatusException(
