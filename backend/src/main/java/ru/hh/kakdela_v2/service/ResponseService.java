@@ -14,6 +14,7 @@ import ru.hh.kakdela_v2.dto.response.ResponseWithTokenDto;
 import ru.hh.kakdela_v2.model.*;
 import ru.hh.kakdela_v2.util.JwtUtil;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -46,7 +47,7 @@ public class ResponseService {
   public ResponseResponseDto getById(UUID id, UUID accountId, String token) {
     Response response = checkAccessAndGetResponse(id, accountId, token);
 
-    if (response.getAccount() == null && response.isComplete()) {
+    if (response.getAccount() == null && response.isCompleted()) {
       throw new ResponseStatusException(
           HttpStatus.FORBIDDEN, "Просмотр завершённых анонимных ответов запрещён");
     }
@@ -104,7 +105,7 @@ public class ResponseService {
     Response response = Response.builder()
         .account(account)
         .survey(survey)
-        .isComplete(false)
+        .isCompleted(false)
         .build();
 
     responseDao.save(response);
@@ -126,13 +127,16 @@ public class ResponseService {
           HttpStatus.CONFLICT, "Не все обязательные вопросы заполнены");
     }
 
-    if (response.isComplete()) {
+    if (response.isCompleted()) {
       throw new ResponseStatusException(
           HttpStatus.CONFLICT, "Прохождение уже завершено");
     }
 
-    response.setComplete(true);
+    response.setCompleted(true);
+    response.setReceivedAt(Instant.now());
+
     responseDao.update(response);
+
     return new ResponseResponseDto(response);
   }
 

@@ -1,11 +1,13 @@
 package ru.hh.kakdela_v2.dto.response;
 
-import lombok.Value;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
 import java.util.UUID;
 
-@Value
+@AllArgsConstructor
+@Getter
 public class ResponseWithTokenDto {
-  UUID responseId;
-  String responseAccessToken;
+  private final UUID id;
+  private final String responseAccessToken;
 }

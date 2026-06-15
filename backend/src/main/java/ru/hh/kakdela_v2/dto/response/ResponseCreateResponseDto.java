@@ -1,11 +1,12 @@
 package ru.hh.kakdela_v2.dto.response;
 
-import lombok.Value;
-import ru.hh.kakdela_v2.model.Response;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
 import java.util.UUID;
 
-@Value
+@AllArgsConstructor
+@Getter
 public class ResponseCreateResponseDto {
-  UUID responseId;
+  private final UUID id;
 }

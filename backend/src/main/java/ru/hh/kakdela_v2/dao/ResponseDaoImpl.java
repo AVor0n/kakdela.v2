@@ -26,7 +26,7 @@ public class ResponseDaoImpl implements ResponseDao {
         .createQuery(
             """
             FROM Response r 
-            WHERE r.survey.id = :surveyId AND r.isComplete = true
+            WHERE r.survey.id = :surveyId AND r.isCompleted = true
             """, Response.class)
         .setParameter("surveyId", surveyId)
         .getResultList();
@@ -60,7 +60,7 @@ public class ResponseDaoImpl implements ResponseDao {
             """
             SELECT COUNT(r)
             FROM Response r 
-            WHERE r.survey.id = :surveyId AND r.isComplete = false
+            WHERE r.survey.id = :surveyId AND r.isCompleted = false
             """, Long.class)
         .setParameter("surveyId", surveyId)
         .getSingleResultOrNull();
@@ -72,7 +72,7 @@ public class ResponseDaoImpl implements ResponseDao {
         .createQuery(
             """
             FROM Response r
-            WHERE r.account.id = :accountId AND r.survey.id = :surveyId AND r.isComplete = false
+            WHERE r.account.id = :accountId AND r.survey.id = :surveyId AND r.isCompleted = false
             """, Response.class)
         .setParameter("accountId", accountId)
         .setParameter("surveyId", surveyId)

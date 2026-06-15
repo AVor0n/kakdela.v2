@@ -15,6 +15,7 @@ import ru.hh.kakdela_v2.model.Account;
 import ru.hh.kakdela_v2.model.Permission.SurveyRole;
 import ru.hh.kakdela_v2.model.Survey;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -64,16 +65,17 @@ public class SurveyService {
                     HttpStatus.NOT_FOUND, "Аккаунт не найден: " + authorId));
 
     Survey survey = Survey.builder()
-            .author(author)
-            .title(dto.getTitle())
-            .description(dto.getDescription())
-            .isAuthorizedOnly(dto.isAuthorizedOnly())
-            .isLimitedToOneResponse(dto.isLimitedToOneResponse())
-            .isPublished(false)
-            .isTemplate(false)
-            .doNotify(dto.isDoNotify())
-            .expireAt(dto.getExpireAt())
-            .build();
+        .author(author)
+        .title(dto.getTitle())
+        .description(dto.getDescription())
+        .isAuthorizedOnly(dto.getIsAuthorizedOnly())
+        .isLimitedToOneResponse(dto.getIsLimitedToOneResponse())
+        .doNotify(dto.getDoNotify())
+        .isPublished(false)
+        .isTemplate(false)
+        .expireAt(dto.getExpireAt())
+        .createdAt(Instant.now())
+        .build();
 
     surveyDao.save(survey);
     return new SurveyResponseDto(survey);
@@ -88,9 +90,9 @@ public class SurveyService {
 
     if (dto.getTitle() != null) survey.setTitle(dto.getTitle());
     if (dto.getDescription() != null) survey.setDescription(dto.getDescription());
-    if (dto.getAuthorizedOnly() != null) survey.setAuthorizedOnly(dto.getAuthorizedOnly());
-    if (dto.getLimitedToOneResponse() != null) survey.setLimitedToOneResponse(dto.getLimitedToOneResponse());
-    if (dto.getPublished() != null) survey.setPublished(dto.getPublished());
+    if (dto.getIsAuthorizedOnly() != null) survey.setAuthorizedOnly(dto.getIsAuthorizedOnly());
+    if (dto.getIsLimitedToOneResponse() != null) survey.setLimitedToOneResponse(dto.getIsLimitedToOneResponse());
+    if (dto.getIsPublished() != null) survey.setPublished(dto.getIsPublished());
     if (dto.getDoNotify() != null) survey.setDoNotify(dto.getDoNotify());
     if (dto.getExpireAt() != null) survey.setExpireAt(dto.getExpireAt());
 

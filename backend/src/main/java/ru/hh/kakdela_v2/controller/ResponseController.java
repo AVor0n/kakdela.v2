@@ -46,7 +46,7 @@ public class ResponseController {
       response.addHeader("Set-Cookie", responseCompleteTokenCookie.toString());
     }
 
-    return new ResponseCreateResponseDto(responseWithTokenDto.getResponseId());
+    return new ResponseCreateResponseDto(responseWithTokenDto.getId());
   }
 
   @PostMapping("/responses/{responseId}/complete")

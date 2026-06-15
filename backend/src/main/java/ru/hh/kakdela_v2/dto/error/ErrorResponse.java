@@ -1,4 +1,4 @@
-package ru.hh.kakdela_v2.dto.response;
+package ru.hh.kakdela_v2.dto.error;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

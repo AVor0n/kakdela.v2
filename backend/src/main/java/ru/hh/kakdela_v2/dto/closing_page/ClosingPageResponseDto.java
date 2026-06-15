@@ -1,8 +1,10 @@
 package ru.hh.kakdela_v2.dto.closing_page;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import ru.hh.kakdela_v2.model.ClosingPage;
 
+@AllArgsConstructor
 @Getter
 public class ClosingPageResponseDto {
 

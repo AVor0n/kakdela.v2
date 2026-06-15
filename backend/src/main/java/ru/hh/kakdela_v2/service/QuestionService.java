@@ -55,16 +55,16 @@ public class QuestionService {
     permissionService.checkAccess(page.getSurvey().getId(), accountId, SurveyRole.EDITOR);
 
     Question question = Question.builder()
-            .surveyPage(page)
-            .serialNumber(dto.getSerialNumber())
-            .title(dto.getTitle())
-            .description(dto.getDescription())
-            .type(dto.getType())
-            .answerOptionOrder(dto.getAnswerOptionOrder())
-            .isMandatory(dto.isMandatory())
-            .isVisible(dto.isVisible())
-            .condition(dto.getCondition())
-            .build();
+        .surveyPage(page)
+        .serialNumber(dto.getSerialNumber())
+        .title(dto.getTitle())
+        .description(dto.getDescription())
+        .type(dto.getType())
+        .answerOptionOrder(dto.getAnswerOptionOrder())
+        .isMandatory(dto.getIsMandatory())
+        .isVisible(dto.getIsVisible())
+        .condition(dto.getCondition())
+        .build();
 
     questionDao.save(question);
     return new QuestionResponseDto(question);
@@ -83,8 +83,8 @@ public class QuestionService {
     if (dto.getDescription() != null) question.setDescription(dto.getDescription());
     if (dto.getType() != null) question.setType(dto.getType());
     if (dto.getAnswerOptionOrder() != null) question.setAnswerOptionOrder(dto.getAnswerOptionOrder());
-    if (dto.getMandatory() != null) question.setMandatory(dto.getMandatory());
-    if (dto.getVisible() != null) question.setVisible(dto.getVisible());
+    if (dto.getIsMandatory() != null) question.setMandatory(dto.getIsMandatory());
+    if (dto.getIsVisible() != null) question.setVisible(dto.getIsVisible());
     if (dto.getCondition() != null) question.setCondition(dto.getCondition());
 
     questionDao.update(question);

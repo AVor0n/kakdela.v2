@@ -1,14 +1,18 @@
 package ru.hh.kakdela_v2.dto.survey;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import ru.hh.kakdela_v2.dto.closing_page.ClosingPageResponseDto;
 import ru.hh.kakdela_v2.dto.survey_page.SurveyPageResponseDto;
 import ru.hh.kakdela_v2.model.Survey;
+import ru.hh.kakdela_v2.model.SurveyPage;
 
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
+@AllArgsConstructor
 @Getter
 public class SurveyResponseDto {
 
@@ -16,11 +20,11 @@ public class SurveyResponseDto {
   private final UUID authorId;
   private final String title;
   private final String description;
-  private final boolean isAuthorizedOnly;
-  private final boolean isLimitedToOneResponse;
-  private final boolean isPublished;
-  private final boolean isTemplate;
-  private final boolean doNotify;
+  private final Boolean isAuthorizedOnly;
+  private final Boolean isLimitedToOneResponse;
+  private final Boolean isPublished;
+  private final Boolean isTemplate;
+  private final Boolean doNotify;
   private final Instant expireAt;
   private final Instant createdAt;
   private final List<SurveyPageResponseDto> pages;
@@ -39,10 +43,11 @@ public class SurveyResponseDto {
     this.expireAt = survey.getExpireAt();
     this.createdAt = survey.getCreatedAt();
     this.pages = survey.getPages().stream()
-            .map(SurveyPageResponseDto::new)
-            .toList();
+        .sorted(Comparator.comparingInt(SurveyPage::getSerialNumber))
+        .map(SurveyPageResponseDto::new)
+        .toList();
     this.closingPage = survey.getClosingPage() != null
-            ? new ClosingPageResponseDto(survey.getClosingPage())
-            : null;
+        ? new ClosingPageResponseDto(survey.getClosingPage())
+        : null;
   }
 }

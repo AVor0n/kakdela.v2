@@ -6,10 +6,8 @@ import ru.hh.kakdela_v2.dao.PermissionDao;
 import ru.hh.kakdela_v2.dao.SurveyDao;
 import ru.hh.kakdela_v2.dao.AccountDao;
 import ru.hh.kakdela_v2.dto.permission.PermissionCreateDto;
-import ru.hh.kakdela_v2.dto.permission.PermissionRequestDto;
 import ru.hh.kakdela_v2.dto.permission.PermissionResponseDto;
 import ru.hh.kakdela_v2.dto.permission.PermissionUpdateDto;
-import ru.hh.kakdela_v2.dto.permission.PermissionsListResponseDto;
 import ru.hh.kakdela_v2.model.Permission;
 import ru.hh.kakdela_v2.model.Permission.PermissionId;
 import ru.hh.kakdela_v2.model.Permission.SurveyRole;
@@ -113,12 +111,12 @@ public class PermissionService {
             .build();
 
     Permission permission = Permission.builder()
-            .id(permissionId)
-            .account(account)
-            .survey(survey)
-            .role(dto.getRole())
-            .doNotify(dto.isDoNotify())
-            .build();
+        .id(permissionId)
+        .account(account)
+        .survey(survey)
+        .role(dto.getRole())
+        .doNotify(dto.getDoNotify())
+        .build();
 
     permissionDao.save(permission);
     return new PermissionResponseDto(permission);

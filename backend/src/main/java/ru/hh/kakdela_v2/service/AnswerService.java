@@ -55,7 +55,7 @@ public class AnswerService {
   public AnswerResponseDto create(UUID responseId, UUID questionId, AnswerCreateDto dto, UUID accountId, String token) {
     Response response = checkAccessAndGetResponse(responseId, accountId, token);
 
-    if (response.isComplete()) {
+    if (response.isCompleted()) {
       throw new ResponseStatusException(
           HttpStatus.CONFLICT, "Прохождение уже завершено");
     }
@@ -96,7 +96,7 @@ public class AnswerService {
                                   UUID accountId, String token) {
     Response response = checkAccessAndGetResponse(responseId, accountId, token);
 
-    if (response.isComplete()) {
+    if (response.isCompleted()) {
       throw new ResponseStatusException(
           HttpStatus.CONFLICT, "Нельзя изменить ответ — прохождение уже завершено");
     }
@@ -119,7 +119,7 @@ public class AnswerService {
   public void delete(UUID responseId, UUID questionId, UUID accountId, String token) {
     Response response = checkAccessAndGetResponse(responseId, accountId, token);
 
-    if (response.isComplete()) {
+    if (response.isCompleted()) {
       throw new ResponseStatusException(
           HttpStatus.CONFLICT, "Нельзя удалить ответ — прохождение уже завершено");
     }

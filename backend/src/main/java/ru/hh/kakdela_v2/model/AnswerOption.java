@@ -1,11 +1,10 @@
 package ru.hh.kakdela_v2.model;
 
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import jakarta.persistence.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -17,26 +16,26 @@ import java.util.UUID;
 @AllArgsConstructor
 @Entity
 @Table(name = "answer_option",
-        uniqueConstraints = {
-                @UniqueConstraint(name = "uk_answer_option_question_serial",
-                        columnNames = {"question_id", "serial_number"})
-        }
+    uniqueConstraints = {
+        @UniqueConstraint(name = "uq_answer_option_question_serial",
+            columnNames = {"question_id", "serial_number"})
+    }
 )
 public class AnswerOption {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "id", updatable = false, nullable = false)
-    private UUID id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.UUID)
+  @Column(name = "id", updatable = false, nullable = false)
+  private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "question_id", nullable = false)
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    private Question question;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "question_id", nullable = false)
+  @OnDelete(action = OnDeleteAction.CASCADE)
+  private Question question;
 
-    @Column(name = "serial_number", nullable = false)
-    private Integer serialNumber;
+  @Column(name = "serial_number", nullable = false)
+  private Integer serialNumber;
 
-    @Column(name = "answer_option_text", nullable = false, columnDefinition = "TEXT")
-    private String answerOptionText;
+  @Column(name = "answer_option_text", length = 1000, nullable = false)
+  private String answerOptionText;
 }
