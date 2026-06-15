@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.server.ResponseStatusException;
-import ru.hh.kakdela_v2.dto.response.ErrorResponse;
+import ru.hh.kakdela_v2.dto.error.ErrorResponse;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;

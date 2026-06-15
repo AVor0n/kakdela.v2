@@ -17,7 +17,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import ru.hh.kakdela_v2.dto.response.ErrorResponse;
+import ru.hh.kakdela_v2.dto.error.ErrorResponse;
 import ru.hh.kakdela_v2.util.JwtUtil;
 import tools.jackson.databind.ObjectMapper;
 
