@@ -53,7 +53,7 @@ const surveySlice = createSlice({
             if (!state.selectedSurvey) return;
             state.selectedSurvey.pages[0].questions.forEach((question) => {
                 if (state.selectedQuestion && question.id === state.selectedQuestion.id) {
-                    question.answerOptions?.push(`Вариант ${question.answerOptions.length}`);
+                    question.answerOptions?.push(`Вариант ${question.answerOptions.length + 1}`);
                 }
             });
         },
@@ -68,6 +68,30 @@ const surveySlice = createSlice({
                 }
             });
         },
+        addQuestion: (state) => {
+            if (!state.selectedSurvey) return;
+            const newQuestion = {
+                answerOptionOrder: null,
+                answerOptions: ['Вариант 1'],
+                condition: null,
+                description: null,
+                id: (state.selectedSurvey.pages[0].questions.length + 1).toString(),
+                mandatory: false,
+                serialNumber: state.selectedSurvey.pages[0].questions.length + 1,
+                title: '',
+                type: 'SINGLE_CHOICE',
+                visible: true,
+            } satisfies Question;
+            state.selectedSurvey.pages[0].questions.push(newQuestion);
+        },
+        setMandatory: (state) => {
+            if (!state.selectedSurvey) return;
+            state.selectedSurvey.pages[0].questions.forEach((question) => {
+                if (state.selectedQuestion && question.id === state.selectedQuestion.id) {
+                    question.mandatory = !question.mandatory;
+                }
+            });
+        },
     },
 });
 
@@ -79,5 +103,7 @@ export const {
     addQuestionOptions,
     setSelectedQuestion,
     deleteOption,
+    addQuestion,
+    setMandatory,
 } = surveySlice.actions;
 export default surveySlice.reducer;

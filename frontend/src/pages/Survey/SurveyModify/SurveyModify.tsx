@@ -8,6 +8,7 @@ import { useEffect } from 'react';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { setSelectedSurvey } from '@/entities/Survey/Survey.slice';
 import { mockSurvey } from '@/shared/mock/Survey.mock';
+import { Sidebar } from './components/Sidebar/Sidebar';
 export function SurveyModify() {
     // const { id } = useParams();
     const { selectedSurvey } = useAppSelector((state) => state.survey);
@@ -28,6 +29,7 @@ export function SurveyModify() {
                 {/* <div>Редактирование опроса - ID: {id}</div> */}
                 <QuestionList questions={selectedSurvey!.pages[0].questions} />
             </div>
+            <Sidebar />
         </div>
     );
 }

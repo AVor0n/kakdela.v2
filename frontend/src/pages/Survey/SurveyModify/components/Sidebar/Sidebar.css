@@ -1,0 +1,12 @@
+.sidebar {
+    position: fixed;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    border-radius: 12px;
+    border: 1px solid #dce3eb;
+    padding: 10px;
+    font-size: 30px;
+    left: 90%;
+    bottom: calc(50% - 150px);
+}

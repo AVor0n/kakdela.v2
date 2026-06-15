@@ -1,11 +1,18 @@
 import type { Question, QuestionType } from '@/shared/types/Question.type';
-import { Button, createStaticDataProvider, Input, Select, type StaticDataFetcherItem } from '@hh.ru/magritte-ui';
+import {
+    Button,
+    Checkbox,
+    createStaticDataProvider,
+    Input,
+    Select,
+    type StaticDataFetcherItem,
+} from '@hh.ru/magritte-ui';
 import { useCallback, useMemo } from 'react';
 import './Question.css';
 import { ShortText } from './components/ShortText/ShortText';
 import { LongText } from './components/LongText/LongText';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { updateQuestionTitle, updateQuestionType } from '@/entities/Survey/Survey.slice';
+import { setMandatory, updateQuestionTitle, updateQuestionType } from '@/entities/Survey/Survey.slice';
 import { Choice } from './components/Choice/Choice';
 interface Props {
     question: Question;
@@ -43,6 +50,7 @@ export function Question({ question, onClick, isEditMode = false }: Props) {
 
     return (
         <div className={isEditMode ? 'question editing' : 'question'} onClick={onClick}>
+            {question.mandatory ? <span className='mandatory'>*</span> : null}
             <section className='question__settings'>
                 <Input
                     placeholder='Вопрос'
@@ -51,7 +59,6 @@ export function Question({ question, onClick, isEditMode = false }: Props) {
                         dispatch(updateQuestionTitle({ id: question.id, title: e }));
                     }}
                     className='question__settings_title'
-                    disabled={!isEditMode}
                 />
                 <div className='question__settings_img'>img</div>
                 <Select
@@ -75,9 +82,10 @@ export function Question({ question, onClick, isEditMode = false }: Props) {
             <section className='question__content'>
                 <div className='question__content_options'>{questionContent()}</div>
                 <div className='question__content_actions'>
-                    <Button mode='secondary' type='button'>
+                    <label className='mandatory__checkbox'>
+                        <Checkbox checked={question.mandatory} onChange={() => dispatch(setMandatory())} />
                         Обязательный
-                    </Button>
+                    </label>
                     <Button mode='secondary' type='button'>
                         Дублировать
                     </Button>
