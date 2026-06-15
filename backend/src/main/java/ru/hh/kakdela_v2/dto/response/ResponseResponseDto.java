@@ -13,15 +13,15 @@ import java.util.UUID;
 @Getter
 public class ResponseResponseDto {
 
-  private final UUID responseId;
+  private final UUID id;
   private final UUID accountId;   // может быть null — анонимное прохождение
   private final UUID surveyId;
-  private final boolean isCompleted;
+  private final Boolean isCompleted;
   private final Instant receivedAt;
   private final List<AnswerResponseDto> answers;
 
   public ResponseResponseDto(Response response) {
-    this.responseId = response.getId();
+    this.id = response.getId();
     this.accountId = response.getAccount() != null
         ? response.getAccount().getId()
         : null;

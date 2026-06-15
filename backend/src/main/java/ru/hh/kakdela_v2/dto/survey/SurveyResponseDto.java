@@ -20,11 +20,11 @@ public class SurveyResponseDto {
   private final UUID authorId;
   private final String title;
   private final String description;
-  private final boolean isAuthorizedOnly;
-  private final boolean isLimitedToOneResponse;
-  private final boolean isPublished;
-  private final boolean isTemplate;
-  private final boolean doNotify;
+  private final Boolean isAuthorizedOnly;
+  private final Boolean isLimitedToOneResponse;
+  private final Boolean isPublished;
+  private final Boolean isTemplate;
+  private final Boolean doNotify;
   private final Instant expireAt;
   private final Instant createdAt;
   private final List<SurveyPageResponseDto> pages;

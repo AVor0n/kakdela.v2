@@ -14,7 +14,7 @@ public class SurveyShortResponseDto {
   private final UUID id;
   private final String title;
   private final String description;
-  private final boolean isPublished;
+  private final Boolean isPublished;
   private final Instant createdAt;
 
   public SurveyShortResponseDto(Survey survey) {

@@ -17,5 +17,6 @@ public class PermissionCreateDto {
   private UUID accountId;
   @NotNull(message = "Роль обязательна")
   private Permission.SurveyRole role;
-  private Boolean doNotify;
+  @NotNull
+  private Boolean doNotify = true;
 }

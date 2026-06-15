@@ -8,6 +8,6 @@ import java.util.UUID;
 @AllArgsConstructor
 @Getter
 public class ResponseWithTokenDto {
-  private final UUID responseId;
+  private final UUID id;
   private final String responseAccessToken;
 }

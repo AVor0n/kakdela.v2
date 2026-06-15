@@ -20,8 +20,8 @@ public class QuestionResponseDto {
   private final String description;
   private final String type;
   private final String answerOptionOrder;
-  private final boolean isMandatory;
-  private final boolean isVisible;
+  private final Boolean isMandatory;
+  private final Boolean isVisible;
   private final String condition;
   private final List<AnswerOptionResponseDto> answerOptions;
 

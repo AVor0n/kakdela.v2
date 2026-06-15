@@ -8,5 +8,5 @@ import java.util.UUID;
 @AllArgsConstructor
 @Getter
 public class ResponseCreateResponseDto {
-  private final UUID responseId;
+  private final UUID id;
 }

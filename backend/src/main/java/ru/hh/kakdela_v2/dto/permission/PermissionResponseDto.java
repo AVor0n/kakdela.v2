@@ -13,7 +13,7 @@ public class PermissionResponseDto {
   private final UUID accountId;
   private final UUID surveyId;
   private final String role;
-  private final boolean doNotify;
+  private final Boolean doNotify;
 
   public PermissionResponseDto(Permission permission) {
     this.accountId = permission.getId().getAccountId();

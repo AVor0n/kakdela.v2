@@ -25,7 +25,9 @@ public class QuestionCreateDto {
   @NotNull(message = "Тип вопроса обязателен")
   private Question.QuestionType type;
   private Question.AnswerOptionOrder answerOptionOrder;
-  private Boolean isMandatory;
-  private Boolean isVisible;
+  @NotNull
+  private Boolean isMandatory = true;
+  @NotNull
+  private Boolean isVisible = true;
   private String condition;
 }

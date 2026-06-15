@@ -110,18 +110,13 @@ public class PermissionService {
             .surveyId(surveyId)
             .build();
 
-    Permission.PermissionBuilder permissionBuilder = Permission.builder();
-
-    permissionBuilder.id(permissionId)
-            .account(account)
-            .survey(survey)
-            .role(dto.getRole());
-
-    if (dto.getDoNotify() != null) {
-      permissionBuilder.doNotify(dto.getDoNotify());
-    }
-
-    Permission permission = permissionBuilder.build();
+    Permission permission = Permission.builder()
+        .id(permissionId)
+        .account(account)
+        .survey(survey)
+        .role(dto.getRole())
+        .doNotify(dto.getDoNotify())
+        .build();
 
     permissionDao.save(permission);
     return new PermissionResponseDto(permission);
