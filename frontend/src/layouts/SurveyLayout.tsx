@@ -37,11 +37,6 @@ export function SurveyLayout() {
                     >
                         Настройки
                     </Button>
-                    {/* <Link to={`${basePath}/questions`} className='navbar__link'></Link>
-                    <Link to={`${basePath}/answers`} className='navbar__link'></Link>
-                    <Link to={`${basePath}/settings`} className='navbar__link'>
-                        Настройки
-                    </Link> */}
                 </nav>
             </header>
             <Outlet />

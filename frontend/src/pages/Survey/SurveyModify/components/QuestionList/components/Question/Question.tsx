@@ -8,27 +8,36 @@ import {
     type StaticDataFetcherItem,
 } from '@hh.ru/magritte-ui';
 import { useCallback, useMemo } from 'react';
-import './Question.css';
 import { ShortText } from './components/ShortText/ShortText';
 import { LongText } from './components/LongText/LongText';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { setMandatory, updateQuestionTitle, updateQuestionType } from '@/entities/Survey/Survey.slice';
+import {
+    deleteQuestion,
+    duplicateQuestion,
+    setMandatory,
+    updateQuestionTitle,
+    updateQuestionType,
+} from '@/entities/Survey/Survey.slice';
 import { Choice } from './components/Choice/Choice';
+import classNames from 'classnames';
+import style from './Question.module.css';
+
 interface Props {
     question: Question;
-    isEditMode?: boolean;
+    isEditMode: boolean;
     onClick?: () => void;
 }
 
-export function Question({ question, onClick, isEditMode = false }: Props) {
+const OPTIONS: StaticDataFetcherItem[] = [
+    { value: 'SHORT_TEXT', text: 'Короткий текст' },
+    { value: 'LONG_TEXT', text: 'Длинный текст' },
+    { value: 'SINGLE_CHOICE', text: 'Один из списка' },
+    { value: 'MULTIPLE_CHOICE', text: 'Несколько из списка' },
+];
+
+export function Question({ question, onClick, isEditMode }: Props) {
     const dispatch = useAppDispatch();
 
-    const OPTIONS: StaticDataFetcherItem[] = [
-        { value: 'SHORT_TEXT', text: 'Короткий текст' },
-        { value: 'LONG_TEXT', text: 'Длинный текст' },
-        { value: 'SINGLE_CHOICE', text: 'Один из списка' },
-        { value: 'MULTIPLE_CHOICE', text: 'Несколько из списка' },
-    ];
     const questionType = useMemo(() => {
         return OPTIONS.find((option) => option.value === question.type);
     }, [question.type]);
@@ -40,27 +49,27 @@ export function Question({ question, onClick, isEditMode = false }: Props) {
             case 'LONG_TEXT':
                 return <LongText />;
             case 'SINGLE_CHOICE':
-                return <Choice options={question.answerOptions!} type='radio' />;
+                return <Choice options={question.answerOptions!} isEdit={isEditMode} type='radio' />;
             case 'MULTIPLE_CHOICE':
-                return <Choice options={question.answerOptions!} type='checkbox' />;
+                return <Choice options={question.answerOptions!} isEdit={isEditMode} type='checkbox' />;
             default:
                 return null;
         }
-    }, [question]);
-
+    }, [question, isEditMode]);
+    // isEditMode ? [style.question__edit, style.question].join(' ') : style.question
     return (
-        <div className={isEditMode ? 'question editing' : 'question'} onClick={onClick}>
-            {question.mandatory ? <span className='mandatory'>*</span> : null}
-            <section className='question__settings'>
+        <div className={classNames(style.container, { [style.edit]: isEditMode })} onClick={onClick}>
+            <section className={style.settings}>
                 <Input
                     placeholder='Вопрос'
                     value={question.title}
                     onChange={(e) => {
                         dispatch(updateQuestionTitle({ id: question.id, title: e }));
                     }}
-                    className='question__settings_title'
                 />
-                <div className='question__settings_img'>img</div>
+                <div className={style.button}>
+                    <img src='/img.svg' alt='img' />
+                </div>
                 <Select
                     type='label'
                     value={questionType}
@@ -73,25 +82,34 @@ export function Question({ question, onClick, isEditMode = false }: Props) {
                             }),
                         );
                     }}
-                    triggerProps={{
-                        'aria-label': 'Выбор языка',
-                    }}
                 />
             </section>
 
-            <section className='question__content'>
-                <div className='question__content_options'>{questionContent()}</div>
-                <div className='question__content_actions'>
-                    <label className='mandatory__checkbox'>
+            <section className={style.actions}>
+                <div>{questionContent()}</div>
+                <div
+                    className={classNames(style.actionsContent, {
+                        [style.hidden]: !isEditMode,
+                        [style.visible]: isEditMode,
+                    })}
+                >
+                    <label className={style.mandatoryCheckbox}>
                         <Checkbox checked={question.mandatory} onChange={() => dispatch(setMandatory())} />
                         Обязательный
                     </label>
-                    <Button mode='secondary' type='button'>
-                        Дублировать
-                    </Button>
-                    <Button mode='secondary' style='negative' type='button'>
-                        Удалить
-                    </Button>
+                    <Button
+                        mode='secondary'
+                        type='button'
+                        icon={<img src='/copy.svg' alt='Дублировать' />}
+                        onClick={() => dispatch(duplicateQuestion({ id: question.id }))}
+                    />
+                    <Button
+                        mode='secondary'
+                        style='negative'
+                        type='button'
+                        icon={<img src='/trash.svg' alt='Удалить' />}
+                        onClick={() => dispatch(deleteQuestion({ id: question.id }))}
+                    />
                 </div>
             </section>
         </div>

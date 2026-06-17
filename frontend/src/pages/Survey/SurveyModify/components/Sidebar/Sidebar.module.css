@@ -1,10 +1,10 @@
-.sidebar {
+.container {
     position: fixed;
     display: flex;
     flex-direction: column;
     gap: 10px;
     border-radius: 12px;
-    border: 1px solid #dce3eb;
+    border: 1px solid var(--color-border);
     padding: 10px;
     font-size: 30px;
     left: 90%;

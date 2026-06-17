@@ -29,21 +29,14 @@ export function AppRouter() {
                             </RequireAuth>
                         }
                     />
-                    <Route
-                        element={
-                            <div>
-                                <header>Survey Actions</header>
-                                <Outlet />
-                            </div>
-                        }
-                    >
+                    <Route>
                         <Route path={routePatterns.surveysView} element={<SurveyView />} />
                         <Route element={<SurveyLayout />}>
                             <Route
                                 path={routePatterns.surveyModify}
                                 element={
                                     <RequireAuth>
-                                        <SurveyModify />
+                                        <Outlet />
                                     </RequireAuth>
                                 }
                             >

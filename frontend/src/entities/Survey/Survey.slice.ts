@@ -18,8 +18,9 @@ const surveySlice = createSlice({
     name: 'survey',
     initialState,
     reducers: {
-        setSurveys: (state, action) => {
-            state.surveys = action.payload;
+        setSurveys: (state, action: PayloadAction<{ surveys: Survey[] }>) => {
+            const { surveys } = action.payload;
+            state.surveys = surveys;
         },
         setSelectedSurvey: (state, action: PayloadAction<{ survey: Survey }>) => {
             const { survey } = action.payload;
@@ -57,14 +58,20 @@ const surveySlice = createSlice({
                 }
             });
         },
-        deleteOption: (state, action: PayloadAction<{ removeValue: string }>) => {
+        addAnotherOption: (state) => {
             if (!state.selectedSurvey) return;
-            const { removeValue } = action.payload;
             state.selectedSurvey.pages[0].questions.forEach((question) => {
                 if (state.selectedQuestion && question.id === state.selectedQuestion.id) {
-                    question.answerOptions = question.answerOptions?.filter((value) => {
-                        return value !== removeValue;
-                    });
+                    question.answerOptions?.push('Другое');
+                }
+            });
+        },
+        deleteOption: (state, action: PayloadAction<{ removeIndex: number }>) => {
+            if (!state.selectedSurvey) return;
+            const { removeIndex } = action.payload;
+            state.selectedSurvey.pages[0].questions.forEach((question) => {
+                if (state.selectedQuestion && question.id === state.selectedQuestion.id) {
+                    question.answerOptions = question.answerOptions?.filter((_, index) => index !== removeIndex);
                 }
             });
         },
@@ -92,6 +99,38 @@ const surveySlice = createSlice({
                 }
             });
         },
+        setOptionValue: (state, action: PayloadAction<{ value: string; index: number }>) => {
+            if (!state.selectedSurvey) return;
+            const { value, index } = action.payload;
+            state.selectedSurvey.pages[0].questions.forEach((question) => {
+                if (state.selectedQuestion && question.id === state.selectedQuestion.id) {
+                    if (question.answerOptions) {
+                        question.answerOptions[index] = value;
+                    }
+                }
+            });
+        },
+        deleteQuestion: (state, action: PayloadAction<{ id: string }>) => {
+            if (!state.selectedSurvey) return;
+            const { id } = action.payload;
+            state.selectedSurvey.pages[0].questions = state.selectedSurvey.pages[0].questions.filter(
+                (question) => question.id !== id,
+            );
+        },
+        duplicateQuestion: (state, action: PayloadAction<{ id: string }>) => {
+            if (!state.selectedSurvey) return;
+            const { id } = action.payload;
+            const questionToDuplicate = state.selectedSurvey.pages[0].questions.find((question) => question.id === id);
+            const index = state.selectedSurvey.pages[0].questions.findIndex((question) => question.id === id);
+            if (questionToDuplicate) {
+                const duplicatedQuestion = {
+                    ...questionToDuplicate,
+                    id: (state.selectedSurvey.pages[0].questions.length + 1).toString(),
+                    serialNumber: state.selectedSurvey.pages[0].questions.length + 1,
+                };
+                state.selectedSurvey.pages[0].questions.splice(index + 1, 0, duplicatedQuestion);
+            }
+        },
     },
 });
 
@@ -105,5 +144,9 @@ export const {
     deleteOption,
     addQuestion,
     setMandatory,
+    setOptionValue,
+    addAnotherOption,
+    deleteQuestion,
+    duplicateQuestion,
 } = surveySlice.actions;
 export default surveySlice.reducer;

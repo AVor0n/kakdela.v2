@@ -6,6 +6,11 @@
     box-sizing: border-box;
 }
 
+:root {
+    --color-border: #dce3eb;
+    --color-primary: #00f;
+}
+
 body {
     font-family: 'hh sans';
 }

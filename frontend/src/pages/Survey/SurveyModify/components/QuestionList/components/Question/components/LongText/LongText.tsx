@@ -1,10 +1,10 @@
 import { TextArea, TextAreaGrowLimiter } from '@hh.ru/magritte-ui';
 import { useState } from 'react';
-import './LongText.css';
+import style from './LongText.module.css';
 export function LongText() {
     const [value, setValue] = useState('');
     return (
-        <TextAreaGrowLimiter className='question__content_textarea'>
+        <TextAreaGrowLimiter className={style.content}>
             <TextArea
                 placeholder='Длинный текст'
                 value={value}

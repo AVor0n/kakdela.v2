@@ -1,10 +1,10 @@
-.survey__constructor {
+.container {
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
-.survey__constructor_container {
+.content {
     display: flex;
     flex-direction: column;
     gap: 20px;

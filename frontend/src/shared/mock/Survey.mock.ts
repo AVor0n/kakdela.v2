@@ -16,8 +16,6 @@ export const mockSurvey: Survey = {
             id: '15082adf-b17e-4aa8-a85c-fa5c5473e04b',
             questions: [
                 {
-                    answerOptionOrder: null,
-                    answerOptions: [],
                     condition: null,
                     description: null,
                     id: 'aab5ceed-169d-4156-89a4-83e2e6106179',
@@ -28,8 +26,6 @@ export const mockSurvey: Survey = {
                     visible: true,
                 },
                 {
-                    answerOptionOrder: null,
-                    answerOptions: [],
                     condition: null,
                     description: null,
                     id: '81d7c1c2-502b-497a-8d86-e1eaec98c31e',
