@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/answer-options")
+@RequestMapping("/api")
 @RequiredArgsConstructor
 public class AnswerOptionController {
 
