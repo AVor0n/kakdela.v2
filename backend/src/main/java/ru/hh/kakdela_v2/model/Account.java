@@ -30,7 +30,7 @@ public class Account {
   @Column(name = "email", length = 254, nullable = false, unique = true)
   private String email;
 
-  @Column(name = "password_hash", columnDefinition = "TEXT", nullable = false)
+  @Column(name = "password_hash", columnDefinition = "text", nullable = false)
   private String passwordHash;
 
   @Column(name = "registered_at", updatable = false, nullable = false)
