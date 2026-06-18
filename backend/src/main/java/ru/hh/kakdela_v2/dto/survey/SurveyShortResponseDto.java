@@ -16,12 +16,4 @@ public class SurveyShortResponseDto {
   private final String description;
   private final Boolean isPublished;
   private final Instant createdAt;
-
-  public SurveyShortResponseDto(Survey survey) {
-    this.id = survey.getId();
-    this.title = survey.getTitle();
-    this.description = survey.getDescription();
-    this.isPublished = survey.isPublished();
-    this.createdAt = survey.getCreatedAt();
-  }
 }

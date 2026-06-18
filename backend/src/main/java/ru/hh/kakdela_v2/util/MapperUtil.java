@@ -57,14 +57,21 @@ public class MapperUtil {
     return new AnswerOptionResponseDto(
         answerOption.getId(),
         answerOption.getSerialNumber(),
-        answerOption.getAnswerOptionText()
+        answerOption.getAnswerOptionText(),
+        attachmentUrl
     );
   }
 
   public ClosingPageResponseDto closingPageToDto(ClosingPage closingPage) {
+    String attachmentUrl = objectStorageService.generateObjectUrl(
+        closingPage.getAttachmentObjectKey(),
+        Duration.ofMinutes(1)
+    ).toString();
+
     return new ClosingPageResponseDto(
         closingPage.getTitle(),
         closingPage.getDescription(),
+        attachmentUrl,
         closingPage.getWebsiteUrl()
     );
   }
@@ -89,6 +96,7 @@ public class MapperUtil {
         question.getSerialNumber(),
         question.getTitle(),
         question.getDescription(),
+        attachmentUrl,
         question.getType().name(),
         question.getAnswerOptionOrder() != null
             ? question.getAnswerOptionOrder().name()
@@ -136,7 +144,7 @@ public class MapperUtil {
             .map(this::surveyPageToDto)
             .toList(),
         survey.getClosingPage() != null
-            ? new ClosingPageResponseDto(survey.getClosingPage())
+            ? closingPageToDto(survey.getClosingPage())
             : null
     );
   }

@@ -13,10 +13,4 @@ public class AnswerResponseDto {
   private final UUID responseId;
   private final UUID questionId;
   private final String answerText;
-
-  public AnswerResponseDto(Answer answer) {
-    this.responseId = answer.getId().getResponseId();
-    this.questionId = answer.getId().getQuestionId();
-    this.answerText = answer.getAnswerText();
-  }
 }

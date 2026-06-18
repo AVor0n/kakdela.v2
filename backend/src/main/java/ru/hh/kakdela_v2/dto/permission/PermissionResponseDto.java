@@ -14,11 +14,4 @@ public class PermissionResponseDto {
   private final UUID surveyId;
   private final String role;
   private final Boolean doNotify;
-
-  public PermissionResponseDto(Permission permission) {
-    this.accountId = permission.getId().getAccountId();
-    this.surveyId = permission.getId().getSurveyId();
-    this.role = permission.getRole().name();
-    this.doNotify = permission.isDoNotify();
-  }
 }

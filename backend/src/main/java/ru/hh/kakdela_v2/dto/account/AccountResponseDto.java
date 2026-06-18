@@ -15,11 +15,4 @@ public class AccountResponseDto {
   private final String login;
   private final String email;
   private final Instant registeredAt;
-
-  public AccountResponseDto(Account account) {
-    this.id = account.getId();
-    this.login = account.getLogin();
-    this.email = account.getEmail();
-    this.registeredAt = account.getRegisteredAt();
-  }
 }
