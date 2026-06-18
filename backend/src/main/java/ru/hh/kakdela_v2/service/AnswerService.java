@@ -1,5 +1,8 @@
 package ru.hh.kakdela_v2.service;
 
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -14,10 +17,7 @@ import ru.hh.kakdela_v2.model.Answer;
 import ru.hh.kakdela_v2.model.Question;
 import ru.hh.kakdela_v2.model.Response;
 import ru.hh.kakdela_v2.util.JwtUtil;
-
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import ru.hh.kakdela_v2.util.MapperUtil;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +27,7 @@ public class AnswerService {
   private final ResponseDao responseDao;
   private final QuestionDao questionDao;
   private final JwtUtil jwtUtil;
+  private final MapperUtil mapperUtil;
 
   private Response checkAccessAndGetResponse(UUID responseId, UUID accountId, String token) {
     Response response = responseDao.findById(responseId)
@@ -53,12 +54,13 @@ public class AnswerService {
     Response response = checkAccessAndGetResponse(responseId, accountId, token);
 
     return response.getAnswers().stream()
-        .map(AnswerResponseDto::new)
+        .map(mapperUtil::answerToDto)
         .toList();
   }
 
   @Transactional
-  public AnswerResponseDto create(UUID responseId, UUID questionId, AnswerCreateDto dto, UUID accountId, String token) {
+  public AnswerResponseDto create(UUID responseId, UUID questionId, AnswerCreateDto dto,
+                                  UUID accountId, String token) {
     Response response = checkAccessAndGetResponse(responseId, accountId, token);
 
     if (response.isCompleted()) {
@@ -94,7 +96,7 @@ public class AnswerService {
         .build();
 
     answerDao.save(answer);
-    return new AnswerResponseDto(answer);
+    return mapperUtil.answerToDto(answer);
   }
 
   @Transactional
@@ -118,7 +120,7 @@ public class AnswerService {
 
     answer.setAnswerText(newAnswerText);
     answerDao.update(answer);
-    return new AnswerResponseDto(answer);
+    return mapperUtil.answerToDto(answer);
   }
 
   @Transactional

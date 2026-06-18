@@ -18,6 +18,7 @@ import ru.hh.kakdela_v2.dto.question.QuestionUpdateDto;
 import ru.hh.kakdela_v2.model.Permission.SurveyRole;
 import ru.hh.kakdela_v2.model.Question;
 import ru.hh.kakdela_v2.model.SurveyPage;
+import ru.hh.kakdela_v2.util.MapperUtil;
 
 @Service
 @RequiredArgsConstructor
@@ -27,19 +28,20 @@ public class QuestionService {
   private final PermissionService permissionService;
   private final SurveyPageDao surveyPageDao;
   private final ObjectStorageService objectStorageService;
+  public final MapperUtil mapperUtil;
 
   @Transactional(readOnly = true)
   public QuestionResponseDto getById(UUID id) {
     Question question = questionDao.findById(id)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Вопрос не найден: " + id));
-    return new QuestionResponseDto(question);
+    return mapperUtil.questionToDto(question);
   }
 
   @Transactional(readOnly = true)
   public List<QuestionResponseDto> getAllByPageId(UUID pageId) {
     return questionDao.findAllByPageId(pageId).stream()
-        .map(QuestionResponseDto::new)
+        .map(mapperUtil::questionToDto)
         .toList();
   }
 
@@ -70,7 +72,7 @@ public class QuestionService {
         .build();
 
     questionDao.save(question);
-    return new QuestionResponseDto(question);
+    return mapperUtil.questionToDto(question);
   }
 
   @Transactional
@@ -108,7 +110,7 @@ public class QuestionService {
     }
 
     questionDao.update(question);
-    return new QuestionResponseDto(question);
+    return mapperUtil.questionToDto(question);
   }
 
   @Transactional
@@ -145,7 +147,8 @@ public class QuestionService {
   }
 
   @Transactional
-  public ObjectUrlResponseDto updateAttachment(UUID questionId, UUID accountId, MultipartFile file) {
+  public ObjectUrlResponseDto updateAttachment(UUID questionId, UUID accountId,
+                                               MultipartFile file) {
     Question question = questionDao.findById(questionId)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Вопрос не найден: " + questionId)
@@ -203,7 +206,7 @@ public class QuestionService {
     questionDao.update(question);
 
     return new ObjectUrlResponseDto(
-        objectStorageService.generateObjectUrl(objectKey, Duration.ofMinutes(1))
+        objectStorageService.generateObjectUrl(objectKey, Duration.ofMinutes(1)).toString()
     );
   }
 }

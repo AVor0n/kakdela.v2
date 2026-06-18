@@ -26,7 +26,8 @@ public class AuthService {
   private final JwtUtil jwtUtil;
 
   public LoginResponseDto login(LoginDto loginDto) {
-    authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginDto.getLogin(), loginDto.getPassword()));
+    authenticationManager.authenticate(
+        new UsernamePasswordAuthenticationToken(loginDto.getLogin(), loginDto.getPassword()));
     UserDetails userDetails = userDetailsService.loadUserByUsername(loginDto.getLogin());
     return new LoginResponseDto(jwtUtil.generateAccessToken(userDetails), null);
   }

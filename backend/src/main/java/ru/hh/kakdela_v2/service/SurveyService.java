@@ -1,5 +1,9 @@
 package ru.hh.kakdela_v2.service;
 
+import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -14,11 +18,7 @@ import ru.hh.kakdela_v2.dto.survey.SurveyUpdateDto;
 import ru.hh.kakdela_v2.model.Account;
 import ru.hh.kakdela_v2.model.Permission.SurveyRole;
 import ru.hh.kakdela_v2.model.Survey;
-
-import java.time.Instant;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
+import ru.hh.kakdela_v2.util.MapperUtil;
 
 @Service
 @RequiredArgsConstructor
@@ -27,42 +27,43 @@ public class SurveyService {
   private final SurveyDao surveyDao;
   private final AccountDao accountDao;
   private final PermissionService permissionService;
+  private final MapperUtil mapperUtil;
 
   @Transactional(readOnly = true)
   public SurveyResponseDto getById(UUID id) {
     Survey survey = surveyDao.findById(id)
-            .orElseThrow(() -> new ResponseStatusException(
-                    HttpStatus.NOT_FOUND, "Опрос не найден: " + id));
-    return new SurveyResponseDto(survey);
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Опрос не найден: " + id));
+    return mapperUtil.surveyToDto(survey);
   }
 
   @Transactional(readOnly = true)
   public List<SurveyShortResponseDto> getAllByAuthorId(UUID authorId) {
     return surveyDao.findAllByAuthorId(authorId).stream()
-            .map(SurveyShortResponseDto::new)
-            .toList();
+        .map(mapperUtil::surveyToShortDto)
+        .toList();
   }
 
-  @Transactional( readOnly = true)
+  @Transactional(readOnly = true)
   public List<SurveyShortResponseDto> getMySurveys(UUID accountId) {
     List<Survey> surveys = permissionService.getAccessibleSurveys(accountId);
     return surveys.stream()
-        .map(SurveyShortResponseDto::new)
+        .map(mapperUtil::surveyToShortDto)
         .collect(Collectors.toList());
   }
 
   @Transactional(readOnly = true)
   public List<SurveyShortResponseDto> getAllPublished() {
     return surveyDao.findAllPublished().stream()
-            .map(SurveyShortResponseDto::new)
-            .toList();
+        .map(mapperUtil::surveyToShortDto)
+        .toList();
   }
 
   @Transactional
   public SurveyResponseDto create(UUID authorId, SurveyCreateDto dto) {
     Account author = accountDao.findById(authorId)
-            .orElseThrow(() -> new ResponseStatusException(
-                    HttpStatus.NOT_FOUND, "Аккаунт не найден: " + authorId));
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Аккаунт не найден: " + authorId));
 
     Survey survey = Survey.builder()
         .author(author)
@@ -78,33 +79,48 @@ public class SurveyService {
         .build();
 
     surveyDao.save(survey);
-    return new SurveyResponseDto(survey);
+    return mapperUtil.surveyToDto(survey);
   }
 
   @Transactional
   public SurveyResponseDto update(UUID surveyId, SurveyUpdateDto dto, UUID accountId) {
     permissionService.checkAccess(surveyId, accountId, SurveyRole.EDITOR);
     Survey survey = surveyDao.findById(surveyId)
-            .orElseThrow(() -> new ResponseStatusException(
-                    HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
 
-    if (dto.getTitle() != null) survey.setTitle(dto.getTitle());
-    if (dto.getDescription() != null) survey.setDescription(dto.getDescription());
-    if (dto.getIsAuthorizedOnly() != null) survey.setAuthorizedOnly(dto.getIsAuthorizedOnly());
-    if (dto.getIsLimitedToOneResponse() != null) survey.setLimitedToOneResponse(dto.getIsLimitedToOneResponse());
-    if (dto.getIsPublished() != null) survey.setPublished(dto.getIsPublished());
-    if (dto.getDoNotify() != null) survey.setDoNotify(dto.getDoNotify());
-    if (dto.getExpireAt() != null) survey.setExpireAt(dto.getExpireAt());
+    if (dto.getTitle() != null) {
+      survey.setTitle(dto.getTitle());
+    }
+    if (dto.getDescription() != null) {
+      survey.setDescription(dto.getDescription());
+    }
+    if (dto.getIsAuthorizedOnly() != null) {
+      survey.setAuthorizedOnly(dto.getIsAuthorizedOnly());
+    }
+    if (dto.getIsLimitedToOneResponse() != null) {
+      survey.setLimitedToOneResponse(dto.getIsLimitedToOneResponse());
+    }
+    if (dto.getIsPublished() != null) {
+      survey.setPublished(dto.getIsPublished());
+    }
+    if (dto.getDoNotify() != null) {
+      survey.setDoNotify(dto.getDoNotify());
+    }
+    if (dto.getExpireAt() != null) {
+      survey.setExpireAt(dto.getExpireAt());
+    }
 
     surveyDao.update(survey);
-    return new SurveyResponseDto(survey);
+    return mapperUtil.surveyToDto(survey);
   }
 
   @Transactional
   public void delete(UUID id, UUID accountId) {
     permissionService.checkOwnership(id, accountId);
     Survey survey = surveyDao.findById(id)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Опрос не найден: " + id));
+        .orElseThrow(
+            () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Опрос не найден: " + id));
     surveyDao.delete(survey);
   }
 }

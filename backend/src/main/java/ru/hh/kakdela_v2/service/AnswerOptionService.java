@@ -18,6 +18,7 @@ import ru.hh.kakdela_v2.dto.object.ObjectUrlResponseDto;
 import ru.hh.kakdela_v2.model.AnswerOption;
 import ru.hh.kakdela_v2.model.Permission.SurveyRole;
 import ru.hh.kakdela_v2.model.Question;
+import ru.hh.kakdela_v2.util.MapperUtil;
 
 @Service
 @RequiredArgsConstructor
@@ -27,11 +28,12 @@ public class AnswerOptionService {
   private final PermissionService permissionService;
   private final QuestionDao questionDao;
   private final ObjectStorageService objectStorageService;
+  private final MapperUtil mapperUtil;
 
   @Transactional(readOnly = true)
   public List<AnswerOptionResponseDto> getAllByQuestionId(UUID questionId) {
     return answerOptionDao.findAllByQuestionId(questionId).stream()
-        .map(AnswerOptionResponseDto::new)
+        .map(mapperUtil::answerOptionToDto)
         .toList();
   }
 
@@ -45,128 +47,131 @@ public class AnswerOptionService {
     permissionService.checkAccess(question.getSurveyPage().getSurvey().getId(), accountId,
         SurveyRole.EDITOR);
 
-    AnswerOption option = AnswerOption.builder()
+    AnswerOption answerOption = AnswerOption.builder()
         .question(question)
         .serialNumber(dto.getSerialNumber())
         .answerOptionText(dto.getAnswerOptionText())
         .build();
 
-    answerOptionDao.save(option);
-    return new AnswerOptionResponseDto(option);
+    answerOptionDao.save(answerOption);
+    return mapperUtil.answerOptionToDto(answerOption);
   }
 
   @Transactional
   public AnswerOptionResponseDto update(UUID id, AnswerOptionUpdateDto dto, UUID accountId) {
-    AnswerOption option = answerOptionDao.findById(id)
+    AnswerOption answerOption = answerOptionDao.findById(id)
         .orElseThrow(
             () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Вопрос не найден: " + id));
 
-    permissionService.checkAccess(option.getQuestion().getSurveyPage().getSurvey().getId(),
+    permissionService.checkAccess(answerOption.getQuestion().getSurveyPage().getSurvey().getId(),
         accountId, SurveyRole.EDITOR);
 
     if (dto.getSerialNumber() != null) {
-      option.setSerialNumber(dto.getSerialNumber());
+      answerOption.setSerialNumber(dto.getSerialNumber());
     }
     if (dto.getAnswerOptionText() != null) {
-      option.setAnswerOptionText(dto.getAnswerOptionText());
+      answerOption.setAnswerOptionText(dto.getAnswerOptionText());
     }
-    answerOptionDao.update(option);
-    return new AnswerOptionResponseDto(option);
+    answerOptionDao.update(answerOption);
+    return mapperUtil.answerOptionToDto(answerOption);
   }
 
   @Transactional
   public void delete(UUID id, UUID accountId) {
-    AnswerOption option = answerOptionDao.findById(id)
+    AnswerOption answerOption = answerOptionDao.findById(id)
         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
             "Вариант ответа не найден: " + id));
-    permissionService.checkAccess(option.getQuestion().getSurveyPage().getSurvey().getId(),
+    permissionService.checkAccess(answerOption.getQuestion().getSurveyPage().getSurvey().getId(),
         accountId, SurveyRole.EDITOR);
-    answerOptionDao.delete(option);
+    answerOptionDao.delete(answerOption);
   }
 
   // Attachment management
 
   @Transactional
-  public ObjectUrlResponseDto addAttachment(UUID answerOptionId, UUID accountId, MultipartFile file) {
-    AnswerOption option = answerOptionDao.findById(answerOptionId)
+  public ObjectUrlResponseDto addAttachment(UUID answerOptionId, UUID accountId,
+                                            MultipartFile file) {
+    AnswerOption answerOption = answerOptionDao.findById(answerOptionId)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Вариант ответа не найден: " + answerOptionId)
         );
 
     permissionService.checkAccess(
-        option.getQuestion().getSurveyPage().getSurvey().getId(), accountId, SurveyRole.EDITOR
+        answerOption.getQuestion().getSurveyPage().getSurvey().getId(), accountId, SurveyRole.EDITOR
     );
 
-    if (option.getAttachmentObjectKey() != null) {
+    if (answerOption.getAttachmentObjectKey() != null) {
       throw new ResponseStatusException(
           HttpStatus.CONFLICT,
           "Вариант ответа уже содержит вложение"
       );
     }
 
-    return upsertAttachmentHelper(option, file);
+    return upsertAttachmentHelper(answerOption, file);
   }
 
   @Transactional
-  public ObjectUrlResponseDto updateAttachment(UUID answerOptionId, UUID accountId, MultipartFile file) {
-    AnswerOption option = answerOptionDao.findById(answerOptionId)
+  public ObjectUrlResponseDto updateAttachment(UUID answerOptionId, UUID accountId,
+                                               MultipartFile file) {
+    AnswerOption answerOption = answerOptionDao.findById(answerOptionId)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Вариант ответа не найден: " + answerOptionId)
         );
 
     permissionService.checkAccess(
-        option.getQuestion().getSurveyPage().getSurvey().getId(), accountId, SurveyRole.EDITOR
+        answerOption.getQuestion().getSurveyPage().getSurvey().getId(), accountId, SurveyRole.EDITOR
     );
 
-    if (option.getAttachmentObjectKey() != null) {
+    if (answerOption.getAttachmentObjectKey() != null) {
       objectStorageService.deleteObject(
-          option.getAttachmentObjectKey()
+          answerOption.getAttachmentObjectKey()
       );
     }
 
-    return upsertAttachmentHelper(option, file);
+    return upsertAttachmentHelper(answerOption, file);
   }
 
   @Transactional
   public void deleteAttachment(UUID answerOptionId, UUID accountId) {
-    AnswerOption option = answerOptionDao.findById(answerOptionId)
+    AnswerOption answerOption = answerOptionDao.findById(answerOptionId)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Вариант ответа не найден: " + answerOptionId)
         );
 
     permissionService.checkAccess(
-        option.getQuestion().getSurveyPage().getSurvey().getId(), accountId, SurveyRole.EDITOR
+        answerOption.getQuestion().getSurveyPage().getSurvey().getId(), accountId, SurveyRole.EDITOR
     );
 
-    if (option.getAttachmentObjectKey() == null) {
+    if (answerOption.getAttachmentObjectKey() == null) {
       throw new ResponseStatusException(
           HttpStatus.NOT_FOUND,
           "Вариант ответа не содержит вложения"
       );
     }
 
-    objectStorageService.deleteObject(option.getAttachmentObjectKey());
+    objectStorageService.deleteObject(answerOption.getAttachmentObjectKey());
 
-    option.setAttachmentObjectKey(null);
-    answerOptionDao.update(option);
+    answerOption.setAttachmentObjectKey(null);
+    answerOptionDao.update(answerOption);
   }
 
-  private ObjectUrlResponseDto upsertAttachmentHelper(AnswerOption option, MultipartFile file) {
+  private ObjectUrlResponseDto upsertAttachmentHelper(AnswerOption answerOption,
+                                                      MultipartFile file) {
     // TODO: добавить проверку, что файл является изображением (или, например, видео)
     // TODO: Добавить сжатие для изображений
 
-    String objectKey = "answer-options/%s/%s".formatted(option.getId(), UUID.randomUUID());
+    String objectKey = "answer-options/%s/%s".formatted(answerOption.getId(), UUID.randomUUID());
     objectStorageService.putObject(
         objectKey,
         file,
         file.getContentType()
     );
 
-    option.setAttachmentObjectKey(objectKey);
-    answerOptionDao.update(option);
+    answerOption.setAttachmentObjectKey(objectKey);
+    answerOptionDao.update(answerOption);
 
     return new ObjectUrlResponseDto(
-        objectStorageService.generateObjectUrl(objectKey, Duration.ofMinutes(1))
+        objectStorageService.generateObjectUrl(objectKey, Duration.ofMinutes(1)).toString()
     );
   }
 }
