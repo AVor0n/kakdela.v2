@@ -1,9 +1,12 @@
 package ru.hh.kakdela_v2.service;
 
+import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import ru.hh.kakdela_v2.dao.QuestionDao;
 import ru.hh.kakdela_v2.dao.SurveyPageDao;
@@ -14,9 +17,6 @@ import ru.hh.kakdela_v2.model.Permission.SurveyRole;
 import ru.hh.kakdela_v2.model.Question;
 import ru.hh.kakdela_v2.model.SurveyPage;
 
-import java.util.List;
-import java.util.UUID;
-
 @Service
 @RequiredArgsConstructor
 public class QuestionService {
@@ -24,34 +24,35 @@ public class QuestionService {
   private final QuestionDao questionDao;
   private final PermissionService permissionService;
   private final SurveyPageDao surveyPageDao;
+  private final ObjectStorageService objectStorageService;
 
   @Transactional(readOnly = true)
   public QuestionResponseDto getById(UUID id) {
     Question question = questionDao.findById(id)
-            .orElseThrow(() -> new ResponseStatusException(
-                    HttpStatus.NOT_FOUND, "Вопрос не найден: " + id));
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Вопрос не найден: " + id));
     return new QuestionResponseDto(question);
   }
 
   @Transactional(readOnly = true)
   public List<QuestionResponseDto> getAllByPageId(UUID pageId) {
     return questionDao.findAllByPageId(pageId).stream()
-            .map(QuestionResponseDto::new)
-            .toList();
+        .map(QuestionResponseDto::new)
+        .toList();
   }
 
   @Transactional
   public QuestionResponseDto create(UUID pageId, QuestionCreateDto dto, UUID accountId) {
     if (questionDao.existsByPageIdAndSerialNumber(pageId, dto.getSerialNumber())) {
       throw new ResponseStatusException(
-              HttpStatus.CONFLICT,
-              "Вопрос с номером " + dto.getSerialNumber() + " уже существует на этой странице");
+          HttpStatus.CONFLICT,
+          "Вопрос с номером " + dto.getSerialNumber() + " уже существует на этой странице");
     }
 
     SurveyPage page = surveyPageDao.findById(pageId)
-            .orElseThrow(() -> new ResponseStatusException(
-                    HttpStatus.NOT_FOUND, "Страница не найдена: " + pageId));
-    
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Страница не найдена: " + pageId));
+
     permissionService.checkAccess(page.getSurvey().getId(), accountId, SurveyRole.EDITOR);
 
     Question question = Question.builder()
@@ -73,19 +74,36 @@ public class QuestionService {
   @Transactional
   public QuestionResponseDto update(UUID questionId, QuestionUpdateDto dto, UUID accountId) {
     Question question = questionDao.findById(questionId)
-            .orElseThrow(() -> new ResponseStatusException(
-                    HttpStatus.NOT_FOUND, "Вопрос не найден: " + questionId));
-                    
-    permissionService.checkAccess(question.getSurveyPage().getSurvey().getId(), accountId, SurveyRole.EDITOR);
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Вопрос не найден: " + questionId));
 
-    if (dto.getSerialNumber() != null) question.setSerialNumber(dto.getSerialNumber());
-    if (dto.getTitle() != null) question.setTitle(dto.getTitle());
-    if (dto.getDescription() != null) question.setDescription(dto.getDescription());
-    if (dto.getType() != null) question.setType(dto.getType());
-    if (dto.getAnswerOptionOrder() != null) question.setAnswerOptionOrder(dto.getAnswerOptionOrder());
-    if (dto.getIsMandatory() != null) question.setMandatory(dto.getIsMandatory());
-    if (dto.getIsVisible() != null) question.setVisible(dto.getIsVisible());
-    if (dto.getCondition() != null) question.setCondition(dto.getCondition());
+    permissionService.checkAccess(question.getSurveyPage().getSurvey().getId(), accountId,
+        SurveyRole.EDITOR);
+
+    if (dto.getSerialNumber() != null) {
+      question.setSerialNumber(dto.getSerialNumber());
+    }
+    if (dto.getTitle() != null) {
+      question.setTitle(dto.getTitle());
+    }
+    if (dto.getDescription() != null) {
+      question.setDescription(dto.getDescription());
+    }
+    if (dto.getType() != null) {
+      question.setType(dto.getType());
+    }
+    if (dto.getAnswerOptionOrder() != null) {
+      question.setAnswerOptionOrder(dto.getAnswerOptionOrder());
+    }
+    if (dto.getIsMandatory() != null) {
+      question.setMandatory(dto.getIsMandatory());
+    }
+    if (dto.getIsVisible() != null) {
+      question.setVisible(dto.getIsVisible());
+    }
+    if (dto.getCondition() != null) {
+      question.setCondition(dto.getCondition());
+    }
 
     questionDao.update(question);
     return new QuestionResponseDto(question);
@@ -94,8 +112,68 @@ public class QuestionService {
   @Transactional
   public void delete(UUID id, UUID accountId) {
     Question question = questionDao.findById(id)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Вопрос не найден: " + id));
-    permissionService.checkAccess(question.getSurveyPage().getSurvey().getId(), accountId, SurveyRole.EDITOR);
+        .orElseThrow(
+            () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Вопрос не найден: " + id));
+    permissionService.checkAccess(question.getSurveyPage().getSurvey().getId(), accountId,
+        SurveyRole.EDITOR);
     questionDao.delete(question);
+  }
+
+  // Attachment management
+
+  @Transactional
+  public void addAttachment(UUID questionId, UUID accountId, MultipartFile file) {
+    Question question = questionDao.findById(questionId)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Вопрос не найден: " + questionId)
+        );
+
+    permissionService.checkAccess(
+        question.getSurveyPage().getSurvey().getId(), accountId, SurveyRole.EDITOR
+    );
+
+    // TODO: добавить проверку, что файл является изображением (или, например, видео)
+    // TODO: Добавить сжатие для изображений
+
+    if (question.getAttachmentObjectKey() != null) {
+      throw new ResponseStatusException(
+          HttpStatus.CONFLICT,
+          "Вопрос уже содержит вложение"
+      );
+    }
+
+    String objectKey = "questions/%s/%s".formatted(questionId, UUID.randomUUID());
+    objectStorageService.putObject(
+        objectKey,
+        file,
+        file.getContentType()
+    );
+
+    question.setAttachmentObjectKey(objectKey);
+    questionDao.update(question);
+  }
+
+  @Transactional
+  public void deleteAttachment(UUID questionId, UUID accountId) {
+    Question question = questionDao.findById(questionId)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Вопрос не найден: " + questionId)
+        );
+
+    permissionService.checkAccess(
+        question.getSurveyPage().getSurvey().getId(), accountId, SurveyRole.EDITOR
+    );
+
+    if (question.getAttachmentObjectKey() == null) {
+      throw new ResponseStatusException(
+          HttpStatus.NOT_FOUND,
+          "Вопрос не содержит вложения"
+      );
+    }
+
+    objectStorageService.deleteObject(question.getAttachmentObjectKey());
+
+    question.setAttachmentObjectKey(null);
+    questionDao.update(question);
   }
 }
