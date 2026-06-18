@@ -22,6 +22,7 @@ import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignReques
 public class ObjectStorageService {
 
   private final S3Client s3Client;
+  private final S3Presigner s3Presigner;
 
   @Value("${cloud.aws.bucket.name}")
   private String bucketName;
@@ -34,7 +35,7 @@ public class ObjectStorageService {
               .key(key)
               .contentType(contentType)
               .build(),
-          RequestBody.fromInputStream(file.getInputStream(), file.getSize())
+          RequestBody.fromBytes(file.getBytes())
       );
     } catch (IOException e) {
       throw new ResponseStatusException(
@@ -46,21 +47,19 @@ public class ObjectStorageService {
   }
 
   public URL generateObjectUrl(String key, Duration ttl) {
-    try (S3Presigner presigner = S3Presigner.create()) {
-      GetObjectRequest getObjectRequest =
-          GetObjectRequest.builder()
-              .bucket(bucketName)
-              .key(key)
-              .build();
+    GetObjectRequest getObjectRequest =
+        GetObjectRequest.builder()
+            .bucket(bucketName)
+            .key(key)
+            .build();
 
-      GetObjectPresignRequest getObjectPresignRequest =
-          GetObjectPresignRequest.builder()
-              .getObjectRequest(getObjectRequest)
-              .signatureDuration(ttl)
-              .build();
+    GetObjectPresignRequest getObjectPresignRequest =
+        GetObjectPresignRequest.builder()
+            .getObjectRequest(getObjectRequest)
+            .signatureDuration(ttl)
+            .build();
 
-      return presigner.presignGetObject(getObjectPresignRequest).url();
-    }
+    return s3Presigner.presignGetObject(getObjectPresignRequest).url();
   }
 
   public void deleteObject(String key) {
