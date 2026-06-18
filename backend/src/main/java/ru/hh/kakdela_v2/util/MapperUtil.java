@@ -49,10 +49,12 @@ public class MapperUtil {
   }
 
   public AnswerOptionResponseDto answerOptionToDto(AnswerOption answerOption) {
-    String attachmentUrl = objectStorageService.generateObjectUrl(
+    String attachmentUrl = answerOption.getAttachmentObjectKey() != null
+        ? objectStorageService.generateObjectUrl(
         answerOption.getAttachmentObjectKey(),
         Duration.ofMinutes(1)
-    ).toString();
+    ).toString()
+        : null;
 
     return new AnswerOptionResponseDto(
         answerOption.getId(),
@@ -63,10 +65,12 @@ public class MapperUtil {
   }
 
   public ClosingPageResponseDto closingPageToDto(ClosingPage closingPage) {
-    String attachmentUrl = objectStorageService.generateObjectUrl(
+    String attachmentUrl = closingPage.getAttachmentObjectKey() != null
+        ? objectStorageService.generateObjectUrl(
         closingPage.getAttachmentObjectKey(),
         Duration.ofMinutes(1)
-    ).toString();
+    ).toString()
+        : null;
 
     return new ClosingPageResponseDto(
         closingPage.getTitle(),
@@ -86,10 +90,12 @@ public class MapperUtil {
   }
 
   public QuestionResponseDto questionToDto(Question question) {
-    String attachmentUrl = objectStorageService.generateObjectUrl(
-        question.getAttachmentObjectKey(),
-        Duration.ofMinutes(1)
-    ).toString();
+    String attachmentUrl = question.getAttachmentObjectKey() != null
+        ? objectStorageService.generateObjectUrl(
+            question.getAttachmentObjectKey(),
+            Duration.ofMinutes(1)
+        ).toString()
+        : null;
 
     return new QuestionResponseDto(
         question.getId(),
