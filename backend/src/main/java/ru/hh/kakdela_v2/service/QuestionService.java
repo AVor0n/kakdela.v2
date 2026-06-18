@@ -1,5 +1,6 @@
 package ru.hh.kakdela_v2.service;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import ru.hh.kakdela_v2.dao.QuestionDao;
 import ru.hh.kakdela_v2.dao.SurveyPageDao;
+import ru.hh.kakdela_v2.dto.object.ObjectUrlResponseDto;
 import ru.hh.kakdela_v2.dto.question.QuestionCreateDto;
 import ru.hh.kakdela_v2.dto.question.QuestionResponseDto;
 import ru.hh.kakdela_v2.dto.question.QuestionUpdateDto;
@@ -122,7 +124,7 @@ public class QuestionService {
   // Attachment management
 
   @Transactional
-  public void addAttachment(UUID questionId, UUID accountId, MultipartFile file) {
+  public ObjectUrlResponseDto addAttachment(UUID questionId, UUID accountId, MultipartFile file) {
     Question question = questionDao.findById(questionId)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Вопрос не найден: " + questionId)
@@ -151,6 +153,10 @@ public class QuestionService {
 
     question.setAttachmentObjectKey(objectKey);
     questionDao.update(question);
+
+    return new ObjectUrlResponseDto(
+        objectStorageService.generateObjectUrl(objectKey, Duration.ofMinutes(1)).toString()
+    );
   }
 
   @Transactional

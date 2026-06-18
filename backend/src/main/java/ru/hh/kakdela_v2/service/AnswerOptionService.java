@@ -1,5 +1,6 @@
 package ru.hh.kakdela_v2.service;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,7 @@ import ru.hh.kakdela_v2.dao.QuestionDao;
 import ru.hh.kakdela_v2.dto.answer_option.AnswerOptionCreateDto;
 import ru.hh.kakdela_v2.dto.answer_option.AnswerOptionResponseDto;
 import ru.hh.kakdela_v2.dto.answer_option.AnswerOptionUpdateDto;
+import ru.hh.kakdela_v2.dto.object.ObjectUrlResponseDto;
 import ru.hh.kakdela_v2.model.AnswerOption;
 import ru.hh.kakdela_v2.model.Permission.SurveyRole;
 import ru.hh.kakdela_v2.model.Question;
@@ -85,7 +87,7 @@ public class AnswerOptionService {
   // Attachment management
 
   @Transactional
-  public void addAttachment(UUID answerOptionId, UUID accountId, MultipartFile file) {
+  public ObjectUrlResponseDto addAttachment(UUID answerOptionId, UUID accountId, MultipartFile file) {
     AnswerOption option = answerOptionDao.findById(answerOptionId)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Вариант ответа не найден: " + answerOptionId)
@@ -114,6 +116,10 @@ public class AnswerOptionService {
 
     option.setAttachmentObjectKey(objectKey);
     answerOptionDao.update(option);
+
+    return new ObjectUrlResponseDto(
+        objectStorageService.generateObjectUrl(objectKey, Duration.ofMinutes(1)).toString()
+    );
   }
 
   @Transactional
