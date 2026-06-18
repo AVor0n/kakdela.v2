@@ -7,6 +7,8 @@ services:
     depends_on:
       service-db:
         condition: service_healthy
+      service-obs:
+        condition: service_started
     env_file:
       - .env.prod
     restart: unless-stopped
@@ -41,7 +43,6 @@ services:
   service-obs:
     image: chrislusf/seaweedfs:latest
     container_name: kd2-seaweedfs
-    user: "0"
     env_file:
       - .env
     ports:
@@ -54,11 +55,6 @@ services:
       - server
       - -dir=/data
       - -s3
-    healthcheck:
-      test: [ "CMD", "wget", "-q", "--spider", "http://service-obs:8333" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
 volumes:
   db-data:

@@ -10,7 +10,7 @@ services:
       service-db:
         condition: service_healthy
       service-obs:
-        condition: service_healthy
+        condition: service_started
     env_file:
       - .env
     restart: unless-stopped
@@ -69,11 +69,6 @@ services:
       - server
       - -dir=/data
       - -s3
-    healthcheck:
-      test: [ "CMD", "wget", "-q", "--spider", "http://service-obs:8333" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
 volumes:
   db-data:
