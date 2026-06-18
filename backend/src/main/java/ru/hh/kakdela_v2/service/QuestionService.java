@@ -134,29 +134,34 @@ public class QuestionService {
         question.getSurveyPage().getSurvey().getId(), accountId, SurveyRole.EDITOR
     );
 
-    // TODO: добавить проверку, что файл является изображением (или, например, видео)
-    // TODO: Добавить сжатие для изображений
-
     if (question.getAttachmentObjectKey() != null) {
       throw new ResponseStatusException(
           HttpStatus.CONFLICT,
-          "Вопрос уже содержит вложение"
+          "К вопросу уже прикреплено вложение"
       );
     }
 
-    String objectKey = "questions/%s/%s".formatted(questionId, UUID.randomUUID());
-    objectStorageService.putObject(
-        objectKey,
-        file,
-        file.getContentType()
+    return upsertAttachmentHelper(question, file);
+  }
+
+  @Transactional
+  public ObjectUrlResponseDto updateAttachment(UUID questionId, UUID accountId, MultipartFile file) {
+    Question question = questionDao.findById(questionId)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Вопрос не найден: " + questionId)
+        );
+
+    permissionService.checkAccess(
+        question.getSurveyPage().getSurvey().getId(), accountId, SurveyRole.EDITOR
     );
 
-    question.setAttachmentObjectKey(objectKey);
-    questionDao.update(question);
+    if (question.getAttachmentObjectKey() != null) {
+      objectStorageService.deleteObject(
+          question.getAttachmentObjectKey()
+      );
+    }
 
-    return new ObjectUrlResponseDto(
-        objectStorageService.generateObjectUrl(objectKey, Duration.ofMinutes(1)).toString()
-    );
+    return upsertAttachmentHelper(question, file);
   }
 
   @Transactional
@@ -181,5 +186,24 @@ public class QuestionService {
 
     question.setAttachmentObjectKey(null);
     questionDao.update(question);
+  }
+
+  private ObjectUrlResponseDto upsertAttachmentHelper(Question question, MultipartFile file) {
+    // TODO: добавить проверку, что файл является изображением (или, например, видео)
+    // TODO: Добавить сжатие для изображений
+
+    String objectKey = "questions/%s/%s".formatted(question.getId(), UUID.randomUUID());
+    objectStorageService.putObject(
+        objectKey,
+        file,
+        file.getContentType()
+    );
+
+    question.setAttachmentObjectKey(objectKey);
+    questionDao.update(question);
+
+    return new ObjectUrlResponseDto(
+        objectStorageService.generateObjectUrl(objectKey, Duration.ofMinutes(1))
+    );
   }
 }

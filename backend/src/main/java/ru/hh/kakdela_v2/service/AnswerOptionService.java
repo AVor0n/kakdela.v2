@@ -97,9 +97,6 @@ public class AnswerOptionService {
         option.getQuestion().getSurveyPage().getSurvey().getId(), accountId, SurveyRole.EDITOR
     );
 
-    // TODO: добавить проверку, что файл является изображением (или, например, видео)
-    // TODO: Добавить сжатие для изображений
-
     if (option.getAttachmentObjectKey() != null) {
       throw new ResponseStatusException(
           HttpStatus.CONFLICT,
@@ -107,19 +104,27 @@ public class AnswerOptionService {
       );
     }
 
-    String objectKey = "answer-options/%s/%s".formatted(answerOptionId, UUID.randomUUID());
-    objectStorageService.putObject(
-        objectKey,
-        file,
-        file.getContentType()
+    return upsertAttachmentHelper(option, file);
+  }
+
+  @Transactional
+  public ObjectUrlResponseDto updateAttachment(UUID answerOptionId, UUID accountId, MultipartFile file) {
+    AnswerOption option = answerOptionDao.findById(answerOptionId)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Вариант ответа не найден: " + answerOptionId)
+        );
+
+    permissionService.checkAccess(
+        option.getQuestion().getSurveyPage().getSurvey().getId(), accountId, SurveyRole.EDITOR
     );
 
-    option.setAttachmentObjectKey(objectKey);
-    answerOptionDao.update(option);
+    if (option.getAttachmentObjectKey() != null) {
+      objectStorageService.deleteObject(
+          option.getAttachmentObjectKey()
+      );
+    }
 
-    return new ObjectUrlResponseDto(
-        objectStorageService.generateObjectUrl(objectKey, Duration.ofMinutes(1)).toString()
-    );
+    return upsertAttachmentHelper(option, file);
   }
 
   @Transactional
@@ -144,5 +149,24 @@ public class AnswerOptionService {
 
     option.setAttachmentObjectKey(null);
     answerOptionDao.update(option);
+  }
+
+  private ObjectUrlResponseDto upsertAttachmentHelper(AnswerOption option, MultipartFile file) {
+    // TODO: добавить проверку, что файл является изображением (или, например, видео)
+    // TODO: Добавить сжатие для изображений
+
+    String objectKey = "answer-options/%s/%s".formatted(option.getId(), UUID.randomUUID());
+    objectStorageService.putObject(
+        objectKey,
+        file,
+        file.getContentType()
+    );
+
+    option.setAttachmentObjectKey(objectKey);
+    answerOptionDao.update(option);
+
+    return new ObjectUrlResponseDto(
+        objectStorageService.generateObjectUrl(objectKey, Duration.ofMinutes(1))
+    );
   }
 }

@@ -8,6 +8,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -45,6 +46,22 @@ public class AttachmentController {
     );
   }
 
+  @PutMapping(
+      value = "/questions/{questionId}/attachment",
+      consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+  )
+  public ObjectUrlResponseDto updateAttachmentInQuestion(
+      @PathVariable UUID questionId,
+      @RequestParam MultipartFile file,
+      @AuthenticationPrincipal CustomUserDetails currentUser
+  ) {
+    return questionService.updateAttachment(
+        questionId,
+        currentUser.getId(),
+        file
+    );
+  }
+
   @DeleteMapping("/questions/{questionId}/attachment")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void deleteAttachmentFromQuestion(
@@ -70,6 +87,23 @@ public class AttachmentController {
       @AuthenticationPrincipal CustomUserDetails currentUser
   ) {
     return answerOptionService.addAttachment(
+        answerOptionId,
+        currentUser.getId(),
+        file
+    );
+  }
+
+  @PutMapping(
+      value = "/answer-options/{answerOptionId}/attachment",
+      consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+  )
+  @ResponseStatus(HttpStatus.CREATED)
+  public ObjectUrlResponseDto updateAttachmentInAnswerOption(
+      @PathVariable UUID answerOptionId,
+      @RequestParam MultipartFile file,
+      @AuthenticationPrincipal CustomUserDetails currentUser
+  ) {
+    return answerOptionService.updateAttachment(
         answerOptionId,
         currentUser.getId(),
         file
