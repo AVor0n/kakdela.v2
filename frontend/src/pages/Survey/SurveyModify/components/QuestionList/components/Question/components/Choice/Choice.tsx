@@ -48,7 +48,7 @@ export function Choice({ options, type, isEdit }: Props) {
             ))}
             {isEdit && (
                 <div className={style.add}>
-                    <p className={style.actions}>
+                    <div className={style.actions}>
                         <Link
                             Element='button'
                             mode='secondary'
@@ -66,7 +66,7 @@ export function Choice({ options, type, isEdit }: Props) {
                         >
                             Добавить вариант "Другое"
                         </Link>
-                    </p>
+                    </div>
                 </div>
             )}
         </div>

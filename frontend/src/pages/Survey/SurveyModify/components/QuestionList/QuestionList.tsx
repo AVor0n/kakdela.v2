@@ -9,9 +9,10 @@ import style from './QuestionList.module.css';
 
 interface Props {
     questions: Question[];
+    pageIndex: number;
 }
 
-export function QuestionList({ questions }: Props) {
+export function QuestionList({ questions, pageIndex }: Props) {
     const { selectedQuestion } = useAppSelector((state) => state.survey);
     const editQuestionId = useMemo(() => selectedQuestion?.id, [selectedQuestion]);
     const dispatch = useAppDispatch();
@@ -21,7 +22,7 @@ export function QuestionList({ questions }: Props) {
                 <QuestionComponent
                     key={question.id}
                     question={question}
-                    onClick={() => dispatch(setSelectedQuestion({ question }))}
+                    onClick={() => dispatch(setSelectedQuestion({ question, pageIndex }))}
                     isEditMode={editQuestionId === question.id}
                 />
             ))}

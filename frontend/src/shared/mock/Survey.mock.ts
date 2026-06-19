@@ -9,7 +9,7 @@ export const mockSurvey: Survey = {
     doNotify: false,
     expireAt: null,
     id: 'a5efa749-075a-4e9f-be1f-75d76e2f3023',
-    limitedToOneResponse: false,
+    isLimitedToOneResponse: false,
     pages: [
         {
             description: 'simple description',
@@ -65,7 +65,7 @@ export const mockSurvey: Survey = {
             title: 'Страница 1',
         },
     ],
-    published: false,
-    template: false,
+    isPublished: false,
+    isTemplate: false,
     title: 'Первый опрос!',
 };

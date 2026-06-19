@@ -6,19 +6,22 @@ import { useAppSelector } from '@/hooks/useAppSelector';
 import { useEffect } from 'react';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { setSelectedSurvey } from '@/entities/Survey/Survey.slice';
-import { mockSurvey } from '@/shared/mock/Survey.mock';
 import { Sidebar } from './components/Sidebar/Sidebar';
 
 import style from './SurveyModify.module.css';
+import { getSurveyById } from '@/api/survey';
+import { useParams } from 'react-router-dom';
 
 export function SurveyModify() {
-    // const { id } = useParams();
+    const { id } = useParams();
     const { selectedSurvey } = useAppSelector((state) => state.survey);
     const dispatch = useAppDispatch();
     // TODO: Логика получения данных опроса по id
 
     useEffect(() => {
-        dispatch(setSelectedSurvey({ survey: mockSurvey }));
+        if (id) {
+            getSurveyById(id).then((data) => dispatch(setSelectedSurvey({ survey: data })));
+        }
     }, []);
 
     if (!selectedSurvey) {
@@ -28,8 +31,14 @@ export function SurveyModify() {
         <div className={style.container}>
             <div className={style.content}>
                 <SurveyDetail survey={selectedSurvey!} />
-                {/* <div>Редактирование опроса - ID: {id}</div> */}
-                <QuestionList questions={selectedSurvey!.pages[0].questions} />
+                {selectedSurvey!.pages.map((page, index) => {
+                    return (
+                        <div key={index} className={style.page}>
+                            <QuestionList questions={page.questions} pageIndex={index} />
+                            <div>page {page.serialNumber}</div>
+                        </div>
+                    );
+                })}
             </div>
             <Sidebar />
         </div>

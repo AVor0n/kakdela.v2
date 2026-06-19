@@ -24,7 +24,7 @@ export function SurveyDetail({ survey }: Props) {
                 layout='fixed'
                 resize='none'
                 description='Описание формы - для чего она нужна, что в ней будет'
-                value={survey!.description!}
+                value={survey!.description ? survey.description : ''}
                 onChange={(e) => dispatch(setSelectedSurvey({ survey: { ...survey, description: e.target.value } }))}
                 elevatePlaceholder={true}
             />
