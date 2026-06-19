@@ -106,7 +106,7 @@ public class SurveyService {
 
   @Transactional
   public SurveyResponseDto clone(UUID surveyId, UUID accountId) {
-    Survey original = surveyDao.findById(surveyId)
+    Survey originalSurvey = surveyDao.findById(surveyId)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
 
@@ -116,22 +116,22 @@ public class SurveyService {
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Аккаунт не найден: " + accountId));
 
-    Survey copy = Survey.builder()
+    Survey surveyCopy = Survey.builder()
         .author(account)
-        .title("Копия — " + original.getTitle())
-        .description(original.getDescription())
-        .isAuthorizedOnly(original.isAuthorizedOnly())
-        .isLimitedToOneResponse(original.isLimitedToOneResponse())
+        .title("Копия — " + originalSurvey.getTitle())
+        .description(originalSurvey.getDescription())
+        .isAuthorizedOnly(originalSurvey.isAuthorizedOnly())
+        .isLimitedToOneResponse(originalSurvey.isLimitedToOneResponse())
         .isPublished(false)
         .isTemplate(false)
-        .doNotify(original.isDoNotify())
-        .expireAt(original.getExpireAt())
+        .doNotify(originalSurvey.isDoNotify())
+        .expireAt(originalSurvey.getExpireAt())
         .createdAt(Instant.now())
         .build();
 
-    for (SurveyPage originalPage : original.getPages()) {
+    for (SurveyPage originalPage : originalSurvey.getPages()) {
       SurveyPage pageCopy = SurveyPage.builder()
-          .survey(copy)
+          .survey(surveyCopy)
           .serialNumber(originalPage.getSerialNumber())
           .title(originalPage.getTitle())
           .description(originalPage.getDescription())
@@ -162,21 +162,21 @@ public class SurveyService {
         pageCopy.getQuestions().add(questionCopy);
       }
 
-      copy.getPages().add(pageCopy);
+      surveyCopy.getPages().add(pageCopy);
     }
 
-    if (original.getClosingPage() != null) {
+    if (originalSurvey.getClosingPage() != null) {
       ClosingPage closingPageCopy = ClosingPage.builder()
-          .survey(copy)
-          .title(original.getClosingPage().getTitle())
-          .description(original.getClosingPage().getDescription())
-          .websiteUrl(original.getClosingPage().getWebsiteUrl())
+          .survey(surveyCopy)
+          .title(originalSurvey.getClosingPage().getTitle())
+          .description(originalSurvey.getClosingPage().getDescription())
+          .websiteUrl(originalSurvey.getClosingPage().getWebsiteUrl())
           .build();
-      copy.setClosingPage(closingPageCopy);
+      surveyCopy.setClosingPage(closingPageCopy);
     }
 
-    surveyDao.save(copy);
-    return new SurveyResponseDto(copy);
+    surveyDao.save(surveyCopy);
+    return new SurveyResponseDto(surveyCopy);
   }
 
   @Transactional
