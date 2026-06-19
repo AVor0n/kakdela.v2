@@ -60,6 +60,14 @@ public class SurveyController {
         return surveyService.update(surveyId, updateDto, currentUser.getId());
     }
 
+    @PostMapping("/surveys/{surveyId}/clone")
+    @ResponseStatus(HttpStatus.CREATED)
+    public SurveyResponseDto clone(
+            @PathVariable UUID surveyId,
+            @AuthenticationPrincipal CustomUserDetails currentUser) {
+        return surveyService.clone(surveyId, currentUser.getId());
+    }
+
     @DeleteMapping("/surveys/{surveyId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(
