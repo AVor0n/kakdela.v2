@@ -2,9 +2,7 @@ import axios from 'axios';
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { login } from '@/api/auth';
-import { useAppDispatch } from '@/app/hooks';
 import { routes } from '@/app/routes';
-import { setAccessToken } from '@/features/auth/authSlice';
 import { AuthCard } from '@/pages/Auth/components/AuthCard';
 import { AuthPageLayout } from '@/pages/Auth/components/AuthPageLayout';
 import { LoginForm } from '@/pages/Auth/Login/LoginForm';
@@ -44,7 +42,6 @@ const initialErrors: LoginFormErrors = {
 export function Login() {
     const navigate = useNavigate();
     const location = useLocation();
-    const dispatch = useAppDispatch();
     const [values, setValues] = useState<LoginFormValues>(initialValues);
     const [touched, setTouched] = useState<LoginFormTouched>(initialTouched);
     const [errors, setErrors] = useState<LoginFormErrors>(initialErrors);
@@ -105,7 +102,7 @@ export function Login() {
             setFormError('');
             const { accessToken } = await login(values);
 
-            dispatch(setAccessToken(accessToken));
+            cookieStore.set('accessToken', accessToken);
             const from = (location.state as LoginLocationState | null)?.from;
             const redirectPath = from
                 ? `${from.pathname ?? routes.survey()}${from.search ?? ''}${from.hash ?? ''}`
@@ -128,7 +125,7 @@ export function Login() {
 
     return (
         <AuthPageLayout>
-            <AuthCard title="Авторизация">
+            <AuthCard title='Авторизация'>
                 <LoginForm
                     values={values}
                     errors={errors}

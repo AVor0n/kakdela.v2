@@ -1,6 +1,5 @@
 import { Navigate, useLocation } from 'react-router-dom';
-import type { ReactNode } from 'react';
-import { useAppSelector } from '@/app/hooks';
+import { useEffect, useState, type ReactNode } from 'react';
 import { routes } from '@/app/routes';
 
 type RequireAuthProps = {
@@ -9,7 +8,14 @@ type RequireAuthProps = {
 
 export function RequireAuth({ children }: RequireAuthProps) {
     const location = useLocation();
-    const accessToken = useAppSelector((state) => state.auth.accessToken);
+    const [accessToken, setAccessToken] = useState<CookieListItem | null | undefined>(undefined);
+    useEffect(() => {
+        cookieStore.get('accessToken').then(setAccessToken);
+    });
+
+    if (accessToken === undefined) {
+        return null;
+    }
 
     if (!accessToken) {
         return <Navigate to={routes.login()} state={{ from: location }} replace />;

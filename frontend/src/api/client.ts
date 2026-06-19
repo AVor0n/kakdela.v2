@@ -5,11 +5,14 @@ import { clearAccessToken } from '@/features/auth/authSlice';
 
 export const apiClient = axios.create();
 
-apiClient.interceptors.request.use((config) => {
-    const token = store.getState().auth.accessToken;
-
+apiClient.interceptors.request.use(async (config) => {
+    if (config.url?.includes('/auth/login') || config.url?.includes('/auth/register')) {
+        return config;
+    }
+    const token = await cookieStore.get('accessToken');
+    // console.log(token);
     if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
+        config.headers.Authorization = `Bearer ${token.value}`;
     }
 
     return config;
