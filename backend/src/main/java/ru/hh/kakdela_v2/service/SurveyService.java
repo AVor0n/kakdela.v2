@@ -12,8 +12,12 @@ import ru.hh.kakdela_v2.dto.survey.SurveyResponseDto;
 import ru.hh.kakdela_v2.dto.survey.SurveyShortResponseDto;
 import ru.hh.kakdela_v2.dto.survey.SurveyUpdateDto;
 import ru.hh.kakdela_v2.model.Account;
+import ru.hh.kakdela_v2.model.AnswerOption;
+import ru.hh.kakdela_v2.model.ClosingPage;
 import ru.hh.kakdela_v2.model.Permission.SurveyRole;
+import ru.hh.kakdela_v2.model.Question;
 import ru.hh.kakdela_v2.model.Survey;
+import ru.hh.kakdela_v2.model.SurveyPage;
 
 import java.time.Instant;
 import java.util.List;
@@ -43,7 +47,7 @@ public class SurveyService {
             .toList();
   }
 
-  @Transactional( readOnly = true)
+  @Transactional(readOnly = true)
   public List<SurveyShortResponseDto> getMySurveys(UUID accountId) {
     List<Survey> surveys = permissionService.getAccessibleSurveys(accountId);
     return surveys.stream()
@@ -98,6 +102,81 @@ public class SurveyService {
 
     surveyDao.update(survey);
     return new SurveyResponseDto(survey);
+  }
+
+  @Transactional
+  public SurveyResponseDto clone(UUID surveyId, UUID accountId) {
+    Survey original = surveyDao.findById(surveyId)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
+
+    permissionService.checkAccess(surveyId, accountId, SurveyRole.EDITOR);
+
+    Account account = accountDao.findById(accountId)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Аккаунт не найден: " + accountId));
+
+    Survey copy = Survey.builder()
+        .author(account)
+        .title("Копия — " + original.getTitle())
+        .description(original.getDescription())
+        .isAuthorizedOnly(original.isAuthorizedOnly())
+        .isLimitedToOneResponse(original.isLimitedToOneResponse())
+        .isPublished(false)
+        .isTemplate(false)
+        .doNotify(original.isDoNotify())
+        .expireAt(original.getExpireAt())
+        .createdAt(Instant.now())
+        .build();
+
+    for (SurveyPage originalPage : original.getPages()) {
+      SurveyPage pageCopy = SurveyPage.builder()
+          .survey(copy)
+          .serialNumber(originalPage.getSerialNumber())
+          .title(originalPage.getTitle())
+          .description(originalPage.getDescription())
+          .build();
+
+      for (Question originalQuestion : originalPage.getQuestions()) {
+        Question questionCopy = Question.builder()
+            .surveyPage(pageCopy)
+            .serialNumber(originalQuestion.getSerialNumber())
+            .title(originalQuestion.getTitle())
+            .description(originalQuestion.getDescription())
+            .type(originalQuestion.getType())
+            .answerOptionOrder(originalQuestion.getAnswerOptionOrder())
+            .isMandatory(originalQuestion.isMandatory())
+            .isVisible(originalQuestion.isVisible())
+            .condition(originalQuestion.getCondition())
+            .build();
+
+        for (AnswerOption originalOption : originalQuestion.getAnswerOptions()) {
+          AnswerOption optionCopy = AnswerOption.builder()
+              .question(questionCopy)
+              .serialNumber(originalOption.getSerialNumber())
+              .answerOptionText(originalOption.getAnswerOptionText())
+              .build();
+          questionCopy.getAnswerOptions().add(optionCopy);
+        }
+
+        pageCopy.getQuestions().add(questionCopy);
+      }
+
+      copy.getPages().add(pageCopy);
+    }
+
+    if (original.getClosingPage() != null) {
+      ClosingPage closingPageCopy = ClosingPage.builder()
+          .survey(copy)
+          .title(original.getClosingPage().getTitle())
+          .description(original.getClosingPage().getDescription())
+          .websiteUrl(original.getClosingPage().getWebsiteUrl())
+          .build();
+      copy.setClosingPage(closingPageCopy);
+    }
+
+    surveyDao.save(copy);
+    return new SurveyResponseDto(copy);
   }
 
   @Transactional
