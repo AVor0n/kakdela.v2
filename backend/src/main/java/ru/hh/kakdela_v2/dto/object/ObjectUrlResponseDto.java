@@ -6,5 +6,5 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 public class ObjectUrlResponseDto {
-  private final String url;
+  private final String attachmentUrl;
 }
