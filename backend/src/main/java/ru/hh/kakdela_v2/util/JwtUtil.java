@@ -21,7 +21,7 @@ public class JwtUtil {
   @Value("${app.tokens.response-access.max-age}")
   private long responseAccessTokenMaxAge;
 
-  public JwtUtil(@Value("${app.jwt-secret}") String SECRET) {
+  public JwtUtil(@Value("${app.jwt.secret}") String SECRET) {
     key = Keys.hmacShaKeyFor(SECRET.getBytes());
   }
 
