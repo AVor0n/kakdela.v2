@@ -1,10 +1,13 @@
 package ru.hh.kakdela_v2.service;
 
+import jakarta.annotation.PostConstruct;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
 import javax.imageio.ImageIO;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import net.coobird.thumbnailator.Thumbnails;
 import org.apache.tika.Tika;
 import org.springframework.http.HttpStatus;
@@ -15,9 +18,18 @@ import ru.hh.kakdela_v2.dto.image.ProcessedImage;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class ImageProcessingService {
 
   private final Tika tika;
+
+  @PostConstruct
+  public void init() {
+    ImageIO.setUseCache(false);
+    ImageIO.scanForPlugins();
+    log.info(Arrays.toString(ImageIO.getWriterFormatNames()));
+    log.info(Arrays.toString(ImageIO.getReaderFormatNames()));
+  }
 
   public ProcessedImage process (MultipartFile file) {
     String failMessage = "Загруженное изображение имеет неподдерживаемый формат или испорчено";
@@ -37,9 +49,10 @@ public class ImageProcessingService {
 
       BufferedImage image = ImageIO.read(file.getInputStream());
       ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
       Thumbnails.of(image)
           .size(1920, 1200)
-          .outputQuality(0.8f)
+          .outputQuality(0.85f)
           .outputFormat("webp")
           .toOutputStream(outputStream);
 
