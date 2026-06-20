@@ -4,14 +4,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import ru.hh.kakdela_v2.dto.account.AccountCreateDto;
+import ru.hh.kakdela_v2.dto.auth.AuthTokensDto;
 import ru.hh.kakdela_v2.dto.auth.LoginDto;
-import ru.hh.kakdela_v2.dto.auth.LoginResponseDto;
 import ru.hh.kakdela_v2.dto.auth.RegisterDto;
 import ru.hh.kakdela_v2.util.JwtUtil;
 
@@ -25,10 +24,11 @@ public class AuthService {
   private final PasswordEncoder passwordEncoder;
   private final JwtUtil jwtUtil;
 
-  public LoginResponseDto login(LoginDto loginDto) {
-    authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginDto.getLogin(), loginDto.getPassword()));
-    UserDetails userDetails = userDetailsService.loadUserByUsername(loginDto.getLogin());
-    return new LoginResponseDto(jwtUtil.generateAccessToken(userDetails), null);
+  public AuthTokensDto login(LoginDto loginDto) {
+    authenticationManager.authenticate(
+        new UsernamePasswordAuthenticationToken(loginDto.getLogin(), loginDto.getPassword()));
+    return new AuthTokensDto(
+        jwtUtil.generateAccessToken(loginDto.getLogin()), null);
   }
 
   public void register(RegisterDto registerDto) {
