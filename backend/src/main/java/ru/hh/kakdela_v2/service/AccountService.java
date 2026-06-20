@@ -31,12 +31,12 @@ public class AccountService {
   @Transactional
   public AccountResponseDto create(AccountCreateDto dto) {
     if (accountDao.existsByLogin(dto.getLogin())) {
-      throw new ResponseStatusException(HttpStatus.CONFLICT,
-          "Такой логин уже используется: " + dto.getLogin());
+      throw new ResponseStatusException(
+          HttpStatus.CONFLICT, "Такой логин уже используется: " + dto.getLogin());
     }
     if (accountDao.existsByEmail(dto.getEmail())) {
-      throw new ResponseStatusException(HttpStatus.CONFLICT,
-          "Такой email уже зарегистрирован: " + dto.getEmail());
+      throw new ResponseStatusException(
+          HttpStatus.CONFLICT, "Такой email уже зарегистрирован: " + dto.getEmail());
     }
 
     Account account = Account.builder()
@@ -58,15 +58,15 @@ public class AccountService {
 
     if (dto.getLogin() != null) {
       if (accountDao.existsByLogin(dto.getLogin())) {
-        throw new ResponseStatusException(HttpStatus.CONFLICT,
-            "Такой логин уже используется: " + dto.getLogin());
+        throw new ResponseStatusException(
+            HttpStatus.CONFLICT, "Такой логин уже используется: " + dto.getLogin());
       }
       account.setLogin(dto.getLogin());
     }
     if (dto.getEmail() != null) {
       if (accountDao.existsByEmail(dto.getEmail())) {
-        throw new ResponseStatusException(HttpStatus.CONFLICT,
-            "Такой email уже зарегистрирован: " + dto.getEmail());
+        throw new ResponseStatusException(
+            HttpStatus.CONFLICT, "Такой email уже зарегистрирован: " + dto.getEmail());
       }
       account.setEmail(dto.getEmail());
     }

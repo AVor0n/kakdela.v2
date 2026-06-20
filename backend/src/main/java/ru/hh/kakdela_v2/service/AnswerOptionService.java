@@ -40,14 +40,15 @@ public class AnswerOptionService {
   }
 
   @Transactional
-  public AnswerOptionResponseDto create(UUID questionId, AnswerOptionCreateDto dto,
+  public AnswerOptionResponseDto create(UUID questionId,
+                                        AnswerOptionCreateDto dto,
                                         UUID accountId) {
     Question question = questionDao.findById(questionId)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Вопрос не найден: " + questionId));
 
-    permissionService.checkAccess(question.getSurveyPage().getSurvey().getId(), accountId,
-        SurveyRole.EDITOR);
+    permissionService.checkAccess(
+        question.getSurveyPage().getSurvey().getId(), accountId, SurveyRole.EDITOR);
 
     AnswerOption answerOption = AnswerOption.builder()
         .question(question)
@@ -65,7 +66,8 @@ public class AnswerOptionService {
         .orElseThrow(
             () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Вопрос не найден: " + id));
 
-    permissionService.checkAccess(answerOption.getQuestion().getSurveyPage().getSurvey().getId(),
+    permissionService.checkAccess(
+        answerOption.getQuestion().getSurveyPage().getSurvey().getId(),
         accountId, SurveyRole.EDITOR);
 
     if (dto.getSerialNumber() != null) {
@@ -98,7 +100,8 @@ public class AnswerOptionService {
             HttpStatus.NOT_FOUND, "Вариант ответа не найден: " + answerOptionId));
 
     permissionService.checkAccess(
-        answerOption.getQuestion().getSurveyPage().getSurvey().getId(), accountId, SurveyRole.EDITOR);
+        answerOption.getQuestion().getSurveyPage().getSurvey().getId(),
+        accountId, SurveyRole.EDITOR);
 
     if (answerOption.getAttachmentObjectKey() != null) {
       throw new ResponseStatusException(
@@ -109,14 +112,16 @@ public class AnswerOptionService {
   }
 
   @Transactional
-  public ObjectUrlResponseDto updateAttachment(UUID answerOptionId, UUID accountId,
+  public ObjectUrlResponseDto updateAttachment(UUID answerOptionId,
+                                               UUID accountId,
                                                MultipartFile file) {
     AnswerOption answerOption = answerOptionDao.findById(answerOptionId)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Вариант ответа не найден: " + answerOptionId));
 
     permissionService.checkAccess(
-        answerOption.getQuestion().getSurveyPage().getSurvey().getId(), accountId, SurveyRole.EDITOR);
+        answerOption.getQuestion().getSurveyPage().getSurvey().getId(), accountId,
+        SurveyRole.EDITOR);
 
     if (answerOption.getAttachmentObjectKey() != null) {
       objectStorageService.deleteObject(
@@ -133,7 +138,8 @@ public class AnswerOptionService {
             HttpStatus.NOT_FOUND, "Вариант ответа не найден: " + answerOptionId));
 
     permissionService.checkAccess(
-        answerOption.getQuestion().getSurveyPage().getSurvey().getId(), accountId, SurveyRole.EDITOR);
+        answerOption.getQuestion().getSurveyPage().getSurvey().getId(), accountId,
+        SurveyRole.EDITOR);
 
     if (answerOption.getAttachmentObjectKey() == null) {
       throw new ResponseStatusException(
@@ -146,7 +152,8 @@ public class AnswerOptionService {
     answerOptionDao.update(answerOption);
   }
 
-  private ObjectUrlResponseDto upsertAttachmentHelper(AnswerOption answerOption, MultipartFile file) {
+  private ObjectUrlResponseDto upsertAttachmentHelper(AnswerOption answerOption,
+                                                      MultipartFile file) {
     // TODO: Добавить сжатие для изображений
 
     ProcessedImage image = imageProcessingService.process(file);

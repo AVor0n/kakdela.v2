@@ -20,8 +20,8 @@ public class CustomUserDetailsService implements UserDetailsService {
   public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
     Account account = accountDao.findByLogin(username)
         .orElseThrow(() -> new UsernameNotFoundException("Аккаунт не найден: login=" + username));
-    return new CustomUserDetails(account.getId(), account.getLogin(), account.getPasswordHash(),
-        new HashSet<>());
+    return new CustomUserDetails(
+        account.getId(), account.getLogin(), account.getPasswordHash(), new HashSet<>());
   }
 
 }

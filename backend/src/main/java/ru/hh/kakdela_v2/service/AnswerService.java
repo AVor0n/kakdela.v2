@@ -57,8 +57,11 @@ public class AnswerService {
   }
 
   @Transactional
-  public AnswerResponseDto create(UUID responseId, UUID questionId, AnswerCreateDto dto,
-                                  UUID accountId, String token) {
+  public AnswerResponseDto create(UUID responseId,
+                                  UUID questionId,
+                                  AnswerCreateDto dto,
+                                  UUID accountId,
+                                  String token) {
     Response response = checkAccessAndGetResponse(responseId, accountId, token);
 
     if (response.isCompleted()) {
@@ -98,8 +101,11 @@ public class AnswerService {
   }
 
   @Transactional
-  public AnswerResponseDto update(UUID responseId, UUID questionId, String newAnswerText,
-                                  UUID accountId, String token) {
+  public AnswerResponseDto update(UUID responseId,
+                                  UUID questionId,
+                                  String newAnswerText,
+                                  UUID accountId,
+                                  String token) {
     Response response = checkAccessAndGetResponse(responseId, accountId, token);
 
     if (response.isCompleted()) {

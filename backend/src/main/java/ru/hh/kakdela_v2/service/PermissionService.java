@@ -121,8 +121,10 @@ public class PermissionService {
   }
 
   @Transactional
-  public PermissionResponseDto update(UUID surveyId, UUID accountId,
-                                      UUID currentUserId, PermissionUpdateDto dto) {
+  public PermissionResponseDto update(UUID surveyId,
+                                      UUID accountId,
+                                      UUID currentUserId,
+                                      PermissionUpdateDto dto) {
     checkOwnership(surveyId, currentUserId);
 
     Permission permission = permissionDao.findBySurveyIdAndAccountId(surveyId, accountId)

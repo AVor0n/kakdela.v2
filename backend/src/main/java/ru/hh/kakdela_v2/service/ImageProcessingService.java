@@ -18,7 +18,6 @@ import ru.hh.kakdela_v2.dto.image.ProcessedImage;
 
 @Component
 @RequiredArgsConstructor
-@Slf4j
 public class ImageProcessingService {
 
   private final Tika tika;
@@ -27,8 +26,6 @@ public class ImageProcessingService {
   public void init() {
     ImageIO.setUseCache(false);
     ImageIO.scanForPlugins();
-    log.info(Arrays.toString(ImageIO.getWriterFormatNames()));
-    log.info(Arrays.toString(ImageIO.getReaderFormatNames()));
   }
 
   public ProcessedImage process (MultipartFile file) {
