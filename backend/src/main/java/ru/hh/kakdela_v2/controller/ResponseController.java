@@ -5,17 +5,16 @@ import java.util.UUID;
 
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import ru.hh.kakdela_v2.dto.response.ResponseCreateResponseDto;
 import ru.hh.kakdela_v2.dto.response.ResponseResponseDto;
 import ru.hh.kakdela_v2.dto.response.ResponseWithTokenDto;
 import ru.hh.kakdela_v2.service.ResponseService;
-import ru.hh.kakdela_v2.util.CustomUserDetails;
-
-import javax.xml.datatype.Duration;
+import ru.hh.kakdela_v2.security.CustomUserDetails;
 
 @RestController
 @RequestMapping("/api")
@@ -24,9 +23,13 @@ public class ResponseController {
 
   private final ResponseService responseService;
 
+  @Value("${app.tokens.response-access.max-age}")
+  private long responseTokenMaxAge;
+
   // User side
 
   @PostMapping("/surveys/{surveyId}/responses")
+  @ResponseStatus(HttpStatus.CREATED)
   public ResponseCreateResponseDto create(@PathVariable UUID surveyId,
                                           @AuthenticationPrincipal CustomUserDetails currentUser,
                                           HttpServletResponse response) {
@@ -35,27 +38,27 @@ public class ResponseController {
 
     if (responseWithTokenDto.getResponseAccessToken() != null) {
 
-      ResponseCookie responseCompleteTokenCookie = ResponseCookie.from("responseAccessToken",
-              responseWithTokenDto.getResponseAccessToken())
+      ResponseCookie responseAccessTokenCookie = ResponseCookie.from(
+          "responseAccessToken", responseWithTokenDto.getResponseAccessToken())
           .httpOnly(true)
-          .sameSite("strict")
+          .sameSite("Strict")
           .path("/api/responses")
-          .maxAge(60 * 60 * 24 * 7)
+          .maxAge(responseTokenMaxAge)
           .build();
 
-      response.addHeader("Set-Cookie", responseCompleteTokenCookie.toString());
+      response.addHeader("Set-Cookie", responseAccessTokenCookie.toString());
     }
 
     return new ResponseCreateResponseDto(responseWithTokenDto.getId());
   }
 
   @PostMapping("/responses/{responseId}/complete")
-  public ResponseEntity<?> complete(@PathVariable UUID responseId,
+  public ResponseResponseDto complete(@PathVariable UUID responseId,
                                     @AuthenticationPrincipal CustomUserDetails currentUser,
                                     @CookieValue(value = "responseAccessToken",
                                         required = false) String token) {
-    responseService.complete(responseId, (currentUser != null ? currentUser.getId() : null), token);
-    return ResponseEntity.ok("Ответ записан");
+    return responseService.complete(
+        responseId, (currentUser != null ? currentUser.getId() : null), token);
   }
 
   @GetMapping("/responses/{responseId}")

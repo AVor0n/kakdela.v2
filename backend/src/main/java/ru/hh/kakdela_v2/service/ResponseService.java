@@ -19,7 +19,7 @@ import ru.hh.kakdela_v2.model.Account;
 import ru.hh.kakdela_v2.model.Permission;
 import ru.hh.kakdela_v2.model.Response;
 import ru.hh.kakdela_v2.model.Survey;
-import ru.hh.kakdela_v2.util.JwtUtil;
+import ru.hh.kakdela_v2.security.JwtService;
 
 @Service
 @RequiredArgsConstructor
@@ -29,7 +29,7 @@ public class ResponseService {
   private final SurveyDao surveyDao;
   private final AccountDao accountDao;
   private final PermissionService permissionService;
-  private final JwtUtil jwtUtil;
+  private final JwtService jwtService;
 
   private Response checkAccessAndGetResponse(UUID responseId, UUID accountId, String token) {
     Response response = responseDao.findById(responseId)
@@ -42,7 +42,7 @@ public class ResponseService {
     }
 
     if (response.getAccount() != null && !response.getAccount().getId().equals(accountId)
-        || token != null && !Objects.equals(jwtUtil.extractSubject(token), responseId.toString())) {
+        || token != null && !Objects.equals(jwtService.extractResponseId(token), responseId)) {
       throw new ResponseStatusException(
           HttpStatus.FORBIDDEN, "Вы не являетесь автором ответа");
     }
@@ -119,8 +119,8 @@ public class ResponseService {
     responseDao.save(response);
 
     if (accountId == null) {
-      return new ResponseWithTokenDto(response.getId(),
-          jwtUtil.generateResponseEditToken(response.getId()));
+      return new ResponseWithTokenDto(
+          response.getId(), jwtService.generateResponseAccessToken(response.getId()));
     }
 
     return new ResponseWithTokenDto(response.getId(), null);

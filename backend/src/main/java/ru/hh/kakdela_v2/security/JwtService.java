@@ -1,21 +1,26 @@
-package ru.hh.kakdela_v2.util;
+package ru.hh.kakdela_v2.security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
 import java.util.*;
 import java.util.function.Function;
 
-@Service()
-public class JwtUtil {
+@Service
+public class JwtService {
 
   private final SecretKey key;
 
-  public JwtUtil(@Value("${app.jwt-secret}") String SECRET) {
+  @Value("${app.tokens.access.max-age}")
+  private long accessTokenMaxAge;
+
+  @Value("${app.tokens.response-access.max-age}")
+  private long responseAccessTokenMaxAge;
+
+  public JwtService(@Value("${app.jwt.secret}") String SECRET) {
     key = Keys.hmacShaKeyFor(SECRET.getBytes());
   }
 
@@ -33,25 +38,30 @@ public class JwtUtil {
     return extractClaim(token, Claims::getSubject);
   }
 
+  public UUID extractResponseId(String token) {
+    return extractClaim(
+        token, claims -> claims.get("responseId", UUID.class));
+  }
+
   public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
     final Claims claims = Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
     return claimsResolver.apply(claims);
   }
 
-  public String generateAccessToken(UserDetails userDetails) {
+  public String generateAccessToken(String login) {
     return Jwts.builder()
-        .subject(userDetails.getUsername())
+        .subject(login)
         .issuedAt(new Date(System.currentTimeMillis()))
-        .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 15))
+        .expiration(new Date(System.currentTimeMillis() + 1000 * accessTokenMaxAge))
         .signWith(key)
         .compact();
   }
 
-  public String generateResponseEditToken(UUID responseId) {
+  public String generateResponseAccessToken(UUID responseId) {
     return Jwts.builder()
-        .subject(responseId.toString())
+        .claim("responseId", responseId)
         .issuedAt(new Date(System.currentTimeMillis()))
-        .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24 * 7))
+        .expiration(new Date(System.currentTimeMillis() + 1000 * responseAccessTokenMaxAge))
         .signWith(key)
         .compact();
   }

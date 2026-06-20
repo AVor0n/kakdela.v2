@@ -8,7 +8,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import ru.hh.kakdela_v2.dao.AccountDao;
 import ru.hh.kakdela_v2.model.Account;
-import ru.hh.kakdela_v2.util.CustomUserDetails;
+import ru.hh.kakdela_v2.security.CustomUserDetails;
 
 @RequiredArgsConstructor
 @Service(value = "userDetailsService")

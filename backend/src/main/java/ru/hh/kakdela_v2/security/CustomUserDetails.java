@@ -1,4 +1,4 @@
-package ru.hh.kakdela_v2.util;
+package ru.hh.kakdela_v2.security;
 
 import lombok.Getter;
 import org.jspecify.annotations.Nullable;
