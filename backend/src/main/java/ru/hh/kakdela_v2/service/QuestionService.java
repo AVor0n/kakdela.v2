@@ -144,7 +144,19 @@ public class QuestionService {
           HttpStatus.CONFLICT, "К вопросу уже прикреплено вложение");
     }
 
-    return upsertAttachmentHelper(question, file);
+    ProcessedImage image = imageProcessingService.process(file);
+
+    String objectKey = "answer-options/%s/%s".formatted(question.getId(), UUID.randomUUID());
+    objectStorageService.putObject(
+        objectKey,
+        image.getContent(),
+        image.getContentType());
+
+    question.setAttachmentObjectKey(objectKey);
+    questionDao.update(question);
+
+    return new ObjectUrlResponseDto(
+        objectStorageService.generateObjectUrl(objectKey, attachmentUrlMaxAge).toString());
   }
 
   @Transactional
@@ -158,12 +170,24 @@ public class QuestionService {
     permissionService.checkAccess(
         question.getSurveyPage().getSurvey().getId(), accountId, SurveyRole.EDITOR);
 
+    ProcessedImage image = imageProcessingService.process(file);
+
     if (question.getAttachmentObjectKey() != null) {
       objectStorageService.deleteObject(
           question.getAttachmentObjectKey());
     }
 
-    return upsertAttachmentHelper(question, file);
+    String objectKey = "answer-options/%s/%s".formatted(question.getId(), UUID.randomUUID());
+    objectStorageService.putObject(
+        objectKey,
+        image.getContent(),
+        image.getContentType());
+
+    question.setAttachmentObjectKey(objectKey);
+    questionDao.update(question);
+
+    return new ObjectUrlResponseDto(
+        objectStorageService.generateObjectUrl(objectKey, attachmentUrlMaxAge).toString());
   }
 
   @Transactional
@@ -184,23 +208,5 @@ public class QuestionService {
 
     question.setAttachmentObjectKey(null);
     questionDao.update(question);
-  }
-
-  private ObjectUrlResponseDto upsertAttachmentHelper(Question question, MultipartFile file) {
-    // TODO: Добавить сжатие для изображений
-
-    ProcessedImage image = imageProcessingService.process(file);
-
-    String objectKey = "answer-options/%s/%s".formatted(question.getId(), UUID.randomUUID());
-    objectStorageService.putObject(
-        objectKey,
-        image.getContent(),
-        image.getContentType());
-
-    question.setAttachmentObjectKey(objectKey);
-    questionDao.update(question);
-
-    return new ObjectUrlResponseDto(
-        objectStorageService.generateObjectUrl(objectKey, attachmentUrlMaxAge).toString());
   }
 }

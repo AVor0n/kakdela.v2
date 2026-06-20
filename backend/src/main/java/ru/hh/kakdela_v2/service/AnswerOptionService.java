@@ -111,7 +111,19 @@ public class AnswerOptionService {
           HttpStatus.CONFLICT, "Вариант ответа уже содержит вложение");
     }
 
-    return upsertAttachmentHelper(answerOption, file);
+    ProcessedImage image = imageProcessingService.process(file);
+
+    String objectKey = "answer-options/%s/%s".formatted(answerOption.getId(), UUID.randomUUID());
+    objectStorageService.putObject(
+        objectKey,
+        image.getContent(),
+        image.getContentType());
+
+    answerOption.setAttachmentObjectKey(objectKey);
+    answerOptionDao.update(answerOption);
+
+    return new ObjectUrlResponseDto(
+        objectStorageService.generateObjectUrl(objectKey, attachmentUrlMaxAge).toString());
   }
 
   @Transactional
@@ -126,12 +138,24 @@ public class AnswerOptionService {
         answerOption.getQuestion().getSurveyPage().getSurvey().getId(), accountId,
         SurveyRole.EDITOR);
 
+    ProcessedImage image = imageProcessingService.process(file);
+
     if (answerOption.getAttachmentObjectKey() != null) {
       objectStorageService.deleteObject(
           answerOption.getAttachmentObjectKey());
     }
 
-    return upsertAttachmentHelper(answerOption, file);
+    String objectKey = "answer-options/%s/%s".formatted(answerOption.getId(), UUID.randomUUID());
+    objectStorageService.putObject(
+        objectKey,
+        image.getContent(),
+        image.getContentType());
+
+    answerOption.setAttachmentObjectKey(objectKey);
+    answerOptionDao.update(answerOption);
+
+    return new ObjectUrlResponseDto(
+        objectStorageService.generateObjectUrl(objectKey, attachmentUrlMaxAge).toString());
   }
 
   @Transactional
@@ -153,24 +177,5 @@ public class AnswerOptionService {
 
     answerOption.setAttachmentObjectKey(null);
     answerOptionDao.update(answerOption);
-  }
-
-  private ObjectUrlResponseDto upsertAttachmentHelper(AnswerOption answerOption,
-                                                      MultipartFile file) {
-    // TODO: Добавить сжатие для изображений
-
-    ProcessedImage image = imageProcessingService.process(file);
-
-    String objectKey = "answer-options/%s/%s".formatted(answerOption.getId(), UUID.randomUUID());
-    objectStorageService.putObject(
-        objectKey,
-        image.getContent(),
-        image.getContentType());
-
-    answerOption.setAttachmentObjectKey(objectKey);
-    answerOptionDao.update(answerOption);
-
-    return new ObjectUrlResponseDto(
-        objectStorageService.generateObjectUrl(objectKey, attachmentUrlMaxAge).toString());
   }
 }
