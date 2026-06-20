@@ -13,7 +13,7 @@ import ru.hh.kakdela_v2.dto.answer.AnswerResponseDto;
 import ru.hh.kakdela_v2.model.Answer;
 import ru.hh.kakdela_v2.model.Question;
 import ru.hh.kakdela_v2.model.Response;
-import ru.hh.kakdela_v2.util.JwtUtil;
+import ru.hh.kakdela_v2.security.JwtService;
 
 import java.util.List;
 import java.util.Objects;
@@ -26,7 +26,7 @@ public class AnswerService {
   private final AnswerDao answerDao;
   private final ResponseDao responseDao;
   private final QuestionDao questionDao;
-  private final JwtUtil jwtUtil;
+  private final JwtService jwtService;
 
   private Response checkAccessAndGetResponse(UUID responseId, UUID accountId, String token) {
     Response response = responseDao.findById(responseId)
@@ -35,12 +35,11 @@ public class AnswerService {
 
     if (response.getAccount() == null && token == null) {
       throw new ResponseStatusException(
-          HttpStatus.UNAUTHORIZED, "Не предоставлены учётные данные для доступа к прохождению"
-      );
+          HttpStatus.UNAUTHORIZED, "Не предоставлены учётные данные для доступа к прохождению");
     }
 
     if (response.getAccount() != null && !response.getAccount().getId().equals(accountId)
-        || token != null && !Objects.equals(jwtUtil.extractSubject(token), responseId.toString())) {
+        || token != null && !Objects.equals(jwtService.extractResponseId(token), responseId)) {
       throw new ResponseStatusException(
           HttpStatus.FORBIDDEN, "Вы не являетесь автором ответа");
     }

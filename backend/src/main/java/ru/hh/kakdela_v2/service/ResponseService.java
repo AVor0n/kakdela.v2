@@ -11,7 +11,7 @@ import ru.hh.kakdela_v2.dao.SurveyDao;
 import ru.hh.kakdela_v2.dto.response.ResponseResponseDto;
 import ru.hh.kakdela_v2.dto.response.ResponseWithTokenDto;
 import ru.hh.kakdela_v2.model.*;
-import ru.hh.kakdela_v2.util.JwtUtil;
+import ru.hh.kakdela_v2.security.JwtService;
 
 import java.time.Instant;
 import java.util.List;
@@ -26,7 +26,7 @@ public class ResponseService {
   private final SurveyDao surveyDao;
   private final AccountDao accountDao;
   private final PermissionService permissionService;
-  private final JwtUtil jwtUtil;
+  private final JwtService jwtService;
 
   private Response checkAccessAndGetResponse(UUID responseId, UUID accountId, String token) {
     Response response = responseDao.findById(responseId)
@@ -35,12 +35,11 @@ public class ResponseService {
 
     if (response.getAccount() == null && token == null) {
       throw new ResponseStatusException(
-          HttpStatus.UNAUTHORIZED, "Не предоставлены учётные данные для доступа к прохождению"
-      );
+          HttpStatus.UNAUTHORIZED, "Не предоставлены учётные данные для доступа к прохождению");
     }
 
     if (response.getAccount() != null && !response.getAccount().getId().equals(accountId)
-        || token != null && !Objects.equals(jwtUtil.extractSubject(token), responseId.toString())) {
+        || token != null && !Objects.equals(jwtService.extractResponseId(token), responseId)) {
       throw new ResponseStatusException(
           HttpStatus.FORBIDDEN, "Вы не являетесь автором ответа");
     }
@@ -76,7 +75,8 @@ public class ResponseService {
   }
 
   @Transactional(readOnly = true)
-  public List<ResponseResponseDto> getIncompletedBySurveyIdAndAccountId(UUID surveyId, UUID accountId) {
+  public List<ResponseResponseDto> getIncompletedBySurveyIdAndAccountId(
+      UUID surveyId, UUID accountId) {
     return responseDao.findIncompletedBySurveyIdAndAccountId(surveyId, accountId).stream()
         .map(ResponseResponseDto::new)
         .toList();
@@ -116,8 +116,8 @@ public class ResponseService {
     responseDao.save(response);
 
     if (accountId == null) {
-      return new ResponseWithTokenDto(response.getId(),
-          jwtUtil.generateResponseEditToken(response.getId()));
+      return new ResponseWithTokenDto(
+          response.getId(), jwtService.generateResponseAccessToken(response.getId()));
     }
 
     return new ResponseWithTokenDto(response.getId(), null);

@@ -4,8 +4,13 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.security.SignatureException;
-import jakarta.servlet.*;
-import jakarta.servlet.http.*;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -18,71 +23,81 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import ru.hh.kakdela_v2.dto.error.ErrorResponse;
-import ru.hh.kakdela_v2.util.JwtUtil;
+import ru.hh.kakdela_v2.security.JwtService;
 import tools.jackson.databind.ObjectMapper;
-
-import java.io.IOException;
-import java.time.LocalDateTime;
 
 @Slf4j
 @RequiredArgsConstructor
 @Component
 public class JwtRequestFilter extends OncePerRequestFilter {
 
-  private final JwtUtil jwtUtil;
+  private final JwtService jwtService;
   private final UserDetailsService userDetailsService;
 
   @Override
-  protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+  protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
+                                  FilterChain chain)
       throws ServletException, IOException {
 
-    final String header = request.getHeader("Authorization");
-    String token = jwtUtil.extractTokenFromHeader(header);
+    Cookie[] cookies = request.getCookies();
+    String token = null;
+
+    if (cookies != null) {
+      for (Cookie cookie : cookies) {
+        if ("accessToken".equals(cookie.getName())) {
+          token = cookie.getValue();
+        }
+      }
+    }
 
     try {
       if (token != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-        String login = jwtUtil.extractSubject(token);
+        String login = jwtService.extractSubject(token);
         UserDetails userDetails = userDetailsService.loadUserByUsername(login);
         UsernamePasswordAuthenticationToken authToken =
-            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+            new UsernamePasswordAuthenticationToken(
+                userDetails, null, userDetails.getAuthorities());
         authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
         SecurityContextHolder.getContext().setAuthentication(authToken);
       }
 
       chain.doFilter(request, response);
     } catch (ExpiredJwtException e) {
-        log.warn("Expired JWT token for user: {}", e.getClaims().getSubject());
-        sendErrorResponse(response, request, "JWT token has expired", HttpStatus.valueOf(HttpServletResponse.SC_UNAUTHORIZED));
+      log.warn("Expired JWT token for user: {}", e.getClaims().getSubject());
+      sendErrorResponse(
+          response,
+          request,
+          "JWT token has expired",
+          HttpStatus.valueOf(HttpServletResponse.SC_UNAUTHORIZED));
     } catch (MalformedJwtException ex) {
-        log.warn("Malformed JWT token");
-        sendErrorResponse(response, request, "Invalid JWT token format", HttpStatus.BAD_REQUEST);
+      log.warn("Malformed JWT token");
+      sendErrorResponse(response, request, "Invalid JWT token format", HttpStatus.BAD_REQUEST);
     } catch (SignatureException ex) {
-        log.warn("Invalid JWT signature");
-        sendErrorResponse(response, request, "Invalid token signature", HttpStatus.UNAUTHORIZED);
-
+      log.warn("Invalid JWT signature");
+      sendErrorResponse(response, request, "Invalid token signature", HttpStatus.UNAUTHORIZED);
     } catch (JwtException ex) {
-        log.error("JWT processing error", ex);
-        sendErrorResponse(response, request, "JWT processing failed", HttpStatus.UNAUTHORIZED);
+      log.error("JWT processing error", ex);
+      sendErrorResponse(response, request, "JWT processing failed", HttpStatus.UNAUTHORIZED);
     }
   }
 
-    private void sendErrorResponse(HttpServletResponse response,
-                                   HttpServletRequest request,
-                                   String message,
-                                   HttpStatus status) throws IOException {
+  private void sendErrorResponse(HttpServletResponse response,
+                                 HttpServletRequest request,
+                                 String message,
+                                 HttpStatus status) throws IOException {
 
-        response.setStatus(status.value());
-        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+    response.setStatus(status.value());
+    response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
-        ErrorResponse errResponse = new ErrorResponse(
-                LocalDateTime.now(),
-                status.value(),
-                status.getReasonPhrase(),
-                message,
-                request.getRequestURI(),
-                null
-        );
+    ErrorResponse errResponse = new ErrorResponse(
+        LocalDateTime.now(),
+        status.value(),
+        status.getReasonPhrase(),
+        message,
+        request.getRequestURI(),
+        null
+    );
 
-        new ObjectMapper().writeValue(response.getOutputStream(), errResponse);
-    }
+    new ObjectMapper().writeValue(response.getOutputStream(), errResponse);
+  }
 }
