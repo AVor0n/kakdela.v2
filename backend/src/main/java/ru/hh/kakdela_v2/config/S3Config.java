@@ -15,8 +15,11 @@ import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 @Configuration
 public class S3Config {
 
-  @Value("${cloud.aws.endpoint}")
-  private String endpoint;
+  @Value("${cloud.aws.internal-endpoint}")
+  private String internalEndpoint;
+
+  @Value("${cloud.aws.public-endpoint}")
+  private String publicEndpoint;
 
   @Value("${cloud.aws.region}")
   private String region;
@@ -34,7 +37,7 @@ public class S3Config {
 
     try {
       return S3Client.builder()
-          .endpointOverride(new URI(endpoint))
+          .endpointOverride(new URI(internalEndpoint))
           .region(Region.of(region))
           .credentialsProvider(StaticCredentialsProvider.create(credentials))
           .serviceConfiguration(
@@ -55,7 +58,7 @@ public class S3Config {
 
     try {
       return S3Presigner.builder()
-          .endpointOverride(new URI(endpoint))
+          .endpointOverride(new URI(publicEndpoint))
           .region(Region.of(region))
           .credentialsProvider(StaticCredentialsProvider.create(credentials))
           .serviceConfiguration(
