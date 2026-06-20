@@ -95,18 +95,14 @@ public class AnswerOptionService {
                                             MultipartFile file) {
     AnswerOption answerOption = answerOptionDao.findById(answerOptionId)
         .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Вариант ответа не найден: " + answerOptionId)
-        );
+            HttpStatus.NOT_FOUND, "Вариант ответа не найден: " + answerOptionId));
 
     permissionService.checkAccess(
-        answerOption.getQuestion().getSurveyPage().getSurvey().getId(), accountId, SurveyRole.EDITOR
-    );
+        answerOption.getQuestion().getSurveyPage().getSurvey().getId(), accountId, SurveyRole.EDITOR);
 
     if (answerOption.getAttachmentObjectKey() != null) {
       throw new ResponseStatusException(
-          HttpStatus.CONFLICT,
-          "Вариант ответа уже содержит вложение"
-      );
+          HttpStatus.CONFLICT, "Вариант ответа уже содержит вложение");
     }
 
     return upsertAttachmentHelper(answerOption, file);
@@ -117,17 +113,14 @@ public class AnswerOptionService {
                                                MultipartFile file) {
     AnswerOption answerOption = answerOptionDao.findById(answerOptionId)
         .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Вариант ответа не найден: " + answerOptionId)
-        );
+            HttpStatus.NOT_FOUND, "Вариант ответа не найден: " + answerOptionId));
 
     permissionService.checkAccess(
-        answerOption.getQuestion().getSurveyPage().getSurvey().getId(), accountId, SurveyRole.EDITOR
-    );
+        answerOption.getQuestion().getSurveyPage().getSurvey().getId(), accountId, SurveyRole.EDITOR);
 
     if (answerOption.getAttachmentObjectKey() != null) {
       objectStorageService.deleteObject(
-          answerOption.getAttachmentObjectKey()
-      );
+          answerOption.getAttachmentObjectKey());
     }
 
     return upsertAttachmentHelper(answerOption, file);
@@ -137,18 +130,14 @@ public class AnswerOptionService {
   public void deleteAttachment(UUID answerOptionId, UUID accountId) {
     AnswerOption answerOption = answerOptionDao.findById(answerOptionId)
         .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Вариант ответа не найден: " + answerOptionId)
-        );
+            HttpStatus.NOT_FOUND, "Вариант ответа не найден: " + answerOptionId));
 
     permissionService.checkAccess(
-        answerOption.getQuestion().getSurveyPage().getSurvey().getId(), accountId, SurveyRole.EDITOR
-    );
+        answerOption.getQuestion().getSurveyPage().getSurvey().getId(), accountId, SurveyRole.EDITOR);
 
     if (answerOption.getAttachmentObjectKey() == null) {
       throw new ResponseStatusException(
-          HttpStatus.NOT_FOUND,
-          "Вариант ответа не содержит вложения"
-      );
+          HttpStatus.NOT_FOUND, "Вариант ответа не содержит вложения");
     }
 
     objectStorageService.deleteObject(answerOption.getAttachmentObjectKey());
@@ -170,14 +159,12 @@ public class AnswerOptionService {
     objectStorageService.putObject(
         objectKey,
         file,
-        file.getContentType()
-    );
+        file.getContentType());
 
     answerOption.setAttachmentObjectKey(objectKey);
     answerOptionDao.update(answerOption);
 
     return new ObjectUrlResponseDto(
-        objectStorageService.generateObjectUrl(objectKey, Duration.ofMinutes(1)).toString()
-    );
+        objectStorageService.generateObjectUrl(objectKey, Duration.ofMinutes(1)).toString());
   }
 }

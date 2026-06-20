@@ -38,8 +38,7 @@ public class ResponseService {
 
     if (response.getAccount() == null && token == null) {
       throw new ResponseStatusException(
-          HttpStatus.UNAUTHORIZED, "Не предоставлены учётные данные для доступа к прохождению"
-      );
+          HttpStatus.UNAUTHORIZED, "Не предоставлены учётные данные для доступа к прохождению");
     }
 
     if (response.getAccount() != null && !response.getAccount().getId().equals(accountId)

@@ -131,39 +131,33 @@ public class QuestionService {
   public ObjectUrlResponseDto addAttachment(UUID questionId, UUID accountId, MultipartFile file) {
     Question question = questionDao.findById(questionId)
         .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Вопрос не найден: " + questionId)
-        );
+            HttpStatus.NOT_FOUND, "Вопрос не найден: " + questionId));
 
     permissionService.checkAccess(
-        question.getSurveyPage().getSurvey().getId(), accountId, SurveyRole.EDITOR
-    );
+        question.getSurveyPage().getSurvey().getId(), accountId, SurveyRole.EDITOR);
 
     if (question.getAttachmentObjectKey() != null) {
       throw new ResponseStatusException(
-          HttpStatus.CONFLICT,
-          "К вопросу уже прикреплено вложение"
-      );
+          HttpStatus.CONFLICT, "К вопросу уже прикреплено вложение");
     }
 
     return upsertAttachmentHelper(question, file);
   }
 
   @Transactional
-  public ObjectUrlResponseDto updateAttachment(UUID questionId, UUID accountId,
+  public ObjectUrlResponseDto updateAttachment(UUID questionId,
+                                               UUID accountId,
                                                MultipartFile file) {
     Question question = questionDao.findById(questionId)
         .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Вопрос не найден: " + questionId)
-        );
+            HttpStatus.NOT_FOUND, "Вопрос не найден: " + questionId));
 
     permissionService.checkAccess(
-        question.getSurveyPage().getSurvey().getId(), accountId, SurveyRole.EDITOR
-    );
+        question.getSurveyPage().getSurvey().getId(), accountId, SurveyRole.EDITOR);
 
     if (question.getAttachmentObjectKey() != null) {
       objectStorageService.deleteObject(
-          question.getAttachmentObjectKey()
-      );
+          question.getAttachmentObjectKey());
     }
 
     return upsertAttachmentHelper(question, file);
@@ -173,18 +167,14 @@ public class QuestionService {
   public void deleteAttachment(UUID questionId, UUID accountId) {
     Question question = questionDao.findById(questionId)
         .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Вопрос не найден: " + questionId)
-        );
+            HttpStatus.NOT_FOUND, "Вопрос не найден: " + questionId));
 
     permissionService.checkAccess(
-        question.getSurveyPage().getSurvey().getId(), accountId, SurveyRole.EDITOR
-    );
+        question.getSurveyPage().getSurvey().getId(), accountId, SurveyRole.EDITOR);
 
     if (question.getAttachmentObjectKey() == null) {
       throw new ResponseStatusException(
-          HttpStatus.NOT_FOUND,
-          "Вопрос не содержит вложения"
-      );
+          HttpStatus.NOT_FOUND, "Вопрос не содержит вложения");
     }
 
     objectStorageService.deleteObject(question.getAttachmentObjectKey());
@@ -203,16 +193,12 @@ public class QuestionService {
 
     String objectKey = "questions/%s/%s".formatted(question.getId(), UUID.randomUUID());
     objectStorageService.putObject(
-        objectKey,
-        file,
-        file.getContentType()
-    );
+        objectKey, file, file.getContentType());
 
     question.setAttachmentObjectKey(objectKey);
     questionDao.update(question);
 
     return new ObjectUrlResponseDto(
-        objectStorageService.generateObjectUrl(objectKey, Duration.ofMinutes(1)).toString()
-    );
+        objectStorageService.generateObjectUrl(objectKey, Duration.ofMinutes(1)).toString());
   }
 }

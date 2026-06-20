@@ -35,14 +35,12 @@ public class ObjectStorageService {
               .key(key)
               .contentType(contentType)
               .build(),
-          RequestBody.fromBytes(file.getBytes())
-      );
+          RequestBody.fromBytes(file.getBytes()));
     } catch (IOException e) {
       throw new ResponseStatusException(
           HttpStatus.INTERNAL_SERVER_ERROR,
           "Ошибка чтения файла",
-          e
-      );
+          e);
     }
   }
 
@@ -67,7 +65,6 @@ public class ObjectStorageService {
         DeleteObjectRequest.builder()
             .bucket(bucketName)
             .key(key)
-            .build()
-    );
+            .build());
   }
 }
