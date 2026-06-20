@@ -19,7 +19,7 @@ import ru.hh.kakdela_v2.mapper.QuestionMapper;
 import ru.hh.kakdela_v2.model.Permission.SurveyRole;
 import ru.hh.kakdela_v2.model.Question;
 import ru.hh.kakdela_v2.model.SurveyPage;
-import ru.hh.kakdela_v2.util.ImageValidator;
+import ru.hh.kakdela_v2.validator.ImageValidator;
 
 @Service
 @RequiredArgsConstructor

@@ -19,6 +19,7 @@ import ru.hh.kakdela_v2.mapper.AnswerOptionMapper;
 import ru.hh.kakdela_v2.model.AnswerOption;
 import ru.hh.kakdela_v2.model.Permission.SurveyRole;
 import ru.hh.kakdela_v2.model.Question;
+import ru.hh.kakdela_v2.validator.ImageValidator;
 
 @Service
 @RequiredArgsConstructor

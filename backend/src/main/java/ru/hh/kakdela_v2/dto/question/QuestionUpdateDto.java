@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import ru.hh.kakdela_v2.model.Question;
-import ru.hh.kakdela_v2.util.NullOrNotBlank;
+import ru.hh.kakdela_v2.validator.NullOrNotBlank;
 
 @NoArgsConstructor
 @Getter
