@@ -99,3 +99,13 @@ CREATE TABLE answer (
 
 CREATE INDEX idx_answer_question_id
 ON answer (question_id);
+
+CREATE TABLE survey_notification_settings (
+    survey_id uuid PRIMARY KEY REFERENCES survey(id) ON DELETE CASCADE,
+    notify_editors BOOLEAN NOT NULL,
+    notify_analysts BOOLEAN NOT NULL,
+    notify_custom_user_ids uuid[]
+);
+
+CREATE INDEX idx_notification_settings_survey_id 
+ON survey_notification_settings(survey_id);

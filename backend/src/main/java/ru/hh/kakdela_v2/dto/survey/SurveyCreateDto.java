@@ -9,6 +9,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
 
 @NoArgsConstructor
 @Getter
@@ -27,4 +29,8 @@ public class SurveyCreateDto {
   private Boolean doNotify = true;
   @FutureOrPresent(message = "Дедлайн не должен быть в прошлом")
   private Instant expireAt;
+
+  private Boolean notifyEditors;
+  private Boolean notifyAnalysts;
+  private List<UUID> notifyUserIds;
 }
