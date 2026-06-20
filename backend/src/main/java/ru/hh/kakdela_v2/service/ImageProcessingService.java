@@ -4,10 +4,8 @@ import jakarta.annotation.PostConstruct;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.Arrays;
 import javax.imageio.ImageIO;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import net.coobird.thumbnailator.Thumbnails;
 import org.apache.tika.Tika;
 import org.springframework.http.HttpStatus;
@@ -28,7 +26,7 @@ public class ImageProcessingService {
     ImageIO.scanForPlugins();
   }
 
-  public ProcessedImage process (MultipartFile file) {
+  public ProcessedImage process(MultipartFile file) {
     String failMessage = "Загруженное изображение имеет неподдерживаемый формат или испорчено";
 
     if (file == null) {
@@ -45,6 +43,11 @@ public class ImageProcessingService {
       }
 
       BufferedImage image = ImageIO.read(file.getInputStream());
+
+      if (image == null) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, failMessage);
+      }
+
       ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
       Thumbnails.of(image)
