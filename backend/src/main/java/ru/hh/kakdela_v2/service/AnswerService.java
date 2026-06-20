@@ -13,11 +13,11 @@ import ru.hh.kakdela_v2.dao.QuestionDao;
 import ru.hh.kakdela_v2.dao.ResponseDao;
 import ru.hh.kakdela_v2.dto.answer.AnswerCreateDto;
 import ru.hh.kakdela_v2.dto.answer.AnswerResponseDto;
+import ru.hh.kakdela_v2.mapper.AnswerMapper;
 import ru.hh.kakdela_v2.model.Answer;
 import ru.hh.kakdela_v2.model.Question;
 import ru.hh.kakdela_v2.model.Response;
 import ru.hh.kakdela_v2.util.JwtUtil;
-import ru.hh.kakdela_v2.util.MapperUtil;
 
 @Service
 @RequiredArgsConstructor
@@ -27,7 +27,6 @@ public class AnswerService {
   private final ResponseDao responseDao;
   private final QuestionDao questionDao;
   private final JwtUtil jwtUtil;
-  private final MapperUtil mapperUtil;
 
   private Response checkAccessAndGetResponse(UUID responseId, UUID accountId, String token) {
     Response response = responseDao.findById(responseId)
@@ -54,7 +53,7 @@ public class AnswerService {
     Response response = checkAccessAndGetResponse(responseId, accountId, token);
 
     return response.getAnswers().stream()
-        .map(mapperUtil::answerToDto)
+        .map(AnswerMapper::answerToDto)
         .toList();
   }
 
@@ -96,7 +95,7 @@ public class AnswerService {
         .build();
 
     answerDao.save(answer);
-    return mapperUtil.answerToDto(answer);
+    return AnswerMapper.answerToDto(answer);
   }
 
   @Transactional
@@ -120,7 +119,7 @@ public class AnswerService {
 
     answer.setAnswerText(newAnswerText);
     answerDao.update(answer);
-    return mapperUtil.answerToDto(answer);
+    return AnswerMapper.answerToDto(answer);
   }
 
   @Transactional

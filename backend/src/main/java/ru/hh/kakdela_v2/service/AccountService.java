@@ -11,22 +11,21 @@ import ru.hh.kakdela_v2.dao.AccountDao;
 import ru.hh.kakdela_v2.dto.account.AccountCreateDto;
 import ru.hh.kakdela_v2.dto.account.AccountResponseDto;
 import ru.hh.kakdela_v2.dto.account.AccountUpdateDto;
+import ru.hh.kakdela_v2.mapper.AccountMapper;
 import ru.hh.kakdela_v2.model.Account;
-import ru.hh.kakdela_v2.util.MapperUtil;
 
 @RequiredArgsConstructor
 @Service
 public class AccountService {
 
   private final AccountDao accountDao;
-  private final MapperUtil mapperUtil;
 
   @Transactional(readOnly = true)
   public AccountResponseDto getById(UUID id) {
     Account account = accountDao.findById(id)
         .orElseThrow(
             () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Аккаунт не найден: " + id));
-    return mapperUtil.accountToDto(account);
+    return AccountMapper.accountToDto(account);
   }
 
   @Transactional
@@ -48,7 +47,7 @@ public class AccountService {
         .build();
 
     accountDao.save(account);
-    return mapperUtil.accountToDto(account);
+    return AccountMapper.accountToDto(account);
   }
 
   @Transactional
@@ -76,7 +75,7 @@ public class AccountService {
     }
 
     accountDao.update(account);
-    return mapperUtil.accountToDto(account);
+    return AccountMapper.accountToDto(account);
   }
 
   @Transactional

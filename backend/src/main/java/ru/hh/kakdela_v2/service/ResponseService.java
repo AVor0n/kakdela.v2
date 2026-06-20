@@ -14,12 +14,12 @@ import ru.hh.kakdela_v2.dao.ResponseDao;
 import ru.hh.kakdela_v2.dao.SurveyDao;
 import ru.hh.kakdela_v2.dto.response.ResponseResponseDto;
 import ru.hh.kakdela_v2.dto.response.ResponseWithTokenDto;
+import ru.hh.kakdela_v2.mapper.ResponseMapper;
 import ru.hh.kakdela_v2.model.Account;
 import ru.hh.kakdela_v2.model.Permission;
 import ru.hh.kakdela_v2.model.Response;
 import ru.hh.kakdela_v2.model.Survey;
 import ru.hh.kakdela_v2.util.JwtUtil;
-import ru.hh.kakdela_v2.util.MapperUtil;
 
 @Service
 @RequiredArgsConstructor
@@ -30,7 +30,6 @@ public class ResponseService {
   private final AccountDao accountDao;
   private final PermissionService permissionService;
   private final JwtUtil jwtUtil;
-  private final MapperUtil mapperUtil;
 
   private Response checkAccessAndGetResponse(UUID responseId, UUID accountId, String token) {
     Response response = responseDao.findById(responseId)
@@ -61,21 +60,21 @@ public class ResponseService {
           HttpStatus.FORBIDDEN, "Просмотр завершённых анонимных ответов запрещён");
     }
 
-    return mapperUtil.responseToDto(response);
+    return ResponseMapper.responseToDto(response);
   }
 
   @Transactional(readOnly = true)
   public List<ResponseResponseDto> getCompletedBySurveyId(UUID surveyId, UUID accountId) {
     permissionService.checkAccess(surveyId, accountId, Permission.SurveyRole.ANALYST);
     return responseDao.findCompletedBySurveyId(surveyId).stream()
-        .map(mapperUtil::responseToDto)
+        .map(ResponseMapper::responseToDto)
         .toList();
   }
 
   @Transactional(readOnly = true)
   public List<ResponseResponseDto> getAllByAccountId(UUID accountId) {
     return responseDao.findAllByAccountId(accountId).stream()
-        .map(mapperUtil::responseToDto)
+        .map(ResponseMapper::responseToDto)
         .toList();
   }
 
@@ -83,7 +82,7 @@ public class ResponseService {
   public List<ResponseResponseDto> getIncompletedBySurveyIdAndAccountId(UUID surveyId,
                                                                         UUID accountId) {
     return responseDao.findIncompletedBySurveyIdAndAccountId(surveyId, accountId).stream()
-        .map(mapperUtil::responseToDto)
+        .map(ResponseMapper::responseToDto)
         .toList();
   }
 
@@ -147,7 +146,7 @@ public class ResponseService {
 
     responseDao.update(response);
 
-    return mapperUtil.responseToDto(response);
+    return ResponseMapper.responseToDto(response);
   }
 
   @Transactional

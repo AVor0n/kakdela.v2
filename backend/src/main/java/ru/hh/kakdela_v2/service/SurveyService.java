@@ -15,10 +15,10 @@ import ru.hh.kakdela_v2.dto.survey.SurveyCreateDto;
 import ru.hh.kakdela_v2.dto.survey.SurveyResponseDto;
 import ru.hh.kakdela_v2.dto.survey.SurveyShortResponseDto;
 import ru.hh.kakdela_v2.dto.survey.SurveyUpdateDto;
+import ru.hh.kakdela_v2.mapper.SurveyMapper;
 import ru.hh.kakdela_v2.model.Account;
 import ru.hh.kakdela_v2.model.Permission.SurveyRole;
 import ru.hh.kakdela_v2.model.Survey;
-import ru.hh.kakdela_v2.util.MapperUtil;
 
 @Service
 @RequiredArgsConstructor
@@ -27,20 +27,20 @@ public class SurveyService {
   private final SurveyDao surveyDao;
   private final AccountDao accountDao;
   private final PermissionService permissionService;
-  private final MapperUtil mapperUtil;
+  private final SurveyMapper surveyMapper;
 
   @Transactional(readOnly = true)
   public SurveyResponseDto getById(UUID id) {
     Survey survey = surveyDao.findById(id)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Опрос не найден: " + id));
-    return mapperUtil.surveyToDto(survey);
+    return surveyMapper.surveyToDto(survey);
   }
 
   @Transactional(readOnly = true)
   public List<SurveyShortResponseDto> getAllByAuthorId(UUID authorId) {
     return surveyDao.findAllByAuthorId(authorId).stream()
-        .map(mapperUtil::surveyToShortDto)
+        .map(surveyMapper::surveyToShortDto)
         .toList();
   }
 
@@ -48,14 +48,14 @@ public class SurveyService {
   public List<SurveyShortResponseDto> getMySurveys(UUID accountId) {
     List<Survey> surveys = permissionService.getAccessibleSurveys(accountId);
     return surveys.stream()
-        .map(mapperUtil::surveyToShortDto)
+        .map(surveyMapper::surveyToShortDto)
         .collect(Collectors.toList());
   }
 
   @Transactional(readOnly = true)
   public List<SurveyShortResponseDto> getAllPublished() {
     return surveyDao.findAllPublished().stream()
-        .map(mapperUtil::surveyToShortDto)
+        .map(surveyMapper::surveyToShortDto)
         .toList();
   }
 
@@ -79,7 +79,7 @@ public class SurveyService {
         .build();
 
     surveyDao.save(survey);
-    return mapperUtil.surveyToDto(survey);
+    return surveyMapper.surveyToDto(survey);
   }
 
   @Transactional
@@ -112,7 +112,7 @@ public class SurveyService {
     }
 
     surveyDao.update(survey);
-    return mapperUtil.surveyToDto(survey);
+    return surveyMapper.surveyToDto(survey);
   }
 
   @Transactional

@@ -15,10 +15,10 @@ import ru.hh.kakdela_v2.dto.answer_option.AnswerOptionCreateDto;
 import ru.hh.kakdela_v2.dto.answer_option.AnswerOptionResponseDto;
 import ru.hh.kakdela_v2.dto.answer_option.AnswerOptionUpdateDto;
 import ru.hh.kakdela_v2.dto.object.ObjectUrlResponseDto;
+import ru.hh.kakdela_v2.mapper.AnswerOptionMapper;
 import ru.hh.kakdela_v2.model.AnswerOption;
 import ru.hh.kakdela_v2.model.Permission.SurveyRole;
 import ru.hh.kakdela_v2.model.Question;
-import ru.hh.kakdela_v2.util.MapperUtil;
 
 @Service
 @RequiredArgsConstructor
@@ -28,12 +28,12 @@ public class AnswerOptionService {
   private final PermissionService permissionService;
   private final QuestionDao questionDao;
   private final ObjectStorageService objectStorageService;
-  private final MapperUtil mapperUtil;
+  private final AnswerOptionMapper answerOptionMapper;
 
   @Transactional(readOnly = true)
   public List<AnswerOptionResponseDto> getAllByQuestionId(UUID questionId) {
     return answerOptionDao.findAllByQuestionId(questionId).stream()
-        .map(mapperUtil::answerOptionToDto)
+        .map(answerOptionMapper::answerOptionToDto)
         .toList();
   }
 
@@ -54,7 +54,7 @@ public class AnswerOptionService {
         .build();
 
     answerOptionDao.save(answerOption);
-    return mapperUtil.answerOptionToDto(answerOption);
+    return answerOptionMapper.answerOptionToDto(answerOption);
   }
 
   @Transactional
@@ -73,7 +73,7 @@ public class AnswerOptionService {
       answerOption.setAnswerOptionText(dto.getAnswerOptionText());
     }
     answerOptionDao.update(answerOption);
-    return mapperUtil.answerOptionToDto(answerOption);
+    return answerOptionMapper.answerOptionToDto(answerOption);
   }
 
   @Transactional

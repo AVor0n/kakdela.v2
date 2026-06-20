@@ -15,10 +15,11 @@ import ru.hh.kakdela_v2.dto.object.ObjectUrlResponseDto;
 import ru.hh.kakdela_v2.dto.question.QuestionCreateDto;
 import ru.hh.kakdela_v2.dto.question.QuestionResponseDto;
 import ru.hh.kakdela_v2.dto.question.QuestionUpdateDto;
+import ru.hh.kakdela_v2.mapper.QuestionMapper;
 import ru.hh.kakdela_v2.model.Permission.SurveyRole;
 import ru.hh.kakdela_v2.model.Question;
 import ru.hh.kakdela_v2.model.SurveyPage;
-import ru.hh.kakdela_v2.util.MapperUtil;
+import ru.hh.kakdela_v2.util.ImageValidator;
 
 @Service
 @RequiredArgsConstructor
@@ -28,20 +29,21 @@ public class QuestionService {
   private final PermissionService permissionService;
   private final SurveyPageDao surveyPageDao;
   private final ObjectStorageService objectStorageService;
-  public final MapperUtil mapperUtil;
+  private final QuestionMapper questionMapper;
+  private final ImageValidator imageValidator;
 
   @Transactional(readOnly = true)
   public QuestionResponseDto getById(UUID id) {
     Question question = questionDao.findById(id)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Вопрос не найден: " + id));
-    return mapperUtil.questionToDto(question);
+    return questionMapper.questionToDto(question);
   }
 
   @Transactional(readOnly = true)
   public List<QuestionResponseDto> getAllByPageId(UUID pageId) {
     return questionDao.findAllByPageId(pageId).stream()
-        .map(mapperUtil::questionToDto)
+        .map(questionMapper::questionToDto)
         .toList();
   }
 
@@ -72,7 +74,7 @@ public class QuestionService {
         .build();
 
     questionDao.save(question);
-    return mapperUtil.questionToDto(question);
+    return questionMapper.questionToDto(question);
   }
 
   @Transactional
@@ -110,7 +112,7 @@ public class QuestionService {
     }
 
     questionDao.update(question);
-    return mapperUtil.questionToDto(question);
+    return questionMapper.questionToDto(question);
   }
 
   @Transactional

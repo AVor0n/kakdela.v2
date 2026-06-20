@@ -15,12 +15,12 @@ import ru.hh.kakdela_v2.dao.SurveyDao;
 import ru.hh.kakdela_v2.dto.permission.PermissionCreateDto;
 import ru.hh.kakdela_v2.dto.permission.PermissionResponseDto;
 import ru.hh.kakdela_v2.dto.permission.PermissionUpdateDto;
+import ru.hh.kakdela_v2.mapper.PermissionMapper;
 import ru.hh.kakdela_v2.model.Account;
 import ru.hh.kakdela_v2.model.Permission;
 import ru.hh.kakdela_v2.model.Permission.PermissionId;
 import ru.hh.kakdela_v2.model.Permission.SurveyRole;
 import ru.hh.kakdela_v2.model.Survey;
-import ru.hh.kakdela_v2.util.MapperUtil;
 
 @Service
 @RequiredArgsConstructor
@@ -29,7 +29,6 @@ public class PermissionService {
   private final PermissionDao permissionDao;
   private final SurveyDao surveyDao;
   private final AccountDao accountDao;
-  private final MapperUtil mapperUtil;
 
   @Transactional(readOnly = true)
   public void checkAccess(UUID surveyId, UUID accountId, SurveyRole requiredRole) {
@@ -76,14 +75,14 @@ public class PermissionService {
   @Transactional(readOnly = true)
   public List<PermissionResponseDto> getAllBySurveyId(UUID surveyId) {
     return permissionDao.findAllBySurveyId(surveyId).stream()
-        .map(mapperUtil::permissionToDto)
+        .map(PermissionMapper::permissionToDto)
         .toList();
   }
 
   @Transactional(readOnly = true)
   public List<PermissionResponseDto> getAllByAccountId(UUID accountId) {
     return permissionDao.findAllByAccountId(accountId).stream()
-        .map(mapperUtil::permissionToDto)
+        .map(PermissionMapper::permissionToDto)
         .toList();
   }
 
@@ -118,7 +117,7 @@ public class PermissionService {
         .build();
 
     permissionDao.save(permission);
-    return mapperUtil.permissionToDto(permission);
+    return PermissionMapper.permissionToDto(permission);
   }
 
   @Transactional
@@ -138,7 +137,7 @@ public class PermissionService {
     }
 
     permissionDao.update(permission);
-    return mapperUtil.permissionToDto(permission);
+    return PermissionMapper.permissionToDto(permission);
   }
 
   @Transactional

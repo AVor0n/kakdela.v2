@@ -12,10 +12,10 @@ import ru.hh.kakdela_v2.dao.SurveyPageDao;
 import ru.hh.kakdela_v2.dto.survey_page.SurveyPageCreateDto;
 import ru.hh.kakdela_v2.dto.survey_page.SurveyPageResponseDto;
 import ru.hh.kakdela_v2.dto.survey_page.SurveyPageUpdateDto;
+import ru.hh.kakdela_v2.mapper.SurveyPageMapper;
 import ru.hh.kakdela_v2.model.Permission.SurveyRole;
 import ru.hh.kakdela_v2.model.Survey;
 import ru.hh.kakdela_v2.model.SurveyPage;
-import ru.hh.kakdela_v2.util.MapperUtil;
 
 @Service
 @RequiredArgsConstructor
@@ -24,20 +24,20 @@ public class SurveyPageService {
   private final SurveyPageDao surveyPageDao;
   private final PermissionService permissionService;
   private final SurveyDao surveyDao;
-  private final MapperUtil mapperUtil;
+  private final SurveyPageMapper surveyPageMapper;
 
   @Transactional(readOnly = true)
   public SurveyPageResponseDto getById(UUID id) {
     SurveyPage surveyPage = surveyPageDao.findById(id)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Страница не найдена: " + id));
-    return mapperUtil.surveyPageToDto(surveyPage);
+    return surveyPageMapper.surveyPageToDto(surveyPage);
   }
 
   @Transactional(readOnly = true)
   public List<SurveyPageResponseDto> getAllBySurveyId(UUID surveyId) {
     return surveyPageDao.findAllBySurveyId(surveyId).stream()
-        .map(mapperUtil::surveyPageToDto)
+        .map(surveyPageMapper::surveyPageToDto)
         .toList();
   }
 
@@ -62,7 +62,7 @@ public class SurveyPageService {
         .build();
 
     surveyPageDao.save(surveyPage);
-    return mapperUtil.surveyPageToDto(surveyPage);
+    return surveyPageMapper.surveyPageToDto(surveyPage);
   }
 
   @Transactional
@@ -84,7 +84,7 @@ public class SurveyPageService {
     }
 
     surveyPageDao.update(surveyPage);
-    return mapperUtil.surveyPageToDto(surveyPage);
+    return surveyPageMapper.surveyPageToDto(surveyPage);
   }
 
   @Transactional
