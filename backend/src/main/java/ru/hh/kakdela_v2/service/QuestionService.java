@@ -194,8 +194,12 @@ public class QuestionService {
   }
 
   private ObjectUrlResponseDto upsertAttachmentHelper(Question question, MultipartFile file) {
-    // TODO: добавить проверку, что файл является изображением (или, например, видео)
     // TODO: Добавить сжатие для изображений
+
+    if (!imageValidator.isImage(file)) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+          "Загруженное изображение имеет неподдерживаемый формат или испорчено");
+    }
 
     String objectKey = "questions/%s/%s".formatted(question.getId(), UUID.randomUUID());
     objectStorageService.putObject(

@@ -29,6 +29,7 @@ public class AnswerOptionService {
   private final QuestionDao questionDao;
   private final ObjectStorageService objectStorageService;
   private final AnswerOptionMapper answerOptionMapper;
+  private final ImageValidator imageValidator;
 
   @Transactional(readOnly = true)
   public List<AnswerOptionResponseDto> getAllByQuestionId(UUID questionId) {
@@ -157,8 +158,12 @@ public class AnswerOptionService {
 
   private ObjectUrlResponseDto upsertAttachmentHelper(AnswerOption answerOption,
                                                       MultipartFile file) {
-    // TODO: добавить проверку, что файл является изображением (или, например, видео)
     // TODO: Добавить сжатие для изображений
+
+    if (!imageValidator.isImage(file)) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+          "Загруженное изображение имеет неподдерживаемый формат или испорчено");
+    }
 
     String objectKey = "answer-options/%s/%s".formatted(answerOption.getId(), UUID.randomUUID());
     objectStorageService.putObject(
