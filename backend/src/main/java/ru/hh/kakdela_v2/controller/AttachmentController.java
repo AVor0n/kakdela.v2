@@ -15,9 +15,9 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import ru.hh.kakdela_v2.dto.object.ObjectUrlResponseDto;
+import ru.hh.kakdela_v2.security.CustomUserDetails;
 import ru.hh.kakdela_v2.service.AnswerOptionService;
 import ru.hh.kakdela_v2.service.QuestionService;
-import ru.hh.kakdela_v2.util.CustomUserDetails;
 
 @RestController
 @RequestMapping("/api")
