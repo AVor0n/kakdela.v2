@@ -58,6 +58,7 @@ public class AuthController {
               "refreshToken", authTokensDto.getRefreshToken())
           .httpOnly(true)
           .sameSite("Strict")
+          .path("/api/auth/refresh")
           .maxAge(refreshTokenMaxAge)
           .build();
 
