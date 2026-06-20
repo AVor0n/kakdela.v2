@@ -46,6 +46,7 @@ public class AuthController {
               "accessToken", authTokensDto.getAccessToken())
           .httpOnly(true)
           .sameSite("Strict")
+          .path("/api")
           .maxAge(accessTokenMaxAge)
           .build();
 
