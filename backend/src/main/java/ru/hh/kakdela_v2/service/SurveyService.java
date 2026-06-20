@@ -191,7 +191,7 @@ public class SurveyService {
     }
 
     surveyDao.save(surveyCopy);
-    return new SurveyResponseDto(surveyCopy);
+    return surveyMapper.surveyToDto(surveyCopy);
   }
 
   @Transactional
