@@ -27,21 +27,14 @@ public class ObjectStorageService {
   @Value("${cloud.aws.bucket.name}")
   private String bucketName;
 
-  public void putObject(String key, MultipartFile file, String contentType) {
-    try {
-      s3Client.putObject(
-          PutObjectRequest.builder()
-              .bucket(bucketName)
-              .key(key)
-              .contentType(contentType)
-              .build(),
-          RequestBody.fromBytes(file.getBytes()));
-    } catch (IOException e) {
-      throw new ResponseStatusException(
-          HttpStatus.INTERNAL_SERVER_ERROR,
-          "Ошибка чтения файла",
-          e);
-    }
+  public void putObject(String key, byte[] fileAsByteArray, String contentType) {
+    s3Client.putObject(
+        PutObjectRequest.builder()
+            .bucket(bucketName)
+            .key(key)
+            .contentType(contentType)
+            .build(),
+        RequestBody.fromBytes(fileAsByteArray));
   }
 
   public URL generateObjectUrl(String key, Duration ttl) {

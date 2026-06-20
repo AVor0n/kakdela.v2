@@ -14,12 +14,12 @@ import ru.hh.kakdela_v2.dao.QuestionDao;
 import ru.hh.kakdela_v2.dto.answer_option.AnswerOptionCreateDto;
 import ru.hh.kakdela_v2.dto.answer_option.AnswerOptionResponseDto;
 import ru.hh.kakdela_v2.dto.answer_option.AnswerOptionUpdateDto;
+import ru.hh.kakdela_v2.dto.image.ProcessedImage;
 import ru.hh.kakdela_v2.dto.object.ObjectUrlResponseDto;
 import ru.hh.kakdela_v2.mapper.AnswerOptionMapper;
 import ru.hh.kakdela_v2.model.AnswerOption;
 import ru.hh.kakdela_v2.model.Permission.SurveyRole;
 import ru.hh.kakdela_v2.model.Question;
-import ru.hh.kakdela_v2.validator.ImageValidator;
 
 @Service
 @RequiredArgsConstructor
@@ -30,7 +30,7 @@ public class AnswerOptionService {
   private final QuestionDao questionDao;
   private final ObjectStorageService objectStorageService;
   private final AnswerOptionMapper answerOptionMapper;
-  private final ImageValidator imageValidator;
+  private final ImageProcessingService imageProcessingService;
 
   @Transactional(readOnly = true)
   public List<AnswerOptionResponseDto> getAllByQuestionId(UUID questionId) {
@@ -146,20 +146,16 @@ public class AnswerOptionService {
     answerOptionDao.update(answerOption);
   }
 
-  private ObjectUrlResponseDto upsertAttachmentHelper(AnswerOption answerOption,
-                                                      MultipartFile file) {
+  private ObjectUrlResponseDto upsertAttachmentHelper(AnswerOption answerOption, MultipartFile file) {
     // TODO: Добавить сжатие для изображений
 
-    if (!imageValidator.isImage(file)) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-          "Загруженное изображение имеет неподдерживаемый формат или испорчено");
-    }
+    ProcessedImage image = imageProcessingService.process(file);
 
     String objectKey = "answer-options/%s/%s".formatted(answerOption.getId(), UUID.randomUUID());
     objectStorageService.putObject(
         objectKey,
-        file,
-        file.getContentType());
+        image.getContent(),
+        image.getContentType());
 
     answerOption.setAttachmentObjectKey(objectKey);
     answerOptionDao.update(answerOption);

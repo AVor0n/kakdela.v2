@@ -11,6 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import ru.hh.kakdela_v2.dao.QuestionDao;
 import ru.hh.kakdela_v2.dao.SurveyPageDao;
+import ru.hh.kakdela_v2.dto.image.ProcessedImage;
 import ru.hh.kakdela_v2.dto.object.ObjectUrlResponseDto;
 import ru.hh.kakdela_v2.dto.question.QuestionCreateDto;
 import ru.hh.kakdela_v2.dto.question.QuestionResponseDto;
@@ -19,7 +20,6 @@ import ru.hh.kakdela_v2.mapper.QuestionMapper;
 import ru.hh.kakdela_v2.model.Permission.SurveyRole;
 import ru.hh.kakdela_v2.model.Question;
 import ru.hh.kakdela_v2.model.SurveyPage;
-import ru.hh.kakdela_v2.validator.ImageValidator;
 
 @Service
 @RequiredArgsConstructor
@@ -30,7 +30,7 @@ public class QuestionService {
   private final SurveyPageDao surveyPageDao;
   private final ObjectStorageService objectStorageService;
   private final QuestionMapper questionMapper;
-  private final ImageValidator imageValidator;
+  private final ImageProcessingService imageProcessingService;
 
   @Transactional(readOnly = true)
   public QuestionResponseDto getById(UUID id) {
@@ -186,14 +186,13 @@ public class QuestionService {
   private ObjectUrlResponseDto upsertAttachmentHelper(Question question, MultipartFile file) {
     // TODO: Добавить сжатие для изображений
 
-    if (!imageValidator.isImage(file)) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-          "Загруженное изображение имеет неподдерживаемый формат или испорчено");
-    }
+    ProcessedImage image = imageProcessingService.process(file);
 
-    String objectKey = "questions/%s/%s".formatted(question.getId(), UUID.randomUUID());
+    String objectKey = "answer-options/%s/%s".formatted(question.getId(), UUID.randomUUID());
     objectStorageService.putObject(
-        objectKey, file, file.getContentType());
+        objectKey,
+        image.getContent(),
+        image.getContentType());
 
     question.setAttachmentObjectKey(objectKey);
     questionDao.update(question);
