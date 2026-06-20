@@ -3,6 +3,7 @@ package ru.hh.kakdela_v2.mapper;
 import java.time.Duration;
 import java.util.Comparator;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import ru.hh.kakdela_v2.dto.question.QuestionResponseDto;
 import ru.hh.kakdela_v2.model.AnswerOption;
@@ -13,6 +14,9 @@ import ru.hh.kakdela_v2.service.ObjectStorageService;
 @RequiredArgsConstructor
 public class QuestionMapper {
 
+  @Value("${app.attachments.url-max-age}")
+  private long attachmentUrlMaxAge;
+
   private final ObjectStorageService objectStorageService;
   private final AnswerOptionMapper answerOptionMapper;
 
@@ -20,7 +24,7 @@ public class QuestionMapper {
     String attachmentUrl = question.getAttachmentObjectKey() != null
         ? objectStorageService.generateObjectUrl(
         question.getAttachmentObjectKey(),
-        Duration.ofMinutes(1)
+        attachmentUrlMaxAge
     ).toString()
         : null;
 

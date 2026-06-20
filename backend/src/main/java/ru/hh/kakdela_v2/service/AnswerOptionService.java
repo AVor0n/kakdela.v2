@@ -1,9 +1,9 @@
 package ru.hh.kakdela_v2.service;
 
-import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +24,9 @@ import ru.hh.kakdela_v2.model.Question;
 @Service
 @RequiredArgsConstructor
 public class AnswerOptionService {
+
+  @Value("${app.attachments.url-max-age}")
+  private long attachmentUrlMaxAge;
 
   private final AnswerOptionDao answerOptionDao;
   private final PermissionService permissionService;
@@ -168,6 +171,6 @@ public class AnswerOptionService {
     answerOptionDao.update(answerOption);
 
     return new ObjectUrlResponseDto(
-        objectStorageService.generateObjectUrl(objectKey, Duration.ofMinutes(1)).toString());
+        objectStorageService.generateObjectUrl(objectKey, attachmentUrlMaxAge).toString());
   }
 }

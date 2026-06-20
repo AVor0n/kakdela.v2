@@ -1,14 +1,10 @@
 package ru.hh.kakdela_v2.service;
 
-import java.io.IOException;
 import java.net.URL;
 import java.time.Duration;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.server.ResponseStatusException;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
@@ -37,7 +33,7 @@ public class ObjectStorageService {
         RequestBody.fromBytes(fileAsByteArray));
   }
 
-  public URL generateObjectUrl(String key, Duration ttl) {
+  public URL generateObjectUrl(String key, long maxAgeSeconds) {
     GetObjectRequest getObjectRequest =
         GetObjectRequest.builder()
             .bucket(bucketName)
@@ -47,7 +43,7 @@ public class ObjectStorageService {
     GetObjectPresignRequest getObjectPresignRequest =
         GetObjectPresignRequest.builder()
             .getObjectRequest(getObjectRequest)
-            .signatureDuration(ttl)
+            .signatureDuration(Duration.ofSeconds(maxAgeSeconds))
             .build();
 
     return s3Presigner.presignGetObject(getObjectPresignRequest).url();
