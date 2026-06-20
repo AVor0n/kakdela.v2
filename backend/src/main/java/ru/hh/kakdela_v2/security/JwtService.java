@@ -1,17 +1,16 @@
-package ru.hh.kakdela_v2.util;
+package ru.hh.kakdela_v2.security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
 import java.util.*;
 import java.util.function.Function;
 
-@Service()
-public class JwtUtil {
+@Service
+public class JwtService {
 
   private final SecretKey key;
 
@@ -21,7 +20,7 @@ public class JwtUtil {
   @Value("${app.tokens.response-access.max-age}")
   private long responseAccessTokenMaxAge;
 
-  public JwtUtil(@Value("${app.jwt.secret}") String SECRET) {
+  public JwtService(@Value("${app.jwt.secret}") String SECRET) {
     key = Keys.hmacShaKeyFor(SECRET.getBytes());
   }
 

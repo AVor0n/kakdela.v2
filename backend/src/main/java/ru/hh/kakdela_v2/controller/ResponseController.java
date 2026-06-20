@@ -14,9 +14,7 @@ import ru.hh.kakdela_v2.dto.response.ResponseCreateResponseDto;
 import ru.hh.kakdela_v2.dto.response.ResponseResponseDto;
 import ru.hh.kakdela_v2.dto.response.ResponseWithTokenDto;
 import ru.hh.kakdela_v2.service.ResponseService;
-import ru.hh.kakdela_v2.util.CustomUserDetails;
-
-import javax.xml.datatype.Duration;
+import ru.hh.kakdela_v2.security.CustomUserDetails;
 
 @RestController
 @RequestMapping("/api")

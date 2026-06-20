@@ -23,7 +23,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import ru.hh.kakdela_v2.dto.error.ErrorResponse;
-import ru.hh.kakdela_v2.util.JwtUtil;
+import ru.hh.kakdela_v2.security.JwtService;
 import tools.jackson.databind.ObjectMapper;
 
 @Slf4j
@@ -31,7 +31,7 @@ import tools.jackson.databind.ObjectMapper;
 @Component
 public class JwtRequestFilter extends OncePerRequestFilter {
 
-  private final JwtUtil jwtUtil;
+  private final JwtService jwtService;
   private final UserDetailsService userDetailsService;
 
   @Override
@@ -52,7 +52,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
     try {
       if (token != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-        String login = jwtUtil.extractSubject(token);
+        String login = jwtService.extractSubject(token);
         UserDetails userDetails = userDetailsService.loadUserByUsername(login);
         UsernamePasswordAuthenticationToken authToken =
             new UsernamePasswordAuthenticationToken(

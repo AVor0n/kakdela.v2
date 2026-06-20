@@ -10,7 +10,7 @@ import ru.hh.kakdela_v2.dto.survey.SurveyResponseDto;
 import ru.hh.kakdela_v2.dto.survey.SurveyShortResponseDto;
 import ru.hh.kakdela_v2.dto.survey.SurveyUpdateDto;
 import ru.hh.kakdela_v2.service.SurveyService;
-import ru.hh.kakdela_v2.util.CustomUserDetails;
+import ru.hh.kakdela_v2.security.CustomUserDetails;
 
 import java.util.List;
 import java.util.UUID;

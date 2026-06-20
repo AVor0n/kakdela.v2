@@ -12,7 +12,7 @@ import ru.hh.kakdela_v2.dto.account.AccountCreateDto;
 import ru.hh.kakdela_v2.dto.auth.AuthTokensDto;
 import ru.hh.kakdela_v2.dto.auth.LoginDto;
 import ru.hh.kakdela_v2.dto.auth.RegisterDto;
-import ru.hh.kakdela_v2.util.JwtUtil;
+import ru.hh.kakdela_v2.security.JwtService;
 
 @RequiredArgsConstructor
 @Service
@@ -22,13 +22,13 @@ public class AuthService {
   private final UserDetailsService userDetailsService;
   private final AuthenticationManager authenticationManager;
   private final PasswordEncoder passwordEncoder;
-  private final JwtUtil jwtUtil;
+  private final JwtService jwtService;
 
   public AuthTokensDto login(LoginDto loginDto) {
     authenticationManager.authenticate(
         new UsernamePasswordAuthenticationToken(loginDto.getLogin(), loginDto.getPassword()));
     return new AuthTokensDto(
-        jwtUtil.generateAccessToken(loginDto.getLogin()), null);
+        jwtService.generateAccessToken(loginDto.getLogin()), null);
   }
 
   public void register(RegisterDto registerDto) {
