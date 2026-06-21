@@ -1,4 +1,4 @@
-package ru.hh.kakdela_v2.filter;
+package ru.hh.kakdela_v2.security;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
@@ -23,7 +23,6 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import ru.hh.kakdela_v2.dto.error.ErrorResponse;
-import ru.hh.kakdela_v2.security.JwtService;
 import tools.jackson.databind.ObjectMapper;
 
 @Slf4j

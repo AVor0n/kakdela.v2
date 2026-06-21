@@ -17,7 +17,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfigurationSource;
 
-import ru.hh.kakdela_v2.filter.JwtRequestFilter;
+import ru.hh.kakdela_v2.security.JwtRequestFilter;
 
 @RequiredArgsConstructor
 @Configuration
