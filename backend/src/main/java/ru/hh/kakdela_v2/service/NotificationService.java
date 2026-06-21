@@ -6,21 +6,19 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.hh.kakdela_v2.dao.AccountDao;
 import ru.hh.kakdela_v2.dao.PermissionDao;
 import ru.hh.kakdela_v2.dao.SurveyDao;
-import ru.hh.kakdela_v2.dao.SurveyNotificationSettingsDao;
+import ru.hh.kakdela_v2.dao.SurveyNotificationSubscriberDao;
+import ru.hh.kakdela_v2.model.Account;
 import ru.hh.kakdela_v2.model.Permission;
 import ru.hh.kakdela_v2.model.Survey;
-import ru.hh.kakdela_v2.model.SurveyNotificationSettings;
-
-
 
 @Slf4j
 @Service
@@ -30,10 +28,11 @@ public class NotificationService {
     private final SurveyDao surveyDao;
     private final AccountDao accountDao;
     private final PermissionDao permissionDao;
-    private final SurveyNotificationSettingsDao settingsDao;
-    private final EmailService emailService;
+    private final SurveyNotificationSubscriberDao subscriberDao;
+    //private final EmailService emailService;
 
     @Async
+    @Transactional(readOnly = true)
     public void sendSurveyPublishedNotifications(UUID surveyId) {
         Survey survey = surveyDao.findById(surveyId).orElse(null);
         if (survey == null || !survey.isPublished()) {
@@ -48,55 +47,45 @@ public class NotificationService {
             return;
         }
 
-        int sentCount = 0;
+        log.info("Sending {} notifications for survey {}", recipients.size(), surveyId);
+
         for (UUID userId : recipients) {
-            String email = accountDao.findEmailById(userId);
-            if (email != null && !email.isBlank()) {
-                try {
+            Account account = accountDao.findById(userId).orElse(null);
+            if (account != null) {
+                String email = account.getEmail();
+                if (email != null && !email.isBlank()) {
+                    /*try {
                         emailService.sendSurveyPublishedEmail(email, survey.getTitle(), surveyId);
                         sentCount++;
-                } catch (Exception e) {
+                    } catch (Exception e) {
                         log.error("Failed to send email to {}: {}", email, e.getMessage());
-                    }
+                    }*/
+                   log.info(" Would send email to: {} (survey: {})", email, surveyId);
+                }
             }
         }
-
-        log.info("Survey {} notifications sent to {} of {} recipients",
-                surveyId, sentCount, recipients.size());
     }
 
     private List<UUID> getRecipients(UUID surveyId) {
         Set<UUID> recipients = new HashSet<>();
         Survey survey = surveyDao.findById(surveyId).orElse(null);
-        if (survey == null) return new ArrayList<>();
-
-        Optional<SurveyNotificationSettings> settingsOpt = settingsDao.findBySurveyId(surveyId);
-        if (settingsOpt.isEmpty()) {
-            return new ArrayList<>(recipients);
+        if (survey == null) {
+            return new ArrayList<>();
         }
 
-        SurveyNotificationSettings settings = settingsOpt.get();
-
-        if (settings.isNotifyEditors()) {
-            List<UUID> editors = permissionDao.findUserIdsBySurveyIdAndRole(
-                surveyId, Permission.SurveyRole.EDITOR.name()
-            );
-            if (editors != null && !editors.isEmpty()) {
-                recipients.addAll(editors);
+        List<Permission> permissions = permissionDao.findAllBySurveyId(surveyId);
+        for (Permission permission : permissions) {
+            if (permission.isDoNotify()) {
+                recipients.add(permission.getId().getAccountId());
+                log.debug("Added user {} with role {} to recipients", 
+                    permission.getId().getAccountId(), permission.getRole());
             }
         }
 
-        if (settings.isNotifyAnalysts()) {
-            List<UUID> analysts = permissionDao.findUserIdsBySurveyIdAndRole(
-                surveyId, Permission.SurveyRole.ANALYST.name()
-            );
-            if (analysts != null && !analysts.isEmpty()) {
-            recipients.addAll(analysts);
-            }
-        }
-
-        if (settings.getNotifyCustomUserIds() != null) {
-            recipients.addAll(settings.getNotifyCustomUserIds());
+        List<UUID> subscribers = subscriberDao.findSubscriberIdsBySurveyId(surveyId);
+        if (subscribers != null && !subscribers.isEmpty()) {
+            recipients.addAll(subscribers);
+            log.debug("Added {} subscribers to recipients", subscribers.size());
         }
 
         recipients.remove(null);

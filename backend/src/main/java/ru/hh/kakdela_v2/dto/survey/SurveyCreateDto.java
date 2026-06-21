@@ -30,7 +30,5 @@ public class SurveyCreateDto {
   @FutureOrPresent(message = "Дедлайн не должен быть в прошлом")
   private Instant expireAt;
 
-  private Boolean notifyEditors;
-  private Boolean notifyAnalysts;
   private List<UUID> notifyUserIds;
 }

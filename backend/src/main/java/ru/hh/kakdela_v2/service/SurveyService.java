@@ -7,7 +7,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import ru.hh.kakdela_v2.dao.AccountDao;
 import ru.hh.kakdela_v2.dao.SurveyDao;
-import ru.hh.kakdela_v2.dao.SurveyNotificationSettingsDao;
 import ru.hh.kakdela_v2.dto.survey.SurveyCreateDto;
 import ru.hh.kakdela_v2.dto.survey.SurveyResponseDto;
 import ru.hh.kakdela_v2.dto.survey.SurveyShortResponseDto;
@@ -15,10 +14,8 @@ import ru.hh.kakdela_v2.dto.survey.SurveyUpdateDto;
 import ru.hh.kakdela_v2.model.Account;
 import ru.hh.kakdela_v2.model.Permission.SurveyRole;
 import ru.hh.kakdela_v2.model.Survey;
-import ru.hh.kakdela_v2.model.SurveyNotificationSettings;
 
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -30,7 +27,7 @@ public class SurveyService {
   private final SurveyDao surveyDao;
   private final AccountDao accountDao;
   private final PermissionService permissionService;
-  private final SurveyNotificationSettingsDao notificationSettingsDao;
+  private final SurveyNotificationSubscriberService subscriberService;
   private final NotificationService notificationService;
 
   @Transactional(readOnly = true)
@@ -83,7 +80,9 @@ public class SurveyService {
         .build();
 
     surveyDao.save(survey);
-    saveNotificationSettings(survey.getId(), dto);
+    if (dto.getNotifyUserIds() != null && !dto.getNotifyUserIds().isEmpty()) {
+            subscriberService.subscribeUsers(survey.getId(), dto.getNotifyUserIds(), authorId);
+    }
     return new SurveyResponseDto(survey);
   }
 
@@ -124,21 +123,6 @@ public class SurveyService {
     Survey survey = surveyDao.findById(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Опрос не найден: " + id));
     surveyDao.delete(survey);
-  }
-
-  private void saveNotificationSettings(UUID surveyId, SurveyCreateDto dto) {
-      if (dto.getNotifyEditors() == null && dto.getNotifyAnalysts() == null
-                && (dto.getNotifyUserIds() == null || dto.getNotifyUserIds().isEmpty()))
-            return;
-
-        SurveyNotificationSettings settings = SurveyNotificationSettings.builder()
-                .surveyId(surveyId)
-                .notifyEditors(dto.getNotifyEditors() != null && dto.getNotifyEditors())
-                .notifyAnalysts(dto.getNotifyAnalysts() != null && dto.getNotifyAnalysts())
-                .notifyCustomUserIds(dto.getNotifyUserIds() != null ? dto.getNotifyUserIds() : new ArrayList<>())
-                .build();
-
-        notificationSettingsDao.save(settings);
   }
 
 }
