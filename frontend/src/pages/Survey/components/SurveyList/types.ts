@@ -1,7 +1,1 @@
-export type SurveyShortResponse = {
-    id: string;
-    title: string;
-    description: string | null;
-    isPublished: boolean;
-    createdAt: string;
-};
+export type { SurveyListItem as SurveyShortResponse } from '@/shared/types/Survey.type';

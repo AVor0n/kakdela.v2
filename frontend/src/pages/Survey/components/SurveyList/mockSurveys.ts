@@ -1,6 +1,6 @@
-import type { SurveyShortResponse } from '@/pages/Survey/components/SurveyList/types';
+import type { SurveyListItem } from '@/shared/types/Survey.type';
 
-export const mockSurveys: SurveyShortResponse[] = [
+export const mockSurveys: SurveyListItem[] = [
     {
         id: 'survey-1',
         title: 'Оценка адаптации',
