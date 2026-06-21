@@ -162,6 +162,34 @@ const surveySlice = createSlice({
                 }
             });
         },
+        reorderQuestions: (
+            state,
+            action: PayloadAction<{
+                activeQuestionId: string;
+                overQuestionId: string;
+            }>,
+        ) => {
+            if (!state.selectedSurvey) return;
+            const { activeQuestionId, overQuestionId } = action.payload;
+            if (activeQuestionId === overQuestionId) return;
+
+            const questions = state.selectedSurvey.pages[state.currentQuestionPageIndex].questions;
+            const activeIndex = questions.findIndex((question) => question.id === activeQuestionId);
+            const overIndex = questions.findIndex((question) => question.id === overQuestionId);
+            if (activeIndex === -1 || overIndex === -1) return;
+
+            const [movedQuestion] = questions.splice(activeIndex, 1);
+            questions.splice(overIndex, 0, movedQuestion);
+            questions.forEach((question, index) => {
+                question.serialNumber = index + 1;
+            });
+
+            if (state.selectedQuestion) {
+                const selectedQuestionId = state.selectedQuestion.id;
+                state.selectedQuestion =
+                    questions.find((question) => question.id === selectedQuestionId) ?? state.selectedQuestion;
+            }
+        },
     },
 });
 
@@ -183,5 +211,6 @@ export const {
     deletePage,
     setQuestion,
     setPage,
+    reorderQuestions,
 } = surveySlice.actions;
 export default surveySlice.reducer;

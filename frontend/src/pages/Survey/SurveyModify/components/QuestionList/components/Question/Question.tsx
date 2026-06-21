@@ -1,4 +1,5 @@
 import type { Question, QuestionType } from '@/shared/types/Question.type';
+import type { DraggableAttributes, DraggableSyntheticListeners } from '@dnd-kit/core';
 import {
     Button,
     Checkbox,
@@ -8,7 +9,7 @@ import {
     TextArea,
     type StaticDataFetcherItem,
 } from '@hh.ru/magritte-ui';
-import { useCallback, useEffect, useMemo, useState, type ChangeEvent } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ChangeEvent, type Ref } from 'react';
 import { ShortText } from './components/ShortText/ShortText';
 import { LongText } from './components/LongText/LongText';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
@@ -29,10 +30,16 @@ import { useAppSelector } from '@/hooks/useAppSelector';
 import { setErrorMessage } from '@/entities/Error/Error.slice';
 import { attachImageToQuestion, removeImageFromQuestion, updateAttachmentOfQuestion } from '@/api/attachments';
 import style from './Question.module.css';
+import { DragHandle } from './components/QuestionControls/DragHandle/DragHandle';
 
 interface Props {
     question: Question;
-    isEditMode: boolean;
+    isEditMode?: boolean;
+    isDragging?: boolean;
+    isDragOverlay?: boolean;
+    dragHandleAttributes?: DraggableAttributes;
+    dragHandleListeners?: DraggableSyntheticListeners;
+    dragHandleRef?: Ref<HTMLDivElement>;
     onClick?: () => void;
 }
 
@@ -43,7 +50,16 @@ const OPTIONS: StaticDataFetcherItem[] = [
     { value: 'MULTIPLE_CHOICE', text: 'Несколько из списка' },
 ];
 
-export function Question({ question, onClick, isEditMode }: Props) {
+export function Question({
+    question,
+    onClick,
+    dragHandleAttributes,
+    dragHandleListeners,
+    dragHandleRef,
+    isEditMode = false,
+    isDragging = false,
+    isDragOverlay = false,
+}: Props) {
     const { selectedSurvey } = useAppSelector((state) => state.survey);
     const [title, setTitle] = useState<string>(question.title);
     const [typeQuestion, setTypeQuestion] = useState<QuestionType>(question.type);
@@ -201,8 +217,17 @@ export function Question({ question, onClick, isEditMode }: Props) {
                 return null;
         }
     }, [question, typeQuestion, isEditMode]);
+
     return (
-        <div className={classNames(style.container, { [style.edit]: isEditMode })} onClick={onClick}>
+        <div
+            className={classNames(style.container, {
+                [style.edit]: isEditMode,
+                [style.dragging]: isDragging,
+                [style.dragOverlay]: isDragOverlay,
+            })}
+            onClick={onClick}
+        >
+            <DragHandle attributes={dragHandleAttributes} listeners={dragHandleListeners} setNodeRef={dragHandleRef} />
             {questionImage && <img src={questionImage} alt='img' className={style.attachmentUrl} />}
             <section className={style.settings}>
                 <div className={style.questionDetail}>

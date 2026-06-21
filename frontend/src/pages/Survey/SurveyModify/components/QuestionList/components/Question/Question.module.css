@@ -1,10 +1,20 @@
 .container {
     position: relative;
     border: 1px solid var(--color-border);
-    padding: 20px;
+    padding: 28px 20px 20px;
     border-radius: 24px;
-    transition: box-shadow 0.3s ease;
+    transition:
+        box-shadow 0.3s ease,
+        opacity 0.2s ease;
     width: 100%;
+}
+
+.container:hover {
+    cursor: grab;
+}
+
+.container:active {
+    cursor: grabbing;
 }
 
 .settings > div:nth-child(3) {
@@ -28,6 +38,16 @@
 .edit {
     /* box-shadow: -5px 0px #00f; */
     box-shadow: inset 5px 0 var(--color-primary);
+}
+
+.dragging {
+    opacity: 0.5;
+}
+
+.dragOverlay {
+    background-color: #fff;
+    opacity: 0.85;
+    cursor: grabbing;
 }
 
 .actions {
