@@ -1,4 +1,4 @@
-package ru.hh.kakdela_v2.service;
+package ru.hh.kakdela_v2.security;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -7,7 +7,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import ru.hh.kakdela_v2.dao.AccountDao;
 import ru.hh.kakdela_v2.model.Account;
-import ru.hh.kakdela_v2.security.CustomUserDetails;
 
 import java.util.HashSet;
 
