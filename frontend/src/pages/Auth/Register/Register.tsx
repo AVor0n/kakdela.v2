@@ -25,6 +25,8 @@ type RegisterFormErrors = Record<keyof RegisterFormValues, string>;
 
 type ApiErrorResponse = {
     error?: unknown;
+    message?: unknown;
+    details?: unknown;
 };
 
 const initialValues: RegisterFormValues = {
@@ -112,6 +114,12 @@ export function Register() {
         }));
     };
 
+    const normalizeApiErrorText = (value: string): string => {
+        const quotedMessageMatch = value.match(/^\d{3}\s+[A-Z_]+\s+"(.+)"$/);
+
+        return quotedMessageMatch?.[1] ?? value;
+    };
+
     const getErrorText = (error: unknown): string => {
         if (!axios.isAxiosError(error)) {
             return '';
@@ -123,9 +131,10 @@ export function Register() {
             return '';
         }
 
-        const { error: errorText } = responseData as ApiErrorResponse;
+        const { message, details, error: errorName } = responseData as ApiErrorResponse;
+        const errorText = [message, details, errorName].find((value): value is string => typeof value === 'string');
 
-        return typeof errorText === 'string' ? errorText : '';
+        return errorText ? normalizeApiErrorText(errorText) : '';
     };
 
     const handleSubmit = async () => {

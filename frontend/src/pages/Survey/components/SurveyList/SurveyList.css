@@ -27,6 +27,14 @@
     gap: 24px;
 }
 
+.survey-list-message {
+    display: flex;
+    min-height: 232px;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
 .survey-list-item-button {
     display: flex;
     width: 100%;

@@ -100,9 +100,8 @@ export function Login() {
 
         try {
             setFormError('');
-            const { accessToken } = await login(values);
+            await login(values);
 
-            cookieStore.set('accessToken', accessToken);
             const from = (location.state as LoginLocationState | null)?.from;
             const redirectPath = from
                 ? `${from.pathname ?? routes.survey()}${from.search ?? ''}${from.hash ?? ''}`
