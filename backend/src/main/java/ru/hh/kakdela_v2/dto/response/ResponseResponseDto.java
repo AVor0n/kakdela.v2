@@ -19,17 +19,4 @@ public class ResponseResponseDto {
   private final Boolean isCompleted;
   private final Instant receivedAt;
   private final List<AnswerResponseDto> answers;
-
-  public ResponseResponseDto(Response response) {
-    this.id = response.getId();
-    this.accountId = response.getAccount() != null
-        ? response.getAccount().getId()
-        : null;
-    this.surveyId = response.getSurvey().getId();
-    this.isCompleted = response.isCompleted();
-    this.receivedAt = response.getReceivedAt();
-    this.answers = response.getAnswers().stream()
-        .map(AnswerResponseDto::new)
-        .toList();
-  }
 }

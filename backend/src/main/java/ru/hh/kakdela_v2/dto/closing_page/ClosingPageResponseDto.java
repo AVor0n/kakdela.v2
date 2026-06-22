@@ -10,11 +10,6 @@ public class ClosingPageResponseDto {
 
   private final String title;
   private final String description;
+  private final String attachmentUrl;
   private final String websiteUrl;
-
-  public ClosingPageResponseDto(ClosingPage closingPage) {
-    this.title = closingPage.getTitle();
-    this.description = closingPage.getDescription();
-    this.websiteUrl = closingPage.getWebsiteUrl();
-  }
 }

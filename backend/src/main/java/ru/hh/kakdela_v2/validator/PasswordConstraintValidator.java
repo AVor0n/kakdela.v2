@@ -1,4 +1,4 @@
-package ru.hh.kakdela_v2.util;
+package ru.hh.kakdela_v2.validator;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;

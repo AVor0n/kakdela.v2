@@ -31,6 +31,9 @@ public class ClosingPage {
   @Column(name = "description", length = 5000)
   private String description;
 
+  @Column(name = "attachment_object_key", length = 1024)
+  private String attachmentObjectKey;
+
   @Column(name = "website_url", length = 2000)
   private String websiteUrl;
 }

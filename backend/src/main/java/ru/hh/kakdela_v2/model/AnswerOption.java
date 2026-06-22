@@ -38,4 +38,7 @@ public class AnswerOption {
 
   @Column(name = "answer_option_text", length = 1000, nullable = false)
   private String answerOptionText;
+
+  @Column(name = "attachment_object_key", length = 1024)
+  private String attachmentObjectKey;
 }

@@ -47,6 +47,9 @@ public class Question {
   @Column(name = "description", length = 5000)
   private String description;
 
+  @Column(name = "attachment_object_key", length = 1024)
+  private String attachmentObjectKey;
+
   @Column(name = "type", nullable = false)
   @Enumerated(EnumType.STRING)
   private QuestionType type;
@@ -61,7 +64,7 @@ public class Question {
   @Column(name = "is_visible", nullable = false)
   private boolean isVisible;
 
-  @Column(name = "condition", columnDefinition = "TEXT")
+  @Column(name = "condition", columnDefinition = "text")
   private String condition;
 
   @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)

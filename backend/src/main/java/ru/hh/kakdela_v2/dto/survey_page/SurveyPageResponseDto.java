@@ -20,16 +20,4 @@ public class SurveyPageResponseDto {
   private final String title;
   private final String description;
   private final List<QuestionResponseDto> questions;
-
-  public SurveyPageResponseDto(SurveyPage page) {
-    this.id = page.getId();
-    this.surveyId = page.getSurvey().getId();
-    this.serialNumber = page.getSerialNumber();
-    this.title = page.getTitle();
-    this.description = page.getDescription();
-    this.questions = page.getQuestions().stream()
-        .sorted(Comparator.comparingInt(Question::getSerialNumber))
-        .map(QuestionResponseDto::new)
-        .toList();
-  }
 }

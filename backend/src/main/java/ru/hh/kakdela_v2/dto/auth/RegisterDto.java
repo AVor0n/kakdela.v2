@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import ru.hh.kakdela_v2.util.ValidPassword;
+import ru.hh.kakdela_v2.validator.ValidPassword;
 
 @NoArgsConstructor
 @Getter
