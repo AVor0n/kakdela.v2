@@ -5,11 +5,6 @@ export type LoginRequest = {
     password: string;
 };
 
-export type LoginResponse = {
-    accessToken: string;
-    refreshToken: null;
-};
-
 export type RegisterRequest = {
     login: string;
     email: string;
@@ -17,10 +12,8 @@ export type RegisterRequest = {
     passwordConfirmation: string;
 };
 
-export async function login(payload: LoginRequest): Promise<LoginResponse> {
-    const { data } = await apiClient.post<LoginResponse>('/api/auth/login', payload);
-
-    return data;
+export async function login(payload: LoginRequest): Promise<void> {
+    await apiClient.post('/api/auth/login', payload);
 }
 
 export async function register(payload: RegisterRequest): Promise<string> {
