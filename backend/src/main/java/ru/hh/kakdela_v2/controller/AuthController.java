@@ -12,9 +12,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import ru.hh.kakdela_v2.dto.account.AccountCreateDto;
+import ru.hh.kakdela_v2.dto.account.AccountResponseDto;
 import ru.hh.kakdela_v2.dto.auth.AuthTokensDto;
 import ru.hh.kakdela_v2.dto.auth.LoginDto;
-import ru.hh.kakdela_v2.dto.auth.RegisterDto;
+import ru.hh.kakdela_v2.service.AccountService;
 import ru.hh.kakdela_v2.service.AuthService;
 
 @RequiredArgsConstructor
@@ -23,6 +25,7 @@ import ru.hh.kakdela_v2.service.AuthService;
 public class AuthController {
 
   private final AuthService authService;
+  private final AccountService accountService;
 
   @Value("${app.tokens.access.max-age}")
   private long accessTokenMaxAge;
@@ -32,8 +35,8 @@ public class AuthController {
 
   @PostMapping("/auth/register")
   @ResponseStatus(HttpStatus.CREATED)
-  public void register(@Valid @RequestBody RegisterDto registerDto) {
-    authService.register(registerDto);
+  public AccountResponseDto register(@Valid @RequestBody AccountCreateDto accountCreateDto) {
+    return accountService.create(accountCreateDto);
   }
 
   @PostMapping("/auth/login")
