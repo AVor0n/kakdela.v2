@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 import ru.hh.kakdela_v2.dto.error.ErrorResponse;
 
 import java.time.LocalDateTime;
@@ -127,6 +129,21 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
     }
 
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNoResourceFound(NoResourceFoundException ex, WebRequest request) {
+        ErrorResponse error = new ErrorResponse(
+            LocalDateTime.now(),
+            HttpStatus.NOT_FOUND.value(),
+            "Not found",
+            "No resource found for your request",
+            getPath(request),
+            null
+        );
+
+        log.error("Resource not found: ", ex);
+        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+    }
+
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<ErrorResponse> handleResponseStatusException(ResponseStatusException ex, WebRequest request) {
         HttpStatus status = HttpStatus.resolve(ex.getStatusCode().value());
@@ -137,16 +154,16 @@ public class GlobalExceptionHandler {
         }
 
         ErrorResponse error = new ErrorResponse(
-                LocalDateTime.now(),
-                ex.getStatusCode().value(),
-                (errorName != null) ? errorName : ex.getReason(),
-                ex.getMessage(),
-                getPath(request),
-                null
+            LocalDateTime.now(),
+            HttpStatus.FORBIDDEN.value(),
+            "Access Denied",
+            "You don't have permission to access this resource",
+            getPath(request),
+            null
         );
 
-        log.error("{}: ", ex.getReason(), ex);
-        return new ResponseEntity<>(error, ex.getStatusCode());
+        log.error("Access denied: ", ex);
+        return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
     }
 
     @ExceptionHandler(Exception.class)
