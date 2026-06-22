@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,6 +17,7 @@ import ru.hh.kakdela_v2.dto.account.AccountCreateDto;
 import ru.hh.kakdela_v2.dto.account.AccountResponseDto;
 import ru.hh.kakdela_v2.dto.auth.AuthTokensDto;
 import ru.hh.kakdela_v2.dto.auth.LoginDto;
+import ru.hh.kakdela_v2.security.CustomUserDetails;
 import ru.hh.kakdela_v2.service.AccountService;
 import ru.hh.kakdela_v2.service.AuthService;
 
@@ -67,5 +69,28 @@ public class AuthController {
 
       response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
     }
+  }
+
+  @PostMapping("/auth/logout")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void logout(@AuthenticationPrincipal CustomUserDetails currentUser,
+                       HttpServletResponse response) {
+
+    ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken")
+        .httpOnly(true)
+        .sameSite("Strict")
+        .path("/api")
+        .maxAge(0)
+        .build();
+
+    ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken")
+        .httpOnly(true)
+        .sameSite("Strict")
+        .path("/api/auth/refresh")
+        .maxAge(0)
+        .build();
+
+    response.addHeader(HttpHeaders.SET_COOKIE, accessTokenCookie.toString());
+    response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
   }
 }
