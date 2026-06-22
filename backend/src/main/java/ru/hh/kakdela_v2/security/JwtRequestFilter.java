@@ -19,6 +19,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -34,9 +35,9 @@ public class JwtRequestFilter extends OncePerRequestFilter {
   private final UserDetailsService userDetailsService;
 
   @Override
-  protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
-                                  FilterChain chain)
-      throws ServletException, IOException {
+  protected void doFilterInternal(HttpServletRequest request,
+      HttpServletResponse response,
+      FilterChain chain) throws ServletException, IOException {
 
     Cookie[] cookies = request.getCookies();
     String token = null;
@@ -61,6 +62,13 @@ public class JwtRequestFilter extends OncePerRequestFilter {
       }
 
       chain.doFilter(request, response);
+    } catch (UsernameNotFoundException e) {
+      log.warn("Account not found: login={}", e.getName());
+      sendErrorResponse(
+          response,
+          request,
+          "Account not found",
+          HttpStatus.valueOf(HttpServletResponse.SC_UNAUTHORIZED));
     } catch (ExpiredJwtException e) {
       log.warn("Expired JWT token for user: {}", e.getClaims().getSubject());
       sendErrorResponse(
@@ -81,9 +89,9 @@ public class JwtRequestFilter extends OncePerRequestFilter {
   }
 
   private void sendErrorResponse(HttpServletResponse response,
-                                 HttpServletRequest request,
-                                 String message,
-                                 HttpStatus status) throws IOException {
+       HttpServletRequest request,
+       String message,
+       HttpStatus status) throws IOException {
 
     response.setStatus(status.value());
     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
