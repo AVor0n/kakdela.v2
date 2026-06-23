@@ -28,3 +28,9 @@ export async function getSurveys(): Promise<SurveyListItem[]> {
 
     return data;
 }
+
+export async function updateSurvey(surveyId: string, updateData: UpdateSurveyRequest): Promise<SurveyResponse> {
+    const { data } = await apiClient.put<SurveyResponse>(`/api/surveys/${surveyId}`, updateData);
+
+    return data;
+}

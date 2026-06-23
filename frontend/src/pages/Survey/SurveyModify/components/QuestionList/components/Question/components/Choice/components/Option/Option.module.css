@@ -1,0 +1,20 @@
+.optionContent {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.input {
+    transition: border-bottom 0.2s ease-in-out;
+    border: none;
+    border-bottom: 1px solid rgba(0, 0, 0, 0);
+}
+
+.input:focus {
+    border-color: var(--color-primary);
+}
+
+.option {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}

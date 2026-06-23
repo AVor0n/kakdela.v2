@@ -9,6 +9,7 @@ import style from './QuestionList.module.css';
 
 interface Props {
     questions: Question[];
+    pageNumber: number;
     pageIndex: number;
 }
 

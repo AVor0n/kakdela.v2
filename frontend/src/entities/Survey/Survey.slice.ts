@@ -1,5 +1,5 @@
-import type { Question, QuestionType } from '@/shared/types/Question.type';
-import type { Survey } from '@/shared/types/Survey.type';
+import type { AnswerOption, Question, QuestionType } from '@/shared/types/Question.type';
+import type { Page, Survey } from '@/shared/types/Survey.type';
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 export interface ISurveyState {
@@ -28,30 +28,10 @@ const surveySlice = createSlice({
             const { survey } = action.payload;
             state.selectedSurvey = survey;
         },
-        addPage: (state) => {
+        addPage: (state, action: PayloadAction<{ page: Page }>) => {
             if (!state.selectedSurvey) return;
-            const newPage = {
-                id: (state.selectedSurvey.pages.length + 1).toString(),
-                title: `Страница ${state.selectedSurvey.pages.length + 1}`,
-                description: null,
-                surveyId: state.selectedSurvey.id,
-                serialNumber: state.selectedSurvey.pages.length + 1,
-                questions: [],
-            };
-            const newQuestion = {
-                answerOptionOrder: null,
-                answerOptions: ['Вариант 1'],
-                condition: null,
-                description: null,
-                id: (state.selectedSurvey.pages[0].questions.length + 1).toString(),
-                mandatory: false,
-                serialNumber: state.selectedSurvey.pages[0].questions.length + 1,
-                title: '',
-                type: 'SINGLE_CHOICE',
-                visible: true,
-            } satisfies Question;
-            state.selectedSurvey.pages.push(newPage);
-            state.selectedSurvey.pages[state.selectedSurvey.pages.length - 1].questions.push(newQuestion);
+            const { page } = action.payload;
+            state.selectedSurvey.pages.push(page);
         },
         setSelectedQuestion: (state, action: PayloadAction<{ question: Question; pageIndex: number }>) => {
             const { question, pageIndex } = action.payload;
@@ -68,84 +48,68 @@ const surveySlice = createSlice({
             });
         },
 
-        updateQuestionType: (state, action: PayloadAction<{ type: QuestionType }>) => {
+        updateQuestionType: (state, action: PayloadAction<{ id: string; type: QuestionType }>) => {
             if (state.selectedSurvey === null) return;
-            const { type } = action.payload;
+            const { id, type } = action.payload;
             state.selectedSurvey.pages[state.currentQuestionPageIndex].questions.map((question) => {
-                if (state.selectedQuestion) {
-                    if (question.id === state.selectedQuestion.id) {
-                        question.type = type;
-                    }
+                if (question.id === id) {
+                    question.type = type;
                 }
             });
         },
-        addQuestionOptions: (state) => {
+        addQuestionOptions: (state, action: PayloadAction<{ answerOption: AnswerOption }>) => {
             if (!state.selectedSurvey) return;
+            const { answerOption } = action.payload;
             state.selectedSurvey.pages[state.currentQuestionPageIndex].questions.forEach((question) => {
                 if (state.selectedQuestion && question.id === state.selectedQuestion.id) {
-                    question.answerOptions?.push(`Вариант ${question.answerOptions.length + 1}`);
+                    question.answerOptions?.push(answerOption);
                 }
             });
         },
-        addAnotherOption: (state) => {
+        deleteOption: (state, action: PayloadAction<{ id: string }>) => {
             if (!state.selectedSurvey) return;
+            const { id } = action.payload;
             state.selectedSurvey.pages[state.currentQuestionPageIndex].questions.forEach((question) => {
                 if (state.selectedQuestion && question.id === state.selectedQuestion.id) {
-                    question.answerOptions?.push('Другое');
+                    question.answerOptions = question.answerOptions?.filter((option) => option.id !== id);
                 }
             });
         },
-        deleteOption: (state, action: PayloadAction<{ removeIndex: number }>) => {
+        addQuestion: (state, action: PayloadAction<{ question: Question; pageIndex?: number }>) => {
             if (!state.selectedSurvey) return;
-            const { removeIndex } = action.payload;
-            state.selectedSurvey.pages[state.currentQuestionPageIndex].questions.forEach((question) => {
-                if (state.selectedQuestion && question.id === state.selectedQuestion.id) {
-                    question.answerOptions = question.answerOptions?.filter((_, index) => index !== removeIndex);
-                }
-            });
-        },
-        addQuestion: (state) => {
-            if (!state.selectedSurvey) return;
-            if (state.selectedSurvey.pages.length === 0) {
-                const newPage = {
-                    id: (state.selectedSurvey.pages.length + 1).toString(),
-                    title: `Страница ${state.selectedSurvey.pages.length + 1}`,
-                    description: null,
-                    surveyId: state.selectedSurvey.id,
-                    serialNumber: state.selectedSurvey.pages.length + 1,
-                    questions: [],
-                };
-                state.selectedSurvey.pages.push(newPage);
+            const { question, pageIndex } = action.payload;
+            if (state.selectedSurvey.pages.length === 1) {
+                state.selectedSurvey.pages[0].questions.push(question);
+                return;
             }
-            const newQuestion = {
-                answerOptionOrder: null,
-                answerOptions: ['Вариант 1'],
-                condition: null,
-                description: null,
-                id: (state.selectedSurvey.pages[0].questions.length + 1).toString(),
-                mandatory: false,
-                serialNumber: state.selectedSurvey.pages[0].questions.length + 1,
-                title: '',
-                type: 'SINGLE_CHOICE',
-                visible: true,
-            } satisfies Question;
-            state.selectedSurvey.pages[state.currentQuestionPageIndex].questions.push(newQuestion);
+
+            if (pageIndex !== undefined) {
+                state.selectedSurvey.pages[pageIndex].questions.push(question);
+                return;
+            }
+            state.selectedSurvey.pages[state.currentQuestionPageIndex].questions.push(question);
         },
-        setMandatory: (state) => {
+        setMandatory: (state, action: PayloadAction<{ value: boolean }>) => {
             if (!state.selectedSurvey) return;
+            const { value } = action.payload;
             state.selectedSurvey.pages[state.currentQuestionPageIndex].questions.forEach((question) => {
                 if (state.selectedQuestion && question.id === state.selectedQuestion.id) {
-                    question.mandatory = !question.mandatory;
+                    question.isMandatory = value;
                 }
             });
         },
-        setOptionValue: (state, action: PayloadAction<{ value: string; index: number }>) => {
+        setOptionValue: (state, action: PayloadAction<{ answerOption: AnswerOption }>) => {
             if (!state.selectedSurvey) return;
-            const { value, index } = action.payload;
+            const { answerOption } = action.payload;
             state.selectedSurvey.pages[state.currentQuestionPageIndex].questions.forEach((question) => {
                 if (state.selectedQuestion && question.id === state.selectedQuestion.id) {
                     if (question.answerOptions) {
-                        question.answerOptions[index] = value;
+                        question.answerOptions = question.answerOptions.map((option) => {
+                            if (option.id === answerOption.id) {
+                                return answerOption;
+                            }
+                            return option;
+                        });
                     }
                 }
             });
@@ -153,8 +117,9 @@ const surveySlice = createSlice({
         deleteQuestion: (state, action: PayloadAction<{ id: string }>) => {
             if (!state.selectedSurvey) return;
             const { id } = action.payload;
-            state.selectedSurvey.pages[state.currentQuestionPageIndex].questions =
-                state.selectedSurvey.pages[0].questions.filter((question) => question.id !== id);
+            state.selectedSurvey.pages[state.currentQuestionPageIndex].questions = state.selectedSurvey.pages[
+                state.currentQuestionPageIndex
+            ].questions.filter((question) => question.id !== id);
         },
         duplicateQuestion: (state, action: PayloadAction<{ id: string }>) => {
             if (!state.selectedSurvey) return;
@@ -174,6 +139,11 @@ const surveySlice = createSlice({
                 state.selectedSurvey.pages[0].questions.splice(index + 1, 0, duplicatedQuestion);
             }
         },
+        deletePage: (state, action: PayloadAction<{ pageId: string }>) => {
+            if (!state.selectedSurvey) return;
+            const { pageId } = action.payload;
+            state.selectedSurvey.pages = state.selectedSurvey.pages.filter((page) => page.id !== pageId);
+        },
     },
 });
 
@@ -188,9 +158,9 @@ export const {
     addQuestion,
     setMandatory,
     setOptionValue,
-    addAnotherOption,
     deleteQuestion,
     duplicateQuestion,
     addPage,
+    deletePage,
 } = surveySlice.actions;
 export default surveySlice.reducer;

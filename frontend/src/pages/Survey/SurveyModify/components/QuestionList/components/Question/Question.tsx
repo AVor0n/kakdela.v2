@@ -7,20 +7,25 @@ import {
     Select,
     type StaticDataFetcherItem,
 } from '@hh.ru/magritte-ui';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ShortText } from './components/ShortText/ShortText';
 import { LongText } from './components/LongText/LongText';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import {
-    deleteQuestion,
+    deleteQuestion as deleteQuestionState,
     duplicateQuestion,
-    setMandatory,
+    setMandatory as setMandatoryState,
     updateQuestionTitle,
     updateQuestionType,
 } from '@/entities/Survey/Survey.slice';
 import { Choice } from './components/Choice/Choice';
 import classNames from 'classnames';
 import style from './Question.module.css';
+import { useDebounce } from '@/hooks/useDebounce';
+import { deleteQuestion, updateQuestion } from '@/api/question';
+import { ErrorBlock } from '../../../ErrorBlock/ErrorBlock';
+import { useAppSelector } from '@/hooks/useAppSelector';
+import type { Error } from '@/shared/types/Error.type';
 
 interface Props {
     question: Question;
@@ -36,14 +41,86 @@ const OPTIONS: StaticDataFetcherItem[] = [
 ];
 
 export function Question({ question, onClick, isEditMode }: Props) {
+    const { selectedSurvey } = useAppSelector((state) => state.survey);
+    const [error, setError] = useState<Error | null>(null);
+    const [title, setTitle] = useState<string>(question.title);
+    const [typeQuestion, setTypeQuestion] = useState<QuestionType>(question.type);
+    const [mandatory, setMandatory] = useState<boolean>(question.isMandatory);
+    const debouncedTypeQuestion = useDebounce(typeQuestion, 2000);
+    const debouncedTitle = useDebounce(title, 2000);
+    const debouncedMandatory = useDebounce(mandatory, 1000);
+
     const dispatch = useAppDispatch();
 
+    useEffect(() => {
+        if (debouncedTitle !== question.title) {
+            updateQuestion(question.id, { title })
+                .then((data) => {
+                    dispatch(updateQuestionTitle({ id: question.id, title: data.title }));
+                })
+                .catch((err) => {
+                    if (err.response) {
+                        setError(err.response.data);
+                    }
+                    setTitle(question.title);
+                });
+        }
+    }, [debouncedTitle]);
+
+    useEffect(() => {
+        if (debouncedTypeQuestion !== question.type) {
+            updateQuestion(question.id, { type: typeQuestion })
+                .then((data) => {
+                    dispatch(
+                        updateQuestionType({
+                            id: question.id,
+                            type: data.type,
+                        }),
+                    );
+                })
+                .catch((err) => {
+                    if (err.response) {
+                        setError(err.response.data);
+                    }
+                    setTypeQuestion(question.type);
+                });
+        }
+    }, [debouncedTypeQuestion]);
+
+    useEffect(() => {
+        if (debouncedMandatory !== question.isMandatory) {
+            updateQuestion(question.id, { isMandatory: mandatory })
+                .then((data) => {
+                    dispatch(setMandatoryState({ value: data.isMandatory }));
+                })
+                .catch((err) => {
+                    if (err.response) {
+                        setError(err.response.data);
+                    }
+                    dispatch(setMandatoryState({ value: question.isMandatory }));
+                });
+        }
+    }, [debouncedMandatory]);
+
+    const deleteQuestionHandler = () => {
+        if (!selectedSurvey) return;
+        deleteQuestion(question.id)
+            .then(() => {
+                dispatch(deleteQuestionState({ id: question.id }));
+            })
+            .catch((err) => {
+                if (err.response) {
+                    setError(err.response.data);
+                }
+            });
+    };
+
     const questionType = useMemo(() => {
-        return OPTIONS.find((option) => option.value === question.type);
-    }, [question.type]);
+        return OPTIONS.find((option) => option.value === typeQuestion);
+    }, [typeQuestion]);
 
     const questionContent = useCallback(() => {
-        switch (question.type) {
+        switch (typeQuestion) {
             case 'SHORT_TEXT':
                 return <ShortText />;
             case 'LONG_TEXT':
@@ -55,16 +132,16 @@ export function Question({ question, onClick, isEditMode }: Props) {
             default:
                 return null;
         }
-    }, [question, isEditMode]);
-    // isEditMode ? [style.question__edit, style.question].join(' ') : style.question
+    }, [question, typeQuestion, isEditMode]);
     return (
         <div className={classNames(style.container, { [style.edit]: isEditMode })} onClick={onClick}>
+            {error && <ErrorBlock error={error} setError={setError} />}
             <section className={style.settings}>
                 <Input
                     placeholder='Вопрос'
-                    value={question.title}
+                    value={title}
                     onChange={(e) => {
-                        dispatch(updateQuestionTitle({ id: question.id, title: e }));
+                        setTitle(e);
                     }}
                 />
                 <div className={style.button}>
@@ -76,11 +153,7 @@ export function Question({ question, onClick, isEditMode }: Props) {
                     dataProvider={createStaticDataProvider(OPTIONS, 'Тип вопроса')}
                     name='area'
                     onChange={(e) => {
-                        dispatch(
-                            updateQuestionType({
-                                type: e.value as QuestionType,
-                            }),
-                        );
+                        setTypeQuestion(e.value as QuestionType);
                     }}
                 />
             </section>
@@ -94,7 +167,7 @@ export function Question({ question, onClick, isEditMode }: Props) {
                     })}
                 >
                     <label className={style.mandatoryCheckbox}>
-                        <Checkbox checked={question.mandatory} onChange={() => dispatch(setMandatory())} />
+                        <Checkbox checked={mandatory} onChange={() => setMandatory(!mandatory)} />
                         Обязательный
                     </label>
                     <Button
@@ -108,7 +181,7 @@ export function Question({ question, onClick, isEditMode }: Props) {
                         style='negative'
                         type='button'
                         icon={<img src='/trash.svg' alt='Удалить' />}
-                        onClick={() => dispatch(deleteQuestion({ id: question.id }))}
+                        onClick={deleteQuestionHandler}
                     />
                 </div>
             </section>

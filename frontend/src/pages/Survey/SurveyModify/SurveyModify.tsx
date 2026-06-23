@@ -11,16 +11,18 @@ import { Sidebar } from './components/Sidebar/Sidebar';
 import style from './SurveyModify.module.css';
 import { getSurveyById } from '@/api/survey';
 import { useParams } from 'react-router-dom';
+import { PageSeparator } from './components/PageSeparator/PageSeparator';
 
 export function SurveyModify() {
     const { id } = useParams();
     const { selectedSurvey } = useAppSelector((state) => state.survey);
     const dispatch = useAppDispatch();
-    // TODO: Логика получения данных опроса по id
 
     useEffect(() => {
         if (id) {
-            getSurveyById(id).then((data) => dispatch(setSelectedSurvey({ survey: data })));
+            getSurveyById(id).then((data) => {
+                dispatch(setSelectedSurvey({ survey: data }));
+            });
         }
     }, []);
 
@@ -30,12 +32,12 @@ export function SurveyModify() {
     return (
         <div className={style.container}>
             <div className={style.content}>
-                <SurveyDetail survey={selectedSurvey!} />
+                <SurveyDetail survey={selectedSurvey} />
                 {selectedSurvey!.pages.map((page, index) => {
                     return (
-                        <div key={index} className={style.page}>
-                            <QuestionList questions={page.questions} pageIndex={index} />
-                            <div>page {page.serialNumber}</div>
+                        <div key={page.id}>
+                            <QuestionList questions={page.questions} pageNumber={page.serialNumber} pageIndex={index} />
+                            <PageSeparator page={page} />
                         </div>
                     );
                 })}

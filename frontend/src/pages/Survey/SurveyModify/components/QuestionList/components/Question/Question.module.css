@@ -4,9 +4,10 @@
     padding: 20px;
     border-radius: 24px;
     transition: box-shadow 0.3s ease;
+    width: 100%;
 }
 
-.actions > div:nth-child(3) {
+.settings > div:nth-child(3) {
     justify-self: end;
 }
 
