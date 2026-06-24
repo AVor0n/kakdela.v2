@@ -106,5 +106,5 @@ CREATE TABLE survey_notification_subscription (
     PRIMARY KEY (survey_id, account_id)
 );
 
-CREATE INDEX idx_subscribers_survey ON survey_notification_subscribers(survey_id);
-CREATE INDEX idx_subscribers_account ON survey_notification_subscribers(account_id);
+CREATE INDEX idx_subscription_survey ON survey_notification_subscription(survey_id);
+CREATE INDEX idx_subscription_account ON survey_notification_subscription(account_id);

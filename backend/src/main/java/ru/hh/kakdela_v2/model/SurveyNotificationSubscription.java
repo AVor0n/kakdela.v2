@@ -1,5 +1,8 @@
 package ru.hh.kakdela_v2.model;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,16 +14,18 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "survey_notification_subscribers")
+@Table(name = "survey_notification_subscription")
 public class SurveyNotificationSubscription {
 
     @Id
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "survey_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Survey survey;
 
     @Id
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Account account;
 }
