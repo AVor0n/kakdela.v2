@@ -11,7 +11,7 @@ public interface SurveyNotificationSubscriptionDao {
 
     void addSubscription(UUID surveyId, UUID accountId);
 
-    void deleteSubscription(UUID surveyId, UUID accountId);
+    int deleteSubscription(UUID surveyId, UUID accountId);
 
     List<UUID> findSubscriberIdsBySurveyId(UUID surveyId);
 

@@ -75,12 +75,12 @@ public class SurveyNotificationSubscriptionService {
         Account account = findAccountByEmail(email);
         UUID accountId = account.getId();
 
-        if (!subscribtionDao.existsBySurveyIdAndAccountId(surveyId, accountId)) {
+        int deleted = subscribtionDao.deleteSubscription(surveyId, accountId);
+        if (deleted == 0) {
             throw new ResponseStatusException(
                 HttpStatus.NOT_FOUND, "Подписка для " + email + " не найдена");
         }
-
-        subscribtionDao.deleteSubscription(surveyId, accountId);
+        
         log.info("User {} unsubscribed from survey {}", email, surveyId);
     }
 

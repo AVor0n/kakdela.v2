@@ -13,7 +13,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public class SurveyNotificationSubscribtionDaoImpl implements SurveyNotificationSubscriptionDao {
+public class SurveyNotificationSubscriptionDaoImpl implements SurveyNotificationSubscriptionDao {
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -23,27 +23,24 @@ public class SurveyNotificationSubscribtionDaoImpl implements SurveyNotification
         Survey survey = entityManager.getReference(Survey.class, surveyId);
         Account account = entityManager.getReference(Account.class, accountId);
 
-        SurveyNotificationSubscription subscriber = SurveyNotificationSubscription.builder()
+        SurveyNotificationSubscription subscription = SurveyNotificationSubscription.builder()
             .survey(survey)
             .account(account)
             .build();
 
-        entityManager.persist(subscriber);
+        entityManager.persist(subscription);
     }
 
     @Override
-    public void deleteSubscription(UUID surveyId, UUID accountId) {
-        SurveyNotificationSubscription subscriber = entityManager.createQuery(
-            "SELECT s FROM SurveyNotificationSubscription s " +
-            "WHERE s.survey.id = :surveyId AND s.account.id = :accountId",
-            SurveyNotificationSubscription.class
+    public int deleteSubscription(UUID surveyId, UUID accountId) {
+        return entityManager.createQuery(
+            "DELETE FROM SurveyNotificationSubscription s " +
+            "WHERE s.survey.id = :surveyId AND s.account.id = :accountId"
         )
         .setParameter("surveyId", surveyId)
         .setParameter("accountId", accountId)
-        .getSingleResult();
-    
-        entityManager.remove(subscriber);
-    }
+        .executeUpdate();
+}
 
     @Override
     public List<UUID> findSubscriberIdsBySurveyId(UUID surveyId) {
