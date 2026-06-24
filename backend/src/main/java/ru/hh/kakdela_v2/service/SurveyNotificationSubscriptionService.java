@@ -8,6 +8,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+
+import jakarta.persistence.PersistenceException;
 import ru.hh.kakdela_v2.dao.AccountDao;
 import ru.hh.kakdela_v2.dao.SurveyNotificationSubscriptionDao;
 import ru.hh.kakdela_v2.dto.subscription.SubscriptionResponseDto;
@@ -23,7 +25,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class SurveyNotificationSubscriptionService {
 
-    private final SurveyNotificationSubscriptionDao subscribtionDao;
+    private final SurveyNotificationSubscriptionDao subscriptionDao;
     private final AccountDao accountDao;
     private final PermissionService permissionService;
 
@@ -50,15 +52,16 @@ public class SurveyNotificationSubscriptionService {
             UUID accountId = account.getId();
 
            
-            try {
-                subscribtionDao.addSubscription(surveyId, accountId);
-                subscribedEmails.add(email);
-                log.info("User {} subscribed to survey {}", email, surveyId);
-            } catch (DataIntegrityViolationException e) {
-                alreadySubscribedEmails.add(email);
-                log.debug("User {} already subscribed", email);
-            }
+            if (subscriptionDao.existsBySurveyIdAndAccountId(surveyId, accountId)) {
+            alreadySubscribedEmails.add(email);
+            log.debug("User {} already subscribed", email);
+            continue;
         }
+
+        subscriptionDao.addSubscription(surveyId, accountId);
+        subscribedEmails.add(email);
+        log.info("User {} subscribed to survey {}", email, surveyId);
+    }
 
         log.info("Subscribed {} users to survey {}", subscribedEmails.size(), surveyId);
         return new SubscriptionResponseDto(
@@ -75,7 +78,7 @@ public class SurveyNotificationSubscriptionService {
         Account account = findAccountByEmail(email);
         UUID accountId = account.getId();
 
-        int deleted = subscribtionDao.deleteSubscription(surveyId, accountId);
+        int deleted = subscriptionDao.deleteSubscription(surveyId, accountId);
         if (deleted == 0) {
             throw new ResponseStatusException(
                 HttpStatus.NOT_FOUND, "Подписка для " + email + " не найдена");
@@ -88,7 +91,7 @@ public class SurveyNotificationSubscriptionService {
     @Transactional(readOnly = true)
     public List<Account> getSubscribers(UUID surveyId, UUID currentUserId) {
         permissionService.checkAccess(surveyId, currentUserId, SurveyRole.EDITOR);
-        return subscribtionDao.findSubscribersBySurveyId(surveyId);
+        return subscriptionDao.findSubscribersBySurveyId(surveyId);
     }
 
     @Transactional(readOnly = true)
@@ -100,7 +103,7 @@ public class SurveyNotificationSubscriptionService {
             return false;
         }
 
-        return subscribtionDao.existsBySurveyIdAndAccountId(surveyId, account.getId());
+        return subscriptionDao.existsBySurveyIdAndAccountId(surveyId, account.getId());
     }
 
     private Account findAccountByEmail(String email) {
