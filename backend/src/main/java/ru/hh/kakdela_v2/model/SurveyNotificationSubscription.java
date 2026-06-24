@@ -14,7 +14,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "survey_notification_subscription")
+@Table(name = "survey_notification_subscription", indexes = {
+        @Index(name = "idx_subscription_survey_id", columnList = "survey_id"),
+        @Index(name = "idx_subscription_account_id", columnList = "account_id")
+    })
 public class SurveyNotificationSubscription {
 
     @Id
