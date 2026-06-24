@@ -3,13 +3,11 @@ package ru.hh.kakdela_v2.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import jakarta.persistence.PersistenceException;
 import ru.hh.kakdela_v2.dao.AccountDao;
 import ru.hh.kakdela_v2.dao.SurveyNotificationSubscriptionDao;
 import ru.hh.kakdela_v2.dto.subscription.SubscriptionResponseDto;
@@ -42,26 +40,24 @@ public class SurveyNotificationSubscriptionService {
         List<String> notFoundEmails = new ArrayList<>();
 
         for (String email : emails) {
-            Account account = accountDao.findByEmail(email).orElse(null);
-            if (account == null) {
+            try {
+                Account account = findAccountByEmailOrThrow(email);
+                UUID accountId = account.getId();
+
+                if (subscriptionDao.existsBySurveyIdAndAccountId(surveyId, accountId)) {
+                    alreadySubscribedEmails.add(email);
+                    log.debug("User {} already subscribed", email);
+                    continue;
+                }
+
+                subscriptionDao.addSubscription(surveyId, accountId);
+                subscribedEmails.add(email);
+                log.info("User {} subscribed to survey {}", email, surveyId);
+            } catch (ResponseStatusException e) {
                 notFoundEmails.add(email);
                 log.warn("User with email {} not found", email);
-                continue;
             }
-
-            UUID accountId = account.getId();
-
-           
-            if (subscriptionDao.existsBySurveyIdAndAccountId(surveyId, accountId)) {
-            alreadySubscribedEmails.add(email);
-            log.debug("User {} already subscribed", email);
-            continue;
         }
-
-        subscriptionDao.addSubscription(surveyId, accountId);
-        subscribedEmails.add(email);
-        log.info("User {} subscribed to survey {}", email, surveyId);
-    }
 
         log.info("Subscribed {} users to survey {}", subscribedEmails.size(), surveyId);
         return new SubscriptionResponseDto(
@@ -75,7 +71,7 @@ public class SurveyNotificationSubscriptionService {
     public void unsubscribeUser(UUID surveyId, String email, UUID currentUserId) {
         permissionService.checkAccess(surveyId, currentUserId, SurveyRole.EDITOR);
 
-        Account account = findAccountByEmail(email);
+        Account account = findAccountByEmailOrThrow(email);
         UUID accountId = account.getId();
 
         int deleted = subscriptionDao.deleteSubscription(surveyId, accountId);
@@ -83,10 +79,9 @@ public class SurveyNotificationSubscriptionService {
             throw new ResponseStatusException(
                 HttpStatus.NOT_FOUND, "Подписка для " + email + " не найдена");
         }
-        
+
         log.info("User {} unsubscribed from survey {}", email, surveyId);
     }
-
 
     @Transactional(readOnly = true)
     public List<Account> getSubscribers(UUID surveyId, UUID currentUserId) {
@@ -98,15 +93,11 @@ public class SurveyNotificationSubscriptionService {
     public boolean isSubscribed(UUID surveyId, String email, UUID currentUserId) {
         permissionService.checkAccess(surveyId, currentUserId, SurveyRole.EDITOR);
 
-        Account account = accountDao.findByEmail(email).orElse(null);
-        if (account == null) {
-            return false;
-        }
-
+        Account account = findAccountByEmailOrThrow(email);
         return subscriptionDao.existsBySurveyIdAndAccountId(surveyId, account.getId());
     }
 
-    private Account findAccountByEmail(String email) {
+    private Account findAccountByEmailOrThrow(String email) {
         return accountDao.findByEmail(email)
             .orElseThrow(() -> new ResponseStatusException(
                 HttpStatus.NOT_FOUND, "Пользователь с email " + email + " не найден"));
