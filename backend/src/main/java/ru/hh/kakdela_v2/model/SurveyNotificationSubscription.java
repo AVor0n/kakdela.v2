@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Entity
 @Table(name = "survey_notification_subscribers")
-public class SurveyNotificationSubscriber {
+public class SurveyNotificationSubscription {
 
     @Id
     @ManyToOne(fetch = FetchType.LAZY)

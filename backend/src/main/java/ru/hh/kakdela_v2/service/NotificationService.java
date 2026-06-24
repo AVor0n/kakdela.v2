@@ -2,23 +2,19 @@ package ru.hh.kakdela_v2.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.hh.kakdela_v2.dao.AccountDao;
 import ru.hh.kakdela_v2.dao.PermissionDao;
 import ru.hh.kakdela_v2.dao.SurveyDao;
-import ru.hh.kakdela_v2.dao.SurveyNotificationSubscriberDao;
+import ru.hh.kakdela_v2.dao.SurveyNotificationSubscriptionDao;
 import ru.hh.kakdela_v2.model.Account;
 import ru.hh.kakdela_v2.model.Permission;
 import ru.hh.kakdela_v2.model.Survey;
+
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -26,10 +22,9 @@ import ru.hh.kakdela_v2.model.Survey;
 public class NotificationService {
 
     private final SurveyDao surveyDao;
-    private final AccountDao accountDao;
     private final PermissionDao permissionDao;
-    private final SurveyNotificationSubscriberDao subscriberDao;
-    //private final EmailService emailService;
+    private final SurveyNotificationSubscriptionDao subscriberDao;
+   // private final EmailService emailService;
 
     @Async
     @Transactional(readOnly = true)
@@ -40,55 +35,50 @@ public class NotificationService {
             return;
         }
 
-        List<UUID> recipients = getRecipients(surveyId);
-
-        if (recipients.isEmpty()) {
-            log.info("No recipients for survey {}", surveyId);
-            return;
+        List<Account> teamMembers = getTeamMembers(surveyId);
+        if (!teamMembers.isEmpty()) {
+            sendTeamNotifications(survey, teamMembers);
         }
 
-        log.info("Sending {} notifications for survey {}", recipients.size(), surveyId);
+        List<Account> subscribers = getSubscribers(surveyId);
+        if (!subscribers.isEmpty()) {
+            sendSubscriberNotifications(survey, subscribers);
+        }
 
-        for (UUID userId : recipients) {
-            Account account = accountDao.findById(userId).orElse(null);
-            if (account != null) {
-                String email = account.getEmail();
-                if (email != null && !email.isBlank()) {
-                    /*try {
-                        emailService.sendSurveyPublishedEmail(email, survey.getTitle(), surveyId);
-                        sentCount++;
-                    } catch (Exception e) {
-                        log.error("Failed to send email to {}: {}", email, e.getMessage());
-                    }*/
-                   log.info(" Would send email to: {} (survey: {})", email, surveyId);
-                }
-            }
+        if (teamMembers.isEmpty() && subscribers.isEmpty()) {
+            log.info("No recipients for survey {}", surveyId);
         }
     }
 
-    private List<UUID> getRecipients(UUID surveyId) {
-        Set<UUID> recipients = new HashSet<>();
-        Survey survey = surveyDao.findById(surveyId).orElse(null);
-        if (survey == null) {
-            return new ArrayList<>();
-        }
-
+    private List<Account> getTeamMembers(UUID surveyId) {
         List<Permission> permissions = permissionDao.findAllBySurveyId(surveyId);
-        for (Permission permission : permissions) {
-            if (permission.isDoNotify()) {
-                recipients.add(permission.getId().getAccountId());
-                log.debug("Added user {} with role {} to recipients", 
-                    permission.getId().getAccountId(), permission.getRole());
-            }
-        }
+        return permissions.stream()
+            .filter(Permission::isDoNotify)
+            .map(Permission::getAccount)
+            .collect(Collectors.toList());
+    }
 
-        List<UUID> subscribers = subscriberDao.findSubscriberIdsBySurveyId(surveyId);
-        if (subscribers != null && !subscribers.isEmpty()) {
-            recipients.addAll(subscribers);
-            log.debug("Added {} subscribers to recipients", subscribers.size());
-        }
+    private List<Account> getSubscribers(UUID surveyId) {
+        return subscriberDao.findSubscribersBySurveyId(surveyId);
+    }
 
-        recipients.remove(null);
-        return new ArrayList<>(recipients);
+    private void sendTeamNotifications(Survey survey, List<Account> teamMembers) {
+        log.info("Sending {} team notifications for survey {}", teamMembers.size(), survey.getId());
+
+        for (Account account : teamMembers) {
+            String email = account.getEmail();
+            log.info("Survey is published: {} - {}", survey.getTitle(), email);
+            // emailService.sendSurveyPublishedEmail(email, survey.getTitle(), survey.getId());
+        }
+    }
+
+    private void sendSubscriberNotifications(Survey survey, List<Account> subscribers) {
+        log.info("Sending {} subscriber notifications for survey {}", subscribers.size(), survey.getId());
+
+        for (Account account : subscribers) {
+            String email = account.getEmail();
+            log.info("You are invited to take survey: {} - {}", survey.getTitle(), email);
+            // emailService.sendSurveyInvitationEmail(email, survey.getTitle(), survey.getId());
+        }
     }
 }

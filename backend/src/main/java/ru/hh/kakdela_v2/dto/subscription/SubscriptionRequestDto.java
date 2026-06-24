@@ -5,12 +5,13 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.List;
-import java.util.UUID;
+
+import jakarta.validation.constraints.NotNull;
 
 @NoArgsConstructor
 @Getter
 @Setter
 public class SubscriptionRequestDto {
-
-    private List<UUID> userIds;
+    @NotNull(message = "Список почт получателей обязателен")
+    private List<String> emails;
 }

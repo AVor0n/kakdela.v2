@@ -100,7 +100,7 @@ CREATE TABLE answer (
 CREATE INDEX idx_answer_question_id
 ON answer (question_id);
 
-CREATE TABLE survey_notification_subscribers (
+CREATE TABLE survey_notification_subscription (
     survey_id uuid NOT NULL REFERENCES survey(id) ON DELETE CASCADE,
     account_id uuid NOT NULL REFERENCES account(id) ON DELETE CASCADE,
     PRIMARY KEY (survey_id, account_id)
