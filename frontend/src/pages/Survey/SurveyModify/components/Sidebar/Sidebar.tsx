@@ -1,4 +1,4 @@
-import { Box } from '@hh.ru/magritte-ui';
+import { Box, Button } from '@hh.ru/magritte-ui';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { addPage, addQuestion } from '@/entities/Survey/Survey.slice';
 
@@ -77,8 +77,18 @@ export function Sidebar() {
     return (
         <Box height='fit-content' className={style.container}>
             {error && <ErrorBlock error={error} setError={setError} />}
-            <button onClick={() => dispatch(addQuestionHandler)}>+</button>
-            <button onClick={() => dispatch(addPageHandler)}>+=</button>
+            <Button
+                mode='secondary'
+                type='button'
+                icon={<img src='/add.svg' alt='add question' />}
+                onClick={() => dispatch(addQuestionHandler)}
+            />
+            <Button
+                mode='secondary'
+                type='button'
+                icon={<img src='/add-page.svg' alt='add page' />}
+                onClick={() => dispatch(addPageHandler)}
+            />
         </Box>
     );
 }

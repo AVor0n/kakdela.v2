@@ -36,8 +36,8 @@ export function SurveyModify() {
                 {selectedSurvey!.pages.map((page, index) => {
                     return (
                         <div key={page.id}>
-                            <QuestionList questions={page.questions} pageNumber={page.serialNumber} pageIndex={index} />
                             <PageSeparator page={page} />
+                            <QuestionList questions={page.questions} pageNumber={page.serialNumber} pageIndex={index} />
                         </div>
                     );
                 })}

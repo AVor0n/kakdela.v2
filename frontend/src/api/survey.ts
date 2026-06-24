@@ -2,6 +2,7 @@ import { apiClient } from '@/api/client';
 import type { Survey, SurveyListItem } from '@/shared/types/Survey.type';
 
 export type SurveyResponse = Survey;
+export type UpdateSurveyRequest = Partial<Pick<Survey, 'title' | 'description'>>;
 
 export async function createSurvey(): Promise<SurveyResponse> {
     const { data } = await apiClient.post<SurveyResponse>('/api/surveys', {
