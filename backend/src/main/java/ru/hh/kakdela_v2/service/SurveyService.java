@@ -93,8 +93,6 @@ public class SurveyService {
     Survey survey = surveyDao.findById(surveyId)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
-    
-    boolean wasPublished = survey.isPublished();
 
     if (dto.getTitle() != null) {
       survey.setTitle(dto.getTitle());
@@ -109,6 +107,11 @@ public class SurveyService {
       survey.setLimitedToOneResponse(dto.getIsLimitedToOneResponse());
     }
     if (dto.getIsPublished() != null) {
+      boolean wasPublished = survey.isPublished();
+      if (dto.getIsPublished() && !wasPublished) {
+        notificationService.sendSurveyPublishedNotifications(surveyId);
+      }
+
       survey.setPublished(dto.getIsPublished());
     }
     if (dto.getDoNotify() != null) {
@@ -116,10 +119,6 @@ public class SurveyService {
     }
     if (dto.getExpireAt() != null) {
       survey.setExpireAt(dto.getExpireAt());
-    }
-
-    if (dto.getIsPublished() && !wasPublished) {
-          notificationService.sendSurveyPublishedNotifications(surveyId);
     }
 
     surveyDao.update(survey);
