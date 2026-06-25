@@ -9,7 +9,7 @@ import ru.hh.kakdela_v2.dto.question.QuestionCreateDto;
 import ru.hh.kakdela_v2.dto.question.QuestionResponseDto;
 import ru.hh.kakdela_v2.dto.question.QuestionUpdateDto;
 import ru.hh.kakdela_v2.service.QuestionService;
-import ru.hh.kakdela_v2.util.CustomUserDetails;
+import ru.hh.kakdela_v2.security.CustomUserDetails;
 
 import java.util.List;
 import java.util.UUID;

@@ -49,6 +49,7 @@ CREATE TABLE question (
     serial_number int NOT NULL,
     title varchar(200) NOT NULL,
     description varchar(5000),
+    attachment_object_key varchar(1024),
     type varchar(255) NOT NULL,
     answer_option_order varchar(255),
     is_mandatory bool NOT NULL,
@@ -65,6 +66,7 @@ CREATE TABLE answer_option (
     question_id uuid REFERENCES question (id) ON DELETE CASCADE NOT NULL,
     serial_number int NOT NULL,
     answer_option_text varchar(1000) NOT NULL,
+    attachment_object_key varchar(1024),
     CONSTRAINT uq_answer_option_question_serial UNIQUE (question_id, serial_number)
 
 );
@@ -73,6 +75,7 @@ CREATE TABLE closing_page (
     survey_id uuid PRIMARY KEY REFERENCES survey (id) ON DELETE CASCADE,
     title varchar(200),
     description varchar(5000),
+    attachment_object_key varchar(1024),
     website_url varchar(2000)
 );
 

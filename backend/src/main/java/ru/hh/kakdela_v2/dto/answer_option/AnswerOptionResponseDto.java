@@ -13,10 +13,5 @@ public class AnswerOptionResponseDto {
   private final UUID id;
   private final int serialNumber;
   private final String answerOptionText;
-
-  public AnswerOptionResponseDto(AnswerOption answerOption) {
-    this.id = answerOption.getId();
-    this.serialNumber = answerOption.getSerialNumber();
-    this.answerOptionText = answerOption.getAnswerOptionText();
-  }
+  private final String attachmentUrl;
 }

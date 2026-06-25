@@ -29,25 +29,4 @@ public class SurveyResponseDto {
   private final Instant createdAt;
   private final List<SurveyPageResponseDto> pages;
   private final ClosingPageResponseDto closingPage;
-
-  public SurveyResponseDto(Survey survey) {
-    this.id = survey.getId();
-    this.authorId = survey.getAuthor().getId();
-    this.title = survey.getTitle();
-    this.description = survey.getDescription();
-    this.isAuthorizedOnly = survey.isAuthorizedOnly();
-    this.isLimitedToOneResponse = survey.isLimitedToOneResponse();
-    this.isPublished = survey.isPublished();
-    this.isTemplate = survey.isTemplate();
-    this.doNotify = survey.isDoNotify();
-    this.expireAt = survey.getExpireAt();
-    this.createdAt = survey.getCreatedAt();
-    this.pages = survey.getPages().stream()
-        .sorted(Comparator.comparingInt(SurveyPage::getSerialNumber))
-        .map(SurveyPageResponseDto::new)
-        .toList();
-    this.closingPage = survey.getClosingPage() != null
-        ? new ClosingPageResponseDto(survey.getClosingPage())
-        : null;
-  }
 }

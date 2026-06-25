@@ -1,5 +1,8 @@
 package ru.hh.kakdela_v2.service;
 
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -10,14 +13,11 @@ import ru.hh.kakdela_v2.dao.QuestionDao;
 import ru.hh.kakdela_v2.dao.ResponseDao;
 import ru.hh.kakdela_v2.dto.answer.AnswerCreateDto;
 import ru.hh.kakdela_v2.dto.answer.AnswerResponseDto;
+import ru.hh.kakdela_v2.mapper.AnswerMapper;
 import ru.hh.kakdela_v2.model.Answer;
 import ru.hh.kakdela_v2.model.Question;
 import ru.hh.kakdela_v2.model.Response;
-import ru.hh.kakdela_v2.util.JwtUtil;
-
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import ru.hh.kakdela_v2.security.JwtService;
 
 @Service
 @RequiredArgsConstructor
@@ -26,7 +26,7 @@ public class AnswerService {
   private final AnswerDao answerDao;
   private final ResponseDao responseDao;
   private final QuestionDao questionDao;
-  private final JwtUtil jwtUtil;
+  private final JwtService jwtService;
 
   private Response checkAccessAndGetResponse(UUID responseId, UUID accountId, String token) {
     Response response = responseDao.findById(responseId)
@@ -35,12 +35,11 @@ public class AnswerService {
 
     if (response.getAccount() == null && token == null) {
       throw new ResponseStatusException(
-          HttpStatus.UNAUTHORIZED, "Не предоставлены учётные данные для доступа к прохождению"
-      );
+          HttpStatus.UNAUTHORIZED, "Не предоставлены учётные данные для доступа к прохождению");
     }
 
     if (response.getAccount() != null && !response.getAccount().getId().equals(accountId)
-        || token != null && !Objects.equals(jwtUtil.extractSubject(token), responseId.toString())) {
+        || token != null && !Objects.equals(jwtService.extractResponseId(token), responseId)) {
       throw new ResponseStatusException(
           HttpStatus.FORBIDDEN, "Вы не являетесь автором ответа");
     }
@@ -53,12 +52,16 @@ public class AnswerService {
     Response response = checkAccessAndGetResponse(responseId, accountId, token);
 
     return response.getAnswers().stream()
-        .map(AnswerResponseDto::new)
+        .map(AnswerMapper::answerToDto)
         .toList();
   }
 
   @Transactional
-  public AnswerResponseDto create(UUID responseId, UUID questionId, AnswerCreateDto dto, UUID accountId, String token) {
+  public AnswerResponseDto create(UUID responseId,
+                                  UUID questionId,
+                                  AnswerCreateDto dto,
+                                  UUID accountId,
+                                  String token) {
     Response response = checkAccessAndGetResponse(responseId, accountId, token);
 
     if (response.isCompleted()) {
@@ -94,12 +97,15 @@ public class AnswerService {
         .build();
 
     answerDao.save(answer);
-    return new AnswerResponseDto(answer);
+    return AnswerMapper.answerToDto(answer);
   }
 
   @Transactional
-  public AnswerResponseDto update(UUID responseId, UUID questionId, String newAnswerText,
-                                  UUID accountId, String token) {
+  public AnswerResponseDto update(UUID responseId,
+                                  UUID questionId,
+                                  String newAnswerText,
+                                  UUID accountId,
+                                  String token) {
     Response response = checkAccessAndGetResponse(responseId, accountId, token);
 
     if (response.isCompleted()) {
@@ -118,7 +124,7 @@ public class AnswerService {
 
     answer.setAnswerText(newAnswerText);
     answerDao.update(answer);
-    return new AnswerResponseDto(answer);
+    return AnswerMapper.answerToDto(answer);
   }
 
   @Transactional

@@ -9,7 +9,7 @@ import ru.hh.kakdela_v2.dto.survey_page.SurveyPageCreateDto;
 import ru.hh.kakdela_v2.dto.survey_page.SurveyPageResponseDto;
 import ru.hh.kakdela_v2.dto.survey_page.SurveyPageUpdateDto;
 import ru.hh.kakdela_v2.service.SurveyPageService;
-import ru.hh.kakdela_v2.util.CustomUserDetails;
+import ru.hh.kakdela_v2.security.CustomUserDetails;
 
 import java.util.List;
 import java.util.UUID;

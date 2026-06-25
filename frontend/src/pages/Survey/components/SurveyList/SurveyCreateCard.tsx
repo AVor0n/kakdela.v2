@@ -1,4 +1,5 @@
 import { Text } from '@hh.ru/magritte-ui';
+import styles from './SurveyList.module.css';
 
 type SurveyCreateCardProps = {
     onClick: () => void;
@@ -9,7 +10,7 @@ export function SurveyCreateCard({ onClick }: SurveyCreateCardProps) {
         <button
             type="button"
             onClick={onClick}
-            className="survey-list-item-button"
+            className={styles.itemButton}
         >
             <svg width="250" height="200" viewBox="0 0 250 200" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <rect x="1.5" y="1.5" width="247" height="197" rx="28.5" stroke="#768694" strokeWidth="3" />

@@ -18,28 +18,11 @@ public class QuestionResponseDto {
   private final int serialNumber;
   private final String title;
   private final String description;
+  private final String attachmentUrl;
   private final String type;
   private final String answerOptionOrder;
   private final Boolean isMandatory;
   private final Boolean isVisible;
   private final String condition;
   private final List<AnswerOptionResponseDto> answerOptions;
-
-  public QuestionResponseDto(Question question) {
-    this.id = question.getId();
-    this.serialNumber = question.getSerialNumber();
-    this.title = question.getTitle();
-    this.description = question.getDescription();
-    this.type = question.getType().name();
-    this.answerOptionOrder = question.getAnswerOptionOrder() != null
-        ? question.getAnswerOptionOrder().name()
-        : null;
-    this.isMandatory = question.isMandatory();
-    this.isVisible = question.isVisible();
-    this.condition = question.getCondition();
-    this.answerOptions = question.getAnswerOptions().stream()
-        .sorted(Comparator.comparingInt(AnswerOption::getSerialNumber))
-        .map(AnswerOptionResponseDto::new)
-        .toList();
-  }
 }
