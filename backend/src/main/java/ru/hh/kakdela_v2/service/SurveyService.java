@@ -31,6 +31,7 @@ public class SurveyService {
   private final SurveyDao surveyDao;
   private final AccountDao accountDao;
   private final PermissionService permissionService;
+  private final NotificationService notificationService;
   private final SurveyMapper surveyMapper;
 
   @Transactional(readOnly = true)
@@ -92,6 +93,8 @@ public class SurveyService {
     Survey survey = surveyDao.findById(surveyId)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
+    
+    boolean wasPublished = survey.isPublished();
 
     if (dto.getTitle() != null) {
       survey.setTitle(dto.getTitle());
@@ -113,6 +116,10 @@ public class SurveyService {
     }
     if (dto.getExpireAt() != null) {
       survey.setExpireAt(dto.getExpireAt());
+    }
+
+    if (dto.getIsPublished() && !wasPublished) {
+          notificationService.sendSurveyPublishedNotifications(surveyId);
     }
 
     surveyDao.update(survey);
@@ -202,4 +209,5 @@ public class SurveyService {
             () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Опрос не найден: " + id));
     surveyDao.delete(survey);
   }
+
 }

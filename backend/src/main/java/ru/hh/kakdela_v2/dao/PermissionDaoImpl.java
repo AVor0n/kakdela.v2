@@ -38,6 +38,22 @@ public class PermissionDaoImpl implements PermissionDao {
   }
 
   @Override
+  public List<UUID> findUserIdsBySurveyIdAndRole(UUID surveyId, Permission.SurveyRole role) {
+    return entityManager
+        .createQuery(
+            """
+            SELECT p.id.accountId
+            FROM Permission p
+            WHERE p.id.surveyId = :surveyId AND p.role = :role
+            """,
+            UUID.class
+        )
+        .setParameter("surveyId", surveyId)
+        .setParameter("role", role)
+        .getResultList();
+}
+
+  @Override
   public List<Permission> findAllBySurveyId(UUID surveyId) {
     return entityManager
             .createQuery("FROM Permission p WHERE p.id.surveyId = :surveyId", Permission.class)
