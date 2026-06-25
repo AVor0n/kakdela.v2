@@ -38,7 +38,7 @@ public class PermissionDaoImpl implements PermissionDao {
   }
 
   @Override
-  public List<UUID> findUserIdsBySurveyIdAndRole(UUID surveyId, String role) {
+  public List<UUID> findUserIdsBySurveyIdAndRole(UUID surveyId, Permission.SurveyRole role) {
     return entityManager
         .createQuery(
             """
@@ -49,7 +49,7 @@ public class PermissionDaoImpl implements PermissionDao {
             UUID.class
         )
         .setParameter("surveyId", surveyId)
-        .setParameter("role", Permission.SurveyRole.valueOf(role))
+        .setParameter("role", role)
         .getResultList();
 }
 

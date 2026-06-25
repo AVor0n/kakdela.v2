@@ -9,9 +9,9 @@ import java.util.UUID;
 
 public interface SurveyNotificationSubscriptionDao {
 
-    void addSubscription(UUID surveyId, UUID accountId);
+    void addSubscription(SurveyNotificationSubscription subscription);
 
-    int deleteSubscription(UUID surveyId, UUID accountId);
+    void deleteSubscription(SurveyNotificationSubscription subscription);
 
     List<UUID> findSubscriberIdsBySurveyId(UUID surveyId);
 

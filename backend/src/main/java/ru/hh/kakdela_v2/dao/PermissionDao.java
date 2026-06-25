@@ -12,7 +12,7 @@ public interface PermissionDao {
 
   Optional<Permission> findBySurveyIdAndAccountId(UUID surveyId, UUID accountId);
 
-  List<UUID> findUserIdsBySurveyIdAndRole(UUID surveyId, String role);
+  List<UUID> findUserIdsBySurveyIdAndRole(UUID surveyId, Permission.SurveyRole role);
 
   List<Permission> findAllBySurveyId(UUID surveyId);
 

@@ -19,27 +19,13 @@ public class SurveyNotificationSubscriptionDaoImpl implements SurveyNotification
     private EntityManager entityManager;
 
     @Override
-    public void addSubscription(UUID surveyId, UUID accountId) {
-        Survey survey = entityManager.getReference(Survey.class, surveyId);
-        Account account = entityManager.getReference(Account.class, accountId);
-
-        SurveyNotificationSubscription subscription = SurveyNotificationSubscription.builder()
-            .survey(survey)
-            .account(account)
-            .build();
-
+    public void addSubscription(SurveyNotificationSubscription subscription) {
         entityManager.persist(subscription);
     }
 
     @Override
-    public int deleteSubscription(UUID surveyId, UUID accountId) {
-        return entityManager.createQuery(
-            "DELETE FROM SurveyNotificationSubscription s " +
-            "WHERE s.survey.id = :surveyId AND s.account.id = :accountId"
-        )
-        .setParameter("surveyId", surveyId)
-        .setParameter("accountId", accountId)
-        .executeUpdate();
+    public void deleteSubscription(SurveyNotificationSubscription subscription) {
+        entityManager.remove(subscription);
 }
 
     @Override

@@ -27,7 +27,6 @@ public class SurveyService {
   private final SurveyDao surveyDao;
   private final AccountDao accountDao;
   private final PermissionService permissionService;
-  private final SurveyNotificationSubscriptionService subscriberService;
   private final NotificationService notificationService;
 
   @Transactional(readOnly = true)
@@ -80,9 +79,6 @@ public class SurveyService {
         .build();
 
     surveyDao.save(survey);
-     if (dto.getNotifyEmails() != null && !dto.getNotifyEmails().isEmpty()) {
-            subscriberService.subscribeUsers(survey.getId(), dto.getNotifyEmails(), authorId);
-    }
     return new SurveyResponseDto(survey);
   }
 

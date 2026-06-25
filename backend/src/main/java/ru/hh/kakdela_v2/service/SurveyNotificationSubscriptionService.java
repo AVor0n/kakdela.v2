@@ -9,10 +9,13 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import ru.hh.kakdela_v2.dao.AccountDao;
+import ru.hh.kakdela_v2.dao.SurveyDao;
 import ru.hh.kakdela_v2.dao.SurveyNotificationSubscriptionDao;
 import ru.hh.kakdela_v2.dto.subscription.SubscriptionResponseDto;
 import ru.hh.kakdela_v2.model.Account;
 import ru.hh.kakdela_v2.model.Permission.SurveyRole;
+import ru.hh.kakdela_v2.model.Survey;
+import ru.hh.kakdela_v2.model.SurveyNotificationSubscription;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +28,7 @@ public class SurveyNotificationSubscriptionService {
 
     private final SurveyNotificationSubscriptionDao subscriptionDao;
     private final AccountDao accountDao;
+    private final SurveyDao surveyDao;
     private final PermissionService permissionService;
 
     @Transactional
@@ -39,6 +43,10 @@ public class SurveyNotificationSubscriptionService {
         List<String> alreadySubscribedEmails = new ArrayList<>();
         List<String> notFoundEmails = new ArrayList<>();
 
+        Survey survey = surveyDao.findById(surveyId)
+            .orElseThrow(() -> new ResponseStatusException(
+                HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
+
         for (String email : emails) {
             try {
                 Account account = findAccountByEmailOrThrow(email);
@@ -50,7 +58,12 @@ public class SurveyNotificationSubscriptionService {
                     continue;
                 }
 
-                subscriptionDao.addSubscription(surveyId, accountId);
+                SurveyNotificationSubscription subscription = SurveyNotificationSubscription.builder()
+                    .survey(survey)
+                    .account(account)
+                    .build();
+
+                subscriptionDao.addSubscription(subscription);
                 subscribedEmails.add(email);
                 log.info("User {} subscribed to survey {}", email, surveyId);
             } catch (ResponseStatusException e) {
@@ -74,12 +87,12 @@ public class SurveyNotificationSubscriptionService {
         Account account = findAccountByEmailOrThrow(email);
         UUID accountId = account.getId();
 
-        int deleted = subscriptionDao.deleteSubscription(surveyId, accountId);
-        if (deleted == 0) {
-            throw new ResponseStatusException(
-                HttpStatus.NOT_FOUND, "Подписка для " + email + " не найдена");
-        }
-
+        SurveyNotificationSubscription subscription = subscriptionDao
+            .findBySurveyIdAndAccountId(surveyId, accountId)
+            .orElseThrow(() -> new ResponseStatusException(
+                HttpStatus.NOT_FOUND, "Подписка для " + email + " не найдена"));
+                
+        subscriptionDao.deleteSubscription(subscription);
         log.info("User {} unsubscribed from survey {}", email, surveyId);
     }
 

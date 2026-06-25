@@ -18,7 +18,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class SubscriptionController {
 
-    private final SurveyNotificationSubscriptionService subscriberService;
+    private final SurveyNotificationSubscriptionService subscriptionService;
 
     @PostMapping("/surveys/{surveyId}/subscribers")
     @ResponseStatus(HttpStatus.OK)
@@ -26,7 +26,7 @@ public class SubscriptionController {
             @PathVariable UUID surveyId,
             @RequestBody SubscriptionRequestDto dto,
             @AuthenticationPrincipal CustomUserDetails currentUser) {
-        return subscriberService.subscribeUsers(surveyId, dto.getEmails(), currentUser.getId());
+        return subscriptionService.subscribeUsers(surveyId, dto.getEmails(), currentUser.getId());
     }
 
     @DeleteMapping("/surveys/{surveyId}/subscribers")
@@ -35,14 +35,14 @@ public class SubscriptionController {
             @PathVariable UUID surveyId,
             @RequestParam String email,
             @AuthenticationPrincipal CustomUserDetails currentUser) {
-        subscriberService.unsubscribeUser(surveyId, email, currentUser.getId());
+        subscriptionService.unsubscribeUser(surveyId, email, currentUser.getId());
     }
 
     @GetMapping("/surveys/{surveyId}/subscribers")
     public List<Account> getSubscribers(
             @PathVariable UUID surveyId,
             @AuthenticationPrincipal CustomUserDetails currentUser) {
-        return subscriberService.getSubscribers(surveyId, currentUser.getId());
+        return subscriptionService.getSubscribers(surveyId, currentUser.getId());
     }
 
     @GetMapping("/surveys/{surveyId}/subscribers/check")
@@ -50,6 +50,6 @@ public class SubscriptionController {
             @PathVariable UUID surveyId,
             @RequestParam String email,
             @AuthenticationPrincipal CustomUserDetails currentUser) {
-        return subscriberService.isSubscribed(surveyId, email, currentUser.getId());
+        return subscriptionService.isSubscribed(surveyId, email, currentUser.getId());
     }
 }
