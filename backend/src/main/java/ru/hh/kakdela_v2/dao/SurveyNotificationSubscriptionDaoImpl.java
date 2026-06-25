@@ -52,15 +52,14 @@ public class SurveyNotificationSubscriptionDaoImpl implements SurveyNotification
 
     @Override
     public boolean existsBySurveyIdAndAccountId(UUID surveyId, UUID accountId) {
-        Long count = entityManager.createQuery(
+         return entityManager.createQuery(
             "SELECT COUNT(s) FROM SurveyNotificationSubscription s " +
             "WHERE s.survey.id = :surveyId AND s.account.id = :accountId",
             Long.class
         )
         .setParameter("surveyId", surveyId)
         .setParameter("accountId", accountId)
-        .getSingleResult();
-        return count != null && count > 0;
+        .getSingleResult() > 0;
     }
 
     @Override

@@ -44,7 +44,7 @@ public class SurveyService {
             .toList();
   }
 
-  @Transactional( readOnly = true)
+  @Transactional(readOnly = true)
   public List<SurveyShortResponseDto> getMySurveys(UUID accountId) {
     List<Survey> surveys = permissionService.getAccessibleSurveys(accountId);
     return surveys.stream()
@@ -100,13 +100,7 @@ public class SurveyService {
     if (dto.getExpireAt() != null) survey.setExpireAt(dto.getExpireAt());
 
     if (dto.getIsPublished() && !wasPublished) {
-      if (survey.getExpireAt() != null && survey.getExpireAt().isBefore(Instant.now())) {
-          throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                     "Нельзя опубликовать опрос с истекшим сроком");
-                }
-
           notificationService.sendSurveyPublishedNotifications(surveyId);
-
     }
 
     surveyDao.update(survey);
