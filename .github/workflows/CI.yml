@@ -1,0 +1,29 @@
+name: CI
+on:
+  pull_request:
+  workflow_dispatch:
+jobs:
+  backend-verification:
+    name: Running maven verify phase (tests are temporary excluded)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: reviewdog/action-setup@d8a7baabd7f3e8544ee4dbde3ee41d0011c3a93f # v1.5.0
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: maven
+      - run: cd backend && ./mvnw verify -Dmaven.test.skip=true
+      - run: >
+          reviewdog
+          -f=checkstyle
+          -reporter=github-pr-review
+          -fail-level=any
+          -diff="git diff" 
+          < backend/target/checkstyle-result.xml
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
