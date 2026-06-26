@@ -7,11 +7,7 @@ type AuthPageLayoutProps = {
 
 export function AuthPageLayout({ children }: AuthPageLayoutProps) {
     return (
-        <Flex
-            align="center"
-            justify="center"
-            style={{ minHeight: '100vh' }}
-        >
+        <Flex align='center' justify='center' style={{ minHeight: '100vh' }}>
             {children}
         </Flex>
     );

@@ -52,8 +52,8 @@ export function RegisterForm({
         >
             <div style={{ marginTop: 16 }}>
                 <Input
-                    size="large"
-                    placeholder="Логин"
+                    size='large'
+                    placeholder='Логин'
                     value={values.login}
                     invalid={Boolean(errors.login)}
                     errorMessage={errors.login}
@@ -64,8 +64,8 @@ export function RegisterForm({
 
             <div style={{ marginTop: 16 }}>
                 <Input
-                    size="large"
-                    placeholder="Почта"
+                    size='large'
+                    placeholder='Почта'
                     value={values.email}
                     invalid={Boolean(errors.email)}
                     errorMessage={errors.email}
@@ -76,8 +76,8 @@ export function RegisterForm({
 
             <div style={{ marginTop: 12 }}>
                 <PasswordInput
-                    size="large"
-                    placeholder="Пароль"
+                    size='large'
+                    placeholder='Пароль'
                     value={values.password}
                     invalid={Boolean(errors.password)}
                     errorMessage={errors.password}
@@ -88,8 +88,8 @@ export function RegisterForm({
 
             <div style={{ marginTop: 12 }}>
                 <PasswordInput
-                    size="large"
-                    placeholder="Повторите пароль"
+                    size='large'
+                    placeholder='Повторите пароль'
                     value={values.passwordConfirmation}
                     invalid={Boolean(errors.passwordConfirmation)}
                     errorMessage={errors.passwordConfirmation}
@@ -99,33 +99,17 @@ export function RegisterForm({
             </div>
 
             {formError && (
-                <div
-                    role="alert"
-                    style={{ marginTop: 12, color: '#d6001c' }}
-                >
+                <div role='alert' style={{ marginTop: 12, color: '#d6001c' }}>
                     {formError}
                 </div>
             )}
 
-            <Flex
-                direction="column"
-                gap={12}
-                style={{ marginTop: 20 }}
-            >
-                <Button
-                    style="accent"
-                    mode="primary"
-                    type="submit"
-                >
+            <Flex direction='column' gap={12} style={{ marginTop: 20 }}>
+                <Button style='accent' mode='primary' type='submit'>
                     Зарегистрироваться
                 </Button>
 
-                <Button
-                    style="accent"
-                    mode="tertiary"
-                    type="button"
-                    onClick={onLoginClick}
-                >
+                <Button style='accent' mode='tertiary' type='button' onClick={onLoginClick}>
                     К входу
                 </Button>
             </Flex>
