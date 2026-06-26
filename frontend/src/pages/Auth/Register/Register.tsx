@@ -6,12 +6,7 @@ import { routes } from '@/app/routes';
 import { AuthCard } from '@/pages/Auth/components/AuthCard';
 import { AuthPageLayout } from '@/pages/Auth/components/AuthPageLayout';
 import { RegisterForm } from '@/pages/Auth/Register/RegisterForm';
-import {
-    validateEmail,
-    validateLogin,
-    validatePassword,
-    validatePasswordConfirmation,
-} from '@/pages/Auth/validation';
+import { validateEmail, validateLogin, validatePassword, validatePasswordConfirmation } from '@/pages/Auth/validation';
 
 type RegisterFormValues = {
     login: string;
@@ -212,7 +207,7 @@ export function Register() {
 
     return (
         <AuthPageLayout>
-            <AuthCard title="Регистрация">
+            <AuthCard title='Регистрация'>
                 <RegisterForm
                     values={values}
                     errors={errors}
