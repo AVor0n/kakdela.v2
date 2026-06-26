@@ -104,3 +104,15 @@ jobs:
           -diff="git diff"
       - name: Build project
         run: cd frontend && yarn run build
+  docker-validation:
+    name: Run Docker compose and wait for all containers healthy (or running)
+    needs:
+      - backend-verification
+      - frontend-verification
+    if: ${{ !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout a repository
+        uses: actions/checkout@v7
+      - name: Run Docker compose and wait
+        run: docker compose -f docker-compose.yml up --build --wait --wait-timeout 180
