@@ -56,3 +56,55 @@ jobs:
           < backend/target/checkstyle-result.xml
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  frontend-verification:
+    name: Run Prettier check, ESLint, TypeScript check and build project
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+      - name: Set up Reviewdog
+        uses: reviewdog/action-setup@d8a7baabd7f3e8544ee4dbde3ee41d0011c3a93f # v1.5.0
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 26
+          cache: yarn
+          cache-dependency-path: frontend/yarn.lock
+      - name: Install dependencies
+        run: yarn install
+        working-directory: frontend
+        env:
+          HUSKY: 0
+      - name: Run Prettier check
+        run: yarn run format-check
+        working-directory: frontend
+      - name: Run ESLint and do report with Reviewdog
+        run: >
+          yarn run --silent lint -f rdjson 
+          | reviewdog
+          -f=rdjson
+          -reporter=github-pr-review
+          -fail-level=any
+          -diff="git diff origin/${{ github.base_ref }}"
+        working-directory: frontend
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Run TypeScript type check and do report with Reviewdog
+        run: > 
+          yarn run ts-check 
+          | reviewdog
+          -efm="%f:%l:%c - %m"
+          -reporter=github-pr-review
+          -fail-level=any
+          && yarn run --silent ts-check
+        working-directory: frontend
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build project
+        run: yarn run build
+        working-directory: frontend
