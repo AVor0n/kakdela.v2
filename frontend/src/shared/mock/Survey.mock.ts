@@ -3,7 +3,7 @@ import type { Survey } from '../types/Survey.type';
 export const mockSurvey: Survey = {
     authorId: '09bd2b1a-7dc5-489c-890d-c2b1364c6b40',
     isAuthorizedOnly: false,
-    closingPage: null,
+    closingPage: 'Спасибо! Мы получили ваши ответы.',
     createdAt: '2026-06-10T16:52:52.274824Z',
     description: 'Тестовый опрос для проверки предпросмотра и прохождения без подключения к backend.',
     doNotify: false,
