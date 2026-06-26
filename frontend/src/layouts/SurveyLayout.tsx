@@ -27,7 +27,14 @@ export function SurveyLayout() {
                 <LinkHH mode='primary' style='accent' href={routes.survey()}>
                     Обратно в меню
                 </LinkHH>
+
                 <nav className={style.navbar}>
+                    {id && (
+                        <Button mode='secondary' style='accent' Element={Link} to={routes.surveyPreview(id)}>
+                            Предпросмотр
+                        </Button>
+                    )}
+
                     <Button
                         mode={pathname.includes('/questions') ? 'primary' : 'secondary'}
                         style='accent'

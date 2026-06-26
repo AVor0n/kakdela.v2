@@ -13,7 +13,8 @@ type BaseQuestion<T extends QuestionType> = {
     serialNumber: number;
     condition: null;
     description: null;
-    visible: boolean;
+    visible?: boolean;
+    isVisible?: boolean;
 };
 
 type SimpleQuestion = BaseQuestion<'SHORT_TEXT' | 'LONG_TEXT'> & {
