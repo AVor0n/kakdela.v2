@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import ru.hh.kakdela_v2.dto.account.AccountResponseDto;
 import ru.hh.kakdela_v2.dto.subscription.SubscriptionRequestDto;
 import ru.hh.kakdela_v2.dto.subscription.SubscriptionResponseDto;
 import ru.hh.kakdela_v2.model.Account;
@@ -38,12 +39,13 @@ public class SubscriptionController {
         subscriptionService.unsubscribeUser(surveyId, email, currentUser.getId());
     }
 
-    // TODO: заменить на AccountResponseDto
     @GetMapping("/surveys/{surveyId}/subscribers")
-    public List<Account> getSubscribers(
+    public List<AccountResponseDto> getSubscribers(
             @PathVariable UUID surveyId,
             @AuthenticationPrincipal CustomUserDetails currentUser) {
-        return subscriptionService.getSubscribers(surveyId, currentUser.getId());
+        return subscriptionService.getSubscribers(surveyId, currentUser.getId()).stream()
+            .map(AccountResponseDto::fromEntity)
+            .toList();
     }
 
     @GetMapping("/surveys/{surveyId}/subscribers/check")
