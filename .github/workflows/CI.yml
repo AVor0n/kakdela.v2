@@ -108,3 +108,29 @@ jobs:
       - name: Build project
         run: yarn run build
         working-directory: frontend
+  docker-validation:
+    name: Run Docker compose and wait for all containers healthy (or running)
+    needs:
+      - backend-verification
+      - frontend-verification
+    if: ${{ !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+        with:
+          driver: docker-container
+      - name: Build Docker images
+        uses: docker/bake-action@v7
+        with:
+          files: docker-compose.yml
+          load: true
+          set: |
+            backend.cache-from=type=gha,scope=backend
+            backend.cache-to=type=gha,mode=max,scope=backend
+            frontend.cache-from=type=gha,scope=frontend
+            frontend.cache-to=type=gha,mode=max,scope=frontend
+      - name: Run Docker containers and wait
+        run: docker compose up -d --wait --wait-timeout 120
