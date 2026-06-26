@@ -8,7 +8,7 @@ import ru.hh.kakdela_v2.dto.subscription.SubscriptionRequestDto;
 import ru.hh.kakdela_v2.dto.subscription.SubscriptionResponseDto;
 import ru.hh.kakdela_v2.model.Account;
 import ru.hh.kakdela_v2.service.SurveyNotificationSubscriptionService;
-import ru.hh.kakdela_v2.util.CustomUserDetails;
+import ru.hh.kakdela_v2.security.CustomUserDetails;
 
 import java.util.List;
 import java.util.UUID;
@@ -38,6 +38,7 @@ public class SubscriptionController {
         subscriptionService.unsubscribeUser(surveyId, email, currentUser.getId());
     }
 
+    // TODO: заменить на AccountResponseDto
     @GetMapping("/surveys/{surveyId}/subscribers")
     public List<Account> getSubscribers(
             @PathVariable UUID surveyId,
