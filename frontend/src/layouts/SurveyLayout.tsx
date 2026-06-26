@@ -13,6 +13,11 @@ export function SurveyLayout() {
                     Обратно в меню
                 </LinkHH>
                 <nav className='navbar'>
+                    {id && (
+                        <Button mode='secondary' style='accent' Element={Link} to={routes.surveyPreview(id)}>
+                            Предпросмотр
+                        </Button>
+                    )}
                     <Button
                         mode={pathname.includes('/questions') ? 'primary' : 'secondary'}
                         style='accent'
