@@ -15,4 +15,13 @@ public class AccountResponseDto {
   private final String login;
   private final String email;
   private final Instant registeredAt;
+
+  public static AccountResponseDto fromEntity(Account account) {
+    return new AccountResponseDto(
+        account.getId(),
+        account.getLogin(),
+        account.getEmail(),
+        account.getRegisteredAt()
+    );
+  }
 }
