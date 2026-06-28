@@ -1,6 +1,6 @@
-.header__surveys_actions {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
+.header {
+    display: flex;
+    justify-content: space-between;
     align-items: center;
     padding: 20px;
     border-bottom: 1px solid #dce3eb;
@@ -9,5 +9,5 @@
 .navbar {
     display: flex;
     gap: 20px;
-    justify-content: end;
+    justify-content: center;
 }
