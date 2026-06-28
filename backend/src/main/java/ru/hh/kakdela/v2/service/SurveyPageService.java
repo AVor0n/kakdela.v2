@@ -44,11 +44,8 @@ public class SurveyPageService {
   @Transactional
   public SurveyPageResponseDto create(UUID surveyId, SurveyPageCreateDto dto, UUID accountId) {
     permissionService.checkAccess(surveyId, accountId, SurveyRole.EDITOR);
-    if (surveyPageDao.existsBySurveyIdAndSerialNumber(surveyId, dto.getSerialNumber())) {
-      throw new ResponseStatusException(
-          HttpStatus.CONFLICT,
-          "Страница с номером " + dto.getSerialNumber() + " уже существует в этом опросе");
-    }
+
+    surveyPageDao.shiftSerialNumbersUp(surveyId, dto.getSerialNumber(), +1);
 
     Survey survey = surveyDao.findById(surveyId)
         .orElseThrow(() -> new ResponseStatusException(
@@ -93,6 +90,11 @@ public class SurveyPageService {
         .orElseThrow(
             () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Страница не найдена: " + id));
     permissionService.checkAccess(surveyPage.getSurvey().getId(), accountId, SurveyRole.EDITOR);
+
+    UUID surveyId = surveyPage.getSurvey().getId();
+    int deletedSerial = surveyPage.getSerialNumber();
+
     surveyPageDao.delete(surveyPage);
+    surveyPageDao.shiftSerialNumbersDown(surveyId, deletedSerial + 1, -1);
   }
 }

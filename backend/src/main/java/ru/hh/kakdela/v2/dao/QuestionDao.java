@@ -19,4 +19,8 @@ public interface QuestionDao {
   void delete(Question question);
 
   boolean existsByPageIdAndSerialNumber(UUID pageId, Integer serialNumber);
+
+  void shiftSerialNumbersUp(UUID pageId, int startSerial, int shift);
+
+  void shiftSerialNumbersDown(UUID pageId, int startSerial, int shift);
 }

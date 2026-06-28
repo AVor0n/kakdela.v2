@@ -60,4 +60,36 @@ public class SurveyPageDaoImpl implements SurveyPageDao {
             .map(count -> count > 0)
             .orElse(false);
   }
+
+  @Override
+  public void shiftSerialNumbersUp(UUID surveyId, int startSerial, int shift) {
+    String sql = "UPDATE survey_page sp " +
+        "SET serial_number = sp.serial_number + ? " +
+        "FROM (SELECT id FROM survey_page " +
+        "      WHERE survey_id = ? AND serial_number >= ? " +
+        "      ORDER BY serial_number DESC) AS sub " +
+        "WHERE sp.id = sub.id";
+
+    entityManager.createNativeQuery(sql)
+        .setParameter(1, shift)
+        .setParameter(2, surveyId)
+        .setParameter(3, startSerial)
+        .executeUpdate();
+  }
+
+  @Override
+  public void shiftSerialNumbersDown(UUID surveyId, int startSerial, int shift) {
+    String sql = "UPDATE survey_page sp " +
+        "SET serial_number = sp.serial_number + ? " +
+        "FROM (SELECT id FROM survey_page " +
+        "      WHERE survey_id = ? AND serial_number >= ? " +
+        "      ORDER BY serial_number ASC) AS sub " +
+        "WHERE sp.id = sub.id";
+
+    entityManager.createNativeQuery(sql)
+        .setParameter(1, shift)
+        .setParameter(2, surveyId)
+        .setParameter(3, startSerial)
+        .executeUpdate();
+  }
 }

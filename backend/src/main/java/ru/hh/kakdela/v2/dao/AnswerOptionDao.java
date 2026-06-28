@@ -17,4 +17,8 @@ public interface AnswerOptionDao {
   void update(AnswerOption option);
 
   void delete(AnswerOption option);
+
+  void shiftSerialNumbersUp(UUID questionId, int startSerial, int shift);
+
+  void shiftSerialNumbersDown(UUID questionId, int startSerial, int shift);
 }

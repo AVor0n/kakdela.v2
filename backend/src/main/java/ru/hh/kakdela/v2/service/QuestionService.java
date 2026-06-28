@@ -52,17 +52,14 @@ public class QuestionService {
 
   @Transactional
   public QuestionResponseDto create(UUID pageId, QuestionCreateDto dto, UUID accountId) {
-    if (questionDao.existsByPageIdAndSerialNumber(pageId, dto.getSerialNumber())) {
-      throw new ResponseStatusException(
-          HttpStatus.CONFLICT,
-          "Вопрос с номером " + dto.getSerialNumber() + " уже существует на этой странице");
-    }
 
     SurveyPage page = surveyPageDao.findById(pageId)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Страница не найдена: " + pageId));
 
     permissionService.checkAccess(page.getSurvey().getId(), accountId, SurveyRole.EDITOR);
+
+    questionDao.shiftSerialNumbersUp(pageId, dto.getSerialNumber(), +1);
 
     Question question = Question.builder()
         .surveyPage(page)
@@ -125,7 +122,13 @@ public class QuestionService {
             () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Вопрос не найден: " + id));
     permissionService.checkAccess(question.getSurveyPage().getSurvey().getId(), accountId,
         SurveyRole.EDITOR);
-    questionDao.delete(question);
+
+    UUID pageId = question.getSurveyPage().getId();
+    int deletedSerial = question.getSerialNumber();
+
+        questionDao.delete(question);
+        
+        questionDao.shiftSerialNumbersDown(pageId, deletedSerial + 1, -1);
   }
 
   // Attachment management

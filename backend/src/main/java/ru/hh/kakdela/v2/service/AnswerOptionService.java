@@ -53,6 +53,8 @@ public class AnswerOptionService {
     permissionService.checkAccess(
         question.getSurveyPage().getSurvey().getId(), accountId, SurveyRole.EDITOR);
 
+        answerOptionDao.shiftSerialNumbersUp(questionId, dto.getSerialNumber(), +1);
+
     AnswerOption answerOption = AnswerOption.builder()
         .question(question)
         .serialNumber(dto.getSerialNumber())
@@ -88,9 +90,17 @@ public class AnswerOptionService {
     AnswerOption answerOption = answerOptionDao.findById(id)
         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
             "Вариант ответа не найден: " + id));
-    permissionService.checkAccess(answerOption.getQuestion().getSurveyPage().getSurvey().getId(),
+            
+        Question question = answerOption.getQuestion();
+
+        permissionService.checkAccess(answerOption.getQuestion().getSurveyPage().getSurvey().getId(),
         accountId, SurveyRole.EDITOR);
-    answerOptionDao.delete(answerOption);
+        UUID questionId = question.getId();
+        int deletedSerial = answerOption.getSerialNumber();
+
+        answerOptionDao.delete(answerOption);
+
+        answerOptionDao.shiftSerialNumbersDown(questionId, deletedSerial + 1, -1);
   }
 
   // Attachment management

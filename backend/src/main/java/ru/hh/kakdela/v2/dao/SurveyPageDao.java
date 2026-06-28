@@ -19,4 +19,8 @@ public interface SurveyPageDao {
   void delete(SurveyPage page);
 
   boolean existsBySurveyIdAndSerialNumber(UUID surveyId, Integer serialNumber);
+
+  void shiftSerialNumbersUp(UUID surveyId, int startSerial, int shift);
+
+  void shiftSerialNumbersDown(UUID surveyId, int startSerial, int shift);
 }
