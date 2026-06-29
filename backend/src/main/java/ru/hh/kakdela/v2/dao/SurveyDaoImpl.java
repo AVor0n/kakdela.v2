@@ -3,12 +3,14 @@ package ru.hh.kakdela.v2.dao;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Repository;
+import lombok.extern.slf4j.Slf4j;
 import ru.hh.kakdela.v2.model.Survey;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Slf4j
 @Repository
 public class SurveyDaoImpl implements SurveyDao {
 
@@ -37,16 +39,19 @@ public class SurveyDaoImpl implements SurveyDao {
 
   @Override
   public void save(Survey survey) {
+    log.debug("Сохранен опрос id={}", survey.getId());
     entityManager.persist(survey);
   }
 
   @Override
   public void update(Survey survey) {
+    log.debug("Изменен опрос id={}", survey.getId());
     entityManager.merge(survey);
   }
 
   @Override
   public void delete(Survey survey) {
+    log.debug("Удален опрос id={}", survey.getId());
     entityManager.remove(survey);
   }
 }

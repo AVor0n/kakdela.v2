@@ -3,12 +3,14 @@ package ru.hh.kakdela.v2.dao;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Repository;
+import lombok.extern.slf4j.Slf4j;
 import ru.hh.kakdela.v2.model.Question;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Slf4j
 @Repository
 public class QuestionDaoImpl implements QuestionDao {
 
@@ -34,16 +36,19 @@ public class QuestionDaoImpl implements QuestionDao {
 
   @Override
   public void save(Question question) {
+    log.debug("Сохранен вопрос id={}", question.getId());
     entityManager.persist(question);
   }
 
   @Override
   public void update(Question question) {
+    log.debug("Изменен вопрос id={}", question.getId());
     entityManager.merge(question);
   }
 
   @Override
   public void delete(Question question) {
+    log.debug("Удален вопрос id={}", question.getId());
     entityManager.remove(question);
   }
 

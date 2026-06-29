@@ -3,6 +3,7 @@ package ru.hh.kakdela.v2.dao;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Repository;
+import lombok.extern.slf4j.Slf4j;
 
 import ru.hh.kakdela.v2.model.Account;
 import ru.hh.kakdela.v2.model.SurveyNotificationSubscription;
@@ -11,6 +12,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Slf4j
 @Repository
 public class SurveyNotificationSubscriptionDaoImpl implements SurveyNotificationSubscriptionDao {
 
@@ -19,11 +21,13 @@ public class SurveyNotificationSubscriptionDaoImpl implements SurveyNotification
 
     @Override
     public void addSubscription(SurveyNotificationSubscription subscription) {
+        log.debug("Добавлена подписка на опрос id={}", subscription.getSurvey().getId());
         entityManager.persist(subscription);
     }
 
     @Override
     public void deleteSubscription(SurveyNotificationSubscription subscription) {
+        log.debug("Удалена подписка на опрос id={}", subscription.getSurvey().getId());
         entityManager.remove(subscription);
 }
 

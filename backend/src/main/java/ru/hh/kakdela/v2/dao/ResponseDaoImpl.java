@@ -3,12 +3,14 @@ package ru.hh.kakdela.v2.dao;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Repository;
+import lombok.extern.slf4j.Slf4j;
 import ru.hh.kakdela.v2.model.Response;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Slf4j
 @Repository
 public class ResponseDaoImpl implements ResponseDao {
 
@@ -118,16 +120,19 @@ public class ResponseDaoImpl implements ResponseDao {
 
   @Override
   public void save(Response response) {
+    log.debug("Сохранен ответ на опрос id={}", response.getId());
     entityManager.persist(response);
   }
 
   @Override
   public void update(Response response) {
+    log.debug("Изменен ответ на опрос id={}", response.getId());
     entityManager.merge(response);
   }
 
   @Override
   public void delete(Response response) {
+    log.debug("Удален ответ на опрос id={}", response.getId());
     entityManager.remove(response);
   }
 }
