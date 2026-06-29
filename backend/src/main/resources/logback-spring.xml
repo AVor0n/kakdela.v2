@@ -29,7 +29,7 @@
         </encoder>
     </appender>
 
-    <logger name="ru.hh.kakdela_v2" level="DEBUG" additivity="false">
+    <logger name="ru.hh.kakdela.v2" level="DEBUG" additivity="false">
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="FILE"/>
     </logger>

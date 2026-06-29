@@ -3,6 +3,7 @@ package ru.hh.kakdela.v2.service;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,7 @@ import ru.hh.kakdela.v2.model.Permission.SurveyRole;
 import ru.hh.kakdela.v2.model.Question;
 import ru.hh.kakdela.v2.model.SurveyPage;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class QuestionService {
@@ -77,6 +79,7 @@ public class QuestionService {
         .build();
 
     questionDao.save(question);
+    log.info("Создан вопрос id={} pageId={}", question.getId(), pageId);
     return questionMapper.questionToDto(question);
   }
 
@@ -115,6 +118,7 @@ public class QuestionService {
     }
 
     questionDao.update(question);
+    log.info("Изменен вопрос id={}", questionId);
     return questionMapper.questionToDto(question);
   }
 
@@ -126,6 +130,7 @@ public class QuestionService {
     permissionService.checkAccess(question.getSurveyPage().getSurvey().getId(), accountId,
         SurveyRole.EDITOR);
     questionDao.delete(question);
+    log.info("Удален вопрос id={}", id);
   }
 
   // Attachment management
@@ -154,7 +159,7 @@ public class QuestionService {
 
     question.setAttachmentObjectKey(objectKey);
     questionDao.update(question);
-
+    log.info("Добавлено вложение к вопросу id={} objectKey={}", questionId, objectKey);
     return new ObjectUrlResponseDto(
         objectStorageService.generateObjectUrl(objectKey, attachmentUrlMaxAge).toString());
   }
@@ -185,7 +190,7 @@ public class QuestionService {
 
     question.setAttachmentObjectKey(objectKey);
     questionDao.update(question);
-
+    log.info("Изменено вложение вопроса id={} objectKey={}", questionId, objectKey);
     return new ObjectUrlResponseDto(
         objectStorageService.generateObjectUrl(objectKey, attachmentUrlMaxAge).toString());
   }
@@ -208,5 +213,6 @@ public class QuestionService {
 
     question.setAttachmentObjectKey(null);
     questionDao.update(question);
+    log.info("Удалено вложение вопроса id={}", questionId);
   }
 }

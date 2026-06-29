@@ -3,6 +3,7 @@ package ru.hh.kakdela.v2.service;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +18,7 @@ import ru.hh.kakdela.v2.model.Permission.SurveyRole;
 import ru.hh.kakdela.v2.model.Survey;
 import ru.hh.kakdela.v2.model.SurveyPage;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class SurveyPageService {
@@ -62,6 +64,7 @@ public class SurveyPageService {
         .build();
 
     surveyPageDao.save(surveyPage);
+    log.info("Создана страница id={} surveyId={}", surveyPage.getId(), surveyId);
     return surveyPageMapper.surveyPageToDto(surveyPage);
   }
 
@@ -84,6 +87,7 @@ public class SurveyPageService {
     }
 
     surveyPageDao.update(surveyPage);
+    log.info("Изменена страница id={}", surveyPageId);
     return surveyPageMapper.surveyPageToDto(surveyPage);
   }
 
@@ -94,5 +98,6 @@ public class SurveyPageService {
             () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Страница не найдена: " + id));
     permissionService.checkAccess(surveyPage.getSurvey().getId(), accountId, SurveyRole.EDITOR);
     surveyPageDao.delete(surveyPage);
+    log.info("Удалена страница id={}", id);
   }
 }

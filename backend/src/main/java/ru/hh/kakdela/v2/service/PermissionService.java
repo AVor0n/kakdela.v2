@@ -5,6 +5,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +23,7 @@ import ru.hh.kakdela.v2.model.Permission.PermissionId;
 import ru.hh.kakdela.v2.model.Permission.SurveyRole;
 import ru.hh.kakdela.v2.model.Survey;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PermissionService {
@@ -117,6 +119,7 @@ public class PermissionService {
         .build();
 
     permissionDao.save(permission);
+    log.info("Созданы права доступа surveyId={} accountId={} role={}", surveyId, dto.getAccountId(), dto.getRole());
     return PermissionMapper.permissionToDto(permission);
   }
 
@@ -139,6 +142,7 @@ public class PermissionService {
     }
 
     permissionDao.update(permission);
+    log.info("Изменены права доступа surveyId={} accountId={}", surveyId, accountId);
     return PermissionMapper.permissionToDto(permission);
   }
 
@@ -146,6 +150,7 @@ public class PermissionService {
   public void delete(UUID surveyId, UUID accountId, UUID currentUserId) {
     checkOwnership(surveyId, currentUserId);
     permissionDao.deleteBySurveyIdAndAccountId(surveyId, accountId);
+    log.info("Удалены права доступа surveyId={} accountId={}", surveyId, accountId);
   }
 
   @Transactional(readOnly = true)

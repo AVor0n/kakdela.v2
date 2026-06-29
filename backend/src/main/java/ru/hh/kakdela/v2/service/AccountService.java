@@ -3,6 +3,7 @@ package ru.hh.kakdela.v2.service;
 import java.time.Instant;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,6 +15,7 @@ import ru.hh.kakdela.v2.dto.account.AccountUpdateDto;
 import ru.hh.kakdela.v2.mapper.AccountMapper;
 import ru.hh.kakdela.v2.model.Account;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class AccountService {
@@ -47,6 +49,7 @@ public class AccountService {
         .build();
 
     accountDao.save(account);
+    log.info("Создан аккаунт id={} login={}", account.getId(), account.getLogin());
     return AccountMapper.accountToDto(account);
   }
 
@@ -75,6 +78,7 @@ public class AccountService {
     }
 
     accountDao.update(account);
+    log.info("Изменен аккаунт id={}", id);
     return AccountMapper.accountToDto(account);
   }
 
@@ -84,5 +88,6 @@ public class AccountService {
         .orElseThrow(
             () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Аккаунт не найден: " + id));
     accountDao.delete(account);
+    log.info("Удален аккаунт id={}", id);
   }
 }

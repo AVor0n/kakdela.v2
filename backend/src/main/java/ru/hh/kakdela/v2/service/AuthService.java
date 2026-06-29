@@ -1,6 +1,7 @@
 package ru.hh.kakdela.v2.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -14,6 +15,7 @@ import ru.hh.kakdela.v2.dto.auth.LoginDto;
 import ru.hh.kakdela.v2.dto.auth.RegisterDto;
 import ru.hh.kakdela.v2.security.JwtService;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class AuthService {
@@ -27,6 +29,7 @@ public class AuthService {
   public AuthTokensDto login(LoginDto loginDto) {
     authenticationManager.authenticate(
         new UsernamePasswordAuthenticationToken(loginDto.getLogin(), loginDto.getPassword()));
+    log.info("Выполнен вход login={}", loginDto.getLogin());
     return new AuthTokensDto(
         jwtService.generateAccessToken(loginDto.getLogin()), null);
   }
@@ -43,6 +46,6 @@ public class AuthService {
     accountCreateDto.setHashPassword(passwordEncoder.encode(registerDto.getPassword()));
 
     accountService.create(accountCreateDto);
+    log.info("Зарегистрирован пользователь login={}", registerDto.getLogin());
   }
 }
-

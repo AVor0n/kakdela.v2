@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +25,7 @@ import ru.hh.kakdela.v2.model.Question;
 import ru.hh.kakdela.v2.model.Survey;
 import ru.hh.kakdela.v2.model.SurveyPage;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class SurveyService {
@@ -84,6 +86,7 @@ public class SurveyService {
         .build();
 
     surveyDao.save(survey);
+    log.info("Создан опрос id={} authorId={}", survey.getId(), authorId);
     return surveyMapper.surveyToDto(survey);
   }
 
@@ -122,6 +125,7 @@ public class SurveyService {
     }
 
     surveyDao.update(survey);
+    log.info("Изменен опрос id={} accountId={}", surveyId, accountId);
     return surveyMapper.surveyToDto(survey);
   }
 
@@ -197,6 +201,7 @@ public class SurveyService {
     }
 
     surveyDao.save(surveyCopy);
+    log.info("Клонирован опрос originalId={} copyId={} accountId={}", surveyId, surveyCopy.getId(), accountId);
     return surveyMapper.surveyToDto(surveyCopy);
   }
 
@@ -207,6 +212,7 @@ public class SurveyService {
         .orElseThrow(
             () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Опрос не найден: " + id));
     surveyDao.delete(survey);
+    log.info("Удален опрос id={} accountId={}", id, accountId);
   }
 
 }
