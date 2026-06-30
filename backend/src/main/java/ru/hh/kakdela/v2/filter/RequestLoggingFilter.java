@@ -10,7 +10,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import ru.hh.kakdela.v2.util.CustomUserDetails;
+import ru.hh.kakdela.v2.security.CustomUserDetails;
 
 import java.io.IOException;
 import java.util.UUID;
