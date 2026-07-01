@@ -8,14 +8,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
-import ru.hh.kakdela_v2.dao.AccountDao;
-import ru.hh.kakdela_v2.dto.account.AccountCreateDto;
-import ru.hh.kakdela_v2.dto.account.AccountDeleteDto;
-import ru.hh.kakdela_v2.dto.account.AccountPatchDto;
-import ru.hh.kakdela_v2.dto.account.AccountPutDto;
-import ru.hh.kakdela_v2.dto.account.AccountResponseDto;
-import ru.hh.kakdela_v2.model.Account;
-import ru.hh.kakdela_v2.security.CustomUserDetails;
+import ru.hh.kakdela.v2.dao.AccountDao;
+import ru.hh.kakdela.v2.dto.account.AccountCreateDto;
+import ru.hh.kakdela.v2.dto.account.AccountDeleteDto;
+import ru.hh.kakdela.v2.dto.account.AccountPatchDto;
+import ru.hh.kakdela.v2.dto.account.AccountPutDto;
+import ru.hh.kakdela.v2.dto.account.AccountResponseDto;
+import ru.hh.kakdela.v2.model.Account;
+import ru.hh.kakdela.v2.security.CustomUserDetails;
 
 @Service
 @RequiredArgsConstructor

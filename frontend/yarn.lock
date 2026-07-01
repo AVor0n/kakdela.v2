@@ -396,7 +396,7 @@
   resolved "https://registry.yarnpkg.com/@hh.ru/magritte-design-tokens/-/magritte-design-tokens-24.7.0.tgz#6c3017e5ee2d8940a22320a60e099891adae3b6c"
   integrity sha512-UTFRbmtEqNHAZhN1na/oDAy5WcUEu6DSNkqMCOdErIq7f6O0HfrH3j5fp+6S0G8PFdkX/7d/sDdpJNRarCdu4w==
 
-"@hh.ru/magritte-fonts@1.6.0":
+"@hh.ru/magritte-fonts@1.6.0", "@hh.ru/magritte-fonts@^1.6.0":
   version "1.6.0"
   resolved "https://registry.yarnpkg.com/@hh.ru/magritte-fonts/-/magritte-fonts-1.6.0.tgz#e2b4fd983836afe2d48e2d20b19f8cfae4154709"
   integrity sha512-HPkvwGJjhx66BIpd6S71oRZ/w4cluY7rEjE3t7BW8cBJYnuJF3nFyH3gcifqUTgMp8SEYItt6q9KT2LxUneufQ==

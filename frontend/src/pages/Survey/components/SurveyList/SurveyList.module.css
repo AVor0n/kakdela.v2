@@ -1,0 +1,55 @@
+.page {
+    width: 100%;
+    min-height: 100dvh;
+    padding: 40px 24px;
+    background-color: #f4f6f8;
+}
+
+.content {
+    width: 100%;
+    max-width: 1180px;
+    margin: 0 auto;
+}
+
+.card {
+    width: 100%;
+    box-sizing: border-box;
+    margin-top: 20px;
+    border: 1px solid #eeeeee;
+    border-radius: 24px;
+    background-color: #ffffff;
+}
+
+.grid {
+    display: grid;
+    width: 100%;
+    grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
+    gap: 24px;
+}
+
+.message {
+    display: flex;
+    min-height: 232px;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.itemButton {
+    display: flex;
+    width: 100%;
+    min-height: 232px;
+    padding: 20px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    border: 0;
+    border-radius: 8px;
+    background-color: #ffffff;
+    cursor: pointer;
+}
+
+.itemButtonCentered {
+    text-align: center;
+}

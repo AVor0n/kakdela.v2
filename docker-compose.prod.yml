@@ -7,6 +7,8 @@ services:
     depends_on:
       service-db:
         condition: service_healthy
+      service-obs:
+        condition: service_started
     env_file:
       - .env.prod
     restart: unless-stopped
@@ -33,10 +35,27 @@ services:
       - db-data:/var/lib/postgresql/data
     restart: unless-stopped
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      test: [ "CMD", "pg_isready", "-U", "postgres" ]
       interval: 10s
       timeout: 5s
       retries: 5
 
+  service-obs:
+    image: chrislusf/seaweedfs:latest
+    container_name: kd2-seaweedfs
+    env_file:
+      - .env
+    ports:
+      - "8333:8333"
+      - "9333:9333"
+    volumes:
+      - obs-data:/data
+    restart: unless-stopped
+    command:
+      - server
+      - -dir=/data
+      - -s3
+
 volumes:
   db-data:
+  obs-data:
