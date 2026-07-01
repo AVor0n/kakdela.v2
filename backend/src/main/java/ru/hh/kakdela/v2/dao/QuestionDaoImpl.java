@@ -25,13 +25,13 @@ public class QuestionDaoImpl implements QuestionDao {
   @Override
   public List<Question> findAllByPageId(UUID pageId) {
     return entityManager
-            .createQuery("""
-                    FROM Question q
-                    WHERE q.surveyPage.id = :pageId
-                    ORDER BY q.serialNumber
-                    """, Question.class)
-            .setParameter("pageId", pageId)
-            .getResultList();
+        .createQuery("""
+            FROM Question q
+            WHERE q.surveyPage.id = :pageId
+            ORDER BY q.serialNumber
+            """, Question.class)
+        .setParameter("pageId", pageId)
+        .getResultList();
   }
 
   @Override
@@ -52,24 +52,28 @@ public class QuestionDaoImpl implements QuestionDao {
   @Override
   public boolean existsByPageIdAndSerialNumber(UUID pageId, Integer serialNumber) {
     return Optional.of(entityManager
-                    .createQuery("""
-                            SELECT COUNT(q) FROM Question q
-                            WHERE q.surveyPage.id = :pageId AND q.serialNumber = :serialNumber
-                            """, Long.class)
-                    .setParameter("pageId", pageId)
-                    .setParameter("serialNumber", serialNumber)
-                    .getSingleResultOrNull())
-            .map(count -> count > 0)
-            .orElse(false);
+            .createQuery("""
+                SELECT COUNT(q) FROM Question q
+                WHERE q.surveyPage.id = :pageId AND q.serialNumber = :serialNumber
+                """, Long.class)
+            .setParameter("pageId", pageId)
+            .setParameter("serialNumber", serialNumber)
+            .getSingleResultOrNull())
+        .map(count -> count > 0)
+        .orElse(false);
   }
 
   @Override
   public void increaseSerialNumbers(UUID pageId, int startSerial) {
     deferConstraint();
 
-        entityManager.createQuery(
-                "UPDATE Question q SET q.serialNumber = q.serialNumber + 1 " +
-                "WHERE q.surveyPage.id = :pageId AND q.serialNumber >= :startSerial"
+    entityManager.createQuery("""
+                UPDATE Question q
+                SET q.serialNumber = q.serialNumber + 1
+                WHERE q.surveyPage.id = :pageId
+                  AND q.serialNumber >= :startSerial
+                """,
+            Question.class
         )
         .setParameter("pageId", pageId)
         .setParameter("startSerial", startSerial)
@@ -80,9 +84,13 @@ public class QuestionDaoImpl implements QuestionDao {
   public void decreaseSerialNumbers(UUID pageId, int startSerial) {
     deferConstraint();
 
-        entityManager.createQuery(
-                "UPDATE Question q SET q.serialNumber = q.serialNumber - 1 " +
-                "WHERE q.surveyPage.id = :pageId AND q.serialNumber >= :startSerial"
+    entityManager.createQuery("""
+                UPDATE Question q
+                SET q.serialNumber = q.serialNumber - 1
+                WHERE q.surveyPage.id = :pageId
+                  AND q.serialNumber >= :startSerial
+                """,
+            Question.class
         )
         .setParameter("pageId", pageId)
         .setParameter("startSerial", startSerial)
@@ -90,8 +98,8 @@ public class QuestionDaoImpl implements QuestionDao {
   }
 
   private void deferConstraint() {
-        entityManager.createNativeQuery(
-                "SET CONSTRAINTS " + CONSTRAINT_NAME + " DEFERRED"
-        ).executeUpdate();
-    }
+    entityManager.createNativeQuery(
+        "SET CONSTRAINTS " + CONSTRAINT_NAME + " DEFERRED"
+    ).executeUpdate();
+  }
 }

@@ -2,6 +2,7 @@ package ru.hh.kakdela.v2.service;
 
 import java.util.List;
 import java.util.UUID;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -126,9 +127,9 @@ public class QuestionService {
     UUID pageId = question.getSurveyPage().getId();
     int deletedSerial = question.getSerialNumber();
 
-        questionDao.delete(question);
-        
-        questionDao.decreaseSerialNumbers(pageId, deletedSerial + 1);
+    questionDao.delete(question);
+
+    questionDao.decreaseSerialNumbers(pageId, deletedSerial + 1);
   }
 
   // Attachment management

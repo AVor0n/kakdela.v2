@@ -2,6 +2,7 @@ package ru.hh.kakdela.v2.service;
 
 import java.util.List;
 import java.util.UUID;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -53,7 +54,7 @@ public class AnswerOptionService {
     permissionService.checkAccess(
         question.getSurveyPage().getSurvey().getId(), accountId, SurveyRole.EDITOR);
 
-        answerOptionDao.increaseSerialNumbers(questionId, dto.getSerialNumber());
+    answerOptionDao.increaseSerialNumbers(questionId, dto.getSerialNumber());
 
     AnswerOption answerOption = AnswerOption.builder()
         .question(question)
@@ -90,17 +91,17 @@ public class AnswerOptionService {
     AnswerOption answerOption = answerOptionDao.findById(id)
         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
             "Вариант ответа не найден: " + id));
-            
-        Question question = answerOption.getQuestion();
 
-        permissionService.checkAccess(answerOption.getQuestion().getSurveyPage().getSurvey().getId(),
+    Question question = answerOption.getQuestion();
+
+    permissionService.checkAccess(answerOption.getQuestion().getSurveyPage().getSurvey().getId(),
         accountId, SurveyRole.EDITOR);
-        UUID questionId = question.getId();
-        int deletedSerial = answerOption.getSerialNumber();
+    UUID questionId = question.getId();
+    int deletedSerial = answerOption.getSerialNumber();
 
-        answerOptionDao.delete(answerOption);
+    answerOptionDao.delete(answerOption);
 
-        answerOptionDao.decreaseSerialNumbers(questionId, deletedSerial + 1);
+    answerOptionDao.decreaseSerialNumbers(questionId, deletedSerial + 1);
   }
 
   // Attachment management
