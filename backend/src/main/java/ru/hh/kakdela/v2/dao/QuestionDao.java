@@ -20,7 +20,7 @@ public interface QuestionDao {
 
   boolean existsByPageIdAndSerialNumber(UUID pageId, Integer serialNumber);
 
-  void shiftSerialNumbersUp(UUID pageId, int startSerial, int shift);
+  void increaseSerialNumbers(UUID pageId, int startSerial);
 
-  void shiftSerialNumbersDown(UUID pageId, int startSerial, int shift);
+  void decreaseSerialNumbers(UUID pageId, int startSerial);
 }

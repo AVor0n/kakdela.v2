@@ -53,7 +53,7 @@ public class AnswerOptionService {
     permissionService.checkAccess(
         question.getSurveyPage().getSurvey().getId(), accountId, SurveyRole.EDITOR);
 
-        answerOptionDao.shiftSerialNumbersUp(questionId, dto.getSerialNumber(), +1);
+        answerOptionDao.increaseSerialNumbers(questionId, dto.getSerialNumber());
 
     AnswerOption answerOption = AnswerOption.builder()
         .question(question)
@@ -100,7 +100,7 @@ public class AnswerOptionService {
 
         answerOptionDao.delete(answerOption);
 
-        answerOptionDao.shiftSerialNumbersDown(questionId, deletedSerial + 1, -1);
+        answerOptionDao.decreaseSerialNumbers(questionId, deletedSerial + 1);
   }
 
   // Attachment management

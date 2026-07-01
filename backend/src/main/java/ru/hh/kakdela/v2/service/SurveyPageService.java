@@ -45,7 +45,7 @@ public class SurveyPageService {
   public SurveyPageResponseDto create(UUID surveyId, SurveyPageCreateDto dto, UUID accountId) {
     permissionService.checkAccess(surveyId, accountId, SurveyRole.EDITOR);
 
-    surveyPageDao.shiftSerialNumbersUp(surveyId, dto.getSerialNumber(), +1);
+    surveyPageDao.increaseSerialNumbers(surveyId, dto.getSerialNumber());
 
     Survey survey = surveyDao.findById(surveyId)
         .orElseThrow(() -> new ResponseStatusException(
@@ -95,6 +95,6 @@ public class SurveyPageService {
     int deletedSerial = surveyPage.getSerialNumber();
 
     surveyPageDao.delete(surveyPage);
-    surveyPageDao.shiftSerialNumbersDown(surveyId, deletedSerial + 1, -1);
+    surveyPageDao.decreaseSerialNumbers(surveyId, deletedSerial + 1);
   }
 }

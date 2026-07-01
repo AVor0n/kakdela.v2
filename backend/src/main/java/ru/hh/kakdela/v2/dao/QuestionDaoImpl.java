@@ -15,6 +15,8 @@ public class QuestionDaoImpl implements QuestionDao {
   @PersistenceContext
   private EntityManager entityManager;
 
+  private static final String CONSTRAINT_NAME = "uq_question_page_serial";
+
   @Override
   public Optional<Question> findById(UUID id) {
     return Optional.ofNullable(entityManager.find(Question.class, id));
@@ -62,35 +64,34 @@ public class QuestionDaoImpl implements QuestionDao {
   }
 
   @Override
-  public void shiftSerialNumbersUp(UUID pageId, int startSerial, int shift) {
-    String sql = "UPDATE question q " +
-        "SET serial_number = q.serial_number + ? " +
-        "FROM (SELECT id FROM question " +
-        "      WHERE survey_page_id = ? AND serial_number >= ? " +
-        "      ORDER BY serial_number DESC) AS sub " +
-        "WHERE q.id = sub.id";
+  public void increaseSerialNumbers(UUID pageId, int startSerial) {
+    deferConstraint();
 
-    entityManager.createNativeQuery(sql)
-        .setParameter(1, shift)
-        .setParameter(2, pageId)
-        .setParameter(3, startSerial)
+        entityManager.createQuery(
+                "UPDATE Question q SET q.serialNumber = q.serialNumber + 1 " +
+                "WHERE q.surveyPage.id = :pageId AND q.serialNumber >= :startSerial"
+        )
+        .setParameter("pageId", pageId)
+        .setParameter("startSerial", startSerial)
         .executeUpdate();
   }
 
   @Override
-  public void shiftSerialNumbersDown(UUID pageId, int startSerial, int shift) {
-    String sql = "UPDATE question q " +
-        "SET serial_number = q.serial_number + ? " +
-        "FROM (SELECT id FROM question " +
-        "      WHERE survey_page_id = ? AND serial_number >= ? " +
-        "      ORDER BY serial_number ASC) AS sub " +
-        "WHERE q.id = sub.id";
+  public void decreaseSerialNumbers(UUID pageId, int startSerial) {
+    deferConstraint();
 
-    entityManager.createNativeQuery(sql)
-        .setParameter(1, shift)
-        .setParameter(2, pageId)
-        .setParameter(3, startSerial)
+        entityManager.createQuery(
+                "UPDATE Question q SET q.serialNumber = q.serialNumber - 1 " +
+                "WHERE q.surveyPage.id = :pageId AND q.serialNumber >= :startSerial"
+        )
+        .setParameter("pageId", pageId)
+        .setParameter("startSerial", startSerial)
         .executeUpdate();
   }
 
+  private void deferConstraint() {
+        entityManager.createNativeQuery(
+                "SET CONSTRAINTS " + CONSTRAINT_NAME + " DEFERRED"
+        ).executeUpdate();
+    }
 }

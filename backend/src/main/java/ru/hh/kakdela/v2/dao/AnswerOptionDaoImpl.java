@@ -15,6 +15,8 @@ public class AnswerOptionDaoImpl implements AnswerOptionDao {
   @PersistenceContext
   private EntityManager entityManager;
 
+  private static final String CONSTRAINT_NAME = "uq_answer_option_question_serial";
+
   @Override
   public Optional<AnswerOption> findById(UUID id) {
     return Optional.ofNullable(entityManager.find(AnswerOption.class, id));
@@ -48,34 +50,34 @@ public class AnswerOptionDaoImpl implements AnswerOptionDao {
   }
 
   @Override
-  public void shiftSerialNumbersUp(UUID questionId, int startSerial, int shift) {
-    String sql = "UPDATE answer_option ao " +
-        "SET serial_number = ao.serial_number + ? " +
-        "FROM (SELECT id FROM answer_option " +
-        "      WHERE question_id = ? AND serial_number >= ? " +
-        "      ORDER BY serial_number DESC) AS sub " +
-        "WHERE ao.id = sub.id";
+  public void increaseSerialNumbers(UUID questionId, int startSerial) {
+     deferConstraint();
 
-    entityManager.createNativeQuery(sql)
-        .setParameter(1, shift)
-        .setParameter(2, questionId)
-        .setParameter(3, startSerial)
+        entityManager.createQuery(
+                "UPDATE AnswerOption a SET a.serialNumber = a.serialNumber + 1 " +
+                "WHERE a.question.id = :questionId AND a.serialNumber >= :startSerial"
+        )
+        .setParameter("questionId", questionId)
+        .setParameter("startSerial", startSerial)
         .executeUpdate();
   }
 
   @Override
-  public void shiftSerialNumbersDown(UUID questionId, int startSerial, int shift) {
-    String sql = "UPDATE answer_option ao " +
-        "SET serial_number = ao.serial_number + ? " +
-        "FROM (SELECT id FROM answer_option " +
-        "      WHERE question_id = ? AND serial_number >= ? " +
-        "      ORDER BY serial_number ASC) AS sub " +
-        "WHERE ao.id = sub.id";
+  public void decreaseSerialNumbers(UUID questionId, int startSerial) {
+    deferConstraint();
 
-    entityManager.createNativeQuery(sql)
-        .setParameter(1, shift)
-        .setParameter(2, questionId)
-        .setParameter(3, startSerial)
+        entityManager.createQuery(
+                "UPDATE AnswerOption a SET a.serialNumber = a.serialNumber - 1 " +
+                "WHERE a.question.id = :questionId AND a.serialNumber >= :startSerial"
+        )
+        .setParameter("questionId", questionId)
+        .setParameter("startSerial", startSerial)
         .executeUpdate();
   }
+
+   private void deferConstraint() {
+        entityManager.createNativeQuery(
+                "SET CONSTRAINTS " + CONSTRAINT_NAME + " DEFERRED"
+        ).executeUpdate();
+    }
 }

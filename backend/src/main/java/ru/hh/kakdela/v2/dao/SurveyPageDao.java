@@ -20,7 +20,7 @@ public interface SurveyPageDao {
 
   boolean existsBySurveyIdAndSerialNumber(UUID surveyId, Integer serialNumber);
 
-  void shiftSerialNumbersUp(UUID surveyId, int startSerial, int shift);
+  void increaseSerialNumbers(UUID surveyId, int startSerial);
 
-  void shiftSerialNumbersDown(UUID surveyId, int startSerial, int shift);
+  void decreaseSerialNumbers(UUID surveyId, int startSerial);
 }

@@ -15,6 +15,8 @@ public class SurveyPageDaoImpl implements SurveyPageDao {
   @PersistenceContext
   private EntityManager entityManager;
 
+  private static final String CONSTRAINT_NAME = "uq_page_survey_serial";
+
   @Override
   public Optional<SurveyPage> findById(UUID id) {
     return Optional.ofNullable(entityManager.find(SurveyPage.class, id));
@@ -62,34 +64,34 @@ public class SurveyPageDaoImpl implements SurveyPageDao {
   }
 
   @Override
-  public void shiftSerialNumbersUp(UUID surveyId, int startSerial, int shift) {
-    String sql = "UPDATE survey_page sp " +
-        "SET serial_number = sp.serial_number + ? " +
-        "FROM (SELECT id FROM survey_page " +
-        "      WHERE survey_id = ? AND serial_number >= ? " +
-        "      ORDER BY serial_number DESC) AS sub " +
-        "WHERE sp.id = sub.id";
-
-    entityManager.createNativeQuery(sql)
-        .setParameter(1, shift)
-        .setParameter(2, surveyId)
-        .setParameter(3, startSerial)
+  public void increaseSerialNumbers(UUID surveyId, int startSerial) {
+    deferConstraint();
+        
+        entityManager.createQuery(
+                "UPDATE SurveyPage p SET p.serialNumber = p.serialNumber + 1 " +
+                "WHERE p.survey.id = :surveyId AND p.serialNumber >= :startSerial"
+        )
+        .setParameter("surveyId", surveyId)
+        .setParameter("startSerial", startSerial)
         .executeUpdate();
   }
 
   @Override
-  public void shiftSerialNumbersDown(UUID surveyId, int startSerial, int shift) {
-    String sql = "UPDATE survey_page sp " +
-        "SET serial_number = sp.serial_number + ? " +
-        "FROM (SELECT id FROM survey_page " +
-        "      WHERE survey_id = ? AND serial_number >= ? " +
-        "      ORDER BY serial_number ASC) AS sub " +
-        "WHERE sp.id = sub.id";
-
-    entityManager.createNativeQuery(sql)
-        .setParameter(1, shift)
-        .setParameter(2, surveyId)
-        .setParameter(3, startSerial)
+  public void decreaseSerialNumbers(UUID surveyId, int startSerial) {
+    deferConstraint();
+        
+        entityManager.createQuery(
+                "UPDATE SurveyPage p SET p.serialNumber = p.serialNumber - 1 " +
+                "WHERE p.survey.id = :surveyId AND p.serialNumber >= :startSerial"
+        )
+        .setParameter("surveyId", surveyId)
+        .setParameter("startSerial", startSerial)
         .executeUpdate();
   }
+
+   private void deferConstraint() {
+        entityManager.createNativeQuery(
+                "SET CONSTRAINTS " + CONSTRAINT_NAME + " DEFERRED"
+        ).executeUpdate();
+    }
 }

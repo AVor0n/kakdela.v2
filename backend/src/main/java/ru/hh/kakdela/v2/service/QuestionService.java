@@ -59,7 +59,7 @@ public class QuestionService {
 
     permissionService.checkAccess(page.getSurvey().getId(), accountId, SurveyRole.EDITOR);
 
-    questionDao.shiftSerialNumbersUp(pageId, dto.getSerialNumber(), +1);
+    questionDao.increaseSerialNumbers(pageId, dto.getSerialNumber());
 
     Question question = Question.builder()
         .surveyPage(page)
@@ -128,7 +128,7 @@ public class QuestionService {
 
         questionDao.delete(question);
         
-        questionDao.shiftSerialNumbersDown(pageId, deletedSerial + 1, -1);
+        questionDao.decreaseSerialNumbers(pageId, deletedSerial + 1);
   }
 
   // Attachment management
