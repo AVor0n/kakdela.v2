@@ -30,7 +30,7 @@ public class SurveyNotificationSubscriptionService {
     private final AccountDao accountDao;
     private final SurveyDao surveyDao;
     private final PermissionService permissionService;
-    private final EmailService emailService;
+    private final NotificationService notificationService;
 
     @Transactional
     public SubscriptionResponseDto subscribeUsers(UUID surveyId, List<String> emails, UUID currentUserId) {
@@ -66,7 +66,6 @@ public class SurveyNotificationSubscriptionService {
 
                 subscriptionDao.addSubscription(subscription);
                 subscribedEmails.add(email);
-                emailService.sendSurveyPublishedEmail(email, survey.getTitle(), surveyId);
 
                 log.info("User {} subscribed to survey {}", email, surveyId);
             } catch (ResponseStatusException e) {
@@ -76,6 +75,7 @@ public class SurveyNotificationSubscriptionService {
         }
 
         log.info("Subscribed {} users to survey {}", subscribedEmails.size(), surveyId);
+        notificationService.sendNotificationForNewSubscribers(survey, subscribedEmails);
         return new SubscriptionResponseDto(
             subscribedEmails,
             alreadySubscribedEmails,

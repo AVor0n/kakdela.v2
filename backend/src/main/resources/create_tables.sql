@@ -111,3 +111,21 @@ CREATE TABLE survey_notification_subscription (
 
 CREATE INDEX idx_subscription_survey ON survey_notification_subscription(survey_id);
 CREATE INDEX idx_subscription_account ON survey_notification_subscription(account_id);
+
+CREATE TABLE notification_schedule (
+    id uuid PRIMARY KEY,
+    survey_id uuid NOT NULL REFERENCES survey(id) ON DELETE CASCADE,
+    name varchar(255) NOT NULL,
+    schedule_type varchar(20) NOT NULL,
+    -- Для WEEKLY: битовая маска
+    days_of_week int,
+    -- Для MONTHLY: день месяца
+    day_of_month int,
+    -- Для CUSTOM: cron выражение
+    cron_expression varchar(100),
+    execution_time time NOT NULL,
+    user_timezone VARCHAR(50) DEFAULT 'Europe/Moscow',
+    is_active boolean DEFAULT TRUE,
+    next_execution timestamptz,
+    last_execution timestamptz
+);

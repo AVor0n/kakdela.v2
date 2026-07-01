@@ -67,6 +67,19 @@ public class ResponseDaoImpl implements ResponseDao {
   }
 
   @Override
+  public List<UUID> findUsersWithIncompletedResponseBySurveyId(UUID surveyId) {
+    return entityManager
+        .createQuery(
+            """
+            SELECT account.id
+            FROM Response r
+            WHERE r.survey.id = :surveyId AND r.isCompleted = false
+            """, UUID.class)
+        .setParameter("surveyId", surveyId)
+        .getResultList();
+  }
+
+  @Override
   public List<Response> findIncompletedBySurveyIdAndAccountId(UUID surveyId, UUID accountId) {
     return entityManager
         .createQuery(
