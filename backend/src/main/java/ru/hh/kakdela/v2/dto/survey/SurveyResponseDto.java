@@ -1,5 +1,6 @@
 package ru.hh.kakdela.v2.dto.survey;
 
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import ru.hh.kakdela.v2.dto.closing_page.ClosingPageResponseDto;
@@ -23,6 +24,8 @@ public class SurveyResponseDto {
   private final Boolean isTemplate;
   private final Boolean doNotify;
   private final Instant expireAt;
+  private final LocalDateTime expireAtAtTargetTimezone;
+  private final String targetTimezone;
   private final Instant createdAt;
   private final List<SurveyPageResponseDto> pages;
   private final ClosingPageResponseDto closingPage;
