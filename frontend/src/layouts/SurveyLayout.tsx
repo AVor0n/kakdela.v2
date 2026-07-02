@@ -29,12 +29,6 @@ export function SurveyLayout() {
                 </LinkHH>
 
                 <nav className={style.navbar}>
-                    {id && (
-                        <Button mode='secondary' style='accent' Element={Link} to={routes.surveyPreview(id)}>
-                            Предпросмотр
-                        </Button>
-                    )}
-
                     <Button
                         mode={pathname.includes('/questions') ? 'primary' : 'secondary'}
                         style='accent'
@@ -60,7 +54,12 @@ export function SurveyLayout() {
                         Настройки
                     </Button>
                 </nav>
-                <div>
+                <div className={style.actions}>
+                    {id && (
+                        <Button mode='secondary' style='neutral' Element={Link} to={routes.surveyPreview(id)}>
+                            Предпросмотр
+                        </Button>
+                    )}
                     <Button mode='tertiary' style='accent' onClick={publishingHandler}>
                         {selectedSurvey?.isPublished ? 'Снять с публикации' : 'Опубликовать'}
                     </Button>
