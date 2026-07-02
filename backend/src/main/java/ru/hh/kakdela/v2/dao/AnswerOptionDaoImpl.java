@@ -58,11 +58,27 @@ public class AnswerOptionDaoImpl implements AnswerOptionDao {
                 SET a.serialNumber = a.serialNumber + 1
                 WHERE a.question.id = :questionId
                   AND a.serialNumber >= :startSerial
-                """,
-            AnswerOption.class
+                """
         )
         .setParameter("questionId", questionId)
         .setParameter("startSerial", startSerial)
+        .executeUpdate();
+  }
+
+  @Override
+  public void increaseSerialNumbers(UUID questionId, int startSerial, int endSerial) {
+    deferConstraint();
+
+    entityManager.createQuery("""
+                UPDATE AnswerOption a
+                SET a.serialNumber = a.serialNumber + 1
+                WHERE a.question.id = :questionId
+                  AND a.serialNumber BETWEEN :startSerial AND :endSerial
+                """
+        )
+        .setParameter("questionId", questionId)
+        .setParameter("startSerial", startSerial)
+        .setParameter("endSerial", endSerial)
         .executeUpdate();
   }
 
@@ -75,11 +91,27 @@ public class AnswerOptionDaoImpl implements AnswerOptionDao {
                 SET a.serialNumber = a.serialNumber - 1
                 WHERE a.question.id = :questionId
                   AND a.serialNumber >= :startSerial
-                """,
-            AnswerOption.class
+                """
         )
         .setParameter("questionId", questionId)
         .setParameter("startSerial", startSerial)
+        .executeUpdate();
+  }
+
+  @Override
+  public void decreaseSerialNumbers(UUID questionId, int startSerial, int endSerial) {
+    deferConstraint();
+
+    entityManager.createQuery("""
+                UPDATE AnswerOption a
+                SET a.serialNumber = a.serialNumber - 1
+                WHERE a.question.id = :questionId
+                  AND a.serialNumber BETWEEN :startSerial AND :endSerial
+                """
+        )
+        .setParameter("questionId", questionId)
+        .setParameter("startSerial", startSerial)
+        .setParameter("endSerial", endSerial)
         .executeUpdate();
   }
 

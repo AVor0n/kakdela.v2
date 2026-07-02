@@ -72,8 +72,7 @@ public class SurveyPageDaoImpl implements SurveyPageDao {
                 SET p.serialNumber = p.serialNumber + 1 
                 WHERE p.survey.id = :surveyId 
                   AND p.serialNumber >= :startSerial
-                """,
-            SurveyPage.class
+                """
         )
         .setParameter("surveyId", surveyId)
         .setParameter("startSerial", startSerial)
@@ -81,20 +80,51 @@ public class SurveyPageDaoImpl implements SurveyPageDao {
   }
 
   @Override
+  public void increaseSerialNumbers(UUID surveyId, int startSerial, int endSerial) {
+    deferConstraint();
+
+    entityManager.createQuery("""
+                UPDATE SurveyPage p SET p.serialNumber = p.serialNumber + 1
+                WHERE p.survey.id = :surveyId
+                  AND p.serialNumber BETWEEN :startSerial AND :endSerial
+                """
+        )
+        .setParameter("surveyId", surveyId)
+        .setParameter("startSerial", startSerial)
+        .setParameter("endSerial", endSerial)
+        .executeUpdate();
+  }
+
+  @Override
   public void decreaseSerialNumbers(UUID surveyId, int startSerial) {
     deferConstraint();
 
-    entityManager.createQuery(
-            """
+    entityManager.createQuery("""
                 UPDATE SurveyPage p 
                 SET p.serialNumber = p.serialNumber - 1 
                 WHERE p.survey.id = :surveyId 
                   AND p.serialNumber >= :startSerial
-                """,
-            SurveyPage.class
+                """
         )
         .setParameter("surveyId", surveyId)
         .setParameter("startSerial", startSerial)
+        .executeUpdate();
+  }
+
+  @Override
+  public void decreaseSerialNumbers(UUID surveyId, int startSerial, int endSerial) {
+    deferConstraint();
+
+    entityManager.createQuery("""
+                UPDATE SurveyPage p
+                SET p.serialNumber = p.serialNumber - 1
+                WHERE p.survey.id = :surveyId
+                  AND p.serialNumber BETWEEN :startSerial AND :endSerial
+                """
+        )
+        .setParameter("surveyId", surveyId)
+        .setParameter("startSerial", startSerial)
+        .setParameter("endSerial", endSerial)
         .executeUpdate();
   }
 

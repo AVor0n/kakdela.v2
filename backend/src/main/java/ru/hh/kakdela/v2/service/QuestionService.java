@@ -132,6 +132,31 @@ public class QuestionService {
     questionDao.decreaseSerialNumbers(pageId, deletedSerial + 1);
   }
 
+  @Transactional
+  public QuestionResponseDto moveQuestion(UUID id, int newPosition, UUID accountId) {
+    Question question = questionDao.findById(id)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Вопрос не найден: " + id));
+
+    permissionService.checkAccess(question.getSurveyPage().getSurvey().getId(), accountId, SurveyRole.EDITOR);
+
+    UUID pageId = question.getSurveyPage().getId();
+    int oldPosition = question.getSerialNumber();
+
+    if (oldPosition == newPosition) return questionMapper.questionToDto(question);
+
+    if (oldPosition > newPosition) {
+      questionDao.increaseSerialNumbers(pageId, newPosition, oldPosition - 1);
+    } else {
+      questionDao.decreaseSerialNumbers(pageId, oldPosition + 1, newPosition);
+    }
+
+    question.setSerialNumber(newPosition);
+    questionDao.update(question);
+
+    return questionMapper.questionToDto(question);
+  }
+
   // Attachment management
 
   @Transactional

@@ -72,11 +72,27 @@ public class QuestionDaoImpl implements QuestionDao {
                 SET q.serialNumber = q.serialNumber + 1
                 WHERE q.surveyPage.id = :pageId
                   AND q.serialNumber >= :startSerial
-                """,
-            Question.class
+                """
         )
         .setParameter("pageId", pageId)
         .setParameter("startSerial", startSerial)
+        .executeUpdate();
+  }
+
+  @Override
+  public void increaseSerialNumbers(UUID pageId, int startSerial, int endSerial) {
+    deferConstraint();
+
+    entityManager.createQuery("""
+                UPDATE Question q 
+                SET q.serialNumber = q.serialNumber + 1
+                WHERE q.surveyPage.id = :pageId
+                  AND q.serialNumber BETWEEN :startSerial AND :endSerial
+                """
+        )
+        .setParameter("pageId", pageId)
+        .setParameter("startSerial", startSerial)
+        .setParameter("endSerial", endSerial)
         .executeUpdate();
   }
 
@@ -89,11 +105,27 @@ public class QuestionDaoImpl implements QuestionDao {
                 SET q.serialNumber = q.serialNumber - 1
                 WHERE q.surveyPage.id = :pageId
                   AND q.serialNumber >= :startSerial
-                """,
-            Question.class
+                """
         )
         .setParameter("pageId", pageId)
         .setParameter("startSerial", startSerial)
+        .executeUpdate();
+  }
+
+  @Override
+  public void decreaseSerialNumbers(UUID pageId, int startSerial, int endSerial) {
+    deferConstraint();
+
+    entityManager.createQuery("""
+                UPDATE Question q
+                SET q.serialNumber = q.serialNumber - 1
+                WHERE q.surveyPage.id = :pageId
+                  AND q.serialNumber BETWEEN :startSerial AND :endSerial
+                """
+        )
+        .setParameter("pageId", pageId)
+        .setParameter("startSerial", startSerial)
+        .setParameter("endSerial", endSerial)
         .executeUpdate();
   }
 

@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import ru.hh.kakdela.v2.dto.answer_option.AnswerOptionCreateDto;
+import ru.hh.kakdela.v2.dto.answer_option.AnswerOptionMoveRequestDto;
 import ru.hh.kakdela.v2.dto.answer_option.AnswerOptionResponseDto;
 import ru.hh.kakdela.v2.dto.answer_option.AnswerOptionUpdateDto;
 import ru.hh.kakdela.v2.service.AnswerOptionService;
@@ -45,6 +46,16 @@ public class AnswerOptionController {
         return answerOptionService.update(optionId, updateDto, currentUser.getId());
     }
 
+    @PutMapping("/answer-options/{optionId}/move")
+    @ResponseStatus(HttpStatus.OK)
+    public AnswerOptionResponseDto moveAnswerOption(
+        @PathVariable UUID optionId,
+        @Valid @RequestBody AnswerOptionMoveRequestDto request,
+        @AuthenticationPrincipal CustomUserDetails currentUser
+    ) {
+        return answerOptionService.moveAnswerOption(optionId, request.getNewPosition(), currentUser.getId());
+    }
+    
     @DeleteMapping("answer-options/{optionId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(

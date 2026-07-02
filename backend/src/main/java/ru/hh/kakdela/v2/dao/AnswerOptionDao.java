@@ -20,5 +20,9 @@ public interface AnswerOptionDao {
 
   void increaseSerialNumbers(UUID questionId, int startSerial);
 
+  void increaseSerialNumbers(UUID questionId, int startSerial, int endSerial);
+
   void decreaseSerialNumbers(UUID questionId, int startSerial);
+
+  void decreaseSerialNumbers(UUID questionId, int startSerial, int endSerial);
 }

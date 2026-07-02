@@ -22,5 +22,9 @@ public interface SurveyPageDao {
 
   void increaseSerialNumbers(UUID surveyId, int startSerial);
 
+  void increaseSerialNumbers(UUID surveyId, int startSerial, int endSerial);
+
   void decreaseSerialNumbers(UUID surveyId, int startSerial);
+
+  void decreaseSerialNumbers(UUID surveyId, int startSerial, int endSerial);
 }

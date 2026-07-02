@@ -104,6 +104,32 @@ public class AnswerOptionService {
     answerOptionDao.decreaseSerialNumbers(questionId, deletedSerial + 1);
   }
 
+  @Transactional
+  public AnswerOptionResponseDto moveAnswerOption(UUID id, int newPosition, UUID accountId) {
+    AnswerOption answerOption = answerOptionDao.findById(id)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Вариант ответа не найден: " + id));
+
+    Question question = answerOption.getQuestion();
+    permissionService.checkAccess(question.getSurveyPage().getSurvey().getId(), accountId, SurveyRole.EDITOR);
+
+    UUID questionId = question.getId();
+    int oldPosition = answerOption.getSerialNumber();
+
+    if (oldPosition == newPosition) return answerOptionMapper.answerOptionToDto(answerOption);
+
+    if (oldPosition > newPosition) {
+      answerOptionDao.increaseSerialNumbers(questionId, newPosition, oldPosition - 1);
+    } else {
+      answerOptionDao.decreaseSerialNumbers(questionId, oldPosition + 1, newPosition);
+    }
+
+    answerOption.setSerialNumber(newPosition);
+    answerOptionDao.update(answerOption);
+
+    return answerOptionMapper.answerOptionToDto(answerOption);
+  }
+
   // Attachment management
 
   @Transactional

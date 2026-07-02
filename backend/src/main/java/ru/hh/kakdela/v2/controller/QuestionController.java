@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import ru.hh.kakdela.v2.dto.question.QuestionCreateDto;
+import ru.hh.kakdela.v2.dto.question.QuestionMoveRequestDto;
 import ru.hh.kakdela.v2.dto.question.QuestionResponseDto;
 import ru.hh.kakdela.v2.dto.question.QuestionUpdateDto;
 import ru.hh.kakdela.v2.service.QuestionService;
@@ -48,6 +49,16 @@ public class QuestionController {
             @AuthenticationPrincipal CustomUserDetails currentUser
     ) {
         return questionService.update(questionId, updateDto, currentUser.getId());
+    }
+
+    @PutMapping("/questions/{questionId}/move")
+    @ResponseStatus(HttpStatus.OK)
+    public QuestionResponseDto moveQuestion(
+        @PathVariable UUID questionId,
+        @Valid @RequestBody QuestionMoveRequestDto request,
+        @AuthenticationPrincipal CustomUserDetails currentUser
+    ) {
+        return questionService.moveQuestion(questionId, request.getNewPosition(), currentUser.getId());
     }
 
     @DeleteMapping("/questions/{questionId}")
