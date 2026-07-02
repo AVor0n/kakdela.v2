@@ -48,5 +48,5 @@ export async function updateSurvey(surveyId: string, updateData: UpdateSurveyReq
 }
 
 export async function deleteSurvey(surveyId: string): Promise<void> {
-    await apiClient.delete(`/surveys/${surveyId}`);
+    await apiClient.delete(`/api/surveys/${surveyId}`);
 }
