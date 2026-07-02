@@ -129,6 +129,20 @@ public class QuestionDaoImpl implements QuestionDao {
         .executeUpdate();
   }
 
+  @Override
+  public int findMaxSerialNumber(UUID pageId) {
+    Integer max = entityManager.createQuery("""
+                SELECT MAX(q.serialNumber) 
+                FROM Question q 
+                WHERE q.surveyPage.id = :pageId
+                """,
+                  Integer.class
+    )
+    .setParameter("pageId", pageId)
+    .getSingleResultOrNull();
+    return max != null ? max : 0;
+  }
+
   private void deferConstraint() {
     entityManager.createNativeQuery(
         "SET CONSTRAINTS " + CONSTRAINT_NAME + " DEFERRED"

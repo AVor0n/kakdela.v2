@@ -27,4 +27,6 @@ public interface QuestionDao {
   void decreaseSerialNumbers(UUID pageId, int startSerial);
 
   void decreaseSerialNumbers(UUID pageId, int startSerial, int endSerial);
+
+  int findMaxSerialNumber(UUID pageId);
 }

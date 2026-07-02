@@ -87,9 +87,29 @@ public class QuestionService {
     permissionService.checkAccess(question.getSurveyPage().getSurvey().getId(), accountId,
         SurveyRole.EDITOR);
 
-    if (dto.getSerialNumber() != null) {
-      question.setSerialNumber(dto.getSerialNumber());
+    UUID pageId = question.getSurveyPage().getId();
+    int oldSerial = question.getSerialNumber();
+
+    if (dto.getSerialNumber() != null && !dto.getSerialNumber().equals(oldSerial)) {
+      int newSerial = dto.getSerialNumber();
+
+      int maxSerial = questionDao.findMaxSerialNumber(pageId);
+      if (newSerial < 1 || newSerial > maxSerial) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+            "Новый номер должен быть от 1 до " + maxSerial);
+      }
+
+      if (oldSerial > newSerial) {
+        questionDao.increaseSerialNumbers(pageId, newSerial, oldSerial - 1);
+      }
+
+      else {
+        questionDao.decreaseSerialNumbers(pageId, oldSerial + 1, newSerial);
+      }
+
+      question.setSerialNumber(newSerial);
     }
+
     if (dto.getTitle() != null) {
       question.setTitle(dto.getTitle());
     }
@@ -130,31 +150,6 @@ public class QuestionService {
     questionDao.delete(question);
 
     questionDao.decreaseSerialNumbers(pageId, deletedSerial + 1);
-  }
-
-  @Transactional
-  public QuestionResponseDto moveQuestion(UUID id, int newPosition, UUID accountId) {
-    Question question = questionDao.findById(id)
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Вопрос не найден: " + id));
-
-    permissionService.checkAccess(question.getSurveyPage().getSurvey().getId(), accountId, SurveyRole.EDITOR);
-
-    UUID pageId = question.getSurveyPage().getId();
-    int oldPosition = question.getSerialNumber();
-
-    if (oldPosition == newPosition) return questionMapper.questionToDto(question);
-
-    if (oldPosition > newPosition) {
-      questionDao.increaseSerialNumbers(pageId, newPosition, oldPosition - 1);
-    } else {
-      questionDao.decreaseSerialNumbers(pageId, oldPosition + 1, newPosition);
-    }
-
-    question.setSerialNumber(newPosition);
-    questionDao.update(question);
-
-    return questionMapper.questionToDto(question);
   }
 
   // Attachment management

@@ -115,6 +115,20 @@ public class AnswerOptionDaoImpl implements AnswerOptionDao {
         .executeUpdate();
   }
 
+  @Override
+  public int findMaxSerialNumber(UUID questionId) {
+    Integer max = entityManager.createQuery("""
+                SELECT MAX(a.serialNumber) 
+                FROM AnswerOption a 
+                WHERE a.question.id = :questionId
+                """,
+                Integer.class
+    )
+    .setParameter("questionId", questionId)
+    .getSingleResultOrNull();
+    return max != null ? max : 0;
+}
+
   private void deferConstraint() {
     entityManager.createNativeQuery(
         "SET CONSTRAINTS " + CONSTRAINT_NAME + " DEFERRED"

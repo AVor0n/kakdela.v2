@@ -128,6 +128,25 @@ public class SurveyPageDaoImpl implements SurveyPageDao {
         .executeUpdate();
   }
 
+  @Override
+  public int findMaxSerialNumber(UUID surveyId) {
+    if (surveyId == null) {
+        return 0;
+    }
+        
+    Integer max = entityManager.createQuery("""
+                SELECT MAX(p.serialNumber) 
+                FROM SurveyPage p 
+                WHERE p.survey.id = :surveyId
+                """,
+                Integer.class
+        )
+        .setParameter("surveyId", surveyId)
+        .getSingleResultOrNull();
+        
+      return max != null ? max : 0;
+  }
+
   private void deferConstraint() {
     entityManager.createNativeQuery(
         "SET CONSTRAINTS " + CONSTRAINT_NAME + " DEFERRED"

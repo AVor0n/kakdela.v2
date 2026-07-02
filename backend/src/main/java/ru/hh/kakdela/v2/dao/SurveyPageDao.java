@@ -27,4 +27,6 @@ public interface SurveyPageDao {
   void decreaseSerialNumbers(UUID surveyId, int startSerial);
 
   void decreaseSerialNumbers(UUID surveyId, int startSerial, int endSerial);
+
+  int findMaxSerialNumber(UUID surveyId);
 }

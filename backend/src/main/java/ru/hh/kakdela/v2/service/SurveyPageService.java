@@ -70,10 +70,29 @@ public class SurveyPageService {
             HttpStatus.NOT_FOUND, "Страница не найдена: " + surveyPageId));
 
     permissionService.checkAccess(surveyPage.getSurvey().getId(), accountId, SurveyRole.EDITOR);
+    UUID surveyId = surveyPage.getSurvey().getId();
+    int oldSerial = surveyPage.getSerialNumber();
 
-    if (dto.getSerialNumber() != null) {
-      surveyPage.setSerialNumber(dto.getSerialNumber());
+    if (dto.getSerialNumber() != null && !dto.getSerialNumber().equals(oldSerial)) {
+      int newSerial = dto.getSerialNumber();
+
+      int maxSerial = surveyPageDao.findMaxSerialNumber(surveyId);
+      if (newSerial < 1 || newSerial > maxSerial) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+            "Новый номер должен быть от 1 до " + maxSerial);
+      }
+
+      if (oldSerial > newSerial) {
+        surveyPageDao.increaseSerialNumbers(surveyId, newSerial, oldSerial - 1);
+      }
+
+      else {
+        surveyPageDao.decreaseSerialNumbers(surveyId, oldSerial + 1, newSerial);
+      }
+
+      surveyPage.setSerialNumber(newSerial);
     }
+
     if (dto.getTitle() != null) {
       surveyPage.setTitle(dto.getTitle());
     }
@@ -97,31 +116,5 @@ public class SurveyPageService {
 
     surveyPageDao.delete(surveyPage);
     surveyPageDao.decreaseSerialNumbers(surveyId, deletedSerial + 1);
-  }
-
-  @Transactional
-  public SurveyPageResponseDto movePage(UUID pageId, int newPosition, UUID accountId) {
-    SurveyPage page = surveyPageDao.findById(pageId)
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-
-    permissionService.checkAccess(page.getSurvey().getId(), accountId, SurveyRole.EDITOR);
-
-    UUID surveyId = page.getSurvey().getId();
-    int oldPosition = page.getSerialNumber();
-
-    if (oldPosition == newPosition) {
-      return surveyPageMapper.surveyPageToDto(page);
-    }
-
-    if (oldPosition > newPosition) {
-      surveyPageDao.increaseSerialNumbers(surveyId, newPosition, oldPosition - 1);
-    } else {
-      surveyPageDao.decreaseSerialNumbers(surveyId, oldPosition + 1, newPosition);
-    }
-
-    page.setSerialNumber(newPosition);
-    surveyPageDao.update(page);
-
-    return surveyPageMapper.surveyPageToDto(page);
   }
 }

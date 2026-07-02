@@ -6,7 +6,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import ru.hh.kakdela.v2.dto.survey_page.SurveyPageCreateDto;
-import ru.hh.kakdela.v2.dto.survey_page.SurveyPageMoveRequestDto;
 import ru.hh.kakdela.v2.dto.survey_page.SurveyPageResponseDto;
 import ru.hh.kakdela.v2.dto.survey_page.SurveyPageUpdateDto;
 import ru.hh.kakdela.v2.service.SurveyPageService;
@@ -49,16 +48,6 @@ public class SurveyPageController {
             @AuthenticationPrincipal CustomUserDetails currentUser
     ) {
         return surveyPageService.update(pageId, updateDto, currentUser.getId());
-    }
-
-    @PutMapping("/pages/{pageId}/move")
-    @ResponseStatus(HttpStatus.OK)
-    public SurveyPageResponseDto movePage(
-        @PathVariable UUID pageId,
-        @Valid @RequestBody SurveyPageMoveRequestDto request,
-        @AuthenticationPrincipal CustomUserDetails currentUser
-    ) {
-        return surveyPageService.movePage(pageId, request.getNewPosition(), currentUser.getId());
     }
 
     @DeleteMapping("/pages/{pageId}")

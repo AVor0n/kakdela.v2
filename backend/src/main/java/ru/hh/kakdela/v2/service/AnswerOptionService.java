@@ -76,9 +76,29 @@ public class AnswerOptionService {
         answerOption.getQuestion().getSurveyPage().getSurvey().getId(),
         accountId, SurveyRole.EDITOR);
 
-    if (dto.getSerialNumber() != null) {
-      answerOption.setSerialNumber(dto.getSerialNumber());
+    UUID questionId = answerOption.getQuestion().getId();
+    int oldSerial = answerOption.getSerialNumber();
+
+    if (dto.getSerialNumber() != null && !dto.getSerialNumber().equals(oldSerial)) {
+      int newSerial = dto.getSerialNumber();
+
+      int maxSerial = answerOptionDao.findMaxSerialNumber(questionId);
+      if (newSerial < 1 || newSerial > maxSerial) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+            "Новый номер должен быть от 1 до " + maxSerial);
+      }
+
+      if (oldSerial > newSerial) {
+        answerOptionDao.increaseSerialNumbers(questionId, newSerial, oldSerial - 1);
+      }
+
+      else {
+        answerOptionDao.decreaseSerialNumbers(questionId, oldSerial + 1, newSerial);
+      }
+
+      answerOption.setSerialNumber(newSerial);
     }
+
     if (dto.getAnswerOptionText() != null) {
       answerOption.setAnswerOptionText(dto.getAnswerOptionText());
     }
@@ -102,32 +122,6 @@ public class AnswerOptionService {
     answerOptionDao.delete(answerOption);
 
     answerOptionDao.decreaseSerialNumbers(questionId, deletedSerial + 1);
-  }
-
-  @Transactional
-  public AnswerOptionResponseDto moveAnswerOption(UUID id, int newPosition, UUID accountId) {
-    AnswerOption answerOption = answerOptionDao.findById(id)
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Вариант ответа не найден: " + id));
-
-    Question question = answerOption.getQuestion();
-    permissionService.checkAccess(question.getSurveyPage().getSurvey().getId(), accountId, SurveyRole.EDITOR);
-
-    UUID questionId = question.getId();
-    int oldPosition = answerOption.getSerialNumber();
-
-    if (oldPosition == newPosition) return answerOptionMapper.answerOptionToDto(answerOption);
-
-    if (oldPosition > newPosition) {
-      answerOptionDao.increaseSerialNumbers(questionId, newPosition, oldPosition - 1);
-    } else {
-      answerOptionDao.decreaseSerialNumbers(questionId, oldPosition + 1, newPosition);
-    }
-
-    answerOption.setSerialNumber(newPosition);
-    answerOptionDao.update(answerOption);
-
-    return answerOptionMapper.answerOptionToDto(answerOption);
   }
 
   // Attachment management
