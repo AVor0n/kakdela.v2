@@ -1,6 +1,8 @@
 package ru.hh.kakdela.v2.service;
 
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -81,8 +83,12 @@ public class SurveyService {
         .doNotify(dto.getDoNotify())
         .isPublished(false)
         .isTemplate(false)
-        .expireAt(dto.getExpireAt())
-        .createdAt(Instant.now())
+        .expireAt(dto.getExpireAtAtTargetTimezone()
+            .atZone(ZoneId.of(dto.getTargetTimezone()))
+            .toInstant()
+            .truncatedTo(ChronoUnit.SECONDS))
+        .targetTimezone(dto.getTargetTimezone())
+        .createdAt(Instant.now().truncatedTo(ChronoUnit.SECONDS))
         .build();
 
     surveyDao.save(survey);
@@ -120,8 +126,25 @@ public class SurveyService {
     if (dto.getDoNotify() != null) {
       survey.setDoNotify(dto.getDoNotify());
     }
-    if (dto.getExpireAt() != null) {
-      survey.setExpireAt(dto.getExpireAt());
+    if (dto.getExpireAtAtTargetTimezone() != null) {
+      if (dto.getTargetTimezone() != null) {
+        survey.setExpireAt(dto.getExpireAtAtTargetTimezone()
+            .atZone(ZoneId.of(dto.getTargetTimezone()))
+            .toInstant()
+            .truncatedTo(ChronoUnit.SECONDS));
+        survey.setTargetTimezone(dto.getTargetTimezone());
+      } else {
+        survey.setExpireAt(dto.getExpireAtAtTargetTimezone()
+            .atZone(ZoneId.of(survey.getTargetTimezone()))
+            .toInstant()
+            .truncatedTo(ChronoUnit.SECONDS));
+      }
+    } else if (dto.getTargetTimezone() != null) {
+      survey.setExpireAt(survey.getExpireAt()
+          .atZone(ZoneId.of(dto.getTargetTimezone()))
+          .toInstant()
+          .truncatedTo(ChronoUnit.SECONDS));
+      survey.setTargetTimezone(dto.getTargetTimezone());
     }
 
     surveyDao.update(survey);

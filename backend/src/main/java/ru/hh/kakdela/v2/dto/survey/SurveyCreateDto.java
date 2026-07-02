@@ -1,16 +1,15 @@
 package ru.hh.kakdela.v2.dto.survey;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.time.Instant;
-
-import io.swagger.v3.oas.annotations.media.Schema;
+import ru.hh.kakdela.v2.validator.NullOrNotBlank;
 
 @NoArgsConstructor
 @Getter
@@ -36,6 +35,7 @@ public class SurveyCreateDto {
   @NotNull
   private Boolean doNotify = true;
   @FutureOrPresent(message = "Дедлайн не должен быть в прошлом")
-  private Instant expireAt;
-
+  private LocalDateTime expireAtAtTargetTimezone;
+  @NullOrNotBlank(message = "Часовой пояс не может быть пустым")
+  private String targetTimezone = "Europe/Moscow";
 }

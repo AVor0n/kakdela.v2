@@ -1,5 +1,7 @@
 package ru.hh.kakdela.v2.mapper;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Comparator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -27,6 +29,11 @@ public class SurveyMapper {
         survey.isTemplate(),
         survey.isDoNotify(),
         survey.getExpireAt(),
+        survey.getExpireAt() != null
+            ? LocalDateTime.ofInstant(survey.getExpireAt(), 
+                ZoneId.of(survey.getTargetTimezone()))
+            : null,
+        survey.getTargetTimezone(),
         survey.getCreatedAt(),
         survey.getPages().stream()
             .sorted(Comparator.comparingInt(SurveyPage::getSerialNumber))
