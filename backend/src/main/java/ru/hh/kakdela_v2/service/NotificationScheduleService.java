@@ -69,16 +69,10 @@ public class NotificationScheduleService {
         )
     );
 
-    NotificationSchedule.ScheduleType type = determineScheduleType(
-        dto.getDaysOfWeek(),
-        dto.getDayOfMonth(),
-        dto.getCronExpression()
-    );
-
     NotificationSchedule notificationSchedule = NotificationSchedule.builder()
         .survey(survey)
         .name(dto.getName())
-        .scheduleType(type)
+        .scheduleType(dto.getType())
         .daysOfWeek(dto.getDaysOfWeek())
         .dayOfMonth(dto.getDayOfMonth())
         .cronExpression(dto.getCronExpression())
@@ -87,7 +81,11 @@ public class NotificationScheduleService {
         .isActive(dto.isActive())
         .build();
 
+    if (notificationSchedule.getScheduleType() != null) {
+      notificationSchedule.getScheduleType().verifyType(notificationSchedule);
+    }
     notificationSchedule.setNextExecution(calculationService.calculateNextExecution(notificationSchedule));
+
     notificationScheduleDao.save(notificationSchedule);
 
     log.info("Расписание уведомлений {} сохранено", dto.getName());
@@ -117,47 +115,8 @@ public class NotificationScheduleService {
       notificationSchedule.setName(dto.getName());
     }
 
-    switch (dto.getType()) {
-      case DAILY:
-        notificationSchedule.setDaysOfWeek(null);
-        notificationSchedule.setDayOfMonth(null);
-        notificationSchedule.setCronExpression(null);
-        notificationSchedule.setScheduleType(NotificationSchedule.ScheduleType.DAILY);
-        break;
-      case WEEKLY:
-        if (dto.getDaysOfWeek() == null) {
-          throw new ResponseStatusException(
-              HttpStatus.BAD_REQUEST,
-              "Дни недели должны быть указаны для этого типа уведомлений"
-          );
-        }
-        notificationSchedule.setDaysOfWeek(dto.getDaysOfWeek());
-        notificationSchedule.setDayOfMonth(null);
-        notificationSchedule.setCronExpression(null);
-        notificationSchedule.setScheduleType(NotificationSchedule.ScheduleType.WEEKLY);
-      case MONTHLY:
-        if (dto.getDayOfMonth() == null) {
-          throw new ResponseStatusException(
-              HttpStatus.BAD_REQUEST,
-              "Число месяца должно быть указано для этого типа уведомлений"
-          );
-        }
-        notificationSchedule.setDaysOfWeek(null);
-        notificationSchedule.setDayOfMonth(dto.getDayOfMonth());
-        notificationSchedule.setCronExpression(null);
-        notificationSchedule.setScheduleType(NotificationSchedule.ScheduleType.MONTHLY);
-      case CUSTOM:
-        String cronExpression = dto.getCronExpression();
-        if (cronExpression == null || cronExpression.isBlank()) {
-          throw new ResponseStatusException(
-              HttpStatus.BAD_REQUEST,
-              "Cron-выражение должно быть указано для этого типа уведомлений"
-          );
-        }
-        notificationSchedule.setDaysOfWeek(null);
-        notificationSchedule.setDayOfMonth(null);
-        notificationSchedule.setCronExpression(cronExpression);
-        notificationSchedule.setScheduleType(NotificationSchedule.ScheduleType.CUSTOM);
+    if (dto.getType() != null) {
+      notificationSchedule = dto.getType().setup(notificationSchedule, dto);
     }
 
     if (dto.getExecutionTime() != null) {
@@ -193,40 +152,6 @@ public class NotificationScheduleService {
     permissionService.checkAccess(toDelete.getSurvey().getId(), accountId, Permission.SurveyRole.EDITOR);
 
     notificationScheduleDao.delete(toDelete);
-  }
-
-  private NotificationSchedule.ScheduleType determineScheduleType(
-      Integer daysOfWeek,
-      Integer dayOfMonth,
-      String cronExpression
-  ) {
-    NotificationSchedule.ScheduleType type = null;
-    if (daysOfWeek != null) {
-      type = NotificationSchedule.ScheduleType.WEEKLY;
-    }
-    if (dayOfMonth != null) {
-      if (type != null) {
-        throw new ResponseStatusException(
-            HttpStatus.BAD_REQUEST,
-            "Уведомление не может иметь несколько типов одновременно"
-        );
-      }
-      type = NotificationSchedule.ScheduleType.MONTHLY;
-    }
-    if (cronExpression != null) {
-      if (type != null) {
-        throw new ResponseStatusException(
-            HttpStatus.BAD_REQUEST,
-            "Уведомление не может иметь несколько типов одновременно"
-        );
-      }
-      type = NotificationSchedule.ScheduleType.CUSTOM;
-    }
-    if (type == null) {
-      type = NotificationSchedule.ScheduleType.DAILY;
-    }
-
-    return type;
   }
 
 }

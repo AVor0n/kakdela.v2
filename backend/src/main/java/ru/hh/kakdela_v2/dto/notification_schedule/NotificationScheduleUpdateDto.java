@@ -19,14 +19,12 @@ public class NotificationScheduleUpdateDto {
   @Size(max = 255, message = "Имя не может быть длинее 255 символов")
   private String name;
 
-  @NotNull
   private NotificationSchedule.ScheduleType type;
   private Integer daysOfWeek;
   private Integer dayOfMonth;
   @NullOrNotBlank
   private String cronExpression;
 
-  @NotNull(message = "Время выполнения должно быть указано")
   private LocalTime executionTime;
   @NullOrNotBlank
   private String userTimezone = "Europe/Moscow";
