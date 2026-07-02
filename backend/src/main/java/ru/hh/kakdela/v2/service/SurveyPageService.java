@@ -2,6 +2,7 @@ package ru.hh.kakdela.v2.service;
 
 import java.util.List;
 import java.util.UUID;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -44,11 +45,8 @@ public class SurveyPageService {
   @Transactional
   public SurveyPageResponseDto create(UUID surveyId, SurveyPageCreateDto dto, UUID accountId) {
     permissionService.checkAccess(surveyId, accountId, SurveyRole.EDITOR);
-    if (surveyPageDao.existsBySurveyIdAndSerialNumber(surveyId, dto.getSerialNumber())) {
-      throw new ResponseStatusException(
-          HttpStatus.CONFLICT,
-          "Страница с номером " + dto.getSerialNumber() + " уже существует в этом опросе");
-    }
+
+    surveyPageDao.increaseSerialNumbers(surveyId, dto.getSerialNumber());
 
     Survey survey = surveyDao.findById(surveyId)
         .orElseThrow(() -> new ResponseStatusException(
@@ -56,7 +54,9 @@ public class SurveyPageService {
 
     SurveyPage surveyPage = SurveyPage.builder()
         .survey(survey)
-        .serialNumber(dto.getSerialNumber())
+        .serialNumber(dto.getSerialNumber() != null
+            ? dto.getSerialNumber()
+            : surveyPageDao.findMaxSerialNumber(surveyId) + 1)
         .title(dto.getTitle())
         .description(dto.getDescription())
         .build();
@@ -72,10 +72,27 @@ public class SurveyPageService {
             HttpStatus.NOT_FOUND, "Страница не найдена: " + surveyPageId));
 
     permissionService.checkAccess(surveyPage.getSurvey().getId(), accountId, SurveyRole.EDITOR);
+    UUID surveyId = surveyPage.getSurvey().getId();
+    int oldSerial = surveyPage.getSerialNumber();
 
-    if (dto.getSerialNumber() != null) {
-      surveyPage.setSerialNumber(dto.getSerialNumber());
+    if (dto.getSerialNumber() != null && !dto.getSerialNumber().equals(oldSerial)) {
+      int newSerial = dto.getSerialNumber();
+
+      int maxSerial = surveyPageDao.findMaxSerialNumber(surveyId);
+      if (newSerial > maxSerial) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+            "Новый номер должен быть не больше" + maxSerial);
+      }
+
+      if (oldSerial > newSerial) {
+        surveyPageDao.increaseSerialNumbers(surveyId, newSerial, oldSerial - 1);
+      } else {
+        surveyPageDao.decreaseSerialNumbers(surveyId, oldSerial + 1, newSerial);
+      }
+
+      surveyPage.setSerialNumber(newSerial);
     }
+
     if (dto.getTitle() != null) {
       surveyPage.setTitle(dto.getTitle());
     }
@@ -93,6 +110,11 @@ public class SurveyPageService {
         .orElseThrow(
             () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Страница не найдена: " + id));
     permissionService.checkAccess(surveyPage.getSurvey().getId(), accountId, SurveyRole.EDITOR);
+
+    UUID surveyId = surveyPage.getSurvey().getId();
+    int deletedSerial = surveyPage.getSerialNumber();
+
     surveyPageDao.delete(surveyPage);
+    surveyPageDao.decreaseSerialNumbers(surveyId, deletedSerial + 1);
   }
 }
