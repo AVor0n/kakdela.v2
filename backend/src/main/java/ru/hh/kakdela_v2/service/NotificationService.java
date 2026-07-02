@@ -65,15 +65,10 @@ public class NotificationService {
             return;
         }
 
-        List<UUID> userIds = responseDao.findUsersWithIncompletedResponseBySurveyId(surveyId);
-        for (UUID userId : userIds) {
-            Optional<Account> account = accountDao.findById(userId);
-            if (account.isEmpty()) {
-                log.info("Account {} not found.", userId);
-                continue;
-            }
+        List<Account> users = accountDao.findUsersWithIncompletedResponseBySurveyId(surveyId);
+        for (Account account : users) {
             emailService.sendUncompletedResponseEmail(
-                account.get().getEmail(),
+                account.getEmail(),
                 survey.getTitle(),
                 surveyId
             );
