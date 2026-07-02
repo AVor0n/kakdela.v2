@@ -44,7 +44,6 @@ public class NotificationSchedule {
   private Integer dayOfMonth;
 
   @Column(name = "cron_expression")
-  @NullOrNotBlank
   private String cronExpression;
 
   @Column(name = "execution_time", nullable = false)

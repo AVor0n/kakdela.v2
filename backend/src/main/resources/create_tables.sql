@@ -116,7 +116,7 @@ CREATE TABLE notification_schedule (
     id uuid PRIMARY KEY,
     survey_id uuid NOT NULL REFERENCES survey(id) ON DELETE CASCADE,
     name varchar(255) NOT NULL,
-    schedule_type varchar(20) NOT NULL,
+    schedule_type varchar(255) NOT NULL,
     -- Для WEEKLY: битовая маска
     days_of_week int,
     -- Для MONTHLY: день месяца
@@ -124,7 +124,7 @@ CREATE TABLE notification_schedule (
     -- Для CUSTOM: cron выражение
     cron_expression varchar(100),
     execution_time time NOT NULL,
-    user_timezone VARCHAR(50) DEFAULT 'Europe/Moscow',
+    user_timezone varchar(50) DEFAULT 'Europe/Moscow',
     is_active boolean DEFAULT TRUE,
     next_execution timestamptz,
     last_execution timestamptz
