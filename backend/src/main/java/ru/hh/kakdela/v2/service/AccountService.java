@@ -1,6 +1,7 @@
 package ru.hh.kakdela.v2.service;
 
 import java.time.Instant;
+import java.util.Objects;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -68,20 +69,25 @@ public class AccountService {
         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
             "Аккаунт не найден: " + currentUser.getId()));
 
-    if (accountDao.existsByLogin(accountPutDto.getLogin())) {
-      throw new ResponseStatusException(HttpStatus.CONFLICT,
-          "Такой логин уже используется: " + accountPutDto.getLogin());
+    if (!Objects.equals(accountPutDto.getLogin(), account.getLogin())) {
+      if (accountDao.existsByLogin(accountPutDto.getLogin())) {
+        throw new ResponseStatusException(HttpStatus.CONFLICT,
+            "Такой логин уже используется: " + accountPutDto.getLogin());
+      }
+      account.setLogin(accountPutDto.getLogin());
     }
-    if (accountDao.existsByEmail(accountPutDto.getEmail())) {
-      throw new ResponseStatusException(HttpStatus.CONFLICT,
-          "Такой email уже зарегистрирован: " + accountPutDto.getEmail());
-    }
-    if (!accountPutDto.getNewPassword().equals(accountPutDto.getNewPasswordConfirmation())) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Пароли не совпадают");
+    if (!Objects.equals(accountPutDto.getEmail(), account.getEmail())) {
+      if (accountDao.existsByEmail(accountPutDto.getEmail())) {
+        throw new ResponseStatusException(HttpStatus.CONFLICT,
+            "Такой email уже зарегистрирован: " + accountPutDto.getEmail());
+      }
+      account.setEmail(accountPutDto.getEmail());
     }
 
-    account.setLogin(accountPutDto.getLogin());
-    account.setEmail(accountPutDto.getEmail());
+    if (!Objects.equals(accountPutDto.getNewPassword(),
+        accountPutDto.getNewPasswordConfirmation())) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Пароли не совпадают");
+    }
     account.setPasswordHash(passwordEncoder.encode(accountPutDto.getNewPassword()));
 
     accountDao.update(account);
@@ -97,14 +103,16 @@ public class AccountService {
         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
             "Аккаунт не найден: " + currentUser.getId()));
 
-    if (accountPatchDto.getLogin() != null) {
+    if (accountPatchDto.getLogin() != null
+        && !accountPatchDto.getLogin().equals(account.getLogin())) {
       if (accountDao.existsByLogin(accountPatchDto.getLogin())) {
         throw new ResponseStatusException(HttpStatus.CONFLICT,
             "Такой логин уже используется: " + accountPatchDto.getLogin());
       }
       account.setLogin(accountPatchDto.getLogin());
     }
-    if (accountPatchDto.getEmail() != null) {
+    if (accountPatchDto.getEmail() != null
+        && !accountPatchDto.getEmail().equals(account.getEmail())) {
       if (accountDao.existsByEmail(accountPatchDto.getEmail())) {
         throw new ResponseStatusException(HttpStatus.CONFLICT,
             "Такой email уже зарегистрирован: " + accountPatchDto.getEmail());
