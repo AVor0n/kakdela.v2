@@ -10,10 +10,16 @@ import lombok.Setter;
 
 import java.time.Instant;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 @NoArgsConstructor
 @Getter
 @Setter
+@Schema(description = "DTO для создания опроса")
 public class SurveyCreateDto {
+  @Schema(
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
   @NotBlank(message = "Заголовок не должен быть пустым")
   @Size(max = 200, message = "Заголовок не должен быть длиннее 200 символов")
   private String title;

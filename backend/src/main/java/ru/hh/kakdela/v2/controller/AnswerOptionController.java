@@ -5,6 +5,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import io.swagger.v3.oas.annotations.tags.Tag;
 import ru.hh.kakdela.v2.dto.answer_option.AnswerOptionCreateDto;
 import ru.hh.kakdela.v2.dto.answer_option.AnswerOptionResponseDto;
 import ru.hh.kakdela.v2.dto.answer_option.AnswerOptionUpdateDto;
@@ -17,6 +19,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
+@Tag(name = "Answer Options", description = "Управление вариантами ответов")
 public class AnswerOptionController {
 
     private final AnswerOptionService answerOptionService;

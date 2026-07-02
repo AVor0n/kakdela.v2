@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+
+import io.swagger.v3.oas.annotations.tags.Tag;
 import ru.hh.kakdela.v2.dto.auth.AuthTokensDto;
 import ru.hh.kakdela.v2.dto.auth.LoginDto;
 import ru.hh.kakdela.v2.dto.auth.RegisterDto;
@@ -20,6 +22,7 @@ import ru.hh.kakdela.v2.service.AuthService;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api")
+@Tag(name = "Authentication", description = "Регистрация и вход")
 public class AuthController {
 
   private final AuthService authService;
