@@ -77,7 +77,7 @@ public class SurveyPageService {
       int newSerial = dto.getSerialNumber();
 
       int maxSerial = surveyPageDao.findMaxSerialNumber(surveyId);
-      if (newSerial < 1 || newSerial > maxSerial) {
+      if (newSerial > maxSerial) {
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
             "Новый номер должен быть от 1 до " + maxSerial);
       }
