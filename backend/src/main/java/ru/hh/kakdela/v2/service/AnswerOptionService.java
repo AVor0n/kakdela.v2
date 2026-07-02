@@ -58,7 +58,9 @@ public class AnswerOptionService {
 
     AnswerOption answerOption = AnswerOption.builder()
         .question(question)
-        .serialNumber(dto.getSerialNumber())
+        .serialNumber(dto.getSerialNumber() != null
+            ? dto.getSerialNumber()
+            : answerOptionDao.findMaxSerialNumber(questionId) + 1)
         .answerOptionText(dto.getAnswerOptionText())
         .build();
 

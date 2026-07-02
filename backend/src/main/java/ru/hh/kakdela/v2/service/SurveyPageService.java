@@ -54,7 +54,9 @@ public class SurveyPageService {
 
     SurveyPage surveyPage = SurveyPage.builder()
         .survey(survey)
-        .serialNumber(dto.getSerialNumber())
+        .serialNumber(dto.getSerialNumber() != null
+            ? dto.getSerialNumber()
+            : surveyPageDao.findMaxSerialNumber(surveyId) + 1)
         .title(dto.getTitle())
         .description(dto.getDescription())
         .build();

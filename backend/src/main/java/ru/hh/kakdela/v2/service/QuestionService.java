@@ -64,7 +64,9 @@ public class QuestionService {
 
     Question question = Question.builder()
         .surveyPage(page)
-        .serialNumber(dto.getSerialNumber())
+        .serialNumber(dto.getSerialNumber() != null
+            ? dto.getSerialNumber()
+            : questionDao.findMaxSerialNumber(pageId) + 1)
         .title(dto.getTitle())
         .description(dto.getDescription())
         .type(dto.getType())
