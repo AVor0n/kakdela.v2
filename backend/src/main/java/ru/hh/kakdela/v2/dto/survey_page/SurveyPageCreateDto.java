@@ -1,5 +1,6 @@
 package ru.hh.kakdela.v2.dto.survey_page;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -12,6 +13,9 @@ import lombok.Setter;
 @Setter
 public class SurveyPageCreateDto {
 
+  @Schema(
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
   @NotNull(message = "Порядковый номер обязателен")
   @Min(value = 1, message = "Порядковый номер должен быть больше 0")
   private Integer serialNumber;

@@ -1,5 +1,6 @@
 package ru.hh.kakdela.v2.dto.question;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -14,6 +15,9 @@ import ru.hh.kakdela.v2.model.Question;
 @Setter
 public class QuestionCreateDto {
 
+  @Schema(
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
   @NotNull(message = "Порядковый номер обязателен")
   @Min(value = 1, message = "Порядковый номер должен быть больше 0")
   private Integer serialNumber;
@@ -22,6 +26,9 @@ public class QuestionCreateDto {
   private String title;
   @Size(max = 5000, message = "Описание не должно быть длиннее 5000 символов")
   private String description;
+  @Schema(
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
   @NotNull(message = "Тип вопроса обязателен")
   private Question.QuestionType type;
   private Question.AnswerOptionOrder answerOptionOrder;

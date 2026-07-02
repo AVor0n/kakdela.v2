@@ -7,6 +7,8 @@ import lombok.Setter;
 
 import java.util.UUID;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 @NoArgsConstructor
 @Getter
 @Setter
@@ -14,6 +16,9 @@ public class ResponseCreateDto {
 
   // account_id не передаём — берётся из токена авторизации в сервисе
   // survey_id передаем — к какому опросу относится ответ
+  @Schema(
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
   @NotNull(message = "ID опроса обязателен")
   private UUID surveyId;
 }
