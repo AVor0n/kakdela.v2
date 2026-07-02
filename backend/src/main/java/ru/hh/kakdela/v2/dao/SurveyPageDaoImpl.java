@@ -68,11 +68,11 @@ public class SurveyPageDaoImpl implements SurveyPageDao {
     deferConstraint();
 
     entityManager.createQuery("""
-                UPDATE SurveyPage p 
-                SET p.serialNumber = p.serialNumber + 1 
-                WHERE p.survey.id = :surveyId 
-                  AND p.serialNumber >= :startSerial
-                """
+            UPDATE SurveyPage p 
+            SET p.serialNumber = p.serialNumber + 1 
+            WHERE p.survey.id = :surveyId 
+              AND p.serialNumber >= :startSerial
+            """
         )
         .setParameter("surveyId", surveyId)
         .setParameter("startSerial", startSerial)
@@ -84,10 +84,10 @@ public class SurveyPageDaoImpl implements SurveyPageDao {
     deferConstraint();
 
     entityManager.createQuery("""
-                UPDATE SurveyPage p SET p.serialNumber = p.serialNumber + 1
-                WHERE p.survey.id = :surveyId
-                  AND p.serialNumber BETWEEN :startSerial AND :endSerial
-                """
+            UPDATE SurveyPage p SET p.serialNumber = p.serialNumber + 1
+            WHERE p.survey.id = :surveyId
+              AND p.serialNumber BETWEEN :startSerial AND :endSerial
+            """
         )
         .setParameter("surveyId", surveyId)
         .setParameter("startSerial", startSerial)
@@ -100,11 +100,11 @@ public class SurveyPageDaoImpl implements SurveyPageDao {
     deferConstraint();
 
     entityManager.createQuery("""
-                UPDATE SurveyPage p 
-                SET p.serialNumber = p.serialNumber - 1 
-                WHERE p.survey.id = :surveyId 
-                  AND p.serialNumber >= :startSerial
-                """
+            UPDATE SurveyPage p 
+            SET p.serialNumber = p.serialNumber - 1 
+            WHERE p.survey.id = :surveyId 
+              AND p.serialNumber >= :startSerial
+            """
         )
         .setParameter("surveyId", surveyId)
         .setParameter("startSerial", startSerial)
@@ -116,11 +116,11 @@ public class SurveyPageDaoImpl implements SurveyPageDao {
     deferConstraint();
 
     entityManager.createQuery("""
-                UPDATE SurveyPage p
-                SET p.serialNumber = p.serialNumber - 1
-                WHERE p.survey.id = :surveyId
-                  AND p.serialNumber BETWEEN :startSerial AND :endSerial
-                """
+            UPDATE SurveyPage p
+            SET p.serialNumber = p.serialNumber - 1
+            WHERE p.survey.id = :surveyId
+              AND p.serialNumber BETWEEN :startSerial AND :endSerial
+            """
         )
         .setParameter("surveyId", surveyId)
         .setParameter("startSerial", startSerial)
@@ -131,20 +131,20 @@ public class SurveyPageDaoImpl implements SurveyPageDao {
   @Override
   public int findMaxSerialNumber(UUID surveyId) {
     if (surveyId == null) {
-        return 0;
+      return 0;
     }
-        
+
     Integer max = entityManager.createQuery("""
                 SELECT MAX(p.serialNumber) 
                 FROM SurveyPage p 
                 WHERE p.survey.id = :surveyId
                 """,
-                Integer.class
+            Integer.class
         )
         .setParameter("surveyId", surveyId)
         .getSingleResultOrNull();
-        
-      return max != null ? max : 0;
+
+    return max != null ? max : 0;
   }
 
   private void deferConstraint() {

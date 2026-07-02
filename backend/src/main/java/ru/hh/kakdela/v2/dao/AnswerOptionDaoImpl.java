@@ -54,11 +54,11 @@ public class AnswerOptionDaoImpl implements AnswerOptionDao {
     deferConstraint();
 
     entityManager.createQuery("""
-                UPDATE AnswerOption a
-                SET a.serialNumber = a.serialNumber + 1
-                WHERE a.question.id = :questionId
-                  AND a.serialNumber >= :startSerial
-                """
+            UPDATE AnswerOption a
+            SET a.serialNumber = a.serialNumber + 1
+            WHERE a.question.id = :questionId
+              AND a.serialNumber >= :startSerial
+            """
         )
         .setParameter("questionId", questionId)
         .setParameter("startSerial", startSerial)
@@ -70,11 +70,11 @@ public class AnswerOptionDaoImpl implements AnswerOptionDao {
     deferConstraint();
 
     entityManager.createQuery("""
-                UPDATE AnswerOption a
-                SET a.serialNumber = a.serialNumber + 1
-                WHERE a.question.id = :questionId
-                  AND a.serialNumber BETWEEN :startSerial AND :endSerial
-                """
+            UPDATE AnswerOption a
+            SET a.serialNumber = a.serialNumber + 1
+            WHERE a.question.id = :questionId
+              AND a.serialNumber BETWEEN :startSerial AND :endSerial
+            """
         )
         .setParameter("questionId", questionId)
         .setParameter("startSerial", startSerial)
@@ -87,11 +87,11 @@ public class AnswerOptionDaoImpl implements AnswerOptionDao {
     deferConstraint();
 
     entityManager.createQuery("""
-                UPDATE AnswerOption a
-                SET a.serialNumber = a.serialNumber - 1
-                WHERE a.question.id = :questionId
-                  AND a.serialNumber >= :startSerial
-                """
+            UPDATE AnswerOption a
+            SET a.serialNumber = a.serialNumber - 1
+            WHERE a.question.id = :questionId
+              AND a.serialNumber >= :startSerial
+            """
         )
         .setParameter("questionId", questionId)
         .setParameter("startSerial", startSerial)
@@ -103,11 +103,11 @@ public class AnswerOptionDaoImpl implements AnswerOptionDao {
     deferConstraint();
 
     entityManager.createQuery("""
-                UPDATE AnswerOption a
-                SET a.serialNumber = a.serialNumber - 1
-                WHERE a.question.id = :questionId
-                  AND a.serialNumber BETWEEN :startSerial AND :endSerial
-                """
+            UPDATE AnswerOption a
+            SET a.serialNumber = a.serialNumber - 1
+            WHERE a.question.id = :questionId
+              AND a.serialNumber BETWEEN :startSerial AND :endSerial
+            """
         )
         .setParameter("questionId", questionId)
         .setParameter("startSerial", startSerial)
@@ -122,12 +122,12 @@ public class AnswerOptionDaoImpl implements AnswerOptionDao {
                 FROM AnswerOption a 
                 WHERE a.question.id = :questionId
                 """,
-                Integer.class
-    )
-    .setParameter("questionId", questionId)
-    .getSingleResultOrNull();
+            Integer.class
+        )
+        .setParameter("questionId", questionId)
+        .getSingleResultOrNull();
     return max != null ? max : 0;
-}
+  }
 
   private void deferConstraint() {
     entityManager.createNativeQuery(

@@ -68,11 +68,11 @@ public class QuestionDaoImpl implements QuestionDao {
     deferConstraint();
 
     entityManager.createQuery("""
-                UPDATE Question q
-                SET q.serialNumber = q.serialNumber + 1
-                WHERE q.surveyPage.id = :pageId
-                  AND q.serialNumber >= :startSerial
-                """
+            UPDATE Question q
+            SET q.serialNumber = q.serialNumber + 1
+            WHERE q.surveyPage.id = :pageId
+              AND q.serialNumber >= :startSerial
+            """
         )
         .setParameter("pageId", pageId)
         .setParameter("startSerial", startSerial)
@@ -84,11 +84,11 @@ public class QuestionDaoImpl implements QuestionDao {
     deferConstraint();
 
     entityManager.createQuery("""
-                UPDATE Question q 
-                SET q.serialNumber = q.serialNumber + 1
-                WHERE q.surveyPage.id = :pageId
-                  AND q.serialNumber BETWEEN :startSerial AND :endSerial
-                """
+            UPDATE Question q 
+            SET q.serialNumber = q.serialNumber + 1
+            WHERE q.surveyPage.id = :pageId
+              AND q.serialNumber BETWEEN :startSerial AND :endSerial
+            """
         )
         .setParameter("pageId", pageId)
         .setParameter("startSerial", startSerial)
@@ -101,11 +101,11 @@ public class QuestionDaoImpl implements QuestionDao {
     deferConstraint();
 
     entityManager.createQuery("""
-                UPDATE Question q
-                SET q.serialNumber = q.serialNumber - 1
-                WHERE q.surveyPage.id = :pageId
-                  AND q.serialNumber >= :startSerial
-                """
+            UPDATE Question q
+            SET q.serialNumber = q.serialNumber - 1
+            WHERE q.surveyPage.id = :pageId
+              AND q.serialNumber >= :startSerial
+            """
         )
         .setParameter("pageId", pageId)
         .setParameter("startSerial", startSerial)
@@ -117,11 +117,11 @@ public class QuestionDaoImpl implements QuestionDao {
     deferConstraint();
 
     entityManager.createQuery("""
-                UPDATE Question q
-                SET q.serialNumber = q.serialNumber - 1
-                WHERE q.surveyPage.id = :pageId
-                  AND q.serialNumber BETWEEN :startSerial AND :endSerial
-                """
+            UPDATE Question q
+            SET q.serialNumber = q.serialNumber - 1
+            WHERE q.surveyPage.id = :pageId
+              AND q.serialNumber BETWEEN :startSerial AND :endSerial
+            """
         )
         .setParameter("pageId", pageId)
         .setParameter("startSerial", startSerial)
@@ -136,10 +136,10 @@ public class QuestionDaoImpl implements QuestionDao {
                 FROM Question q 
                 WHERE q.surveyPage.id = :pageId
                 """,
-                  Integer.class
-    )
-    .setParameter("pageId", pageId)
-    .getSingleResultOrNull();
+            Integer.class
+        )
+        .setParameter("pageId", pageId)
+        .getSingleResultOrNull();
     return max != null ? max : 0;
   }
 
