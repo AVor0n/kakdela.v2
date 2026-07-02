@@ -146,7 +146,7 @@ public class QuestionService {
 
     ProcessedImage image = imageProcessingService.process(file);
 
-    String objectKey = "answer-options/%s/%s".formatted(question.getId(), UUID.randomUUID());
+    String objectKey = "questions/%s/%s".formatted(question.getId(), UUID.randomUUID());
     objectStorageService.putObject(
         objectKey,
         image.getContent(),
@@ -177,7 +177,7 @@ public class QuestionService {
           question.getAttachmentObjectKey());
     }
 
-    String objectKey = "answer-options/%s/%s".formatted(question.getId(), UUID.randomUUID());
+    String objectKey = "questions/%s/%s".formatted(question.getId(), UUID.randomUUID());
     objectStorageService.putObject(
         objectKey,
         image.getContent(),
