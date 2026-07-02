@@ -54,7 +54,7 @@ export function SurveyLayout() {
                         Настройки
                     </Button>
                 </nav>
-                <div>
+                <div className={style.actions}>
                     {id && (
                         <Button mode='secondary' style='neutral' Element={Link} to={routes.surveyPreview(id)}>
                             Предпросмотр

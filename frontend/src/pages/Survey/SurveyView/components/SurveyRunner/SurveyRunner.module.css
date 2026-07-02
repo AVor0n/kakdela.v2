@@ -21,18 +21,7 @@
 .formHeader {
     width: 100%;
     min-width: 0;
-    overflow: hidden;
     box-sizing: border-box;
-}
-
-.formHeader > * {
-    min-width: 0;
-    max-width: 100%;
-}
-
-.formHeader :global(textarea),
-.formHeader :global(input) {
-    max-width: 100%;
 }
 
 .previewActions {

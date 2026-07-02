@@ -288,7 +288,7 @@ export function SurveyRunner({ survey, mode }: Props) {
                             mode='secondary'
                             style='accent'
                             Element={Link}
-                            to={`${routes.surveyEdit(survey.id)}/questions`}
+                            to={routes.surveyQuestions(survey.id)}
                         >
                             Выйти из предпросмотра
                         </Button>
@@ -296,18 +296,14 @@ export function SurveyRunner({ survey, mode }: Props) {
                     </div>
                 )}
                 <header className={`${surveyDetailStyle.container} ${style.formHeader}`}>
-                    <Input placeholder='Название формы' value={survey.title} onChange={() => {}} disabled />
-                    <TextArea
-                        placeholder='Описание формы'
-                        data-qa='textarea'
-                        layout='fixed'
-                        resize='none'
-                        description='Описание формы - для чего она нужна, что в ней будет'
-                        value={survey.description ?? ''}
-                        onChange={() => {}}
-                        elevatePlaceholder={true}
-                        disabled
-                    />
+                    <Text typography='subtitle-1-semibold' style='primary'>
+                        {survey.title}
+                    </Text>
+                    {survey.description && (
+                        <Text typography='paragraph-2-regular' style='primary'>
+                            {survey.description}
+                        </Text>
+                    )}
                 </header>
 
                 {isComplete ? (
@@ -332,7 +328,7 @@ export function SurveyRunner({ survey, mode }: Props) {
                                 {currentPage.questions.map((question) => (
                                     <article className={questionStyle.container} key={question.id}>
                                         <div className={style.questionTitle}>
-                                            <Text typography='subtitle-3-semibold' style='primary'>
+                                            <Text typography='paragraph-2-regular' style='primary'>
                                                 {question.title}
                                             </Text>
                                             {question.isMandatory && <span className={style.mandatory}>*</span>}
