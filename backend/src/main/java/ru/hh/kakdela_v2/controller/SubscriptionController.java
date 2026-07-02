@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.hh.kakdela_v2.dto.account.AccountResponseDto;
 import ru.hh.kakdela_v2.dto.subscription.SubscriptionRequestDto;
 import ru.hh.kakdela_v2.dto.subscription.SubscriptionResponseDto;
+import ru.hh.kakdela_v2.mapper.AccountMapper;
 import ru.hh.kakdela_v2.service.SurveyNotificationSubscriptionService;
 import ru.hh.kakdela_v2.security.CustomUserDetails;
 
@@ -43,7 +44,7 @@ public class SubscriptionController {
             @PathVariable UUID surveyId,
             @AuthenticationPrincipal CustomUserDetails currentUser) {
         return subscriptionService.getSubscribers(surveyId, currentUser.getId()).stream()
-            .map(AccountResponseDto::fromEntity)
+            .map(AccountMapper::accountToDto)
             .toList();
     }
 
