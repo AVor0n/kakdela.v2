@@ -50,7 +50,7 @@ public class EmailService {
     }
 
     @Async
-    public void sendUncompletedResponseEmail (String email, String surveyTitle, UUID surveyId) {
+    public void sendIncompletedResponseEmail(String email, String surveyTitle, UUID surveyId) {
         try {
             log.info("Уведомление о незавершённом опросе");
             logEmailSending(email, surveyTitle, surveyId);

@@ -11,7 +11,6 @@ import ru.hh.kakdela_v2.model.Permission;
 import ru.hh.kakdela_v2.model.Survey;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -67,7 +66,7 @@ public class NotificationService {
 
         List<Account> users = accountDao.findUsersWithIncompletedResponseBySurveyId(surveyId);
         for (Account account : users) {
-            emailService.sendUncompletedResponseEmail(
+            emailService.sendIncompletedResponseEmail(
                 account.getEmail(),
                 survey.getTitle(),
                 surveyId
