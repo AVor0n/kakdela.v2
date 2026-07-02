@@ -96,14 +96,12 @@ public class QuestionService {
       int maxSerial = questionDao.findMaxSerialNumber(pageId);
       if (newSerial > maxSerial) {
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-            "Новый номер должен быть от 1 до " + maxSerial);
+            "Новый номер должен быть не больше" + maxSerial);
       }
 
       if (oldSerial > newSerial) {
         questionDao.increaseSerialNumbers(pageId, newSerial, oldSerial - 1);
-      }
-
-      else {
+      } else {
         questionDao.decreaseSerialNumbers(pageId, oldSerial + 1, newSerial);
       }
 

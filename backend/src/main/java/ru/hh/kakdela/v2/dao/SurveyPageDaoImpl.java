@@ -130,10 +130,6 @@ public class SurveyPageDaoImpl implements SurveyPageDao {
 
   @Override
   public int findMaxSerialNumber(UUID surveyId) {
-    if (surveyId == null) {
-      return 0;
-    }
-
     Integer max = entityManager.createQuery("""
                 SELECT MAX(p.serialNumber) 
                 FROM SurveyPage p 

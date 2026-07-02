@@ -85,14 +85,12 @@ public class AnswerOptionService {
       int maxSerial = answerOptionDao.findMaxSerialNumber(questionId);
       if (newSerial > maxSerial) {
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-            "Новый номер должен быть от 1 до " + maxSerial);
+            "Новый номер должен быть не больше" + maxSerial);
       }
 
       if (oldSerial > newSerial) {
         answerOptionDao.increaseSerialNumbers(questionId, newSerial, oldSerial - 1);
-      }
-
-      else {
+      } else {
         answerOptionDao.decreaseSerialNumbers(questionId, oldSerial + 1, newSerial);
       }
 

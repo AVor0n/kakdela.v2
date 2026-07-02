@@ -79,14 +79,12 @@ public class SurveyPageService {
       int maxSerial = surveyPageDao.findMaxSerialNumber(surveyId);
       if (newSerial > maxSerial) {
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-            "Новый номер должен быть от 1 до " + maxSerial);
+            "Новый номер должен быть не больше" + maxSerial);
       }
 
       if (oldSerial > newSerial) {
         surveyPageDao.increaseSerialNumbers(surveyId, newSerial, oldSerial - 1);
-      }
-
-      else {
+      } else {
         surveyPageDao.decreaseSerialNumbers(surveyId, oldSerial + 1, newSerial);
       }
 
