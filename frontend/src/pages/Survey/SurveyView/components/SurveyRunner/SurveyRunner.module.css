@@ -50,17 +50,26 @@
     color: var(--color-primary);
 }
 
-.questionSettings {
+.questionTitle {
+    display: flex;
+    align-items: flex-start;
+    gap: 4px;
     margin-bottom: 10px;
+}
+
+.mandatory {
+    color: red;
 }
 
 .error {
     margin-top: 10px;
 }
 
-.actions {
+.navigation {
     display: flex;
-    justify-content: flex-end;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
     margin-top: 20px;
 }
 
@@ -77,5 +86,9 @@
     .content {
         width: 100%;
         max-width: 100%;
+    }
+
+    .navigation {
+        flex-wrap: wrap;
     }
 }
