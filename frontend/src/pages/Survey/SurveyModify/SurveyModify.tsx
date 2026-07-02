@@ -19,12 +19,14 @@ export function SurveyModify() {
     const dispatch = useAppDispatch();
 
     useEffect(() => {
-        if (id) {
-            getSurveyById(id).then((data) => {
-                dispatch(setSelectedSurvey({ survey: data }));
-            });
+        if (!id) {
+            return;
         }
-    }, []);
+
+        getSurveyById(id).then((data) => {
+            dispatch(setSelectedSurvey({ survey: data }));
+        });
+    }, [dispatch, id]);
 
     if (!selectedSurvey) {
         return <div>Загрузка...</div>;
