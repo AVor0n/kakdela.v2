@@ -52,6 +52,7 @@ public class SurveyPageController {
     }
 
     @PutMapping("/pages/{pageId}/move")
+    @ResponseStatus(HttpStatus.OK)
     public SurveyPageResponseDto movePage(
         @PathVariable UUID pageId,
         @Valid @RequestBody SurveyPageMoveRequestDto request,
