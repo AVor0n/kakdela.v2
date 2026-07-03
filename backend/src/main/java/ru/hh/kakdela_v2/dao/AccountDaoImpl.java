@@ -38,11 +38,11 @@ public class AccountDaoImpl implements AccountDao {
 
   @Override
   public List<Account> findUsersWithIncompletedResponseBySurveyId(UUID surveyId) {
-    return entityManager.createQuery(
-        "FROM Account a"
-        + " JOIN Response r on a.id = r.account.id"
-        + " WHERE r.survey.id = :surveyId AND r.isCompleted = false"
-        , Account.class)
+    return entityManager.createQuery("""
+        FROM Account a
+        JOIN Response r on a.id = r.account.id
+        WHERE r.survey.id = :surveyId AND r.isCompleted = false
+        """, Account.class)
     .setParameter("surveyId", surveyId)
     .getResultList();
   }
