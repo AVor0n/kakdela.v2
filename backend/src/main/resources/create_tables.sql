@@ -37,7 +37,7 @@ CREATE TABLE survey_page (
     serial_number int NOT NULL,
     title varchar(200),
     description varchar(5000),
-    CONSTRAINT uq_page_survey_serial UNIQUE (survey_id, serial_number)
+    CONSTRAINT uq_page_survey_serial UNIQUE (survey_id, serial_number) DEFERRABLE INITIALLY IMMEDIATE
 );
 
 CREATE INDEX idx_survey_page_survey_id
@@ -55,7 +55,7 @@ CREATE TABLE question (
     is_mandatory bool NOT NULL,
     is_visible bool NOT NULL,
     condition text,
-    CONSTRAINT uq_question_page_serial UNIQUE (survey_page_id, serial_number)
+    CONSTRAINT uq_question_page_serial UNIQUE (survey_page_id, serial_number) DEFERRABLE INITIALLY IMMEDIATE
 );
 
 CREATE INDEX idx_question_survey_page_id
@@ -67,7 +67,7 @@ CREATE TABLE answer_option (
     serial_number int NOT NULL,
     answer_option_text varchar(1000) NOT NULL,
     attachment_object_key varchar(1024),
-    CONSTRAINT uq_answer_option_question_serial UNIQUE (question_id, serial_number)
+    CONSTRAINT uq_answer_option_question_serial UNIQUE (question_id, serial_number) DEFERRABLE INITIALLY IMMEDIATE
 
 );
 

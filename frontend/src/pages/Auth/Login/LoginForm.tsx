@@ -42,8 +42,8 @@ export function LoginForm({
         >
             <div style={{ marginTop: 16 }}>
                 <Input
-                    size="large"
-                    placeholder="Логин"
+                    size='large'
+                    placeholder='Логин'
                     value={values.login}
                     invalid={Boolean(errors.login)}
                     errorMessage={errors.login}
@@ -54,8 +54,8 @@ export function LoginForm({
 
             <div style={{ marginTop: 12 }}>
                 <PasswordInput
-                    size="large"
-                    placeholder="Пароль"
+                    size='large'
+                    placeholder='Пароль'
                     value={values.password}
                     invalid={Boolean(errors.password)}
                     errorMessage={errors.password}
@@ -65,33 +65,17 @@ export function LoginForm({
             </div>
 
             {formError && (
-                <div
-                    role="alert"
-                    style={{ marginTop: 12, color: '#d6001c' }}
-                >
+                <div role='alert' style={{ marginTop: 12, color: '#d6001c' }}>
                     {formError}
                 </div>
             )}
 
-            <Flex
-                direction="column"
-                gap={12}
-                style={{ marginTop: 20 }}
-            >
-                <Button
-                    style="accent"
-                    mode="primary"
-                    type="submit"
-                >
+            <Flex direction='column' gap={12} style={{ marginTop: 20 }}>
+                <Button style='accent' mode='primary' type='submit'>
                     Войти
                 </Button>
 
-                <Button
-                    style="accent"
-                    mode="tertiary"
-                    type="button"
-                    onClick={onRegisterClick}
-                >
+                <Button style='accent' mode='tertiary' type='button' onClick={onRegisterClick}>
                     Зарегистрироваться
                 </Button>
             </Flex>

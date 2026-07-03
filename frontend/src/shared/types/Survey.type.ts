@@ -3,7 +3,7 @@ import type { Question } from './Question.type';
 export type Survey = {
     id: string;
     authorId: string;
-    authorizedOnly: boolean;
+    isAuthorizedOnly: boolean;
     closingPage: string | null;
     createdAt: string;
     title: string;

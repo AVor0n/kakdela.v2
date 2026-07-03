@@ -1,0 +1,14 @@
+.header {
+    border-bottom: 1px solid #dce3eb;
+    display: flex;
+    justify-content: end;
+    align-items: center;
+    padding: 10px 20px;
+    gap: 18px;
+}
+
+.header__avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+}
