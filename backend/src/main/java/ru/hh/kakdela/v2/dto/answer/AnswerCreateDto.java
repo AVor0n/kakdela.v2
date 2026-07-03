@@ -18,7 +18,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 )
 public class AnswerCreateDto {
 
-  @Schema( requiredMode = Schema.RequiredMode.REQUIRED)
+  @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
   @NotBlank(message = "Текст ответа не должен быть пустым")
   @Size(max = 5000, message = "Текст ответа не должен быть длиннее 5000 символов")
   private String answerText;

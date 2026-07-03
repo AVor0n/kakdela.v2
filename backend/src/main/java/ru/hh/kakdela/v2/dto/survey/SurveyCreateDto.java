@@ -20,7 +20,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
     title = "DTO для создания опроса"
 )
 public class SurveyCreateDto {
-  @Schema( requiredMode = Schema.RequiredMode.REQUIRED)
+  @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
   @NotBlank(message = "Заголовок не должен быть пустым")
   @Size(max = 200, message = "Заголовок не должен быть длиннее 200 символов")
   private String title;

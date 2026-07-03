@@ -19,8 +19,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 )
 public class SubscriptionResponseDto {
 
-    private List<String> subscribedEmails;
-    private List<String> alreadySubscribedEmails; 
-    private List<String> notFoundEmails;            
+  private List<String> subscribedEmails;
+  private List<String> alreadySubscribedEmails;
+  private List<String> notFoundEmails;
 
 }

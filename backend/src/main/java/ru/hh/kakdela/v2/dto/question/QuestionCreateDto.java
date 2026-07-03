@@ -21,7 +21,7 @@ public class QuestionCreateDto {
 
   @Min(value = 1, message = "Порядковый номер должен быть больше 0")
   private Integer serialNumber;
-  @Schema( requiredMode = Schema.RequiredMode.REQUIRED)
+  @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
   @NotBlank(message = "Заголовок не должен быть пустым")
   @Size(max = 200, message = "Заголовок не должен быть длиннее 200 символов")
   private String title;

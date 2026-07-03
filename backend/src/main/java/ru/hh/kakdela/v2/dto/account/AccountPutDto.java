@@ -22,7 +22,7 @@ public class AccountPutDto {
   @NotBlank(message = "Логин не должен быть пустым")
   @Size(max = 32, message = "Логин не должен быть длиннее 32 символов")
   private String login;
-  @Schema( requiredMode = Schema.RequiredMode.REQUIRED)
+  @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
   @NotBlank(message = "Электронная почта не должна быть пустой")
   @Email(message = "Электронная почта должна соответствовать формату")
   private String email;

@@ -17,7 +17,7 @@ import jakarta.validation.constraints.NotNull;
     title = "DTO для запроса на создание подписки на уведомления"
 )
 public class SubscriptionRequestDto {
-    @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
-    @NotNull(message = "Список почт получателей обязателен")
-    private List<String> emails;
+  @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
+  @NotNull(message = "Список почт получателей обязателен")
+  private List<String> emails;
 }

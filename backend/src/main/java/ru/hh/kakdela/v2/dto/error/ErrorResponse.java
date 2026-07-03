@@ -17,10 +17,10 @@ import io.swagger.v3.oas.annotations.media.Schema;
 )
 
 public class ErrorResponse {
-    private LocalDateTime timestamp;
-    private int status;
-    private String error;
-    private String message;
-    private String path;
-    private String details;
+  private LocalDateTime timestamp;
+  private int status;
+  private String error;
+  private String message;
+  private String path;
+  private String details;
 }
