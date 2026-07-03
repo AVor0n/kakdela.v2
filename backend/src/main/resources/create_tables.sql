@@ -124,7 +124,7 @@ CREATE TABLE notification_schedule (
     -- Для CUSTOM: cron выражение
     cron_expression varchar(100),
     execution_time time NOT NULL,
-    user_timezone varchar(50) DEFAULT 'Europe/Moscow',
+    target_timezone varchar(50) DEFAULT 'Europe/Moscow',
     is_active boolean DEFAULT TRUE,
     next_execution timestamptz,
     last_execution timestamptz

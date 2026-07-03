@@ -80,7 +80,7 @@ public class DynamicNotificationScheduler {
     scheduledTasks.put(schedule.getId(), future);
 
     String nextExecutionStr = nextExecution
-        .atZone(ZoneId.of(schedule.getUserTimezone()))
+        .atZone(ZoneId.of(schedule.getTargetTimezone()))
         .format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss z"));
 
     log.info("Запланирована задача '{}' на {}", schedule.getName(), nextExecutionStr);

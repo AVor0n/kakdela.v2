@@ -12,10 +12,10 @@ public class ScheduleCalculationService {
 
   public Instant calculateNextExecution(NotificationSchedule schedule) {
     Instant now = Instant.now();
-    ZoneId userZone = ZoneId.of(schedule.getUserTimezone());
+    ZoneId targetZone = ZoneId.of(schedule.getTargetTimezone());
 
     // Конвертация в ZonedDateTime для работы с датой/временем
-    ZonedDateTime nowInUserZone = now.atZone(userZone);
+    ZonedDateTime nowInUserZone = now.atZone(targetZone);
     LocalTime execTime = schedule.getExecutionTime();
 
     ZonedDateTime candidate = nowInUserZone.with(execTime);

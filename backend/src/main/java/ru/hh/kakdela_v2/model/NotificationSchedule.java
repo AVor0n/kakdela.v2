@@ -58,9 +58,9 @@ public class NotificationSchedule {
   @Column(name = "execution_time", nullable = false)
   private LocalTime executionTime;
 
-  @Column(name = "user_timezone")
+  @Column(name = "target_timezone")
   @Builder.Default
-  private String userTimezone = "Europe/Moscow";
+  private String targetTimezone = "Europe/Moscow";
 
   @Column(name = "is_active")
   @Builder.Default
@@ -253,7 +253,7 @@ public class NotificationSchedule {
                 schedule.getCronExpression());
             return candidate.plusDays(1);
           }
-          return nextInstant.atZone(ZoneId.of(schedule.getUserTimezone()));
+          return nextInstant.atZone(ZoneId.of(schedule.getTargetTimezone()));
         } catch (Exception e) {
           log.error("Ошибка парсинга CRON: {}", schedule.getCronExpression(), e);
           throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Невалидное CRON выражение");

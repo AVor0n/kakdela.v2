@@ -77,7 +77,7 @@ public class NotificationScheduleService {
         .dayOfMonth(dto.getDayOfMonth())
         .cronExpression(dto.getCronExpression())
         .executionTime(dto.getExecutionTime())
-        .userTimezone(dto.getUserTimezone())
+        .targetTimezone(dto.getUserTimezone())
         .isActive(dto.isActive())
         .build();
 

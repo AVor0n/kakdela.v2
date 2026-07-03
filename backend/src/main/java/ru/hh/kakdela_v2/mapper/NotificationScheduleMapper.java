@@ -15,7 +15,7 @@ public class NotificationScheduleMapper {
         object.getDayOfMonth(),
         object.getCronExpression(),
         object.getExecutionTime(),
-        object.getUserTimezone(),
+        object.getTargetTimezone(),
         object.getIsActive()
     );
   }
