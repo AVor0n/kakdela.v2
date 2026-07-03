@@ -10,6 +10,15 @@ import { ErrorBlock } from '../ErrorBlock/ErrorBlock';
 import type { Error } from '@/shared/types/Error.type';
 import { useNavigate } from 'react-router-dom';
 import { routePatterns } from '@/app/routes';
+
+function convertDateFromISO(isoStr: string): string {
+    const date = new Date(isoStr);
+
+    const result = date.toLocaleDateString('ru-RU');
+
+    return result;
+}
+
 export function Settings() {
     const { selectedSurvey } = useAppSelector((state) => state.survey);
     const dispatch = useAppDispatch();
@@ -21,7 +30,13 @@ export function Settings() {
         selectedSurvey.isLimitedToOneResponse,
     );
     const [doNotify, setDoNotify] = useState<boolean>(selectedSurvey.doNotify);
-    const [expireAt, setExpireAt] = useState<string | null>(selectedSurvey.expireAt);
+    const [expireAt, setExpireAt] = useState<string | null>(() => {
+        if (selectedSurvey.expireAt) {
+            return convertDateFromISO(selectedSurvey.expireAt);
+        }
+
+        return null;
+    });
     const [error, setError] = useState<Error | null>(null);
     const debouncedIsAuthorizedOnly = useDebounce(isAuthorizedOnly, 1000);
     const debouncedIsLimitedToOneResponse = useDebounce(isLimitedToOneResponse, 1000);
@@ -106,7 +121,14 @@ export function Settings() {
 
     useEffect(() => {
         if (debouncedExpireAt && debouncedExpireAt !== selectedSurvey.expireAt) {
-            updateSurvey(selectedSurvey.id, { expireAt })
+            const [day, month, year] = debouncedExpireAt.split('.').map(Number);
+            if (!day || !month || !year) {
+                return;
+            }
+            const isoString = new Date(year, month - 1, day, 10, 0, 0).toISOString();
+            const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+            updateSurvey(selectedSurvey.id, { expireAtAtTargetTimezone: isoString, targetTimezone: timeZone })
                 .then((data) => {
                     dispatch(setSelectedSurvey({ survey: data }));
                 })
