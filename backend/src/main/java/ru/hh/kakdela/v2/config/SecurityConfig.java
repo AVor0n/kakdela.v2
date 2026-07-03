@@ -51,16 +51,20 @@ public class SecurityConfig {
             auth -> auth
                 .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
                 .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/api-docs/**", "/v3/api-docs/**").permitAll()
+                .requestMatchers("/api/auth/logout").authenticated()
                 .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/surveys/{surveyId}/my-incomplete-responses").authenticated()
+                .requestMatchers(HttpMethod.GET,
+                    "/api/surveys/{surveyId}/my-incomplete-responses").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/surveys/{surveyId}/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/surveys/{surveyId}/responses").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/responses/{responseId}").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/responses/{responseId}/complete").permitAll()
+                .requestMatchers(HttpMethod.POST,
+                    "/api/responses/{responseId}/complete").permitAll()
                 .requestMatchers("/api/responses/{responseId}/answers").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/pages/{pageId}/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/questions/{questionId}/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/answer-options/{answerOptionId}/**").permitAll()
+                .requestMatchers(HttpMethod.GET,
+                    "/api/answer-options/{answerOptionId}/**").permitAll()
                 .anyRequest().authenticated()
         );
     http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);

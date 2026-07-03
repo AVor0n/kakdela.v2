@@ -19,4 +19,14 @@ public interface QuestionDao {
   void delete(Question question);
 
   boolean existsByPageIdAndSerialNumber(UUID pageId, Integer serialNumber);
+
+  void increaseSerialNumbers(UUID pageId, int startSerial);
+
+  void increaseSerialNumbers(UUID pageId, int startSerial, int endSerial);
+
+  void decreaseSerialNumbers(UUID pageId, int startSerial);
+
+  void decreaseSerialNumbers(UUID pageId, int startSerial, int endSerial);
+
+  int findMaxSerialNumber(UUID pageId);
 }

@@ -14,4 +14,5 @@ public class AccountResponseDto {
   private final String login;
   private final String email;
   private final Instant registeredAt;
+
 }

@@ -51,7 +51,7 @@ export function SurveyList() {
     };
 
     const handleSurveyClick = (surveyId: string) => {
-        navigate(routes.surveyEdit(surveyId));
+        navigate(routes.surveyQuestions(surveyId));
     };
 
     return (

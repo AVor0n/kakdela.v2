@@ -19,4 +19,14 @@ public interface SurveyPageDao {
   void delete(SurveyPage page);
 
   boolean existsBySurveyIdAndSerialNumber(UUID surveyId, Integer serialNumber);
+
+  void increaseSerialNumbers(UUID surveyId, int startSerial);
+
+  void increaseSerialNumbers(UUID surveyId, int startSerial, int endSerial);
+
+  void decreaseSerialNumbers(UUID surveyId, int startSerial);
+
+  void decreaseSerialNumbers(UUID surveyId, int startSerial, int endSerial);
+
+  int findMaxSerialNumber(UUID surveyId);
 }

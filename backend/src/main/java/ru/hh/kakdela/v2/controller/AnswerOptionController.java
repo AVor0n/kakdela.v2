@@ -47,7 +47,7 @@ public class AnswerOptionController {
     ) {
         return answerOptionService.update(optionId, updateDto, currentUser.getId());
     }
-
+    
     @DeleteMapping("answer-options/{optionId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(

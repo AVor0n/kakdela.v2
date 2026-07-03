@@ -8,7 +8,8 @@ import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import ru.hh.kakdela.v2.dto.subscription.SubscriptionRequestDto;
 import ru.hh.kakdela.v2.dto.subscription.SubscriptionResponseDto;
-import ru.hh.kakdela.v2.model.Account;
+import ru.hh.kakdela.v2.dto.account.AccountResponseDto;
+import ru.hh.kakdela.v2.mapper.AccountMapper;
 import ru.hh.kakdela.v2.service.SurveyNotificationSubscriptionService;
 import ru.hh.kakdela.v2.security.CustomUserDetails;
 
@@ -42,10 +43,12 @@ public class SubscriptionController {
     }
 
     @GetMapping("/surveys/{surveyId}/subscribers")
-    public List<Account> getSubscribers(
+    public List<AccountResponseDto> getSubscribers(
             @PathVariable UUID surveyId,
             @AuthenticationPrincipal CustomUserDetails currentUser) {
-        return subscriptionService.getSubscribers(surveyId, currentUser.getId());
+        return subscriptionService.getSubscribers(surveyId, currentUser.getId()).stream()
+            .map(AccountMapper::accountToDto)
+            .toList();
     }
 
     @GetMapping("/surveys/{surveyId}/subscribers/check")

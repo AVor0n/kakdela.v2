@@ -14,11 +14,7 @@ import ru.hh.kakdela.v2.model.Question;
 @Getter
 @Setter
 public class QuestionCreateDto {
-
-  @Schema(
-        requiredMode = Schema.RequiredMode.REQUIRED
-    )
-  @NotNull(message = "Порядковый номер обязателен")
+  
   @Min(value = 1, message = "Порядковый номер должен быть больше 0")
   private Integer serialNumber;
   @NotBlank(message = "Заголовок не должен быть пустым")

@@ -15,6 +15,8 @@ public class SurveyPageDaoImpl implements SurveyPageDao {
   @PersistenceContext
   private EntityManager entityManager;
 
+  private static final String CONSTRAINT_NAME = "uq_page_survey_serial";
+
   @Override
   public Optional<SurveyPage> findById(UUID id) {
     return Optional.ofNullable(entityManager.find(SurveyPage.class, id));
@@ -23,13 +25,13 @@ public class SurveyPageDaoImpl implements SurveyPageDao {
   @Override
   public List<SurveyPage> findAllBySurveyId(UUID surveyId) {
     return entityManager
-            .createQuery("""
-                    FROM SurveyPage p
-                    WHERE p.survey.id = :surveyId
-                    ORDER BY p.serialNumber
-                    """, SurveyPage.class)
-            .setParameter("surveyId", surveyId)
-            .getResultList();
+        .createQuery("""
+            FROM SurveyPage p
+            WHERE p.survey.id = :surveyId
+            ORDER BY p.serialNumber
+            """, SurveyPage.class)
+        .setParameter("surveyId", surveyId)
+        .getResultList();
   }
 
   @Override
@@ -50,14 +52,100 @@ public class SurveyPageDaoImpl implements SurveyPageDao {
   @Override
   public boolean existsBySurveyIdAndSerialNumber(UUID surveyId, Integer serialNumber) {
     return Optional.of(entityManager
-                    .createQuery("""
-                            SELECT COUNT(p) FROM SurveyPage p
-                            WHERE p.survey.id = :surveyId AND p.serialNumber = :serialNumber
-                            """, Long.class)
-                    .setParameter("surveyId", surveyId)
-                    .setParameter("serialNumber", serialNumber)
-                    .getSingleResultOrNull())
-            .map(count -> count > 0)
-            .orElse(false);
+            .createQuery("""
+                SELECT COUNT(p) FROM SurveyPage p
+                WHERE p.survey.id = :surveyId AND p.serialNumber = :serialNumber
+                """, Long.class)
+            .setParameter("surveyId", surveyId)
+            .setParameter("serialNumber", serialNumber)
+            .getSingleResultOrNull())
+        .map(count -> count > 0)
+        .orElse(false);
+  }
+
+  @Override
+  public void increaseSerialNumbers(UUID surveyId, int startSerial) {
+    deferConstraint();
+
+    entityManager.createQuery("""
+            UPDATE SurveyPage p 
+            SET p.serialNumber = p.serialNumber + 1 
+            WHERE p.survey.id = :surveyId 
+              AND p.serialNumber >= :startSerial
+            """
+        )
+        .setParameter("surveyId", surveyId)
+        .setParameter("startSerial", startSerial)
+        .executeUpdate();
+  }
+
+  @Override
+  public void increaseSerialNumbers(UUID surveyId, int startSerial, int endSerial) {
+    deferConstraint();
+
+    entityManager.createQuery("""
+            UPDATE SurveyPage p SET p.serialNumber = p.serialNumber + 1
+            WHERE p.survey.id = :surveyId
+              AND p.serialNumber BETWEEN :startSerial AND :endSerial
+            """
+        )
+        .setParameter("surveyId", surveyId)
+        .setParameter("startSerial", startSerial)
+        .setParameter("endSerial", endSerial)
+        .executeUpdate();
+  }
+
+  @Override
+  public void decreaseSerialNumbers(UUID surveyId, int startSerial) {
+    deferConstraint();
+
+    entityManager.createQuery("""
+            UPDATE SurveyPage p 
+            SET p.serialNumber = p.serialNumber - 1 
+            WHERE p.survey.id = :surveyId 
+              AND p.serialNumber >= :startSerial
+            """
+        )
+        .setParameter("surveyId", surveyId)
+        .setParameter("startSerial", startSerial)
+        .executeUpdate();
+  }
+
+  @Override
+  public void decreaseSerialNumbers(UUID surveyId, int startSerial, int endSerial) {
+    deferConstraint();
+
+    entityManager.createQuery("""
+            UPDATE SurveyPage p
+            SET p.serialNumber = p.serialNumber - 1
+            WHERE p.survey.id = :surveyId
+              AND p.serialNumber BETWEEN :startSerial AND :endSerial
+            """
+        )
+        .setParameter("surveyId", surveyId)
+        .setParameter("startSerial", startSerial)
+        .setParameter("endSerial", endSerial)
+        .executeUpdate();
+  }
+
+  @Override
+  public int findMaxSerialNumber(UUID surveyId) {
+    Integer max = entityManager.createQuery("""
+                SELECT MAX(p.serialNumber) 
+                FROM SurveyPage p 
+                WHERE p.survey.id = :surveyId
+                """,
+            Integer.class
+        )
+        .setParameter("surveyId", surveyId)
+        .getSingleResultOrNull();
+
+    return max != null ? max : 0;
+  }
+
+  private void deferConstraint() {
+    entityManager.createNativeQuery(
+        "SET CONSTRAINTS " + CONSTRAINT_NAME + " DEFERRED"
+    ).executeUpdate();
   }
 }
