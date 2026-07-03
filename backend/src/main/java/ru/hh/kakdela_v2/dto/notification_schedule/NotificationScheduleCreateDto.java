@@ -26,7 +26,6 @@ public class NotificationScheduleCreateDto {
   @NullOrNotBlank
   private String cronExpression;
 
-  @NotNull(message = "Время выполнения должно быть указано")
   private LocalTime executionTime;
   @NullOrNotBlank
   private String userTimezone = "Europe/Moscow";

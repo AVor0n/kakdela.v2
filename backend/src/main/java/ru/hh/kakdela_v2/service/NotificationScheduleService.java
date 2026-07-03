@@ -115,7 +115,7 @@ public class NotificationScheduleService {
     }
 
     if (dto.getType() != null) {
-      notificationSchedule = dto.getType().setup(notificationSchedule, dto);
+      dto.getType().setup(notificationSchedule, dto);
     }
 
     if (dto.getExecutionTime() != null) {
@@ -129,6 +129,8 @@ public class NotificationScheduleService {
     if (dto.getIsActive() != null) {
       notificationSchedule.setIsActive(dto.getIsActive());
     }
+
+    notificationSchedule.setNextExecution(calculationService.calculateNextExecution(notificationSchedule));
 
     notificationScheduleDao.update(notificationSchedule);
     return mapper.notificationScheduleToDto(notificationSchedule);

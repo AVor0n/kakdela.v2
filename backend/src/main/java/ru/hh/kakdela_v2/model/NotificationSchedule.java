@@ -55,7 +55,7 @@ public class NotificationSchedule {
   @Column(name = "cron_expression")
   private String cronExpression;
 
-  @Column(name = "execution_time", nullable = false)
+  @Column(name = "execution_time")
   private LocalTime executionTime;
 
   @Column(name = "target_timezone")
@@ -75,12 +75,18 @@ public class NotificationSchedule {
   public enum ScheduleType {
     DAILY {
       @Override
-      public NotificationSchedule setup(NotificationSchedule schedule, NotificationScheduleUpdateDto dto) {
+      public void setup(NotificationSchedule schedule, NotificationScheduleUpdateDto dto) {
+        if (dto.getExecutionTime() == null) {
+          throw new ResponseStatusException(
+              HttpStatus.BAD_REQUEST,
+              "Время выполнения должно быть указано для этого типа уведомлений"
+          );
+        }
+        schedule.setExecutionTime(dto.getExecutionTime());
         schedule.setDaysOfWeek(null);
         schedule.setDayOfMonth(null);
         schedule.setCronExpression(null);
         schedule.setScheduleType(NotificationSchedule.ScheduleType.DAILY);
-        return schedule;
       }
 
       @Override
@@ -89,6 +95,14 @@ public class NotificationSchedule {
           throw new ResponseStatusException(
               HttpStatus.BAD_REQUEST,
               "Должно быть указано время выполнения"
+          );
+        }
+        if (schedule.getDaysOfWeek() != null ||
+            schedule.getDayOfMonth() != null ||
+            schedule.getCronExpression() != null) {
+          throw new ResponseStatusException(
+              HttpStatus.BAD_REQUEST,
+              "Невалидные поля для данного типа уведомлений"
           );
         }
       }
@@ -102,7 +116,13 @@ public class NotificationSchedule {
     },
     WEEKLY {
       @Override
-      public NotificationSchedule setup(NotificationSchedule schedule, NotificationScheduleUpdateDto dto) {
+      public void setup(NotificationSchedule schedule, NotificationScheduleUpdateDto dto) {
+        if (dto.getExecutionTime() == null) {
+          throw new ResponseStatusException(
+              HttpStatus.BAD_REQUEST,
+              "Время выполнения должно быть указано для этого типа уведомлений"
+          );
+        }
         if (dto.getDaysOfWeek() == null) {
           throw new ResponseStatusException(
               HttpStatus.BAD_REQUEST,
@@ -113,7 +133,6 @@ public class NotificationSchedule {
         schedule.setDayOfMonth(null);
         schedule.setCronExpression(null);
         schedule.setScheduleType(NotificationSchedule.ScheduleType.WEEKLY);
-        return schedule;
       }
 
       @Override
@@ -128,6 +147,13 @@ public class NotificationSchedule {
           throw new ResponseStatusException(
               HttpStatus.BAD_REQUEST,
               "Дни недели должны быть указаны для этого типа уведомлений"
+          );
+        }
+        if (schedule.getDayOfMonth() != null ||
+            schedule.getCronExpression() != null) {
+          throw new ResponseStatusException(
+              HttpStatus.BAD_REQUEST,
+              "Невалидные поля для данного типа уведомлений"
           );
         }
       }
@@ -156,7 +182,13 @@ public class NotificationSchedule {
     },
     MONTHLY {
       @Override
-      public NotificationSchedule setup(NotificationSchedule schedule, NotificationScheduleUpdateDto dto) {
+      public void setup(NotificationSchedule schedule, NotificationScheduleUpdateDto dto) {
+        if (dto.getExecutionTime() == null) {
+          throw new ResponseStatusException(
+              HttpStatus.BAD_REQUEST,
+              "Время выполнения должно быть указано для этого типа уведомлений"
+          );
+        }
         if (dto.getDayOfMonth() == null) {
           throw new ResponseStatusException(
               HttpStatus.BAD_REQUEST,
@@ -167,7 +199,6 @@ public class NotificationSchedule {
         schedule.setDayOfMonth(dto.getDayOfMonth());
         schedule.setCronExpression(null);
         schedule.setScheduleType(NotificationSchedule.ScheduleType.MONTHLY);
-        return schedule;
       }
 
       @Override
@@ -182,6 +213,13 @@ public class NotificationSchedule {
           throw new ResponseStatusException(
               HttpStatus.BAD_REQUEST,
               "Число месяца должно быть указано для этого типа уведомлений"
+          );
+        }
+        if (schedule.getDaysOfWeek() != null ||
+            schedule.getCronExpression() != null) {
+          throw new ResponseStatusException(
+              HttpStatus.BAD_REQUEST,
+              "Невалидные поля для данного типа уведомлений"
           );
         }
       }
@@ -214,9 +252,9 @@ public class NotificationSchedule {
     },
     CUSTOM {
       @Override
-      public NotificationSchedule setup(NotificationSchedule schedule, NotificationScheduleUpdateDto dto) {
+      public void setup(NotificationSchedule schedule, NotificationScheduleUpdateDto dto) {
         String cronExpression = dto.getCronExpression();
-        if (cronExpression == null || cronExpression.isBlank()) {
+        if (cronExpression == null) {
           throw new ResponseStatusException(
               HttpStatus.BAD_REQUEST,
               "Cron-выражение должно быть указано для этого типа уведомлений"
@@ -224,9 +262,9 @@ public class NotificationSchedule {
         }
         schedule.setDaysOfWeek(null);
         schedule.setDayOfMonth(null);
+        schedule.setExecutionTime(null);
         schedule.setCronExpression(cronExpression);
         schedule.setScheduleType(NotificationSchedule.ScheduleType.CUSTOM);
-        return schedule;
       }
 
       @Override
@@ -235,6 +273,14 @@ public class NotificationSchedule {
           throw new ResponseStatusException(
               HttpStatus.BAD_REQUEST,
               "Cron-выражение должно быть указано для этого типа уведомлений"
+          );
+        }
+        if (schedule.getDaysOfWeek() != null ||
+            schedule.getDayOfMonth() != null ||
+            schedule.getExecutionTime() != null) {
+          throw new ResponseStatusException(
+              HttpStatus.BAD_REQUEST,
+              "Невалидные поля для данного типа уведомлений"
           );
         }
       }
@@ -262,7 +308,7 @@ public class NotificationSchedule {
     };
 
     private static final Logger log = LoggerFactory.getLogger(ScheduleType.class);
-    public abstract NotificationSchedule setup(NotificationSchedule schedule, NotificationScheduleUpdateDto dto);
+    public abstract void setup(NotificationSchedule schedule, NotificationScheduleUpdateDto dto);
     public abstract void verifyType(NotificationSchedule schedule);
     public abstract ZonedDateTime findNext(NotificationSchedule schedule,
                                            ZonedDateTime candidate,
