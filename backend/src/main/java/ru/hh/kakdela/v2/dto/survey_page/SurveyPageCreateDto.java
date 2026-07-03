@@ -10,6 +10,10 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
+@Schema(
+    name = "SurveyPageCreate",
+    title = "DTO для создания страницы в опросе"
+)
 public class SurveyPageCreateDto {
 
   @Min(value = 1, message = "Порядковый номер должен быть больше 0")

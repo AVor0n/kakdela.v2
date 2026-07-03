@@ -12,10 +12,12 @@ import jakarta.validation.constraints.NotNull;
 @NoArgsConstructor
 @Getter
 @Setter
+@Schema(
+    name = "SubscriptionRequest",
+    title = "DTO для запроса на создание подписки на уведомления"
+)
 public class SubscriptionRequestDto {
-  @Schema(
-        requiredMode = Schema.RequiredMode.REQUIRED
-    )
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
     @NotNull(message = "Список почт получателей обязателен")
     private List<String> emails;
 }

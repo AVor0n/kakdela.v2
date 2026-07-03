@@ -11,6 +11,10 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
+@Schema(
+    name = "AnswerOptionCreate",
+    title = "DTO для создания варианта ответа"
+)
 public class AnswerOptionCreateDto {
 
   @Min(value = 1, message = "Порядковый номер должен быть больше 0")

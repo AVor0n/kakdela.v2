@@ -6,8 +6,13 @@ import lombok.Getter;
 import java.time.Instant;
 import java.util.UUID;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 @AllArgsConstructor
 @Getter
+@Schema(
+    name = "SurveyShortResponseDto",
+    title = "Краткий DTO данных опроса"
+)
 public class SurveyShortResponseDto {
 
   private final UUID id;

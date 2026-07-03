@@ -15,20 +15,24 @@ import io.swagger.v3.oas.annotations.media.Schema;
 @NoArgsConstructor
 @Getter
 @Setter
-@Schema(description = "DTO для создания опроса")
+@Schema(
+    name = "SurveyCreate",
+    title = "DTO для создания опроса"
+)
 public class SurveyCreateDto {
-  @Schema(
-        requiredMode = Schema.RequiredMode.REQUIRED
-    )
+  @Schema( requiredMode = Schema.RequiredMode.REQUIRED)
   @NotBlank(message = "Заголовок не должен быть пустым")
   @Size(max = 200, message = "Заголовок не должен быть длиннее 200 символов")
   private String title;
   @Size(max = 5000, message = "Описание не должно быть длиннее 5000 символов")
   private String description;
+  @Schema(description = "Это необязательное поле, у него есть дефолтное значение")
   @NotNull
   private Boolean isAuthorizedOnly = false;
+  @Schema(description = "Это необязательное поле, у него есть дефолтное значение")
   @NotNull
   private Boolean isLimitedToOneResponse = false;
+  @Schema(description = "Это необязательное поле, у него есть дефолтное значение")
   @NotNull
   private Boolean doNotify = true;
   @FutureOrPresent(message = "Дедлайн не должен быть в прошлом")
