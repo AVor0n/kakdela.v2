@@ -2,7 +2,7 @@ package ru.hh.kakdela.v2.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.hh.kakdela_v2.model.NotificationSchedule;
+import ru.hh.kakdela.v2.model.NotificationSchedule;
 
 import java.time.*;
 

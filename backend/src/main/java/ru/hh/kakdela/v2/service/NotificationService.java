@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.hh.kakdela.v2.dao.AccountDao;
 import ru.hh.kakdela.v2.dao.PermissionDao;
 import ru.hh.kakdela.v2.dao.SurveyDao;
 import ru.hh.kakdela.v2.dao.SurveyNotificationSubscriptionDao;
@@ -23,7 +24,6 @@ public class NotificationService {
 
     private final SurveyDao surveyDao;
     private final PermissionDao permissionDao;
-    private final ResponseDao responseDao;
     private final AccountDao accountDao;
     private final SurveyNotificationSubscriptionDao subscriberDao;
     private final EmailService emailService;

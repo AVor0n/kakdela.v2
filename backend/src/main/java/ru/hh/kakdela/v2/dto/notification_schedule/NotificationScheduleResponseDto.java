@@ -1,8 +1,8 @@
-package ru.hh.kakdela_v2.dto.notification_schedule;
+package ru.hh.kakdela.v2.dto.notification_schedule;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import ru.hh.kakdela_v2.model.NotificationSchedule;
+import ru.hh.kakdela.v2.model.NotificationSchedule;
 
 import java.time.LocalTime;
 import java.util.UUID;

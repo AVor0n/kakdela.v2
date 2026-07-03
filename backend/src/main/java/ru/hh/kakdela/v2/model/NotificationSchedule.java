@@ -14,9 +14,7 @@ import org.springframework.scheduling.TriggerContext;
 import org.springframework.scheduling.support.CronTrigger;
 import org.springframework.scheduling.support.SimpleTriggerContext;
 import org.springframework.web.server.ResponseStatusException;
-import ru.hh.kakdela_v2.dto.notification_schedule.NotificationScheduleCreateDto;
-import ru.hh.kakdela_v2.dto.notification_schedule.NotificationScheduleUpdateDto;
-import ru.hh.kakdela_v2.validator.NullOrNotBlank;
+import ru.hh.kakdela.v2.dto.notification_schedule.NotificationScheduleUpdateDto;
 
 import java.time.*;
 import java.time.temporal.TemporalAdjusters;

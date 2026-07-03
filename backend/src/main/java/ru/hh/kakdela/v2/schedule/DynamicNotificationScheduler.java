@@ -1,13 +1,13 @@
-package ru.hh.kakdela_v2.schedule;
+package ru.hh.kakdela.v2.schedule;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import ru.hh.kakdela_v2.model.NotificationSchedule;
-import ru.hh.kakdela_v2.service.NotificationScheduleService;
-import ru.hh.kakdela_v2.service.NotificationService;
-import ru.hh.kakdela_v2.service.ScheduleCalculationService;
+import ru.hh.kakdela.v2.model.NotificationSchedule;
+import ru.hh.kakdela.v2.service.NotificationScheduleService;
+import ru.hh.kakdela.v2.service.NotificationService;
+import ru.hh.kakdela.v2.service.ScheduleCalculationService;
 
 import java.time.Duration;
 import java.time.Instant;

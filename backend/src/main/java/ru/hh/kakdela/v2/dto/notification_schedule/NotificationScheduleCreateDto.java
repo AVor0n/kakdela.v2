@@ -1,4 +1,4 @@
-package ru.hh.kakdela_v2.dto.notification_schedule;
+package ru.hh.kakdela.v2.dto.notification_schedule;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -6,8 +6,8 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import ru.hh.kakdela_v2.model.NotificationSchedule;
-import ru.hh.kakdela_v2.validator.NullOrNotBlank;
+import ru.hh.kakdela.v2.model.NotificationSchedule;
+import ru.hh.kakdela.v2.validator.NullOrNotBlank;
 
 import java.time.LocalTime;
 
