@@ -17,7 +17,7 @@ export function AuthCard({ title, children }: AuthCardProps) {
                 border: '1px solid #eee',
             }}
         >
-            <Title Element="h4" alignment="center">
+            <Title Element='h4' alignment='center'>
                 {title}
             </Title>
 

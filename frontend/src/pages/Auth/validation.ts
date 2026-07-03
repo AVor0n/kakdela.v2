@@ -7,8 +7,7 @@ const PASSWORD_LETTER_REGEX = /[a-zA-Zа-яА-Я]/;
 const PASSWORD_DIGIT_REGEX = /[0-9]/;
 const PASSWORD_SPECIAL_CHARACTER_REGEX = /[!@#&()–[{}\]:;',?/*~$^+=<>]/;
 
-const PASSWORD_REGEX =
-    /^(?=.*[0-9])(?=.*[a-zA-Zа-яА-Я])(?=.*[!@#&()–[{}\]:;',?/*~$^+=<>]).{8,}$/;
+const PASSWORD_REGEX = /^(?=.*[0-9])(?=.*[a-zA-Zа-яА-Я])(?=.*[!@#&()–[{}\]:;',?/*~$^+=<>]).{8,}$/;
 
 export function validateLogin(value: string): string {
     if (!value) {

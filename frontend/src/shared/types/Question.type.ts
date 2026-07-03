@@ -1,14 +1,20 @@
 export type QuestionType = 'SHORT_TEXT' | 'LONG_TEXT' | 'SINGLE_CHOICE' | 'MULTIPLE_CHOICE';
 
+export type AnswerOption = {
+    id: string;
+    answerOptionText: string;
+    serialNumber: number;
+};
 type BaseQuestion<T extends QuestionType> = {
     id: string;
     title: string;
     type: T;
-    mandatory: boolean;
+    isMandatory: boolean;
     serialNumber: number;
     condition: null;
     description: null;
-    visible: boolean;
+    visible?: boolean;
+    isVisible?: boolean;
 };
 
 type SimpleQuestion = BaseQuestion<'SHORT_TEXT' | 'LONG_TEXT'> & {
@@ -17,7 +23,7 @@ type SimpleQuestion = BaseQuestion<'SHORT_TEXT' | 'LONG_TEXT'> & {
 };
 
 type QuestionWithOptions = BaseQuestion<'SINGLE_CHOICE' | 'MULTIPLE_CHOICE'> & {
-    answerOptions: string[];
+    answerOptions: AnswerOption[];
     answerOptionOrder: null;
 };
 

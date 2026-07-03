@@ -9,6 +9,7 @@ import { SurveyModify } from '@/pages/Survey/SurveyModify/SurveyModify';
 import { SurveyCreate } from '@/pages/Survey/SurveyCreate/SurveyCreate';
 import { SurveyLayout } from '@/layouts/SurveyLayout';
 import { RequireAuth } from '@/features/auth/RequireAuth';
+import { Settings } from '@/pages/Survey/SurveyModify/components/Settings/Settings';
 
 export function AppRouter() {
     return (
@@ -29,26 +30,19 @@ export function AppRouter() {
                             </RequireAuth>
                         }
                     />
-                    <Route
-                        element={
-                            <div>
-                                <header>Survey Actions</header>
-                                <Outlet />
-                            </div>
-                        }
-                    >
+                    <Route>
                         <Route path={routePatterns.surveysView} element={<SurveyView />} />
                         <Route element={<SurveyLayout />}>
                             <Route
                                 path={routePatterns.surveyModify}
                                 element={
                                     <RequireAuth>
-                                        <SurveyModify />
+                                        <Outlet />
                                     </RequireAuth>
                                 }
                             >
-                                <Route path='settings' element={<div>Settings</div>} />
-                                <Route path='questions' element={<div>Questions</div>} />
+                                <Route path='settings' element={<Settings />} />
+                                <Route path='questions' element={<SurveyModify />} />
                                 <Route path='answers' element={<div>Answers</div>} />
                             </Route>
                             <Route
@@ -59,7 +53,7 @@ export function AppRouter() {
                                     </RequireAuth>
                                 }
                             >
-                                <Route path='settings' element={<div>Settings</div>} />
+                                <Route path='settings' element={<Settings />} />
                                 <Route path='questions' element={<div>Questions</div>} />
                                 <Route path='answers' element={<div>Answers</div>} />
                             </Route>
