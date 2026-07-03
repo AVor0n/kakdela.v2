@@ -81,9 +81,8 @@ public class NotificationScheduleService {
         .isActive(dto.isActive())
         .build();
 
-    if (notificationSchedule.getScheduleType() != null) {
-      notificationSchedule.getScheduleType().verifyType(notificationSchedule);
-    }
+    notificationSchedule.getScheduleType().verifyType(notificationSchedule);
+
     notificationSchedule.setNextExecution(calculationService.calculateNextExecution(notificationSchedule));
 
     notificationScheduleDao.save(notificationSchedule);

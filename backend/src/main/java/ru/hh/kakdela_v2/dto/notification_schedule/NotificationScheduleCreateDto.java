@@ -19,6 +19,7 @@ public class NotificationScheduleCreateDto {
   @Size(max = 255, message = "Имя не может быть длинее 255 символов")
   private String name;
 
+  @NotNull
   private NotificationSchedule.ScheduleType type;
   private Integer daysOfWeek;
   private Integer dayOfMonth;
