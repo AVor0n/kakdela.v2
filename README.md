@@ -1,4 +1,5 @@
-# KakDela-v2 - Сервис для создания опросов
+# KakDela-v2 — Сервис для создания опросов
+
 ## Что за проект?
 Внутренний конструктор опросов для hh.ru, со входом по аккаунту пользователя hh.ru, гибкой логикой вопросов и нативной интеграцией с экосистемой hh.
 
@@ -16,13 +17,16 @@
 - @hh.ru/magrite-ui
 - Axios
 
+## Готовые образы
+* [DockerHub](https://hub.docker.com/repository/docker/kakdelav2/kakdela.v2)
+
 ## Инструкции по запуску
 Приложение поднимается одной командой из под docker
-#### dev версия (подробные логи, дополнительный контейнер с pgAdmin4, sprind_ddl_auto=update):
+#### dev-версия (подробные логи, дополнительный контейнер с pgAdmin4, sprind_ddl_auto=update):
 ```
 docker compose -f docker-compose.yml up --build
 ```
-#### prod версия (только error логи, образы подтягиваются с dockerhub, sprind_ddl_auto=validate):
+#### prod-версия (только error логи, образы подтягиваются с dockerhub, sprind_ddl_auto=validate):
 ```
 docker compose -f docker-compose.prod.yml up --build
 ```
