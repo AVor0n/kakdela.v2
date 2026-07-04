@@ -1,0 +1,26 @@
+.content {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.tag {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    width: fit-content;
+    background-color: #94949443;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.img {
+    width: 18px;
+    height: 18px;
+}

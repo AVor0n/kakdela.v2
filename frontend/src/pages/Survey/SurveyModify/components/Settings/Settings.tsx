@@ -10,6 +10,7 @@ import { ErrorBlock } from '../ErrorBlock/ErrorBlock';
 import type { Error } from '@/shared/types/Error.type';
 import { useNavigate } from 'react-router-dom';
 import { routePatterns } from '@/app/routes';
+import { SubscribersInput } from './Subscribers/SubscribersInput';
 
 function convertDateFromISO(isoStr: string): string {
     const date = new Date(isoStr);
@@ -176,7 +177,7 @@ export function Settings() {
 
                 <div className={style.option}>
                     <Checkbox checked={doNotify} onChange={() => setDoNotify(!doNotify)} />
-                    <span>Отправлять сообщение о необходимости прохождения опроса</span>
+                    <span>Присылать сообщение о прохождении опроса</span>
                 </div>
 
                 <div className={style.option}>
@@ -189,6 +190,8 @@ export function Settings() {
                         dateMask='dd.mm.yyyy'
                     />
                 </div>
+
+                <SubscribersInput />
 
                 <div className={style.buttons}>
                     <Button mode='secondary' style='neutral' onClick={resetSettings}>
