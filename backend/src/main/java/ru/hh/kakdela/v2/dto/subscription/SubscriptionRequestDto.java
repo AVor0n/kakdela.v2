@@ -6,12 +6,18 @@ import lombok.Setter;
 
 import java.util.List;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 
 @NoArgsConstructor
 @Getter
 @Setter
+@Schema(
+    name = "SubscriptionRequest",
+    title = "DTO для запроса на создание подписки на уведомления"
+)
 public class SubscriptionRequestDto {
-    @NotNull(message = "Список почт получателей обязателен")
-    private List<String> emails;
+  @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
+  @NotNull(message = "Список почт получателей обязателен")
+  private List<String> emails;
 }

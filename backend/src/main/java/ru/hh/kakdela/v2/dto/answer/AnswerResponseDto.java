@@ -5,8 +5,14 @@ import lombok.Getter;
 
 import java.util.UUID;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 @AllArgsConstructor
 @Getter
+@Schema(
+    name = "AnswerResponse",
+    title = "DTO для получения данных ответа на вопрос"
+)
 public class AnswerResponseDto {
 
   private final UUID responseId;

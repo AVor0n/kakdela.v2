@@ -9,9 +9,15 @@ import ru.hh.kakdela.v2.validator.NullOrNotBlank;
 
 import java.time.Instant;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 @NoArgsConstructor
 @Getter
 @Setter
+@Schema(
+    name = "SurveyUpdate",
+    title = "DTO для обновления опроса"
+)
 public class SurveyUpdateDto {
 
   @NullOrNotBlank(message = "Заголовок не должен быть пустым")

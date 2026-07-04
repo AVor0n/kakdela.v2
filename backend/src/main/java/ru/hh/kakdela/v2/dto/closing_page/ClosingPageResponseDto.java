@@ -1,10 +1,15 @@
 package ru.hh.kakdela.v2.dto.closing_page;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @AllArgsConstructor
 @Getter
+@Schema(
+    name = "ClosingPageResponse",
+    title = "DTO для получения данных завершающей страницы"
+)
 public class ClosingPageResponseDto {
 
   private final String title;
