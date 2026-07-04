@@ -1,6 +1,6 @@
 services:
   backend:
-    image: 1artem11semenov1/kakdelav2-backend:stable
+    image: kakdelav2/kakdela.v2:backend-latest
     container_name: kd2-backend
     ports:
       - "8080:8080"
@@ -14,7 +14,7 @@ services:
     restart: unless-stopped
 
   frontend:
-    image: 1artem11semenov1/kakdelav2-frontend:stable
+    image: kakdelav2/kakdela.v2:frontend-latest
     container_name: kd2-frontend
     ports:
       - "4173:4173"
