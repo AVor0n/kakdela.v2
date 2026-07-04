@@ -17,6 +17,6 @@ public class NotificationScheduleResponseDto {
   private final Integer dayOfMonth;
   private final String cronExpression;
   private final LocalTime executionTime;
-  private final String userTimezone;
+  private final String targetTimezone;
   private final Boolean isActive;
 }

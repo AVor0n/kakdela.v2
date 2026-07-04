@@ -77,7 +77,7 @@ public class NotificationScheduleService {
         .dayOfMonth(dto.getDayOfMonth())
         .cronExpression(dto.getCronExpression())
         .executionTime(dto.getExecutionTime())
-        .targetTimezone(dto.getUserTimezone())
+        .targetTimezone(dto.getTargetTimezone())
         .isActive(dto.isActive())
         .build();
 
@@ -114,21 +114,31 @@ public class NotificationScheduleService {
       notificationSchedule.setName(dto.getName());
     }
 
-    if (dto.getType() != null) {
-      dto.getType().setup(notificationSchedule, dto);
-    }
-
     if (dto.getExecutionTime() != null) {
       notificationSchedule.setExecutionTime(dto.getExecutionTime());
     }
 
-    if (dto.getUserTimezone() != null) {
-      notificationSchedule.setExecutionTime(dto.getExecutionTime());
+    if (dto.getDaysOfWeek() != null) {
+      notificationSchedule.setDaysOfWeek(dto.getDaysOfWeek());
+    }
+
+    if (dto.getDayOfMonth() != null) {
+      notificationSchedule.setDayOfMonth(dto.getDayOfMonth());
+    }
+
+    if (dto.getType() != null) {
+      notificationSchedule.setScheduleType(dto.getType());
+    }
+
+    if (dto.getTargetTimezone() != null) {
+      notificationSchedule.setTargetTimezone(dto.getTargetTimezone());
     }
 
     if (dto.getIsActive() != null) {
       notificationSchedule.setIsActive(dto.getIsActive());
     }
+
+    notificationSchedule.getScheduleType().setup(notificationSchedule, dto);
 
     notificationSchedule.setNextExecution(calculationService.calculateNextExecution(notificationSchedule));
 

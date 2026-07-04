@@ -115,7 +115,7 @@ public class NotificationSchedule {
     WEEKLY {
       @Override
       public void setup(NotificationSchedule schedule, NotificationScheduleUpdateDto dto) {
-        if (dto.getExecutionTime() == null) {
+        if (dto.getExecutionTime() == null && schedule.getExecutionTime() == null) {
           throw new ResponseStatusException(
               HttpStatus.BAD_REQUEST,
               "Время выполнения должно быть указано для этого типа уведомлений"
@@ -126,6 +126,10 @@ public class NotificationSchedule {
               HttpStatus.BAD_REQUEST,
               "Дни недели должны быть указаны для этого типа уведомлений"
           );
+        }
+        LocalTime executionTime = dto.getExecutionTime();
+        if (executionTime != null) {
+          schedule.setExecutionTime(executionTime);
         }
         schedule.setDaysOfWeek(dto.getDaysOfWeek());
         schedule.setDayOfMonth(null);
@@ -181,7 +185,7 @@ public class NotificationSchedule {
     MONTHLY {
       @Override
       public void setup(NotificationSchedule schedule, NotificationScheduleUpdateDto dto) {
-        if (dto.getExecutionTime() == null) {
+        if (dto.getExecutionTime() == null && schedule.getExecutionTime() == null) {
           throw new ResponseStatusException(
               HttpStatus.BAD_REQUEST,
               "Время выполнения должно быть указано для этого типа уведомлений"
@@ -192,6 +196,10 @@ public class NotificationSchedule {
               HttpStatus.BAD_REQUEST,
               "Число месяца должно быть указано для этого типа уведомлений"
           );
+        }
+        LocalTime executionTime = dto.getExecutionTime();
+        if (executionTime != null) {
+          schedule.setExecutionTime(executionTime);
         }
         schedule.setDaysOfWeek(null);
         schedule.setDayOfMonth(dto.getDayOfMonth());

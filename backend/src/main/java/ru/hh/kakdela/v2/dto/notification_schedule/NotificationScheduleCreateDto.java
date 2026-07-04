@@ -28,6 +28,6 @@ public class NotificationScheduleCreateDto {
 
   private LocalTime executionTime;
   @NullOrNotBlank
-  private String userTimezone = "Europe/Moscow";
+  private String targetTimezone = "Europe/Moscow";
   private boolean isActive = true;
 }
