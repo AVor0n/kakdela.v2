@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,7 @@ import ru.hh.kakdela.v2.mapper.AccountMapper;
 import ru.hh.kakdela.v2.model.Account;
 import ru.hh.kakdela.v2.security.CustomUserDetails;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AccountService {
@@ -58,6 +60,7 @@ public class AccountService {
         .build();
 
     accountDao.save(account);
+    log.info("Создан аккаунт id={} login={}", account.getId(), account.getLogin());
     return AccountMapper.accountToDto(account);
   }
 
@@ -91,6 +94,7 @@ public class AccountService {
     account.setPasswordHash(passwordEncoder.encode(accountPutDto.getNewPassword()));
 
     accountDao.update(account);
+    log.info("Изменен аккаунт id={}", currentUser.getId());
     return AccountMapper.accountToDto(account);
   }
 
@@ -139,5 +143,6 @@ public class AccountService {
             "Аккаунт не найден: " + currentUser.getId()));
 
     accountDao.delete(account);
+    log.info("Удален аккаунт id={}", currentUser.getId());
   }
 }

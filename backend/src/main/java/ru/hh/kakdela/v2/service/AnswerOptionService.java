@@ -3,6 +3,7 @@ package ru.hh.kakdela.v2.service;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,7 @@ import ru.hh.kakdela.v2.model.AnswerOption;
 import ru.hh.kakdela.v2.model.Permission.SurveyRole;
 import ru.hh.kakdela.v2.model.Question;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AnswerOptionService {
@@ -75,6 +77,7 @@ public class AnswerOptionService {
         .build();
 
     answerOptionDao.save(answerOption);
+    log.info("Создан вариант ответа id={} questionId={}", answerOption.getId(), questionId);
     return answerOptionMapper.answerOptionToDto(answerOption);
   }
 
@@ -113,6 +116,7 @@ public class AnswerOptionService {
       answerOption.setAnswerOptionText(dto.getAnswerOptionText());
     }
     answerOptionDao.update(answerOption);
+    log.info("Изменен вариант ответа id={}", id);
     return answerOptionMapper.answerOptionToDto(answerOption);
   }
 
@@ -132,6 +136,7 @@ public class AnswerOptionService {
     answerOptionDao.delete(answerOption);
 
     answerOptionDao.decreaseSerialNumbers(questionId, deletedSerial + 1);
+    log.info("Удален вариант ответа id={}", id);
   }
 
   // Attachment management
@@ -162,6 +167,7 @@ public class AnswerOptionService {
 
     answerOption.setAttachmentObjectKey(objectKey);
     answerOptionDao.update(answerOption);
+    log.info("Добавлено вложение к варианту ответа id={} objectKey={}", answerOptionId, objectKey);
 
     return new ObjectUrlResponseDto(
         objectStorageService.generateObjectUrl(objectKey, attachmentUrlMaxAge).toString());
@@ -194,6 +200,7 @@ public class AnswerOptionService {
 
     answerOption.setAttachmentObjectKey(objectKey);
     answerOptionDao.update(answerOption);
+    log.info("Изменено вложение варианта ответа id={} objectKey={}", answerOptionId, objectKey);
 
     return new ObjectUrlResponseDto(
         objectStorageService.generateObjectUrl(objectKey, attachmentUrlMaxAge).toString());
@@ -218,5 +225,6 @@ public class AnswerOptionService {
 
     answerOption.setAttachmentObjectKey(null);
     answerOptionDao.update(answerOption);
+    log.info("Удалено вложение варианта ответа id={}", answerOptionId);
   }
 }

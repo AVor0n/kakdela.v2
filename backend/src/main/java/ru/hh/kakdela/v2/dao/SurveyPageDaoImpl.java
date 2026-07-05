@@ -2,12 +2,17 @@ package ru.hh.kakdela.v2.dao;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Repository;
+import ru.hh.kakdela.v2.model.SurveyPage;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Repository;
 import ru.hh.kakdela.v2.model.SurveyPage;
 
+@Slf4j
 @Repository
 public class SurveyPageDaoImpl implements SurveyPageDao {
 
@@ -36,16 +41,19 @@ public class SurveyPageDaoImpl implements SurveyPageDao {
 
   @Override
   public void save(SurveyPage page) {
+    log.debug("Сохранена страница id={}", page.getId());
     entityManager.persist(page);
   }
 
   @Override
   public void update(SurveyPage page) {
+    log.debug("Изменена страница id={}", page.getId());
     entityManager.merge(page);
   }
 
   @Override
   public void delete(SurveyPage page) {
+    log.debug("Удалена страница id={}", page.getId());
     entityManager.remove(page);
   }
 

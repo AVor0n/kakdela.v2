@@ -33,11 +33,11 @@ public class DynamicNotificationScheduler {
   public void refreshSchedules() {
     Instant now = Instant.now();
 
-    log.info("start notifications check");
+    log.info("Начата проверка уведомлений");
     // Находим задачи, которые должны выполниться
     List<NotificationSchedule> dueSchedules = notificationScheduleService
         .getAllEntityByIsActiveTrueAndNextExecutionBefore(now);
-    log.info("find {} tasks", dueSchedules.size());
+    log.info("Найдено {} задач", dueSchedules.size());
 
     for (NotificationSchedule schedule : dueSchedules) {
       if (!scheduledTasks.containsKey(schedule.getId())) {

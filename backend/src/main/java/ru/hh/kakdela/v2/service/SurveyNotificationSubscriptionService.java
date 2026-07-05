@@ -26,96 +26,97 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class SurveyNotificationSubscriptionService {
 
-    private final SurveyNotificationSubscriptionDao subscriptionDao;
-    private final AccountDao accountDao;
-    private final SurveyDao surveyDao;
-    private final PermissionService permissionService;
-    private final EmailService emailService;
+  private final SurveyNotificationSubscriptionDao subscriptionDao;
+  private final AccountDao accountDao;
+  private final SurveyDao surveyDao;
+  private final PermissionService permissionService;
+  private final EmailService emailService;
 
-    @Transactional
-    public SubscriptionResponseDto subscribeUsers(UUID surveyId, List<String> emails, UUID currentUserId) {
-        permissionService.checkAccess(surveyId, currentUserId, SurveyRole.EDITOR);
+  @Transactional
+  public SubscriptionResponseDto subscribeUsers(
+      UUID surveyId, List<String> emails, UUID currentUserId) {
+    permissionService.checkAccess(surveyId, currentUserId, SurveyRole.EDITOR);
 
-        if (emails == null || emails.isEmpty()) {
-            return new SubscriptionResponseDto(List.of(), List.of(), List.of());
-        }
-
-        List<String> subscribedEmails = new ArrayList<>();
-        List<String> alreadySubscribedEmails = new ArrayList<>();
-        List<String> notFoundEmails = new ArrayList<>();
-
-        Survey survey = surveyDao.findById(surveyId)
-            .orElseThrow(() -> new ResponseStatusException(
-                HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
-
-        for (String email : emails) {
-            try {
-                Account account = findAccountByEmailOrThrow(email);
-                UUID accountId = account.getId();
-
-                if (subscriptionDao.existsBySurveyIdAndAccountId(surveyId, accountId)) {
-                    alreadySubscribedEmails.add(email);
-                    log.debug("User {} already subscribed", email);
-                    continue;
-                }
-
-                SurveyNotificationSubscription subscription = SurveyNotificationSubscription.builder()
-                    .survey(survey)
-                    .account(account)
-                    .build();
-
-                subscriptionDao.addSubscription(subscription);
-                subscribedEmails.add(email);
-                emailService.sendSurveyPublishedEmail(email, survey.getTitle(), surveyId);
-
-                log.info("User {} subscribed to survey {}", email, surveyId);
-            } catch (ResponseStatusException e) {
-                notFoundEmails.add(email);
-                log.warn("User with email {} not found", email);
-            }
-        }
-
-        log.info("Subscribed {} users to survey {}", subscribedEmails.size(), surveyId);
-        return new SubscriptionResponseDto(
-            subscribedEmails,
-            alreadySubscribedEmails,
-            notFoundEmails
-        );
+    if (emails == null || emails.isEmpty()) {
+      return new SubscriptionResponseDto(List.of(), List.of(), List.of());
     }
 
-    @Transactional
-    public void unsubscribeUser(UUID surveyId, String email, UUID currentUserId) {
-        permissionService.checkAccess(surveyId, currentUserId, SurveyRole.EDITOR);
+    List<String> subscribedEmails = new ArrayList<>();
+    List<String> alreadySubscribedEmails = new ArrayList<>();
+    List<String> notFoundEmails = new ArrayList<>();
 
+    Survey survey = surveyDao.findById(surveyId)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
+
+    for (String email : emails) {
+      try {
         Account account = findAccountByEmailOrThrow(email);
         UUID accountId = account.getId();
 
-        SurveyNotificationSubscription subscription = subscriptionDao
-            .findBySurveyIdAndAccountId(surveyId, accountId)
-            .orElseThrow(() -> new ResponseStatusException(
-                HttpStatus.NOT_FOUND, "Подписка для " + email + " не найдена"));
-                
-        subscriptionDao.deleteSubscription(subscription);
-        log.info("User {} unsubscribed from survey {}", email, surveyId);
+        if (subscriptionDao.existsBySurveyIdAndAccountId(surveyId, accountId)) {
+          alreadySubscribedEmails.add(email);
+          log.debug("Пользователь {} уже подписан", email);
+          continue;
+        }
+
+        SurveyNotificationSubscription subscription = SurveyNotificationSubscription.builder()
+            .survey(survey)
+            .account(account)
+            .build();
+
+        subscriptionDao.addSubscription(subscription);
+        subscribedEmails.add(email);
+        emailService.sendSurveyPublishedEmail(email, survey.getTitle(), surveyId);
+
+        log.info("Пользователь {} подписался на опрос {}", email, surveyId);
+      } catch (ResponseStatusException e) {
+        notFoundEmails.add(email);
+        log.warn("Пользователь с адресом электронной почты {} не найден", email);
+      }
     }
 
-    @Transactional(readOnly = true)
-    public List<Account> getSubscribers(UUID surveyId, UUID currentUserId) {
-        permissionService.checkAccess(surveyId, currentUserId, SurveyRole.EDITOR);
-        return subscriptionDao.findSubscribersBySurveyId(surveyId);
-    }
+    log.info("Подписалось {} пользователей на опрос {}", subscribedEmails.size(), surveyId);
+    return new SubscriptionResponseDto(
+        subscribedEmails,
+        alreadySubscribedEmails,
+        notFoundEmails
+    );
+  }
 
-    @Transactional(readOnly = true)
-    public boolean isSubscribed(UUID surveyId, String email, UUID currentUserId) {
-        permissionService.checkAccess(surveyId, currentUserId, SurveyRole.EDITOR);
+  @Transactional
+  public void unsubscribeUser(UUID surveyId, String email, UUID currentUserId) {
+    permissionService.checkAccess(surveyId, currentUserId, SurveyRole.EDITOR);
 
-        Account account = findAccountByEmailOrThrow(email);
-        return subscriptionDao.existsBySurveyIdAndAccountId(surveyId, account.getId());
-    }
+    Account account = findAccountByEmailOrThrow(email);
+    UUID accountId = account.getId();
 
-    private Account findAccountByEmailOrThrow(String email) {
-        return accountDao.findByEmail(email)
-            .orElseThrow(() -> new ResponseStatusException(
-                HttpStatus.NOT_FOUND, "Пользователь с email " + email + " не найден"));
-    }
+    SurveyNotificationSubscription subscription = subscriptionDao
+        .findBySurveyIdAndAccountId(surveyId, accountId)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Подписка для " + email + " не найдена"));
+
+    subscriptionDao.deleteSubscription(subscription);
+    log.info("Пользователь {} отписался от опроса {}", email, surveyId);
+  }
+
+  @Transactional(readOnly = true)
+  public List<Account> getSubscribers(UUID surveyId, UUID currentUserId) {
+    permissionService.checkAccess(surveyId, currentUserId, SurveyRole.EDITOR);
+    return subscriptionDao.findSubscribersBySurveyId(surveyId);
+  }
+
+  @Transactional(readOnly = true)
+  public boolean isSubscribed(UUID surveyId, String email, UUID currentUserId) {
+    permissionService.checkAccess(surveyId, currentUserId, SurveyRole.EDITOR);
+
+    Account account = findAccountByEmailOrThrow(email);
+    return subscriptionDao.existsBySurveyIdAndAccountId(surveyId, account.getId());
+  }
+
+  private Account findAccountByEmailOrThrow(String email) {
+    return accountDao.findByEmail(email)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Пользователь с email " + email + " не найден"));
+  }
 }

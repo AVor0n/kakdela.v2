@@ -3,6 +3,7 @@ package ru.hh.kakdela.v2.service;
 import java.net.URL;
 import java.time.Duration;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.core.sync.RequestBody;
@@ -13,6 +14,7 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ObjectStorageService {
@@ -24,6 +26,8 @@ public class ObjectStorageService {
   private String bucketName;
 
   public void putObject(String key, byte[] fileAsByteArray, String contentType) {
+    log.debug("Загрузка объекта в хранилище key={} contentType={} size={}b",
+        key, contentType, fileAsByteArray.length);
     s3Client.putObject(
         PutObjectRequest.builder()
             .bucket(bucketName)
@@ -50,6 +54,7 @@ public class ObjectStorageService {
   }
 
   public void deleteObject(String key) {
+    log.debug("Удаление объекта из хранилища key={}", key);
     s3Client.deleteObject(
         DeleteObjectRequest.builder()
             .bucket(bucketName)
