@@ -1,0 +1,139 @@
+name: CI
+on:
+  pull_request:
+  workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  changes:
+    name: Determine what has been changed
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      frontend: ${{ steps.filter.outputs.frontend }}
+      backend: ${{ steps.filter.outputs.backend }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+      - name: Do some magic to find changes
+        uses: dorny/paths-filter@v4
+        id: filter
+        with:
+          filters: |
+            frontend:
+              - 'frontend/**'
+            backend:
+              - 'backend/**'
+  backend-verification:
+    name: Run Maven verify phase (tests are temporary excluded)
+    needs: changes
+    if: needs.changes.outputs.backend == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+      - name: Set up Reviewdog
+        uses: reviewdog/action-setup@d8a7baabd7f3e8544ee4dbde3ee41d0011c3a93f # v1.5.0
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: maven
+      - name: Run Maven verify phase
+        run: ./mvnw verify -Dmaven.test.skip=true
+        working-directory: backend
+      - name: Do Checkstyle report with Reviewdog
+        run: >
+          reviewdog
+          -f=checkstyle
+          -reporter=github-pr-review
+          -fail-level=any
+          -diff="git diff origin/${{ github.base_ref }}"
+          < backend/target/checkstyle-result.xml
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  frontend-verification:
+    name: Run Prettier check, ESLint, TypeScript check and build project
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+      - name: Set up Reviewdog
+        uses: reviewdog/action-setup@d8a7baabd7f3e8544ee4dbde3ee41d0011c3a93f # v1.5.0
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 26
+          cache: yarn
+          cache-dependency-path: frontend/yarn.lock
+      - name: Install dependencies
+        run: yarn install
+        working-directory: frontend
+        env:
+          HUSKY: 0
+      - name: Run Prettier check
+        run: yarn run format-check
+        working-directory: frontend
+      - name: Run ESLint and do report with Reviewdog
+        run: >
+          yarn run --silent lint -f rdjson 
+          | reviewdog
+          -f=rdjson
+          -reporter=github-pr-review
+          -fail-level=any
+          -diff="git diff origin/${{ github.base_ref }}"
+        working-directory: frontend
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Run TypeScript type check and do report with Reviewdog
+        run: > 
+          yarn run ts-check 
+          | reviewdog
+          -efm="%f:%l:%c - %m"
+          -reporter=github-pr-review
+          -fail-level=any
+          && yarn run --silent ts-check
+        working-directory: frontend
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build project
+        run: yarn run build
+        working-directory: frontend
+  docker-validation:
+    name: Run Docker compose and wait for all containers healthy (or running)
+    needs:
+      - backend-verification
+      - frontend-verification
+    if: ${{ !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+        with:
+          driver: docker-container
+      - name: Build Docker images
+        uses: docker/bake-action@v7
+        with:
+          files: docker-compose.yml
+          load: true
+          set: |
+            backend.cache-from=type=gha,scope=backend
+            backend.cache-to=type=gha,mode=max,scope=backend
+            frontend.cache-from=type=gha,scope=frontend
+            frontend.cache-to=type=gha,mode=max,scope=frontend
+      - name: Run Docker containers and wait
+        run: docker compose up -d --wait --wait-timeout 120

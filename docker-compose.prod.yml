@@ -12,6 +12,11 @@ services:
     env_file:
       - .env.prod
     restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "wget", "--spider", "-q", "http://localhost:8080/monitor/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   frontend:
     image: 1artem11semenov1/kakdelav2-frontend:stable
@@ -19,7 +24,8 @@ services:
     ports:
       - "4173:4173"
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     env_file:
       - .env.prod
     restart: unless-stopped
