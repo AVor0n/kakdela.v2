@@ -33,7 +33,8 @@ public class SurveyNotificationSubscriptionService {
   private final EmailService emailService;
 
   @Transactional
-  public SubscriptionResponseDto subscribeUsers(UUID surveyId, List<String> emails, UUID currentUserId) {
+  public SubscriptionResponseDto subscribeUsers(
+      UUID surveyId, List<String> emails, UUID currentUserId) {
     permissionService.checkAccess(surveyId, currentUserId, SurveyRole.EDITOR);
 
     if (emails == null || emails.isEmpty()) {

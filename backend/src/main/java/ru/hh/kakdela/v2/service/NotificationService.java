@@ -54,7 +54,8 @@ public class NotificationService {
 
   @Async
   public void sendNotificationForNewSubscribers(Survey survey, List<String> emails) {
-    log.info("Sending {} notifications for new subscribers for survey {}", emails.size(), survey.getId());
+    log.info("Отправка {} уведомлений новым подписчикам опроса {}",
+        emails.size(), survey.getId());
     for (String email : emails) {
       emailService.sendSurveyPublishedEmail(email, survey.getTitle(), survey.getId());
     }
@@ -80,7 +81,7 @@ public class NotificationService {
   private Survey checkSurvey(UUID surveyId) {
     Survey survey = surveyDao.findById(surveyId).orElse(null);
     if (survey == null || !survey.isPublished()) {
-      log.warn("Survey {} is not published or not found", surveyId);
+      log.warn("Опрос {} не опубликован или не найден", surveyId);
       return null;
     }
     return survey;

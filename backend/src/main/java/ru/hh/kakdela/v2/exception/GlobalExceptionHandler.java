@@ -98,7 +98,8 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(BadCredentialsException.class)
   @ResponseStatus(HttpStatus.UNAUTHORIZED)
-  public ResponseEntity<ErrorResponse> handleBadCredentials(BadCredentialsException ex, WebRequest request) {
+  public ResponseEntity<ErrorResponse> handleBadCredentials(
+      BadCredentialsException ex, WebRequest request) {
     ErrorResponse error = new ErrorResponse(
         LocalDateTime.now(),
         HttpStatus.UNAUTHORIZED.value(),
@@ -114,7 +115,8 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(AccessDeniedException.class)
   @ResponseStatus(HttpStatus.FORBIDDEN)
-  public ResponseEntity<ErrorResponse> handleAccessDenied(AccessDeniedException ex, WebRequest request) {
+  public ResponseEntity<ErrorResponse> handleAccessDenied(
+      AccessDeniedException ex, WebRequest request) {
     ErrorResponse error = new ErrorResponse(
         LocalDateTime.now(),
         HttpStatus.FORBIDDEN.value(),
@@ -129,7 +131,8 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler(NoResourceFoundException.class)
-  public ResponseEntity<ErrorResponse> handleNoResourceFound(NoResourceFoundException ex, WebRequest request) {
+  public ResponseEntity<ErrorResponse> handleNoResourceFound(
+      NoResourceFoundException ex, WebRequest request) {
     ErrorResponse error = new ErrorResponse(
         LocalDateTime.now(),
         HttpStatus.NOT_FOUND.value(),
@@ -144,7 +147,8 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler(ResponseStatusException.class)
-  public ResponseEntity<ErrorResponse> handleResponseStatusException(ResponseStatusException ex, WebRequest request) {
+  public ResponseEntity<ErrorResponse> handleResponseStatusException(
+      ResponseStatusException ex, WebRequest request) {
     HttpStatus status = HttpStatus.resolve(ex.getStatusCode().value());
     String errorName = null;
     if (status != null) {

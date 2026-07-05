@@ -66,7 +66,8 @@ public class SurveyNotificationSubscriptionDaoImpl implements SurveyNotification
   }
 
   @Override
-  public Optional<SurveyNotificationSubscription> findBySurveyIdAndAccountId(UUID surveyId, UUID accountId) {
+  public Optional<SurveyNotificationSubscription> findBySurveyIdAndAccountId(
+      UUID surveyId, UUID accountId) {
     return entityManager.createQuery(
             "SELECT s FROM SurveyNotificationSubscription s " +
                 "WHERE s.survey.id = :surveyId AND s.account.id = :accountId",
