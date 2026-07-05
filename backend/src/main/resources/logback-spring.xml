@@ -47,6 +47,7 @@
         </logger>
         <logger name="org.hibernate.SQL" level="OFF"/>
         <logger name="org.hibernate.type.descriptor.sql" level="OFF"/>
+        <logger name="org.hibernate" level="WARN"/>
         <logger name="org.springframework.security" level="WARN"/>
         <logger name="org.springframework.web" level="WARN"/>
     </springProfile>
@@ -58,6 +59,7 @@
         </logger>
         <logger name="org.hibernate.SQL" level="OFF"/>
         <logger name="org.hibernate.type.descriptor.sql" level="OFF"/>
+        <logger name="org.hibernate" level="WARN"/>
         <logger name="org.springframework.security" level="WARN"/>
         <logger name="org.springframework.web" level="WARN"/>
     </springProfile>
