@@ -1,10 +1,9 @@
 package ru.hh.kakdela.v2.dao;
 
-import ru.hh.kakdela.v2.model.SurveyPage;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import ru.hh.kakdela.v2.model.SurveyPage;
 
 public interface SurveyPageDao {
 
@@ -17,8 +16,6 @@ public interface SurveyPageDao {
   void update(SurveyPage page);
 
   void delete(SurveyPage page);
-
-  boolean existsBySurveyIdAndSerialNumber(UUID surveyId, Integer serialNumber);
 
   void increaseSerialNumbers(UUID surveyId, int startSerial);
 

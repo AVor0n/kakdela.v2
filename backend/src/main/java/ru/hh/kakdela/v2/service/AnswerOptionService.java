@@ -2,7 +2,6 @@ package ru.hh.kakdela.v2.service;
 
 import java.util.List;
 import java.util.UUID;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -54,13 +53,24 @@ public class AnswerOptionService {
     permissionService.checkAccess(
         question.getSurveyPage().getSurvey().getId(), accountId, SurveyRole.EDITOR);
 
-    answerOptionDao.increaseSerialNumbers(questionId, dto.getSerialNumber());
+    int maxAvailableSerial = answerOptionDao.findMaxSerialNumber(questionId) + 1;
+
+    if (dto.getSerialNumber() != null
+        && !dto.getSerialNumber().equals(maxAvailableSerial)) {
+
+      if (dto.getSerialNumber() > maxAvailableSerial) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+            "Порядковый номер должен быть не больше " + maxAvailableSerial);
+      }
+
+      answerOptionDao.increaseSerialNumbers(questionId, dto.getSerialNumber());
+    }
 
     AnswerOption answerOption = AnswerOption.builder()
         .question(question)
         .serialNumber(dto.getSerialNumber() != null
             ? dto.getSerialNumber()
-            : answerOptionDao.findMaxSerialNumber(questionId) + 1)
+            : maxAvailableSerial)
         .answerOptionText(dto.getAnswerOptionText())
         .build();
 
@@ -84,10 +94,10 @@ public class AnswerOptionService {
     if (dto.getSerialNumber() != null && !dto.getSerialNumber().equals(oldSerial)) {
       int newSerial = dto.getSerialNumber();
 
-      int maxSerial = answerOptionDao.findMaxSerialNumber(questionId);
-      if (newSerial > maxSerial) {
+      int maxAvailableSerial = answerOptionDao.findMaxSerialNumber(questionId);
+      if (newSerial > maxAvailableSerial) {
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-            "Новый номер должен быть не больше" + maxSerial);
+            "Новый номер должен быть не больше " + maxAvailableSerial);
       }
 
       if (oldSerial > newSerial) {

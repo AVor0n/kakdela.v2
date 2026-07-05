@@ -1,10 +1,9 @@
 package ru.hh.kakdela.v2.dao;
 
-import ru.hh.kakdela.v2.model.AnswerOption;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import ru.hh.kakdela.v2.model.AnswerOption;
 
 public interface AnswerOptionDao {
 
@@ -26,5 +25,5 @@ public interface AnswerOptionDao {
 
   void decreaseSerialNumbers(UUID questionId, int startSerial, int endSerial);
 
-  public int findMaxSerialNumber(UUID questionId);
+  int findMaxSerialNumber(UUID questionId);
 }

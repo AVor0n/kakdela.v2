@@ -2,12 +2,11 @@ package ru.hh.kakdela.v2.dao;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import org.springframework.stereotype.Repository;
-import ru.hh.kakdela.v2.model.Question;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.stereotype.Repository;
+import ru.hh.kakdela.v2.model.Question;
 
 @Repository
 public class QuestionDaoImpl implements QuestionDao {
@@ -24,8 +23,8 @@ public class QuestionDaoImpl implements QuestionDao {
 
   @Override
   public List<Question> findAllByPageId(UUID pageId) {
-    return entityManager
-        .createQuery("""
+    return entityManager.createQuery(
+            """
             FROM Question q
             WHERE q.surveyPage.id = :pageId
             ORDER BY q.serialNumber
@@ -50,30 +49,16 @@ public class QuestionDaoImpl implements QuestionDao {
   }
 
   @Override
-  public boolean existsByPageIdAndSerialNumber(UUID pageId, Integer serialNumber) {
-    return Optional.of(entityManager
-            .createQuery("""
-                SELECT COUNT(q) FROM Question q
-                WHERE q.surveyPage.id = :pageId AND q.serialNumber = :serialNumber
-                """, Long.class)
-            .setParameter("pageId", pageId)
-            .setParameter("serialNumber", serialNumber)
-            .getSingleResultOrNull())
-        .map(count -> count > 0)
-        .orElse(false);
-  }
-
-  @Override
   public void increaseSerialNumbers(UUID pageId, int startSerial) {
     deferConstraint();
 
-    entityManager.createQuery("""
+    entityManager.createQuery(
+            """
             UPDATE Question q
             SET q.serialNumber = q.serialNumber + 1
             WHERE q.surveyPage.id = :pageId
               AND q.serialNumber >= :startSerial
-            """
-        )
+            """)
         .setParameter("pageId", pageId)
         .setParameter("startSerial", startSerial)
         .executeUpdate();
@@ -83,13 +68,13 @@ public class QuestionDaoImpl implements QuestionDao {
   public void increaseSerialNumbers(UUID pageId, int startSerial, int endSerial) {
     deferConstraint();
 
-    entityManager.createQuery("""
-            UPDATE Question q 
+    entityManager.createQuery(
+            """
+            UPDATE Question q
             SET q.serialNumber = q.serialNumber + 1
             WHERE q.surveyPage.id = :pageId
               AND q.serialNumber BETWEEN :startSerial AND :endSerial
-            """
-        )
+            """)
         .setParameter("pageId", pageId)
         .setParameter("startSerial", startSerial)
         .setParameter("endSerial", endSerial)
@@ -100,13 +85,13 @@ public class QuestionDaoImpl implements QuestionDao {
   public void decreaseSerialNumbers(UUID pageId, int startSerial) {
     deferConstraint();
 
-    entityManager.createQuery("""
+    entityManager.createQuery(
+            """
             UPDATE Question q
             SET q.serialNumber = q.serialNumber - 1
             WHERE q.surveyPage.id = :pageId
               AND q.serialNumber >= :startSerial
-            """
-        )
+            """)
         .setParameter("pageId", pageId)
         .setParameter("startSerial", startSerial)
         .executeUpdate();
@@ -116,13 +101,13 @@ public class QuestionDaoImpl implements QuestionDao {
   public void decreaseSerialNumbers(UUID pageId, int startSerial, int endSerial) {
     deferConstraint();
 
-    entityManager.createQuery("""
+    entityManager.createQuery(
+            """
             UPDATE Question q
             SET q.serialNumber = q.serialNumber - 1
             WHERE q.surveyPage.id = :pageId
               AND q.serialNumber BETWEEN :startSerial AND :endSerial
-            """
-        )
+            """)
         .setParameter("pageId", pageId)
         .setParameter("startSerial", startSerial)
         .setParameter("endSerial", endSerial)
@@ -131,13 +116,12 @@ public class QuestionDaoImpl implements QuestionDao {
 
   @Override
   public int findMaxSerialNumber(UUID pageId) {
-    Integer max = entityManager.createQuery("""
-                SELECT MAX(q.serialNumber) 
-                FROM Question q 
-                WHERE q.surveyPage.id = :pageId
-                """,
-            Integer.class
-        )
+    Integer max = entityManager.createQuery(
+            """
+            SELECT MAX(q.serialNumber)
+            FROM Question q
+            WHERE q.surveyPage.id = :pageId
+            """, Integer.class)
         .setParameter("pageId", pageId)
         .getSingleResultOrNull();
     return max != null ? max : 0;
@@ -145,7 +129,7 @@ public class QuestionDaoImpl implements QuestionDao {
 
   private void deferConstraint() {
     entityManager.createNativeQuery(
-        "SET CONSTRAINTS " + CONSTRAINT_NAME + " DEFERRED"
-    ).executeUpdate();
+        "SET CONSTRAINTS " + CONSTRAINT_NAME + " DEFERRED")
+        .executeUpdate();
   }
 }

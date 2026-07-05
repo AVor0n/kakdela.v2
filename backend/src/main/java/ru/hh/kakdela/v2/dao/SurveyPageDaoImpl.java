@@ -2,12 +2,11 @@ package ru.hh.kakdela.v2.dao;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import org.springframework.stereotype.Repository;
-import ru.hh.kakdela.v2.model.SurveyPage;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.stereotype.Repository;
+import ru.hh.kakdela.v2.model.SurveyPage;
 
 @Repository
 public class SurveyPageDaoImpl implements SurveyPageDao {
@@ -25,7 +24,8 @@ public class SurveyPageDaoImpl implements SurveyPageDao {
   @Override
   public List<SurveyPage> findAllBySurveyId(UUID surveyId) {
     return entityManager
-        .createQuery("""
+        .createQuery(
+            """
             FROM SurveyPage p
             WHERE p.survey.id = :surveyId
             ORDER BY p.serialNumber
@@ -50,30 +50,16 @@ public class SurveyPageDaoImpl implements SurveyPageDao {
   }
 
   @Override
-  public boolean existsBySurveyIdAndSerialNumber(UUID surveyId, Integer serialNumber) {
-    return Optional.of(entityManager
-            .createQuery("""
-                SELECT COUNT(p) FROM SurveyPage p
-                WHERE p.survey.id = :surveyId AND p.serialNumber = :serialNumber
-                """, Long.class)
-            .setParameter("surveyId", surveyId)
-            .setParameter("serialNumber", serialNumber)
-            .getSingleResultOrNull())
-        .map(count -> count > 0)
-        .orElse(false);
-  }
-
-  @Override
   public void increaseSerialNumbers(UUID surveyId, int startSerial) {
     deferConstraint();
 
-    entityManager.createQuery("""
-            UPDATE SurveyPage p 
-            SET p.serialNumber = p.serialNumber + 1 
-            WHERE p.survey.id = :surveyId 
-              AND p.serialNumber >= :startSerial
+    entityManager.createQuery(
             """
-        )
+            UPDATE SurveyPage p
+            SET p.serialNumber = p.serialNumber + 1
+            WHERE p.survey.id = :surveyId
+              AND p.serialNumber >= :startSerial
+            """)
         .setParameter("surveyId", surveyId)
         .setParameter("startSerial", startSerial)
         .executeUpdate();
@@ -83,12 +69,12 @@ public class SurveyPageDaoImpl implements SurveyPageDao {
   public void increaseSerialNumbers(UUID surveyId, int startSerial, int endSerial) {
     deferConstraint();
 
-    entityManager.createQuery("""
+    entityManager.createQuery(
+            """
             UPDATE SurveyPage p SET p.serialNumber = p.serialNumber + 1
             WHERE p.survey.id = :surveyId
               AND p.serialNumber BETWEEN :startSerial AND :endSerial
-            """
-        )
+            """)
         .setParameter("surveyId", surveyId)
         .setParameter("startSerial", startSerial)
         .setParameter("endSerial", endSerial)
@@ -99,13 +85,13 @@ public class SurveyPageDaoImpl implements SurveyPageDao {
   public void decreaseSerialNumbers(UUID surveyId, int startSerial) {
     deferConstraint();
 
-    entityManager.createQuery("""
-            UPDATE SurveyPage p 
-            SET p.serialNumber = p.serialNumber - 1 
-            WHERE p.survey.id = :surveyId 
-              AND p.serialNumber >= :startSerial
+    entityManager.createQuery(
             """
-        )
+            UPDATE SurveyPage p
+            SET p.serialNumber = p.serialNumber - 1
+            WHERE p.survey.id = :surveyId
+              AND p.serialNumber >= :startSerial
+            """)
         .setParameter("surveyId", surveyId)
         .setParameter("startSerial", startSerial)
         .executeUpdate();
@@ -115,13 +101,13 @@ public class SurveyPageDaoImpl implements SurveyPageDao {
   public void decreaseSerialNumbers(UUID surveyId, int startSerial, int endSerial) {
     deferConstraint();
 
-    entityManager.createQuery("""
+    entityManager.createQuery(
+            """
             UPDATE SurveyPage p
             SET p.serialNumber = p.serialNumber - 1
             WHERE p.survey.id = :surveyId
               AND p.serialNumber BETWEEN :startSerial AND :endSerial
-            """
-        )
+            """)
         .setParameter("surveyId", surveyId)
         .setParameter("startSerial", startSerial)
         .setParameter("endSerial", endSerial)
@@ -130,13 +116,12 @@ public class SurveyPageDaoImpl implements SurveyPageDao {
 
   @Override
   public int findMaxSerialNumber(UUID surveyId) {
-    Integer max = entityManager.createQuery("""
-                SELECT MAX(p.serialNumber) 
-                FROM SurveyPage p 
-                WHERE p.survey.id = :surveyId
-                """,
-            Integer.class
-        )
+    Integer max = entityManager.createQuery(
+            """
+            SELECT MAX(p.serialNumber)
+            FROM SurveyPage p
+            WHERE p.survey.id = :surveyId
+            """, Integer.class)
         .setParameter("surveyId", surveyId)
         .getSingleResultOrNull();
 
@@ -145,7 +130,7 @@ public class SurveyPageDaoImpl implements SurveyPageDao {
 
   private void deferConstraint() {
     entityManager.createNativeQuery(
-        "SET CONSTRAINTS " + CONSTRAINT_NAME + " DEFERRED"
-    ).executeUpdate();
+            "SET CONSTRAINTS " + CONSTRAINT_NAME + " DEFERRED")
+        .executeUpdate();
   }
 }

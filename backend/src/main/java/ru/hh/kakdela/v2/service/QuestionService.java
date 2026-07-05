@@ -2,7 +2,6 @@ package ru.hh.kakdela.v2.service;
 
 import java.util.List;
 import java.util.UUID;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -53,20 +52,30 @@ public class QuestionService {
 
   @Transactional
   public QuestionResponseDto create(UUID pageId, QuestionCreateDto dto, UUID accountId) {
-
     SurveyPage page = surveyPageDao.findById(pageId)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Страница не найдена: " + pageId));
 
     permissionService.checkAccess(page.getSurvey().getId(), accountId, SurveyRole.EDITOR);
 
-    questionDao.increaseSerialNumbers(pageId, dto.getSerialNumber());
+    int maxAvailableSerial = questionDao.findMaxSerialNumber(pageId) + 1;
+
+    if (dto.getSerialNumber() != null
+        && !dto.getSerialNumber().equals(maxAvailableSerial)) {
+
+      if (dto.getSerialNumber() > maxAvailableSerial) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+            "Порядковый номер должен быть не больше " + maxAvailableSerial);
+      }
+
+      questionDao.increaseSerialNumbers(pageId, dto.getSerialNumber());
+    }
 
     Question question = Question.builder()
         .surveyPage(page)
         .serialNumber(dto.getSerialNumber() != null
             ? dto.getSerialNumber()
-            : questionDao.findMaxSerialNumber(pageId) + 1)
+            : maxAvailableSerial)
         .title(dto.getTitle())
         .description(dto.getDescription())
         .type(dto.getType())
@@ -95,10 +104,10 @@ public class QuestionService {
     if (dto.getSerialNumber() != null && !dto.getSerialNumber().equals(oldSerial)) {
       int newSerial = dto.getSerialNumber();
 
-      int maxSerial = questionDao.findMaxSerialNumber(pageId);
-      if (newSerial > maxSerial) {
+      int maxAvailableSerial = questionDao.findMaxSerialNumber(pageId);
+      if (newSerial > maxAvailableSerial) {
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-            "Новый номер должен быть не больше" + maxSerial);
+            "Новый номер должен быть не больше " + maxAvailableSerial);
       }
 
       if (oldSerial > newSerial) {

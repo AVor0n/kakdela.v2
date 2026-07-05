@@ -2,7 +2,6 @@ package ru.hh.kakdela.v2.service;
 
 import java.util.List;
 import java.util.UUID;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -44,19 +43,30 @@ public class SurveyPageService {
 
   @Transactional
   public SurveyPageResponseDto create(UUID surveyId, SurveyPageCreateDto dto, UUID accountId) {
-    permissionService.checkAccess(surveyId, accountId, SurveyRole.EDITOR);
-
-    surveyPageDao.increaseSerialNumbers(surveyId, dto.getSerialNumber());
-
     Survey survey = surveyDao.findById(surveyId)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
+
+    permissionService.checkAccess(surveyId, accountId, SurveyRole.EDITOR);
+
+    int maxAvailableSerial = surveyPageDao.findMaxSerialNumber(surveyId) + 1;
+
+    if (dto.getSerialNumber() != null
+        && !dto.getSerialNumber().equals(maxAvailableSerial)) {
+
+      if (dto.getSerialNumber() > maxAvailableSerial) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+            "Порядковый номер должен быть не больше " + maxAvailableSerial);
+      }
+
+      surveyPageDao.increaseSerialNumbers(surveyId, dto.getSerialNumber());
+    }
 
     SurveyPage surveyPage = SurveyPage.builder()
         .survey(survey)
         .serialNumber(dto.getSerialNumber() != null
             ? dto.getSerialNumber()
-            : surveyPageDao.findMaxSerialNumber(surveyId) + 1)
+            : maxAvailableSerial)
         .title(dto.getTitle())
         .description(dto.getDescription())
         .build();
@@ -78,10 +88,10 @@ public class SurveyPageService {
     if (dto.getSerialNumber() != null && !dto.getSerialNumber().equals(oldSerial)) {
       int newSerial = dto.getSerialNumber();
 
-      int maxSerial = surveyPageDao.findMaxSerialNumber(surveyId);
-      if (newSerial > maxSerial) {
+      int maxAvailableSerial = surveyPageDao.findMaxSerialNumber(surveyId);
+      if (newSerial > maxAvailableSerial) {
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-            "Новый номер должен быть не больше" + maxSerial);
+            "Новый номер должен быть не больше " + maxAvailableSerial);
       }
 
       if (oldSerial > newSerial) {
