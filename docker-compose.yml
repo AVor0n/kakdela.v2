@@ -72,7 +72,7 @@ services:
 
   mailhog:
     image: mailhog/mailhog:latest
-    container_name: mailhog
+    container_name: kd2-mailhog
     ports:
       - "1025:1025"
       - "8025:8025"
