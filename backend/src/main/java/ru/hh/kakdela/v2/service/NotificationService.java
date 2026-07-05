@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.hh.kakdela.v2.dao.AccountDao;
 import ru.hh.kakdela.v2.dao.PermissionDao;
 import ru.hh.kakdela.v2.dao.SurveyDao;
 import ru.hh.kakdela.v2.dao.SurveyNotificationSubscriptionDao;
@@ -23,15 +24,15 @@ public class NotificationService {
 
     private final SurveyDao surveyDao;
     private final PermissionDao permissionDao;
+    private final AccountDao accountDao;
     private final SurveyNotificationSubscriptionDao subscriberDao;
-   // private final EmailService emailService;
+    private final EmailService emailService;
 
     @Async
     @Transactional(readOnly = true)
     public void sendSurveyPublishedNotifications(UUID surveyId) {
-        Survey survey = surveyDao.findById(surveyId).orElse(null);
-        if (survey == null || !survey.isPublished()) {
-            log.warn("Survey {} is not published or not found", surveyId);
+        Survey survey = checkSurvey(surveyId);
+        if (survey == null) {
             return;
         }
 
@@ -48,6 +49,40 @@ public class NotificationService {
         if (teamMembers.isEmpty() && subscribers.isEmpty()) {
             log.info("No recipients for survey {}", surveyId);
         }
+    }
+
+    @Async
+    public void sendNotificationForNewSubscribers(Survey survey, List<String> emails) {
+        log.info("Sending {} notifications for new subscribers for survey {}", emails.size(), survey.getId());
+        for (String email : emails) {
+            emailService.sendSurveyPublishedEmail(email, survey.getTitle(), survey.getId());
+        }
+    }
+
+    @Async
+    public void sendNotificationForUsersWithUncompletedResponse(UUID surveyId) {
+        Survey survey = checkSurvey(surveyId);
+        if (survey == null) {
+            return;
+        }
+
+        List<Account> users = accountDao.findUsersWithIncompletedResponseBySurveyId(surveyId);
+        for (Account account : users) {
+            emailService.sendIncompletedResponseEmail(
+                account.getEmail(),
+                survey.getTitle(),
+                surveyId
+            );
+        }
+    }
+
+    private Survey checkSurvey(UUID surveyId) {
+        Survey survey = surveyDao.findById(surveyId).orElse(null);
+        if (survey == null || !survey.isPublished()) {
+            log.warn("Survey {} is not published or not found", surveyId);
+            return null;
+        }
+        return survey;
     }
 
     private List<Account> getTeamMembers(UUID surveyId) {
@@ -68,7 +103,7 @@ public class NotificationService {
         for (Account account : teamMembers) {
             String email = account.getEmail();
             log.info("Survey is published: {} - {}", survey.getTitle(), email);
-            // emailService.sendSurveyPublishedEmail(email, survey.getTitle(), survey.getId());
+            emailService.sendSurveyPublishedEmail(email, survey.getTitle(), survey.getId());
         }
     }
 
@@ -78,7 +113,7 @@ public class NotificationService {
         for (Account account : subscribers) {
             String email = account.getEmail();
             log.info("You are invited to take survey: {} - {}", survey.getTitle(), email);
-            // emailService.sendSurveyInvitationEmail(email, survey.getTitle(), survey.getId());
+            emailService.sendSurveyPublishedEmail(email, survey.getTitle(), survey.getId());
         }
     }
 }
