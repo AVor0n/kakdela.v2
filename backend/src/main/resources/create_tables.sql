@@ -37,7 +37,7 @@ CREATE TABLE survey_page (
     serial_number int NOT NULL,
     title varchar(200),
     description varchar(5000),
-    CONSTRAINT uq_page_survey_serial UNIQUE (survey_id, serial_number)
+    CONSTRAINT uq_page_survey_serial UNIQUE (survey_id, serial_number) DEFERRABLE INITIALLY IMMEDIATE
 );
 
 CREATE INDEX idx_survey_page_survey_id
@@ -55,7 +55,7 @@ CREATE TABLE question (
     is_mandatory bool NOT NULL,
     is_visible bool NOT NULL,
     condition text,
-    CONSTRAINT uq_question_page_serial UNIQUE (survey_page_id, serial_number)
+    CONSTRAINT uq_question_page_serial UNIQUE (survey_page_id, serial_number) DEFERRABLE INITIALLY IMMEDIATE
 );
 
 CREATE INDEX idx_question_survey_page_id
@@ -67,7 +67,7 @@ CREATE TABLE answer_option (
     serial_number int NOT NULL,
     answer_option_text varchar(1000) NOT NULL,
     attachment_object_key varchar(1024),
-    CONSTRAINT uq_answer_option_question_serial UNIQUE (question_id, serial_number)
+    CONSTRAINT uq_answer_option_question_serial UNIQUE (question_id, serial_number) DEFERRABLE INITIALLY IMMEDIATE
 
 );
 
@@ -111,3 +111,21 @@ CREATE TABLE survey_notification_subscription (
 
 CREATE INDEX idx_subscription_survey ON survey_notification_subscription(survey_id);
 CREATE INDEX idx_subscription_account ON survey_notification_subscription(account_id);
+
+CREATE TABLE notification_schedule (
+    id uuid PRIMARY KEY,
+    survey_id uuid NOT NULL REFERENCES survey(id) ON DELETE CASCADE,
+    name varchar(255) NOT NULL,
+    schedule_type varchar(255) NOT NULL,
+    -- Для WEEKLY: битовая маска
+    days_of_week int,
+    -- Для MONTHLY: день месяца
+    day_of_month int,
+    -- Для CUSTOM: cron выражение
+    cron_expression varchar(100),
+    execution_time time,
+    target_timezone varchar(50) DEFAULT 'Europe/Moscow',
+    is_active boolean DEFAULT TRUE,
+    next_execution timestamptz,
+    last_execution timestamptz
+);

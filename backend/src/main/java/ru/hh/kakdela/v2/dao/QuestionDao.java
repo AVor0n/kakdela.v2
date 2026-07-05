@@ -1,10 +1,9 @@
 package ru.hh.kakdela.v2.dao;
 
-import ru.hh.kakdela.v2.model.Question;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import ru.hh.kakdela.v2.model.Question;
 
 public interface QuestionDao {
 
@@ -18,5 +17,13 @@ public interface QuestionDao {
 
   void delete(Question question);
 
-  boolean existsByPageIdAndSerialNumber(UUID pageId, Integer serialNumber);
+  void increaseSerialNumbers(UUID pageId, int startSerial);
+
+  void increaseSerialNumbers(UUID pageId, int startSerial, int endSerial);
+
+  void decreaseSerialNumbers(UUID pageId, int startSerial);
+
+  void decreaseSerialNumbers(UUID pageId, int startSerial, int endSerial);
+
+  int findMaxSerialNumber(UUID pageId);
 }

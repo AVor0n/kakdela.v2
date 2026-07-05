@@ -1,5 +1,6 @@
 package ru.hh.kakdela.v2.dto.question;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -11,6 +12,10 @@ import ru.hh.kakdela.v2.validator.NullOrNotBlank;
 @NoArgsConstructor
 @Getter
 @Setter
+@Schema(
+    name = "QuestionUpdate",
+    title = "DTO для обновления вопроса"
+)
 public class QuestionUpdateDto {
 
   @Min(value = 1, message = "Порядковый номер должен быть больше 0")

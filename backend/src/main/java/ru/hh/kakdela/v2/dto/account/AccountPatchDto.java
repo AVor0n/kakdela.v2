@@ -1,5 +1,6 @@
 package ru.hh.kakdela.v2.dto.account;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -12,6 +13,10 @@ import ru.hh.kakdela.v2.validator.ValidPassword;
 @NoArgsConstructor
 @Getter
 @Setter
+@Schema(
+    name = "AccountPatch",
+    title = "DTO для частичного обновления аккаунта"
+)
 public class AccountPatchDto {
 
   @NullOrNotBlank(message = "Логин не должен быть пустым")
@@ -24,6 +29,7 @@ public class AccountPatchDto {
   @ValidPassword
   private String newPassword;
   private String newPasswordConfirmation;
+  @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
   @NotBlank(message = "Операция должна быть подтверждена вводом текущего пароля")
   private String password;
 }

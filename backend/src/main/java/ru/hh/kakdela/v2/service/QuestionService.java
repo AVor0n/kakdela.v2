@@ -52,21 +52,30 @@ public class QuestionService {
 
   @Transactional
   public QuestionResponseDto create(UUID pageId, QuestionCreateDto dto, UUID accountId) {
-    if (questionDao.existsByPageIdAndSerialNumber(pageId, dto.getSerialNumber())) {
-      throw new ResponseStatusException(
-          HttpStatus.CONFLICT,
-          "Вопрос с номером " + dto.getSerialNumber() + " уже существует на этой странице");
-    }
-
     SurveyPage page = surveyPageDao.findById(pageId)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Страница не найдена: " + pageId));
 
     permissionService.checkAccess(page.getSurvey().getId(), accountId, SurveyRole.EDITOR);
 
+    int maxAvailableSerial = questionDao.findMaxSerialNumber(pageId) + 1;
+
+    if (dto.getSerialNumber() != null
+        && !dto.getSerialNumber().equals(maxAvailableSerial)) {
+
+      if (dto.getSerialNumber() > maxAvailableSerial) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+            "Порядковый номер должен быть не больше " + maxAvailableSerial);
+      }
+
+      questionDao.increaseSerialNumbers(pageId, dto.getSerialNumber());
+    }
+
     Question question = Question.builder()
         .surveyPage(page)
-        .serialNumber(dto.getSerialNumber())
+        .serialNumber(dto.getSerialNumber() != null
+            ? dto.getSerialNumber()
+            : maxAvailableSerial)
         .title(dto.getTitle())
         .description(dto.getDescription())
         .type(dto.getType())
@@ -89,9 +98,27 @@ public class QuestionService {
     permissionService.checkAccess(question.getSurveyPage().getSurvey().getId(), accountId,
         SurveyRole.EDITOR);
 
-    if (dto.getSerialNumber() != null) {
-      question.setSerialNumber(dto.getSerialNumber());
+    UUID pageId = question.getSurveyPage().getId();
+    int oldSerial = question.getSerialNumber();
+
+    if (dto.getSerialNumber() != null && !dto.getSerialNumber().equals(oldSerial)) {
+      int newSerial = dto.getSerialNumber();
+
+      int maxAvailableSerial = questionDao.findMaxSerialNumber(pageId);
+      if (newSerial > maxAvailableSerial) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+            "Новый номер должен быть не больше " + maxAvailableSerial);
+      }
+
+      if (oldSerial > newSerial) {
+        questionDao.increaseSerialNumbers(pageId, newSerial, oldSerial - 1);
+      } else {
+        questionDao.decreaseSerialNumbers(pageId, oldSerial + 1, newSerial);
+      }
+
+      question.setSerialNumber(newSerial);
     }
+
     if (dto.getTitle() != null) {
       question.setTitle(dto.getTitle());
     }
@@ -125,7 +152,13 @@ public class QuestionService {
             () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Вопрос не найден: " + id));
     permissionService.checkAccess(question.getSurveyPage().getSurvey().getId(), accountId,
         SurveyRole.EDITOR);
+
+    UUID pageId = question.getSurveyPage().getId();
+    int deletedSerial = question.getSerialNumber();
+
     questionDao.delete(question);
+
+    questionDao.decreaseSerialNumbers(pageId, deletedSerial + 1);
   }
 
   // Attachment management

@@ -8,8 +8,14 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 @AllArgsConstructor
 @Getter
+@Schema(
+    name = " ResponseResponse",
+    title = "DTO для получения данных ответа на опрос"
+)
 public class ResponseResponseDto {
 
   private final UUID id;

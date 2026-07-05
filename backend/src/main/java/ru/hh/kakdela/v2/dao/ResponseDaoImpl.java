@@ -66,6 +66,7 @@ public class ResponseDaoImpl implements ResponseDao {
         .getSingleResultOrNull();
   }
 
+
   @Override
   public List<Response> findIncompletedBySurveyIdAndAccountId(UUID surveyId, UUID accountId) {
     return entityManager

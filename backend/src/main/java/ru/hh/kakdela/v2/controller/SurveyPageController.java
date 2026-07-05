@@ -5,6 +5,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import io.swagger.v3.oas.annotations.tags.Tag;
 import ru.hh.kakdela.v2.dto.survey_page.SurveyPageCreateDto;
 import ru.hh.kakdela.v2.dto.survey_page.SurveyPageResponseDto;
 import ru.hh.kakdela.v2.dto.survey_page.SurveyPageUpdateDto;
@@ -17,6 +19,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
+@Tag(name = "Pages", description = "Управление страницами опросов")
 public class SurveyPageController {
 
     private final SurveyPageService surveyPageService;
