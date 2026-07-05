@@ -126,6 +126,10 @@ public class NotificationScheduleService {
       notificationSchedule.setDayOfMonth(dto.getDayOfMonth());
     }
 
+    if (dto.getCronExpression() != null) {
+      notificationSchedule.setCronExpression(dto.getCronExpression());
+    }
+
     if (dto.getType() != null) {
       notificationSchedule.setScheduleType(dto.getType());
     }
@@ -138,7 +142,7 @@ public class NotificationScheduleService {
       notificationSchedule.setIsActive(dto.getIsActive());
     }
 
-    notificationSchedule.getScheduleType().setup(notificationSchedule, dto);
+    notificationSchedule.getScheduleType().setup(notificationSchedule);
 
     notificationSchedule.setNextExecution(calculationService.calculateNextExecution(notificationSchedule));
 

@@ -15,26 +15,19 @@ public class ScheduleCalculationService {
     ZoneId targetZone = ZoneId.of(schedule.getTargetTimezone());
 
     // Конвертация в ZonedDateTime для работы с датой/временем
-    ZonedDateTime nowInUserZone = now.atZone(targetZone);
+    ZonedDateTime nowInTargetZone = now.atZone(targetZone);
     LocalTime execTime = schedule.getExecutionTime();
 
-    ZonedDateTime candidate = nowInUserZone.with(execTime);
+    ZonedDateTime candidate = nowInTargetZone.with(execTime);
 
     // Если время уже прошло - переходим на следующий день
-    if (candidate.isBefore(nowInUserZone) || candidate.equals(nowInUserZone)) {
+    if (candidate.isBefore(nowInTargetZone) || candidate.equals(nowInTargetZone)) {
       candidate = candidate.plusDays(1);
     }
 
-    candidate = applyScheduleRules(schedule, candidate, nowInUserZone);
+    candidate = schedule.getScheduleType().findNext(schedule, candidate, nowInTargetZone);
 
     return candidate.toInstant();
   }
 
-  private ZonedDateTime applyScheduleRules(
-      NotificationSchedule schedule,
-      ZonedDateTime candidate,
-      ZonedDateTime now) {
-
-    return schedule.getScheduleType().findNext(schedule, candidate, now);
-  }
 }

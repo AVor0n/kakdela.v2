@@ -73,18 +73,16 @@ public class NotificationSchedule {
   public enum ScheduleType {
     DAILY {
       @Override
-      public void setup(NotificationSchedule schedule, NotificationScheduleUpdateDto dto) {
-        if (dto.getExecutionTime() == null) {
+      public void setup(NotificationSchedule schedule) {
+        if (schedule.getExecutionTime() == null) {
           throw new ResponseStatusException(
               HttpStatus.BAD_REQUEST,
               "Время выполнения должно быть указано для этого типа уведомлений"
           );
         }
-        schedule.setExecutionTime(dto.getExecutionTime());
         schedule.setDaysOfWeek(null);
         schedule.setDayOfMonth(null);
         schedule.setCronExpression(null);
-        schedule.setScheduleType(NotificationSchedule.ScheduleType.DAILY);
       }
 
       @Override
@@ -114,27 +112,21 @@ public class NotificationSchedule {
     },
     WEEKLY {
       @Override
-      public void setup(NotificationSchedule schedule, NotificationScheduleUpdateDto dto) {
-        if (dto.getExecutionTime() == null && schedule.getExecutionTime() == null) {
+      public void setup(NotificationSchedule schedule) {
+        if (schedule.getExecutionTime() == null) {
           throw new ResponseStatusException(
               HttpStatus.BAD_REQUEST,
               "Время выполнения должно быть указано для этого типа уведомлений"
           );
         }
-        if (dto.getDaysOfWeek() == null) {
+        if (schedule.getDaysOfWeek() == null) {
           throw new ResponseStatusException(
               HttpStatus.BAD_REQUEST,
               "Дни недели должны быть указаны для этого типа уведомлений"
           );
         }
-        LocalTime executionTime = dto.getExecutionTime();
-        if (executionTime != null) {
-          schedule.setExecutionTime(executionTime);
-        }
-        schedule.setDaysOfWeek(dto.getDaysOfWeek());
         schedule.setDayOfMonth(null);
         schedule.setCronExpression(null);
-        schedule.setScheduleType(NotificationSchedule.ScheduleType.WEEKLY);
       }
 
       @Override
@@ -184,27 +176,21 @@ public class NotificationSchedule {
     },
     MONTHLY {
       @Override
-      public void setup(NotificationSchedule schedule, NotificationScheduleUpdateDto dto) {
-        if (dto.getExecutionTime() == null && schedule.getExecutionTime() == null) {
+      public void setup(NotificationSchedule schedule) {
+        if (schedule.getExecutionTime() == null) {
           throw new ResponseStatusException(
               HttpStatus.BAD_REQUEST,
               "Время выполнения должно быть указано для этого типа уведомлений"
           );
         }
-        if (dto.getDayOfMonth() == null) {
+        if (schedule.getDayOfMonth() == null) {
           throw new ResponseStatusException(
               HttpStatus.BAD_REQUEST,
               "Число месяца должно быть указано для этого типа уведомлений"
           );
         }
-        LocalTime executionTime = dto.getExecutionTime();
-        if (executionTime != null) {
-          schedule.setExecutionTime(executionTime);
-        }
         schedule.setDaysOfWeek(null);
-        schedule.setDayOfMonth(dto.getDayOfMonth());
         schedule.setCronExpression(null);
-        schedule.setScheduleType(NotificationSchedule.ScheduleType.MONTHLY);
       }
 
       @Override
@@ -258,8 +244,8 @@ public class NotificationSchedule {
     },
     CUSTOM {
       @Override
-      public void setup(NotificationSchedule schedule, NotificationScheduleUpdateDto dto) {
-        String cronExpression = dto.getCronExpression();
+      public void setup(NotificationSchedule schedule) {
+        String cronExpression = schedule.getCronExpression();
         if (cronExpression == null) {
           throw new ResponseStatusException(
               HttpStatus.BAD_REQUEST,
@@ -269,8 +255,6 @@ public class NotificationSchedule {
         schedule.setDaysOfWeek(null);
         schedule.setDayOfMonth(null);
         schedule.setExecutionTime(null);
-        schedule.setCronExpression(cronExpression);
-        schedule.setScheduleType(NotificationSchedule.ScheduleType.CUSTOM);
       }
 
       @Override
@@ -314,7 +298,7 @@ public class NotificationSchedule {
     };
 
     private static final Logger log = LoggerFactory.getLogger(ScheduleType.class);
-    public abstract void setup(NotificationSchedule schedule, NotificationScheduleUpdateDto dto);
+    public abstract void setup(NotificationSchedule schedule);
     public abstract void verifyType(NotificationSchedule schedule);
     public abstract ZonedDateTime findNext(NotificationSchedule schedule,
                                            ZonedDateTime candidate,
