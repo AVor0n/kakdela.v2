@@ -2,10 +2,10 @@ package ru.hh.kakdela.v2.filter;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import java.io.IOException;
-import java.util.UUID;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.security.core.Authentication;
