@@ -63,7 +63,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
       chain.doFilter(request, response);
     } catch (UsernameNotFoundException e) {
-      log.warn("Account not found: login={}", e.getName());
+      log.warn("Аккаунт не найден: login={}", e.getName());
       sendErrorResponse(
           response,
           request,
