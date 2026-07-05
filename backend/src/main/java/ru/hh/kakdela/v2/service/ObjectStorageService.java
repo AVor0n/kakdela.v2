@@ -26,7 +26,8 @@ public class ObjectStorageService {
   private String bucketName;
 
   public void putObject(String key, byte[] fileAsByteArray, String contentType) {
-    log.debug("Загрузка объекта в хранилище key={} contentType={} size={}b", key, contentType, fileAsByteArray.length);
+    log.debug("Загрузка объекта в хранилище key={} contentType={} size={}b",
+        key, contentType, fileAsByteArray.length);
     s3Client.putObject(
         PutObjectRequest.builder()
             .bucket(bucketName)

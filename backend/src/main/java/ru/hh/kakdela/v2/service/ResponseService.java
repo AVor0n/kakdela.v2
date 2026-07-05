@@ -119,7 +119,8 @@ public class ResponseService {
         .build();
 
     responseDao.save(response);
-    log.info("Создан ответ на опрос id={} surveyId={} accountId={}", response.getId(), surveyId, accountId);
+    log.info("Создан ответ на опрос id={} surveyId={} accountId={}",
+        response.getId(), surveyId, accountId);
 
     if (accountId == null) {
       return new ResponseWithTokenDto(

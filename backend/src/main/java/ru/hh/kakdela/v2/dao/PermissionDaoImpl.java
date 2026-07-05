@@ -3,8 +3,8 @@ package ru.hh.kakdela.v2.dao;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
-import org.springframework.stereotype.Repository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Repository;
 import ru.hh.kakdela.v2.model.Permission;
 
 import java.util.List;

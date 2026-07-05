@@ -201,7 +201,8 @@ public class SurveyService {
     }
 
     surveyDao.save(surveyCopy);
-    log.info("Клонирован опрос originalId={} copyId={} accountId={}", surveyId, surveyCopy.getId(), accountId);
+    log.info("Клонирован опрос originalId={} copyId={} accountId={}",
+        surveyId, surveyCopy.getId(), accountId);
     return surveyMapper.surveyToDto(surveyCopy);
   }
 

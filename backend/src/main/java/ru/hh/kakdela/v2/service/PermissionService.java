@@ -119,7 +119,8 @@ public class PermissionService {
         .build();
 
     permissionDao.save(permission);
-    log.info("Созданы права доступа surveyId={} accountId={} role={}", surveyId, dto.getAccountId(), dto.getRole());
+    log.info("Созданы права доступа surveyId={} accountId={} role={}",
+        surveyId, dto.getAccountId(), dto.getRole());
     return PermissionMapper.permissionToDto(permission);
   }
 
