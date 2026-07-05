@@ -7,9 +7,15 @@ import ru.hh.kakdela.v2.model.Permission;
 
 import java.util.UUID;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 @NoArgsConstructor
 @Getter
 @Setter
+@Schema(
+    name = "PermissionUpdate",
+    title = "DTO для обновления роли"
+)
 public class PermissionUpdateDto {
 
   private UUID accountId;

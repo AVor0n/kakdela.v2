@@ -55,9 +55,24 @@ public class AnswerOptionService {
     permissionService.checkAccess(
         question.getSurveyPage().getSurvey().getId(), accountId, SurveyRole.EDITOR);
 
+    int maxAvailableSerial = answerOptionDao.findMaxSerialNumber(questionId) + 1;
+
+    if (dto.getSerialNumber() != null
+        && !dto.getSerialNumber().equals(maxAvailableSerial)) {
+
+      if (dto.getSerialNumber() > maxAvailableSerial) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+            "Порядковый номер должен быть не больше " + maxAvailableSerial);
+      }
+
+      answerOptionDao.increaseSerialNumbers(questionId, dto.getSerialNumber());
+    }
+
     AnswerOption answerOption = AnswerOption.builder()
         .question(question)
-        .serialNumber(dto.getSerialNumber())
+        .serialNumber(dto.getSerialNumber() != null
+            ? dto.getSerialNumber()
+            : maxAvailableSerial)
         .answerOptionText(dto.getAnswerOptionText())
         .build();
 
@@ -76,9 +91,27 @@ public class AnswerOptionService {
         answerOption.getQuestion().getSurveyPage().getSurvey().getId(),
         accountId, SurveyRole.EDITOR);
 
-    if (dto.getSerialNumber() != null) {
-      answerOption.setSerialNumber(dto.getSerialNumber());
+    UUID questionId = answerOption.getQuestion().getId();
+    int oldSerial = answerOption.getSerialNumber();
+
+    if (dto.getSerialNumber() != null && !dto.getSerialNumber().equals(oldSerial)) {
+      int newSerial = dto.getSerialNumber();
+
+      int maxAvailableSerial = answerOptionDao.findMaxSerialNumber(questionId);
+      if (newSerial > maxAvailableSerial) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+            "Новый номер должен быть не больше " + maxAvailableSerial);
+      }
+
+      if (oldSerial > newSerial) {
+        answerOptionDao.increaseSerialNumbers(questionId, newSerial, oldSerial - 1);
+      } else {
+        answerOptionDao.decreaseSerialNumbers(questionId, oldSerial + 1, newSerial);
+      }
+
+      answerOption.setSerialNumber(newSerial);
     }
+
     if (dto.getAnswerOptionText() != null) {
       answerOption.setAnswerOptionText(dto.getAnswerOptionText());
     }
@@ -92,9 +125,17 @@ public class AnswerOptionService {
     AnswerOption answerOption = answerOptionDao.findById(id)
         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
             "Вариант ответа не найден: " + id));
+
+    Question question = answerOption.getQuestion();
+
     permissionService.checkAccess(answerOption.getQuestion().getSurveyPage().getSurvey().getId(),
         accountId, SurveyRole.EDITOR);
+    UUID questionId = question.getId();
+    int deletedSerial = answerOption.getSerialNumber();
+
     answerOptionDao.delete(answerOption);
+
+    answerOptionDao.decreaseSerialNumbers(questionId, deletedSerial + 1);
     log.info("Удален вариант ответа id={}", id);
   }
 

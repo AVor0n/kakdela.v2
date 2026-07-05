@@ -2,7 +2,18 @@ import { apiClient } from '@/api/client';
 import type { Survey, SurveyListItem } from '@/shared/types/Survey.type';
 
 export type SurveyResponse = Survey;
-export type UpdateSurveyRequest = Partial<Pick<Survey, 'title' | 'description'>>;
+export type UpdateSurveyRequest = Partial<
+    Pick<
+        Survey,
+        | 'title'
+        | 'description'
+        | 'isAuthorizedOnly'
+        | 'doNotify'
+        | 'expireAt'
+        | 'isLimitedToOneResponse'
+        | 'isPublished'
+    >
+>;
 
 export async function createSurvey(): Promise<SurveyResponse> {
     const { data } = await apiClient.post<SurveyResponse>('/api/surveys', {
@@ -34,4 +45,8 @@ export async function updateSurvey(surveyId: string, updateData: UpdateSurveyReq
     const { data } = await apiClient.put<SurveyResponse>(`/api/surveys/${surveyId}`, updateData);
 
     return data;
+}
+
+export async function deleteSurvey(surveyId: string): Promise<void> {
+    await apiClient.delete(`/api/surveys/${surveyId}`);
 }
