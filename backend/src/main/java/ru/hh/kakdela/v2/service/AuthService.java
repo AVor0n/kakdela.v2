@@ -34,14 +34,5 @@ public class AuthService {
     if (!passwordEncoder.matches(providedPassword, userDetails.getPassword())) {
       throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Предоставлен неверный пароль");
     }
-
-    AccountCreateDto accountCreateDto = new AccountCreateDto();
-
-    accountCreateDto.setLogin(registerDto.getLogin());
-    accountCreateDto.setEmail(registerDto.getEmail());
-    accountCreateDto.setHashPassword(passwordEncoder.encode(registerDto.getPassword()));
-
-    accountService.create(accountCreateDto);
-    log.info("Зарегистрирован пользователь login={}", registerDto.getLogin());
   }
 }

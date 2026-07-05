@@ -94,7 +94,7 @@ public class AccountService {
     account.setPasswordHash(passwordEncoder.encode(accountPutDto.getNewPassword()));
 
     accountDao.update(account);
-    log.info("Изменен аккаунт id={}", id);
+    log.info("Изменен аккаунт id={}", currentUser.getId());
     return AccountMapper.accountToDto(account);
   }
 
@@ -143,6 +143,6 @@ public class AccountService {
             "Аккаунт не найден: " + currentUser.getId()));
 
     accountDao.delete(account);
-    log.info("Удален аккаунт id={}", id);
+    log.info("Удален аккаунт id={}", currentUser.getId());
   }
 }
