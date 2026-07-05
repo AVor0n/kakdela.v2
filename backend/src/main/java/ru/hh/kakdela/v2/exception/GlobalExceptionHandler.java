@@ -37,7 +37,7 @@ public class GlobalExceptionHandler {
             errors.put(fieldName, errorMessage);
         });
 
-        log.error("Validation error: {}", errors);
+        log.error("Ошибка проверки: {}", errors);
         return errors;
     }
 
@@ -55,7 +55,7 @@ public class GlobalExceptionHandler {
                 null
         );
 
-        log.error("Constraint violation: {}", ex.getMessage());
+        log.error("Нарушение ограничений: {}", ex.getMessage());
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
@@ -73,7 +73,7 @@ public class GlobalExceptionHandler {
                 null
         );
 
-        log.error("Entity not found: {}", ex.getMessage());
+        log.error("Сущность не найдена: {}", ex.getMessage());
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
 
@@ -91,7 +91,7 @@ public class GlobalExceptionHandler {
                 null
         );
 
-        log.error("Illegal argument: {}", ex.getMessage());
+        log.error("Незаконный аргумент: {}", ex.getMessage());
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
@@ -107,7 +107,7 @@ public class GlobalExceptionHandler {
                 null
         );
 
-        log.error("Bad credentials: ", ex);
+        log.error("Плохие учетные данные: ", ex);
         return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
     }
 
@@ -123,7 +123,7 @@ public class GlobalExceptionHandler {
                 null
         );
 
-        log.error("Access denied: ", ex);
+        log.error("Доступ запрещен: ", ex);
         return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
     }
 
@@ -163,7 +163,7 @@ public class GlobalExceptionHandler {
                 ex.getMessage()
         );
 
-        log.error("Unexpected error: ", ex);
+        log.error("Неожиданная ошибка: ", ex);
         return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 

@@ -54,7 +54,7 @@ public class SurveyNotificationSubscriptionService {
 
                 if (subscriptionDao.existsBySurveyIdAndAccountId(surveyId, accountId)) {
                     alreadySubscribedEmails.add(email);
-                    log.debug("User {} already subscribed", email);
+                    log.debug("Пользователь {} уже подписан", email);
                     continue;
                 }
 
@@ -65,14 +65,14 @@ public class SurveyNotificationSubscriptionService {
 
                 subscriptionDao.addSubscription(subscription);
                 subscribedEmails.add(email);
-                log.info("User {} subscribed to survey {}", email, surveyId);
+                log.info("Пользователь {} подписался на опрос {}", email, surveyId);
             } catch (ResponseStatusException e) {
                 notFoundEmails.add(email);
-                log.warn("User with email {} not found", email);
+                log.warn("Пользователь с адресом электронной почты {} не найден", email);
             }
         }
 
-        log.info("Subscribed {} users to survey {}", subscribedEmails.size(), surveyId);
+        log.info("Подписалось {} пользователей на опрос {}", subscribedEmails.size(), surveyId);
         return new SubscriptionResponseDto(
             subscribedEmails,
             alreadySubscribedEmails,
@@ -93,7 +93,7 @@ public class SurveyNotificationSubscriptionService {
                 HttpStatus.NOT_FOUND, "Подписка для " + email + " не найдена"));
                 
         subscriptionDao.deleteSubscription(subscription);
-        log.info("User {} unsubscribed from survey {}", email, surveyId);
+        log.info("Пользователь {} отписался от опроса {}", email, surveyId);
     }
 
     @Transactional(readOnly = true)

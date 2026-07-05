@@ -31,7 +31,7 @@ public class NotificationService {
     public void sendSurveyPublishedNotifications(UUID surveyId) {
         Survey survey = surveyDao.findById(surveyId).orElse(null);
         if (survey == null || !survey.isPublished()) {
-            log.warn("Survey {} is not published or not found", surveyId);
+            log.warn("Опрос {} не опубликован или не найден", surveyId);
             return;
         }
 
@@ -46,7 +46,7 @@ public class NotificationService {
         }
 
         if (teamMembers.isEmpty() && subscribers.isEmpty()) {
-            log.info("No recipients for survey {}", surveyId);
+            log.info("Нет получателей опроса {}", surveyId);
         }
     }
 
@@ -63,21 +63,21 @@ public class NotificationService {
     }
 
     private void sendTeamNotifications(Survey survey, List<Account> teamMembers) {
-        log.info("Sending {} team notifications for survey {}", teamMembers.size(), survey.getId());
+        log.info("Отправка уведомлений команды {} для опроса {}", teamMembers.size(), survey.getId());
 
         for (Account account : teamMembers) {
             String email = account.getEmail();
-            log.info("Survey is published: {} - {}", survey.getTitle(), email);
+            log.info("Опрос опубликован: {} - {}", survey.getTitle(), email);
             // emailService.sendSurveyPublishedEmail(email, survey.getTitle(), survey.getId());
         }
     }
 
     private void sendSubscriberNotifications(Survey survey, List<Account> subscribers) {
-        log.info("Sending {} subscriber notifications for survey {}", subscribers.size(), survey.getId());
+        log.info("Отправка {} уведомлений подписчика об опросе {}", subscribers.size(), survey.getId());
 
         for (Account account : subscribers) {
             String email = account.getEmail();
-            log.info("You are invited to take survey: {} - {}", survey.getTitle(), email);
+            log.info("Приглашаем Вас принять участие в опросе: {} - {}", survey.getTitle(), email);
             // emailService.sendSurveyInvitationEmail(email, survey.getTitle(), survey.getId());
         }
     }
