@@ -4,7 +4,7 @@ on:
     branches:
       - main
 env:
-  repository-name: kakdela.v2
+  dockerhub-repository-name: kakdela.v2
 jobs:
   changes:
     name: Determine what has been changed
@@ -46,12 +46,14 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-      - name: Log in to the Container registry
+      - name: Log in to GitHub Packages
         uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Prepare image name for GitHub Packages
+        run: echo "GHCR_IMAGE_NAME=${GITHUB_REPOSITORY,,}" >> "$GITHUB_ENV"
       - name: Build and push Docker image
         uses: docker/build-push-action@v7
         with:
@@ -59,10 +61,10 @@ jobs:
           file: backend/Dockerfile
           push: true
           tags: |
-            ${{ secrets.DOCKER_USERNAME }}/${{ env.repository-name }}:backend-latest
-            ${{ secrets.DOCKER_USERNAME }}/${{ env.repository-name }}:backend-${{ github.sha }}
-            ghcr.io/${{ github.repository }}:backend-latest
-            ghcr.io/${{ github.repository }}:backend-${{ github.sha }}
+            ${{ secrets.DOCKER_USERNAME }}/${{ env.dockerhub-repository-name }}:backend-latest
+            ${{ secrets.DOCKER_USERNAME }}/${{ env.dockerhub-repository-name }}:backend-${{ github.sha }}
+            ghcr.io/${{ env.GHCR_IMAGE_NAME }}:backend-latest
+            ghcr.io/${{ env.GHCR_IMAGE_NAME }}:backend-${{ github.sha }}
           cache-from: type=gha,scope=backend
           cache-to: type=gha,mode=max,scope=backend
   frontend-image:
@@ -85,12 +87,14 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-      - name: Log in to the Container registry
+      - name: Log in to GitHub Packages
         uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Prepare image name for GitHub Packages
+        run: echo "GHCR_IMAGE_NAME=${GITHUB_REPOSITORY,,}" >> "$GITHUB_ENV"
       - name: Build and push Docker image
         uses: docker/build-push-action@v7
         with:
@@ -98,9 +102,9 @@ jobs:
           file: frontend/Dockerfile
           push: true
           tags: |
-            ${{ secrets.DOCKER_USERNAME }}/${{ env.repository-name }}:frontend-latest
-            ${{ secrets.DOCKER_USERNAME }}/${{ env.repository-name }}:frontend-${{ github.sha }}
-            ghcr.io/${{ github.repository }}:frontend-latest
-            ghcr.io/${{ github.repository }}:frontend-${{ github.sha }}
+            ${{ secrets.DOCKER_USERNAME }}/${{ env.dockerhub-repository-name }}:frontend-latest
+            ${{ secrets.DOCKER_USERNAME }}/${{ env.dockerhub-repository-name }}:frontend-${{ github.sha }}
+            ghcr.io/${{ env.GHCR_IMAGE_NAME }}:frontend-latest
+            ghcr.io/${{ env.GHCR_IMAGE_NAME }}:frontend-${{ github.sha }}
           cache-from: type=gha,scope=frontend
           cache-to: type=gha,mode=max,scope=frontend
