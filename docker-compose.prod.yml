@@ -12,6 +12,13 @@ services:
     env_file:
       - .env.prod
     restart: unless-stopped
+    volumes:
+      - ./logs:/app/logs
+    healthcheck:
+      test: [ "CMD", "wget", "--spider", "-q", "http://localhost:8080/monitor/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   frontend:
     image: kakdelav2/kakdela.v2:frontend-latest
@@ -19,7 +26,8 @@ services:
     ports:
       - "4173:4173"
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     env_file:
       - .env.prod
     restart: unless-stopped

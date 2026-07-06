@@ -50,6 +50,7 @@ public class SecurityConfig {
         .authorizeHttpRequests(
             auth -> auth
                 .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
+                .requestMatchers("/monitor/**").permitAll()
                 .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/api-docs/**", "/v3/api-docs/**").permitAll()
                 .requestMatchers("/api/auth/logout").authenticated()
                 .requestMatchers("/api/auth/**").permitAll()

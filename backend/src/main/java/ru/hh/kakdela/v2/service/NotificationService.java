@@ -22,98 +22,100 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class NotificationService {
 
-    private final SurveyDao surveyDao;
-    private final PermissionDao permissionDao;
-    private final AccountDao accountDao;
-    private final SurveyNotificationSubscriptionDao subscriberDao;
-    private final EmailService emailService;
+  private final SurveyDao surveyDao;
+  private final PermissionDao permissionDao;
+  private final AccountDao accountDao;
+  private final SurveyNotificationSubscriptionDao subscriberDao;
+  private final EmailService emailService;
 
-    @Async
-    @Transactional(readOnly = true)
-    public void sendSurveyPublishedNotifications(UUID surveyId) {
-        Survey survey = checkSurvey(surveyId);
-        if (survey == null) {
-            return;
-        }
-
-        List<Account> teamMembers = getTeamMembers(surveyId);
-        if (!teamMembers.isEmpty()) {
-            sendTeamNotifications(survey, teamMembers);
-        }
-
-        List<Account> subscribers = getSubscribers(surveyId);
-        if (!subscribers.isEmpty()) {
-            sendSubscriberNotifications(survey, subscribers);
-        }
-
-        if (teamMembers.isEmpty() && subscribers.isEmpty()) {
-            log.info("No recipients for survey {}", surveyId);
-        }
+  @Async
+  @Transactional(readOnly = true)
+  public void sendSurveyPublishedNotifications(UUID surveyId) {
+    Survey survey = checkSurvey(surveyId);
+    if (survey == null) {
+      log.warn("Опрос {} не опубликован или не найден", surveyId);
+      return;
     }
 
-    @Async
-    public void sendNotificationForNewSubscribers(Survey survey, List<String> emails) {
-        log.info("Sending {} notifications for new subscribers for survey {}", emails.size(), survey.getId());
-        for (String email : emails) {
-            emailService.sendSurveyPublishedEmail(email, survey.getTitle(), survey.getId());
-        }
+    List<Account> teamMembers = getTeamMembers(surveyId);
+    if (!teamMembers.isEmpty()) {
+      sendTeamNotifications(survey, teamMembers);
     }
 
-    @Async
-    public void sendNotificationForUsersWithUncompletedResponse(UUID surveyId) {
-        Survey survey = checkSurvey(surveyId);
-        if (survey == null) {
-            return;
-        }
-
-        List<Account> users = accountDao.findUsersWithIncompletedResponseBySurveyId(surveyId);
-        for (Account account : users) {
-            emailService.sendIncompletedResponseEmail(
-                account.getEmail(),
-                survey.getTitle(),
-                surveyId
-            );
-        }
+    List<Account> subscribers = getSubscribers(surveyId);
+    if (!subscribers.isEmpty()) {
+      sendSubscriberNotifications(survey, subscribers);
     }
 
-    private Survey checkSurvey(UUID surveyId) {
-        Survey survey = surveyDao.findById(surveyId).orElse(null);
-        if (survey == null || !survey.isPublished()) {
-            log.warn("Survey {} is not published or not found", surveyId);
-            return null;
-        }
-        return survey;
+    if (teamMembers.isEmpty() && subscribers.isEmpty()) {
+      log.info("Нет получателей опроса {}", surveyId);
+    }
+  }
+
+  @Async
+  public void sendNotificationForNewSubscribers(Survey survey, List<String> emails) {
+    log.info("Отправка {} уведомлений новым подписчикам опроса {}",
+        emails.size(), survey.getId());
+    for (String email : emails) {
+      emailService.sendSurveyPublishedEmail(email, survey.getTitle(), survey.getId());
+    }
+  }
+
+  @Async
+  public void sendNotificationForUsersWithUncompletedResponse(UUID surveyId) {
+    Survey survey = checkSurvey(surveyId);
+    if (survey == null) {
+      return;
     }
 
-    private List<Account> getTeamMembers(UUID surveyId) {
-        List<Permission> permissions = permissionDao.findAllBySurveyId(surveyId);
-        return permissions.stream()
-            .filter(Permission::isDoNotify)
-            .map(Permission::getAccount)
-            .collect(Collectors.toList());
+    List<Account> users = accountDao.findUsersWithIncompletedResponseBySurveyId(surveyId);
+    for (Account account : users) {
+      emailService.sendIncompletedResponseEmail(
+          account.getEmail(),
+          survey.getTitle(),
+          surveyId
+      );
     }
+  }
 
-    private List<Account> getSubscribers(UUID surveyId) {
-        return subscriberDao.findSubscribersBySurveyId(surveyId);
+  private Survey checkSurvey(UUID surveyId) {
+    Survey survey = surveyDao.findById(surveyId).orElse(null);
+    if (survey == null || !survey.isPublished()) {
+      log.warn("Опрос {} не опубликован или не найден", surveyId);
+      return null;
     }
+    return survey;
+  }
 
-    private void sendTeamNotifications(Survey survey, List<Account> teamMembers) {
-        log.info("Sending {} team notifications for survey {}", teamMembers.size(), survey.getId());
+  private List<Account> getTeamMembers(UUID surveyId) {
+    List<Permission> permissions = permissionDao.findAllBySurveyId(surveyId);
+    return permissions.stream()
+        .filter(Permission::isDoNotify)
+        .map(Permission::getAccount)
+        .collect(Collectors.toList());
+  }
 
-        for (Account account : teamMembers) {
-            String email = account.getEmail();
-            log.info("Survey is published: {} - {}", survey.getTitle(), email);
-            emailService.sendSurveyPublishedEmail(email, survey.getTitle(), survey.getId());
-        }
+  private List<Account> getSubscribers(UUID surveyId) {
+    return subscriberDao.findSubscribersBySurveyId(surveyId);
+  }
+
+  private void sendTeamNotifications(Survey survey, List<Account> teamMembers) {
+    log.info("Отправка уведомлений команды {} для опроса {}", teamMembers.size(), survey.getId());
+
+    for (Account account : teamMembers) {
+      String email = account.getEmail();
+      log.info("Опрос опубликован: {} - {}", survey.getTitle(), email);
+      emailService.sendSurveyPublishedEmail(email, survey.getTitle(), survey.getId());
     }
+  }
 
-    private void sendSubscriberNotifications(Survey survey, List<Account> subscribers) {
-        log.info("Sending {} subscriber notifications for survey {}", subscribers.size(), survey.getId());
+  private void sendSubscriberNotifications(Survey survey, List<Account> subscribers) {
+    log.info("Отправка {} уведомлений подписчика об опросе {}", subscribers.size(), survey.getId());
 
-        for (Account account : subscribers) {
-            String email = account.getEmail();
-            log.info("You are invited to take survey: {} - {}", survey.getTitle(), email);
-            emailService.sendSurveyPublishedEmail(email, survey.getTitle(), survey.getId());
-        }
+    for (Account account : subscribers) {
+      String email = account.getEmail();
+      log.info("Приглашаем Вас принять участие в опросе: {} - {}", survey.getTitle(), email);
+      emailService.sendSurveyPublishedEmail(email, survey.getTitle(), survey.getId());
     }
+  }
 }

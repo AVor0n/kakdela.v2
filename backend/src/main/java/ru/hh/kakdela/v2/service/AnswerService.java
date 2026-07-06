@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +20,7 @@ import ru.hh.kakdela.v2.model.Question;
 import ru.hh.kakdela.v2.model.Response;
 import ru.hh.kakdela.v2.security.JwtService;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AnswerService {
@@ -97,6 +99,7 @@ public class AnswerService {
         .build();
 
     answerDao.save(answer);
+    log.info("Создан ответ на вопрос responseId={} questionId={}", responseId, questionId);
     return AnswerMapper.answerToDto(answer);
   }
 
@@ -124,6 +127,7 @@ public class AnswerService {
 
     answer.setAnswerText(newAnswerText);
     answerDao.update(answer);
+    log.info("Изменен ответ на вопрос responseId={} questionId={}", responseId, questionId);
     return AnswerMapper.answerToDto(answer);
   }
 
@@ -146,5 +150,6 @@ public class AnswerService {
             HttpStatus.NOT_FOUND, "Ответ не найден: " + id));
 
     answerDao.delete(answer);
+    log.info("Удален ответ на вопрос responseId={} questionId={}", responseId, questionId);
   }
 }

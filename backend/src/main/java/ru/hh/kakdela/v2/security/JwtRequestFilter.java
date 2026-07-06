@@ -63,27 +63,27 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
       chain.doFilter(request, response);
     } catch (UsernameNotFoundException e) {
-      log.warn("Account not found: login={}", e.getName());
+      log.warn("Аккаунт не найден: login={}", e.getName());
       sendErrorResponse(
           response,
           request,
           "Account not found",
           HttpStatus.valueOf(HttpServletResponse.SC_UNAUTHORIZED));
     } catch (ExpiredJwtException e) {
-      log.warn("Expired JWT token for user: {}", e.getClaims().getSubject());
+      log.warn("Срок действия токена JWT для пользователя истек: {}", e.getClaims().getSubject());
       sendErrorResponse(
           response,
           request,
           "JWT token has expired",
           HttpStatus.valueOf(HttpServletResponse.SC_UNAUTHORIZED));
     } catch (MalformedJwtException ex) {
-      log.warn("Malformed JWT token");
+      log.warn("Неверный токен JWT");
       sendErrorResponse(response, request, "Invalid JWT token format", HttpStatus.BAD_REQUEST);
     } catch (SignatureException ex) {
-      log.warn("Invalid JWT signature");
+      log.warn("Неверная подпись JWT");
       sendErrorResponse(response, request, "Invalid token signature", HttpStatus.UNAUTHORIZED);
     } catch (JwtException ex) {
-      log.error("JWT processing error", ex);
+      log.error("Ошибка обработки JWT", ex);
       sendErrorResponse(response, request, "JWT processing failed", HttpStatus.UNAUTHORIZED);
     }
   }
