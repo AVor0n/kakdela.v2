@@ -225,12 +225,7 @@ export function SurveyRunner({ survey, mode }: Props) {
             <div className={style.content}>
                 {isPreview && (
                     <div className={style.previewActions}>
-                        <Button
-                            mode='secondary'
-                            style='accent'
-                            Element={Link}
-                            to={`${routes.surveyEdit(survey.id)}/questions`}
-                        >
+                        <Button mode='secondary' style='accent' Element={Link} to={routes.surveyQuestions(survey.id)}>
                             Выйти из предпросмотра
                         </Button>
                         <div className={style.previewBadge}>Предпросмотр</div>

@@ -21,11 +21,15 @@ export async function createSurveyAnswer(
     questionId: string,
     answerText: string,
 ): Promise<SurveyAnswerResponse> {
-    const { data } = await apiClient.post<SurveyAnswerResponse>(`/api/responses/${responseId}/answers`, {
-        answerText,
-    }, {
-        params: { questionId },
-    });
+    const { data } = await apiClient.post<SurveyAnswerResponse>(
+        `/api/responses/${responseId}/answers`,
+        {
+            answerText,
+        },
+        {
+            params: { questionId },
+        },
+    );
 
     return data;
 }
