@@ -47,9 +47,15 @@ export function SurveyList() {
     }, []);
 
     const handleCreateClick = () => {
-        createSurvey().then((data) => {
-            navigate(routes.surveyEdit(data.id));
-        });
+        createSurvey()
+            .then((data) => {
+                navigate(routes.surveyEdit(data.id));
+            })
+            .catch((err) => {
+                if (err.response) {
+                    setError('Не удалось создать опрос');
+                }
+            });
     };
 
     const handleSurveyClick = (surveyId: string) => {
