@@ -69,6 +69,9 @@ public class Survey {
   @Column(name = "expire_at")
   private Instant expireAt;
 
+  @Column(name = "target_timezone")
+  private String targetTimezone;
+
   @Column(name = "created_at", updatable = false, nullable = false)
   private Instant createdAt;
 

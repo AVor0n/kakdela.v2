@@ -2,12 +2,11 @@ package ru.hh.kakdela.v2.dto.survey;
 
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.Size;
+import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import ru.hh.kakdela.v2.validator.NullOrNotBlank;
-
-import java.time.Instant;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -30,5 +29,7 @@ public class SurveyUpdateDto {
   private Boolean isPublished;
   private Boolean doNotify;
   @FutureOrPresent(message = "Дедлайн не должен быть в прошлом")
-  private Instant expireAt;
+  private LocalDateTime expireAtAtTargetTimezone;
+  @NullOrNotBlank(message = "Часовой пояс не может быть пустым")
+  private String targetTimezone = "Europe/Moscow";
 }

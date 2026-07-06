@@ -10,6 +10,8 @@ export const mockSurvey: Survey = {
     expireAt: null,
     id: 'mock-survey',
     isLimitedToOneResponse: false,
+    targetTimezone: 'Europe/Moscow',
+    expireAtAtTargetTimezone: null,
     pages: [
         {
             description: 'На этой странице есть все типы вопросов, которые сейчас поддерживает frontend.',

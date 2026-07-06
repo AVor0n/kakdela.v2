@@ -12,6 +12,8 @@ export type UpdateSurveyRequest = Partial<
         | 'expireAt'
         | 'isLimitedToOneResponse'
         | 'isPublished'
+        | 'targetTimezone'
+        | 'expireAtAtTargetTimezone'
     >
 >;
 

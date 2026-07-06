@@ -14,6 +14,8 @@ export type Survey = {
     isLimitedToOneResponse: boolean;
     isPublished: boolean;
     isTemplate: boolean;
+    targetTimezone: string;
+    expireAtAtTargetTimezone: string | null;
 };
 
 export type Page = {

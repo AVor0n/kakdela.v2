@@ -17,6 +17,7 @@ CREATE TABLE survey (
     is_template bool NOT NULL,
     do_notify bool NOT NULL,
     expire_at timestamptz,
+    target_timezone varchar(255),
     created_at timestamptz NOT NULL
 );
 
