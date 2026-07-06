@@ -1,0 +1,204 @@
+.container {
+    padding: 0;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px;
+    border-bottom: 1px solid #eaeaea;
+    animation: fadeInDown 0.5s ease both;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.logo img {
+    transition: transform 0.3s ease;
+}
+
+.logo:hover img {
+    transform: rotate(-8deg) scale(1.08);
+}
+
+.auth {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.title {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.main {
+    position: relative;
+    overflow: hidden;
+    padding: 64px 24px 96px;
+    min-height: calc(100vh - 74px);
+    background: linear-gradient(180deg, #fbfbfd 0%, #f4f5f9 100%);
+}
+
+.blobOne,
+.blobTwo {
+    position: absolute;
+    z-index: 0;
+    border-radius: 50%;
+    filter: blur(60px);
+    opacity: 0.35;
+    pointer-events: none;
+    animation: float 9s ease-in-out infinite alternate;
+}
+
+.blobOne {
+    top: -120px;
+    left: -100px;
+    width: 360px;
+    height: 360px;
+    background: radial-gradient(circle, #ff6a3d 0%, #d6001c 100%);
+}
+
+.blobTwo {
+    bottom: -140px;
+    right: -120px;
+    width: 420px;
+    height: 420px;
+    background: radial-gradient(circle, #6a5cff 0%, #2f2b8f 100%);
+    animation-delay: 1.5s;
+}
+
+.hero {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    justify-content: center;
+}
+
+.heroCard {
+    width: 100%;
+    max-width: 720px;
+    background: #fff;
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(20, 20, 43, 0.12);
+    animation: fadeInUp 0.6s 0.1s ease both;
+}
+
+.heroAccent {
+    height: 10px;
+    background: linear-gradient(90deg, #d6001c 0%, #ff6a3d 50%, #6a5cff 100%);
+}
+
+.heroBody {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    padding: 56px 48px;
+    text-align: center;
+}
+
+.heroDescription {
+    max-width: 480px;
+}
+
+.heroActions {
+    display: flex;
+    gap: 16px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.features {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+    max-width: 960px;
+    margin: 56px auto 0;
+}
+
+.featureCard {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    text-align: center;
+    transition:
+        transform 0.25s ease,
+        box-shadow 0.25s ease;
+    animation: fadeInUp 0.6s ease both;
+}
+
+.featureCard:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 16px 32px rgba(20, 20, 43, 0.1);
+}
+
+.featureCard:nth-child(1) {
+    animation-delay: 0.3s;
+}
+
+.featureCard:nth-child(2) {
+    animation-delay: 0.45s;
+}
+
+.featureCard:nth-child(3) {
+    animation-delay: 0.6s;
+}
+
+.featureIcon {
+    font-size: 1.2rem;
+    line-height: 1;
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-16px);
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(24px);
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@keyframes float {
+    from {
+        transform: translate(0, 0) scale(1);
+    }
+
+    to {
+        transform: translate(24px, 32px) scale(1.08);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .header,
+    .heroCard,
+    .featureCard,
+    .blobOne,
+    .blobTwo {
+        animation: none !important;
+    }
+}
