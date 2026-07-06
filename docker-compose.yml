@@ -1,9 +1,10 @@
 services:
   backend:
+    image: ghcr.io/avor0n/kakdela.v2:backend-latest
+    container_name: kd2-backend
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: kd2-backend
     ports:
       - "8080:8080"
     depends_on:
@@ -23,10 +24,11 @@ services:
       retries: 5
 
   frontend:
+    image: ghcr.io/avor0n/kakdela.v2:frontend-latest
+    container_name: kd2-frontend
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: kd2-frontend
     ports:
       - "4173:4173"
     depends_on:
@@ -53,8 +55,8 @@ services:
       retries: 5
 
   pgadmin:
-    container_name: kd2-pgadmin4
     image: dpage/pgadmin4:7
+    container_name: kd2-pgadmin4
     restart: always
     env_file:
       - .env
