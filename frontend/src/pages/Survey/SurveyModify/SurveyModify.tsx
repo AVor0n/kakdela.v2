@@ -35,7 +35,7 @@ export function SurveyModify() {
         <div className={style.container}>
             <div className={style.content}>
                 <SurveyDetail survey={selectedSurvey} />
-                {selectedSurvey!.pages.map((page, index) => {
+                {selectedSurvey.pages.map((page, index) => {
                     return (
                         <div key={page.id}>
                             <PageSeparator page={page} />

@@ -2,7 +2,7 @@ import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { Box, Text, Title } from '@hh.ru/magritte-ui';
 import { useNavigate } from 'react-router-dom';
-import { getMySurveys } from '@/api/survey';
+import { createSurvey, getMySurveys } from '@/api/survey';
 import { routes } from '@/app/routes';
 import { SurveyCreateCard } from '@/pages/Survey/components/SurveyList/SurveyCreateCard';
 import { SurveyItem } from '@/pages/Survey/components/SurveyList/SurveyItem';
@@ -47,7 +47,15 @@ export function SurveyList() {
     }, []);
 
     const handleCreateClick = () => {
-        navigate(routes.surveyCreate());
+        createSurvey()
+            .then((data) => {
+                navigate(routes.surveyEdit(data.id));
+            })
+            .catch((err) => {
+                if (err.response) {
+                    setError('Не удалось создать опрос');
+                }
+            });
     };
 
     const handleSurveyClick = (surveyId: string) => {
