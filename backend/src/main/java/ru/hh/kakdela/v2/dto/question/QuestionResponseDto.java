@@ -7,8 +7,14 @@ import ru.hh.kakdela.v2.dto.answer_option.AnswerOptionResponseDto;
 import java.util.List;
 import java.util.UUID;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 @AllArgsConstructor
 @Getter
+@Schema(
+    name = "QuestionResponse",
+    title = "DTO для получения данных вопроса"
+)
 public class QuestionResponseDto {
 
   private final UUID id;

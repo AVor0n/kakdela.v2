@@ -2,6 +2,7 @@ package ru.hh.kakdela.v2.dao;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 import ru.hh.kakdela.v2.model.Account;
 
@@ -9,6 +10,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Slf4j
 @Repository
 public class AccountDaoImpl implements AccountDao {
 
@@ -37,6 +39,17 @@ public class AccountDaoImpl implements AccountDao {
   }
 
   @Override
+  public List<Account> findUsersWithIncompletedResponseBySurveyId(UUID surveyId) {
+    return entityManager.createQuery("""
+        FROM Account a
+        JOIN Response r on a.id = r.account.id
+        WHERE r.survey.id = :surveyId AND r.isCompleted = false
+        """, Account.class)
+    .setParameter("surveyId", surveyId)
+    .getResultList();
+  }
+
+  @Override
   public List<Account> findAll() {
     return entityManager
             .createQuery("FROM Account", Account.class)
@@ -45,16 +58,19 @@ public class AccountDaoImpl implements AccountDao {
 
   @Override
   public void save(Account account) {
+    log.debug("Сохранен аккаунт id={}", account.getId());
     entityManager.persist(account);
   }
 
   @Override
   public void update(Account account) {
+    log.debug("Изменен аккаунт id={}", account.getId());
     entityManager.merge(account);
   }
 
   @Override
   public void delete(Account account) {
+    log.debug("Удален аккаунт id={}", account.getId());
     entityManager.remove(account);
   }
 

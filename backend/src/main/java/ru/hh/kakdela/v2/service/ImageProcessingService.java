@@ -6,6 +6,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import javax.imageio.ImageIO;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import net.coobird.thumbnailator.Thumbnails;
 import org.apache.tika.Tika;
 import org.springframework.http.HttpStatus;
@@ -14,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import ru.hh.kakdela.v2.dto.image.ProcessedImage;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class ImageProcessingService {
@@ -60,6 +62,7 @@ public class ImageProcessingService {
           outputStream.toByteArray(),
           "image/webp");
     } catch (IOException e) {
+      log.warn("Ошибка обработки изображения: {}", e.getMessage());
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, failMessage);
     }
   }

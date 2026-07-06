@@ -1,5 +1,6 @@
 package ru.hh.kakdela.v2.dto.survey;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
@@ -11,6 +12,10 @@ import ru.hh.kakdela.v2.validator.NullOrNotBlank;
 @NoArgsConstructor
 @Getter
 @Setter
+@Schema(
+    name = "SurveyUpdate",
+    title = "DTO для обновления опроса"
+)
 public class SurveyUpdateDto {
 
   @NullOrNotBlank(message = "Заголовок не должен быть пустым")

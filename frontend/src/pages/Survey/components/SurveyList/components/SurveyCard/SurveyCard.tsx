@@ -8,7 +8,7 @@ interface Props {
 
 export function SurveyCard({ survey }: Props) {
     return (
-        <Link to={routes.surveyEdit(survey.id)} className='card'>
+        <Link to={routes.surveyQuestions(survey.id)} className='card'>
             <div className='card__block'></div>
             <h2 className='card__title'>{survey.title}</h2>
         </Link>

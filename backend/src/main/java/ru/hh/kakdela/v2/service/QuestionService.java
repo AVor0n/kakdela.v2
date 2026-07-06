@@ -3,6 +3,7 @@ package ru.hh.kakdela.v2.service;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,7 @@ import ru.hh.kakdela.v2.model.Permission.SurveyRole;
 import ru.hh.kakdela.v2.model.Question;
 import ru.hh.kakdela.v2.model.SurveyPage;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class QuestionService {
@@ -52,21 +54,30 @@ public class QuestionService {
 
   @Transactional
   public QuestionResponseDto create(UUID pageId, QuestionCreateDto dto, UUID accountId) {
-    if (questionDao.existsByPageIdAndSerialNumber(pageId, dto.getSerialNumber())) {
-      throw new ResponseStatusException(
-          HttpStatus.CONFLICT,
-          "Вопрос с номером " + dto.getSerialNumber() + " уже существует на этой странице");
-    }
-
     SurveyPage page = surveyPageDao.findById(pageId)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Страница не найдена: " + pageId));
 
     permissionService.checkAccess(page.getSurvey().getId(), accountId, SurveyRole.EDITOR);
 
+    int maxAvailableSerial = questionDao.findMaxSerialNumber(pageId) + 1;
+
+    if (dto.getSerialNumber() != null
+        && !dto.getSerialNumber().equals(maxAvailableSerial)) {
+
+      if (dto.getSerialNumber() > maxAvailableSerial) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+            "Порядковый номер должен быть не больше " + maxAvailableSerial);
+      }
+
+      questionDao.increaseSerialNumbers(pageId, dto.getSerialNumber());
+    }
+
     Question question = Question.builder()
         .surveyPage(page)
-        .serialNumber(dto.getSerialNumber())
+        .serialNumber(dto.getSerialNumber() != null
+            ? dto.getSerialNumber()
+            : maxAvailableSerial)
         .title(dto.getTitle())
         .description(dto.getDescription())
         .type(dto.getType())
@@ -77,6 +88,7 @@ public class QuestionService {
         .build();
 
     questionDao.save(question);
+    log.info("Создан вопрос id={} pageId={}", question.getId(), pageId);
     return questionMapper.questionToDto(question);
   }
 
@@ -89,9 +101,27 @@ public class QuestionService {
     permissionService.checkAccess(question.getSurveyPage().getSurvey().getId(), accountId,
         SurveyRole.EDITOR);
 
-    if (dto.getSerialNumber() != null) {
-      question.setSerialNumber(dto.getSerialNumber());
+    UUID pageId = question.getSurveyPage().getId();
+    int oldSerial = question.getSerialNumber();
+
+    if (dto.getSerialNumber() != null && !dto.getSerialNumber().equals(oldSerial)) {
+      int newSerial = dto.getSerialNumber();
+
+      int maxAvailableSerial = questionDao.findMaxSerialNumber(pageId);
+      if (newSerial > maxAvailableSerial) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+            "Новый номер должен быть не больше " + maxAvailableSerial);
+      }
+
+      if (oldSerial > newSerial) {
+        questionDao.increaseSerialNumbers(pageId, newSerial, oldSerial - 1);
+      } else {
+        questionDao.decreaseSerialNumbers(pageId, oldSerial + 1, newSerial);
+      }
+
+      question.setSerialNumber(newSerial);
     }
+
     if (dto.getTitle() != null) {
       question.setTitle(dto.getTitle());
     }
@@ -115,6 +145,7 @@ public class QuestionService {
     }
 
     questionDao.update(question);
+    log.info("Изменен вопрос id={}", questionId);
     return questionMapper.questionToDto(question);
   }
 
@@ -125,7 +156,14 @@ public class QuestionService {
             () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Вопрос не найден: " + id));
     permissionService.checkAccess(question.getSurveyPage().getSurvey().getId(), accountId,
         SurveyRole.EDITOR);
+
+    UUID pageId = question.getSurveyPage().getId();
+    int deletedSerial = question.getSerialNumber();
+
     questionDao.delete(question);
+
+    questionDao.decreaseSerialNumbers(pageId, deletedSerial + 1);
+    log.info("Удален вопрос id={}", id);
   }
 
   // Attachment management
@@ -146,7 +184,7 @@ public class QuestionService {
 
     ProcessedImage image = imageProcessingService.process(file);
 
-    String objectKey = "answer-options/%s/%s".formatted(question.getId(), UUID.randomUUID());
+    String objectKey = "questions/%s/%s".formatted(question.getId(), UUID.randomUUID());
     objectStorageService.putObject(
         objectKey,
         image.getContent(),
@@ -154,7 +192,7 @@ public class QuestionService {
 
     question.setAttachmentObjectKey(objectKey);
     questionDao.update(question);
-
+    log.info("Добавлено вложение к вопросу id={} objectKey={}", questionId, objectKey);
     return new ObjectUrlResponseDto(
         objectStorageService.generateObjectUrl(objectKey, attachmentUrlMaxAge).toString());
   }
@@ -177,7 +215,7 @@ public class QuestionService {
           question.getAttachmentObjectKey());
     }
 
-    String objectKey = "answer-options/%s/%s".formatted(question.getId(), UUID.randomUUID());
+    String objectKey = "questions/%s/%s".formatted(question.getId(), UUID.randomUUID());
     objectStorageService.putObject(
         objectKey,
         image.getContent(),
@@ -185,7 +223,7 @@ public class QuestionService {
 
     question.setAttachmentObjectKey(objectKey);
     questionDao.update(question);
-
+    log.info("Изменено вложение вопроса id={} objectKey={}", questionId, objectKey);
     return new ObjectUrlResponseDto(
         objectStorageService.generateObjectUrl(objectKey, attachmentUrlMaxAge).toString());
   }
@@ -208,5 +246,6 @@ public class QuestionService {
 
     question.setAttachmentObjectKey(null);
     questionDao.update(question);
+    log.info("Удалено вложение вопроса id={}", questionId);
   }
 }

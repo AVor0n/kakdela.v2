@@ -14,6 +14,8 @@ public interface AccountDao {
 
   Optional<Account> findByEmail(String email);
 
+  List<Account> findUsersWithIncompletedResponseBySurveyId(UUID surveyId);
+
   List<Account> findAll();
 
   void save(Account account);

@@ -2,6 +2,7 @@ package ru.hh.kakdela.v2.dao;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
 import ru.hh.kakdela.v2.model.Account;
@@ -11,61 +12,65 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Slf4j
 @Repository
 public class SurveyNotificationSubscriptionDaoImpl implements SurveyNotificationSubscriptionDao {
 
-    @PersistenceContext
-    private EntityManager entityManager;
+  @PersistenceContext
+  private EntityManager entityManager;
 
-    @Override
-    public void addSubscription(SurveyNotificationSubscription subscription) {
-        entityManager.persist(subscription);
-    }
+  @Override
+  public void addSubscription(SurveyNotificationSubscription subscription) {
+    log.debug("Добавлена подписка на опрос id={}", subscription.getSurvey().getId());
+    entityManager.persist(subscription);
+  }
 
-    @Override
-    public void deleteSubscription(SurveyNotificationSubscription subscription) {
-        entityManager.remove(subscription);
-}
+  @Override
+  public void deleteSubscription(SurveyNotificationSubscription subscription) {
+    log.debug("Удалена подписка на опрос id={}", subscription.getSurvey().getId());
+    entityManager.remove(subscription);
+  }
 
-    @Override
-    public List<UUID> findSubscriberIdsBySurveyId(UUID surveyId) {
-        return entityManager.createQuery(
+  @Override
+  public List<UUID> findSubscriberIdsBySurveyId(UUID surveyId) {
+    return entityManager.createQuery(
             "SELECT s.account.id FROM SurveyNotificationSubscription s " +
-            "WHERE s.survey.id = :surveyId",
+                "WHERE s.survey.id = :surveyId",
             UUID.class
         )
         .setParameter("surveyId", surveyId)
         .getResultList();
-    }
+  }
 
-    @Override
-    public List<Account> findSubscribersBySurveyId(UUID surveyId) {
-        return entityManager.createQuery(
+  @Override
+  public List<Account> findSubscribersBySurveyId(UUID surveyId) {
+    return entityManager.createQuery(
             "SELECT s.account FROM SurveyNotificationSubscription s " +
-            "WHERE s.survey.id = :surveyId",
+                "WHERE s.survey.id = :surveyId",
             Account.class
         )
         .setParameter("surveyId", surveyId)
         .getResultList();
-    }
+  }
 
-    @Override
-    public boolean existsBySurveyIdAndAccountId(UUID surveyId, UUID accountId) {
-         return entityManager.createQuery(
+  @Override
+  public boolean existsBySurveyIdAndAccountId(UUID surveyId, UUID accountId) {
+    return entityManager.createQuery(
             "SELECT COUNT(s) FROM SurveyNotificationSubscription s " +
-            "WHERE s.survey.id = :surveyId AND s.account.id = :accountId",
+                "WHERE s.survey.id = :surveyId AND s.account.id = :accountId",
             Long.class
         )
         .setParameter("surveyId", surveyId)
         .setParameter("accountId", accountId)
         .getSingleResult() > 0;
-    }
+  }
 
-    @Override
-    public Optional<SurveyNotificationSubscription> findBySurveyIdAndAccountId(UUID surveyId, UUID accountId) {
-        return entityManager.createQuery(
+  @Override
+  public Optional<SurveyNotificationSubscription> findBySurveyIdAndAccountId(
+      UUID surveyId, UUID accountId) {
+    return entityManager.createQuery(
             "SELECT s FROM SurveyNotificationSubscription s " +
-            "WHERE s.survey.id = :surveyId AND s.account.id = :accountId",
+                "WHERE s.survey.id = :surveyId AND s.account.id = :accountId",
             SurveyNotificationSubscription.class
         )
         .setParameter("surveyId", surveyId)
@@ -73,5 +78,5 @@ public class SurveyNotificationSubscriptionDaoImpl implements SurveyNotification
         .getResultList()
         .stream()
         .findFirst();
-    }
+  }
 }

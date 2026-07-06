@@ -3,6 +3,7 @@ package ru.hh.kakdela.v2.service;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +18,7 @@ import ru.hh.kakdela.v2.model.Permission.SurveyRole;
 import ru.hh.kakdela.v2.model.Survey;
 import ru.hh.kakdela.v2.model.SurveyPage;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class SurveyPageService {
@@ -43,25 +45,36 @@ public class SurveyPageService {
 
   @Transactional
   public SurveyPageResponseDto create(UUID surveyId, SurveyPageCreateDto dto, UUID accountId) {
-    permissionService.checkAccess(surveyId, accountId, SurveyRole.EDITOR);
-    if (surveyPageDao.existsBySurveyIdAndSerialNumber(surveyId, dto.getSerialNumber())) {
-      throw new ResponseStatusException(
-          HttpStatus.CONFLICT,
-          "Страница с номером " + dto.getSerialNumber() + " уже существует в этом опросе");
-    }
-
     Survey survey = surveyDao.findById(surveyId)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
 
+    permissionService.checkAccess(surveyId, accountId, SurveyRole.EDITOR);
+
+    int maxAvailableSerial = surveyPageDao.findMaxSerialNumber(surveyId) + 1;
+
+    if (dto.getSerialNumber() != null
+        && !dto.getSerialNumber().equals(maxAvailableSerial)) {
+
+      if (dto.getSerialNumber() > maxAvailableSerial) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+            "Порядковый номер должен быть не больше " + maxAvailableSerial);
+      }
+
+      surveyPageDao.increaseSerialNumbers(surveyId, dto.getSerialNumber());
+    }
+
     SurveyPage surveyPage = SurveyPage.builder()
         .survey(survey)
-        .serialNumber(dto.getSerialNumber())
+        .serialNumber(dto.getSerialNumber() != null
+            ? dto.getSerialNumber()
+            : maxAvailableSerial)
         .title(dto.getTitle())
         .description(dto.getDescription())
         .build();
 
     surveyPageDao.save(surveyPage);
+    log.info("Создана страница id={} surveyId={}", surveyPage.getId(), surveyId);
     return surveyPageMapper.surveyPageToDto(surveyPage);
   }
 
@@ -72,10 +85,27 @@ public class SurveyPageService {
             HttpStatus.NOT_FOUND, "Страница не найдена: " + surveyPageId));
 
     permissionService.checkAccess(surveyPage.getSurvey().getId(), accountId, SurveyRole.EDITOR);
+    UUID surveyId = surveyPage.getSurvey().getId();
+    int oldSerial = surveyPage.getSerialNumber();
 
-    if (dto.getSerialNumber() != null) {
-      surveyPage.setSerialNumber(dto.getSerialNumber());
+    if (dto.getSerialNumber() != null && !dto.getSerialNumber().equals(oldSerial)) {
+      int newSerial = dto.getSerialNumber();
+
+      int maxAvailableSerial = surveyPageDao.findMaxSerialNumber(surveyId);
+      if (newSerial > maxAvailableSerial) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+            "Новый номер должен быть не больше " + maxAvailableSerial);
+      }
+
+      if (oldSerial > newSerial) {
+        surveyPageDao.increaseSerialNumbers(surveyId, newSerial, oldSerial - 1);
+      } else {
+        surveyPageDao.decreaseSerialNumbers(surveyId, oldSerial + 1, newSerial);
+      }
+
+      surveyPage.setSerialNumber(newSerial);
     }
+
     if (dto.getTitle() != null) {
       surveyPage.setTitle(dto.getTitle());
     }
@@ -84,6 +114,7 @@ public class SurveyPageService {
     }
 
     surveyPageDao.update(surveyPage);
+    log.info("Изменена страница id={}", surveyPageId);
     return surveyPageMapper.surveyPageToDto(surveyPage);
   }
 
@@ -93,6 +124,12 @@ public class SurveyPageService {
         .orElseThrow(
             () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Страница не найдена: " + id));
     permissionService.checkAccess(surveyPage.getSurvey().getId(), accountId, SurveyRole.EDITOR);
+
+    UUID surveyId = surveyPage.getSurvey().getId();
+    int deletedSerial = surveyPage.getSerialNumber();
+
     surveyPageDao.delete(surveyPage);
+    surveyPageDao.decreaseSerialNumbers(surveyId, deletedSerial + 1);
+    log.info("Удалена страница id={}", id);
   }
 }

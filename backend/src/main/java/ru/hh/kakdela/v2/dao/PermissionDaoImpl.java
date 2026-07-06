@@ -3,6 +3,7 @@ package ru.hh.kakdela.v2.dao;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 import ru.hh.kakdela.v2.model.Permission;
 
@@ -10,6 +11,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Slf4j
 @Repository
 public class PermissionDaoImpl implements PermissionDao {
 
@@ -99,16 +101,19 @@ public class PermissionDaoImpl implements PermissionDao {
 
   @Override
   public void save(Permission permission) {
+    log.debug("Сохранены права доступа id={}", permission.getId());
     entityManager.persist(permission);
   }
 
   @Override
   public void update(Permission permission) {
+    log.debug("Изменены права доступа id={}", permission.getId());
     entityManager.merge(permission);
   }
 
   @Override
   public void delete(Permission permission) {
+    log.debug("Удалены права доступа id={}", permission.getId());
     entityManager.remove(permission);
   }
 

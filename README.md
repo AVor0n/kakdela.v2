@@ -1,28 +1,37 @@
-# KakDela-v2 - Сервис для создания опросов
+# KakDela-v2 — Сервис для создания опросов
+
 ## Что за проект?
 Внутренний конструктор опросов для hh.ru, со входом по аккаунту пользователя hh.ru, гибкой логикой вопросов и нативной интеграцией с экосистемой hh.
 
 ## Стек технологий
 #### Backend:
 - Java 21
-- Spring Boot 4.0.6
 - Apache Maven
-- PostgreSql + Hibernate
-- Tomcat
-- Lombok
+- Spring Boot 4.0.6 (Web, Data, Security, Email)
+- Apache Tomcat 
+- PostgreSQL
+- SeaweedFS
 #### Frontend:
 - React
 - Redux Toolkit
 - @hh.ru/magrite-ui
 - Axios
 
+## Готовые образы
+* [Docker Hub](https://hub.docker.com/repository/docker/kakdelav2/kakdela.v2)
+* [GitHub Packages](https://github.com/AVor0n/kakdela.v2/packages)
+
 ## Инструкции по запуску
-Приложение поднимается одной командой из под docker
-#### dev версия (подробные логи, дополнительный контейнер с pgAdmin4, sprind_ddl_auto=update):
+Приложение поднимается одной командой в Docker
+#### dev-версия (подробные логи, дополнительные контейнеры с pgAdmin4 и MailHog, используется `.env`):
 ```
 docker compose -f docker-compose.yml up --build
 ```
-#### prod версия (только error логи, образы подтягиваются с dockerhub, sprind_ddl_auto=validate):
+#### prod-версия для локального запуска (только error логи, образы подтягиваются с GitHub Packages репозитория, пути всех необходимых файлов прописаны по структуре репозитория, используется `.env.prod`):
 ```
-docker compose -f docker-compose.prod.yml up --build
+docker compose -f docker-compose.prod.local.yml up
+```
+#### prod-версия для запуска на сервере (только error логи, образы подтягиваются с приватного Docker Hub, все необходимые файлы должны лежать на одном уровне с docker-compose файлом, файл с переменными окружения должен называться `.env` — по значениям параметров должен совпадать c `.env.prod`):
+```
+docker compose -f docker-compose.prod.yml up
 ```

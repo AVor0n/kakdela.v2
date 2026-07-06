@@ -1,0 +1,70 @@
+services:
+  backend:
+    image: ghcr.io/avor0n/kakdela.v2:backend-latest
+    container_name: kd2-backend
+    ports:
+      - "8080:8080"
+    depends_on:
+      service-db:
+        condition: service_healthy
+      service-obs:
+        condition: service_started
+    env_file:
+      - .env.prod
+    restart: unless-stopped
+    volumes:
+      - ./logs:/app/logs
+    healthcheck:
+      test: [ "CMD", "wget", "--spider", "-q", "http://localhost:8080/monitor/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  frontend:
+    image: ghcr.io/avor0n/kakdela.v2:frontend-latest
+    container_name: kd2-frontend
+    ports:
+      - "4173:4173"
+    depends_on:
+      backend:
+        condition: service_healthy
+    env_file:
+      - .env.prod
+    restart: unless-stopped
+
+  service-db:
+    image: postgres:14.7-alpine
+    container_name: kd2-postgres
+    env_file:
+      - .env.prod
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./backend/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  service-obs:
+    image: chrislusf/seaweedfs:latest
+    container_name: kd2-seaweedfs
+    env_file:
+      - .env
+    ports:
+      - "8333:8333"
+      - "9333:9333"
+    volumes:
+      - obs-data:/data
+    restart: unless-stopped
+    command:
+      - server
+      - -dir=/data
+      - -s3
+
+volumes:
+  db-data:
+  obs-data:

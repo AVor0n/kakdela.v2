@@ -1,6 +1,6 @@
 services:
   backend:
-    image: 1artem11semenov1/kakdelav2-backend:stable
+    image: kakdelav2/kakdela.v2:backend-latest
     container_name: kd2-backend
     ports:
       - "8080:8080"
@@ -10,29 +10,38 @@ services:
       service-obs:
         condition: service_started
     env_file:
-      - .env.prod
+      - .env
     restart: unless-stopped
+    volumes:
+      - ./logs:/app/logs
+    healthcheck:
+      test: [ "CMD", "wget", "--spider", "-q", "http://localhost:8080/monitor/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   frontend:
-    image: 1artem11semenov1/kakdelav2-frontend:stable
+    image: kakdelav2/kakdela.v2:frontend-latest
     container_name: kd2-frontend
     ports:
       - "4173:4173"
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     env_file:
-      - .env.prod
+      - .env
     restart: unless-stopped
 
   service-db:
     image: postgres:14.7-alpine
     container_name: kd2-postgres
     env_file:
-      - .env.prod
+      - .env
     ports:
       - "5432:5432"
     volumes:
       - db-data:/var/lib/postgresql/data
+      - ./schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
     restart: unless-stopped
     healthcheck:
       test: [ "CMD", "pg_isready", "-U", "postgres" ]
