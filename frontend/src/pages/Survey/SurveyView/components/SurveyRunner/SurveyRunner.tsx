@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import type { Question } from '@/shared/types/Question.type';
 import type { Survey } from '@/shared/types/Survey.type';
 import { Button, Checkbox, Input, Radio, Text, TextArea, TextAreaGrowLimiter, Title } from '@hh.ru/magritte-ui';
@@ -62,7 +62,6 @@ function getAnswerText(question: Question, value: AnswerValue | undefined) {
 }
 
 export function SurveyRunner({ survey, mode }: Props) {
-    const [currentPageIndex, setCurrentPageIndex] = useState(0);
     const [answers, setAnswers] = useState<Answers>({});
     const [errors, setErrors] = useState<Errors>({});
     const [isComplete, setIsComplete] = useState(false);
@@ -70,20 +69,11 @@ export function SurveyRunner({ survey, mode }: Props) {
     const [submitError, setSubmitError] = useState<string | null>(null);
     const isPreview = mode === 'preview';
 
-    useEffect(() => {
-        setCurrentPageIndex(0);
-        setAnswers({});
-        setErrors({});
-        setIsComplete(false);
-        setSubmitError(null);
-    }, [survey.id]);
-
     const updateAnswer = (questionId: string, value: AnswerValue) => {
         setAnswers((currentAnswers) => ({
             ...currentAnswers,
             [questionId]: value,
         }));
-        setSubmitError(null);
         setErrors((currentErrors) => {
             const nextErrors = { ...currentErrors };
             delete nextErrors[questionId];
@@ -105,7 +95,7 @@ export function SurveyRunner({ survey, mode }: Props) {
         const nextErrors: Errors = {};
 
         survey.pages.forEach((page) => {
-            page.questions.filter(isQuestionVisible).forEach((question) => {
+            page.questions.forEach((question) => {
                 if (question.isMandatory && !isQuestionAnswered(question, answers[question.id])) {
                     nextErrors[question.id] = 'Ответьте на обязательный вопрос';
                 }
@@ -113,30 +103,6 @@ export function SurveyRunner({ survey, mode }: Props) {
         });
 
         setErrors(nextErrors);
-        return Object.keys(nextErrors).length === 0;
-    };
-
-    const validateQuestions = (questions: Question[]) => {
-        const nextErrors: Errors = {};
-
-        questions.forEach((question) => {
-            if (question.isMandatory && !isQuestionAnswered(question, answers[question.id])) {
-                nextErrors[question.id] = 'Ответьте на обязательный вопрос';
-            }
-        });
-
-        setErrors((currentErrors) => {
-            const questionIds = new Set(questions.map((question) => question.id));
-            const errorsOutsidePage = Object.fromEntries(
-                Object.entries(currentErrors).filter(([questionId]) => !questionIds.has(questionId)),
-            );
-
-            return {
-                ...errorsOutsidePage,
-                ...nextErrors,
-            };
-        });
-
         return Object.keys(nextErrors).length === 0;
     };
 
@@ -253,31 +219,6 @@ export function SurveyRunner({ survey, mode }: Props) {
             questions: sortBySerialNumber(page.questions).filter(isQuestionVisible),
         }))
         .filter((page) => page.questions.length > 0);
-    const currentPage = visiblePages[currentPageIndex];
-    const isFirstPage = currentPageIndex === 0;
-    const isLastPage = currentPageIndex === visiblePages.length - 1;
-
-    const goToPreviousPage = () => {
-        setCurrentPageIndex((pageIndex) => Math.max(pageIndex - 1, 0));
-    };
-
-    const goToNextPage = () => {
-        if (!currentPage) {
-            return;
-        }
-
-        if (isPreview) {
-            setErrors({});
-            setCurrentPageIndex((pageIndex) => Math.min(pageIndex + 1, visiblePages.length - 1));
-            return;
-        }
-
-        if (!validateQuestions(currentPage.questions)) {
-            return;
-        }
-
-        setCurrentPageIndex((pageIndex) => Math.min(pageIndex + 1, visiblePages.length - 1));
-    };
 
     return (
         <main className={style.container}>
@@ -288,7 +229,7 @@ export function SurveyRunner({ survey, mode }: Props) {
                             mode='secondary'
                             style='accent'
                             Element={Link}
-                            to={routes.surveyQuestions(survey.id)}
+                            to={`${routes.surveyEdit(survey.id)}/questions`}
                         >
                             Выйти из предпросмотра
                         </Button>
@@ -296,14 +237,18 @@ export function SurveyRunner({ survey, mode }: Props) {
                     </div>
                 )}
                 <header className={`${surveyDetailStyle.container} ${style.formHeader}`}>
-                    <Text typography='subtitle-1-semibold' style='primary'>
-                        {survey.title}
-                    </Text>
-                    {survey.description && (
-                        <Text typography='paragraph-2-regular' style='primary'>
-                            {survey.description}
-                        </Text>
-                    )}
+                    <Input placeholder='Название формы' value={survey.title} onChange={() => {}} disabled />
+                    <TextArea
+                        placeholder='Описание формы'
+                        data-qa='textarea'
+                        layout='fixed'
+                        resize='none'
+                        description='Описание формы - для чего она нужна, что в ней будет'
+                        value={survey.description ?? ''}
+                        onChange={() => {}}
+                        elevatePlaceholder={true}
+                        disabled
+                    />
                 </header>
 
                 {isComplete ? (
@@ -319,76 +264,63 @@ export function SurveyRunner({ survey, mode }: Props) {
                     <>
                         {visiblePages.length === 0 ? (
                             <div className={surveyDetailStyle.container}>В этом опросе пока нет вопросов.</div>
-                        ) : currentPage ? (
-                            <section className={choiceStyle.container}>
-                                <div className={pageSeparatorStyle.separator}>
-                                    <span>Страница {currentPage.serialNumber}</span>
-                                </div>
-
-                                {currentPage.questions.map((question) => (
-                                    <article className={questionStyle.container} key={question.id}>
-                                        <div className={style.questionTitle}>
-                                            <Text typography='paragraph-2-regular' style='primary'>
-                                                {question.title}
-                                            </Text>
-                                            {question.isMandatory && <span className={style.mandatory}>*</span>}
-                                        </div>
-                                        <section className={questionStyle.actions}>
-                                            <div>{renderQuestionControl(question)}</div>
-                                            <div className={questionStyle.hidden} />
-                                        </section>
-                                        {errors[question.id] && (
-                                            <div className={style.error}>
-                                                <Text typography='paragraph-2-regular' style='negative'>
-                                                    {errors[question.id]}
-                                                </Text>
-                                            </div>
-                                        )}
-                                    </article>
-                                ))}
-
-                                <div className={style.navigation}>
-                                    <Button
-                                        type='button'
-                                        mode='secondary'
-                                        style='accent'
-                                        disabled={isFirstPage}
-                                        onClick={goToPreviousPage}
-                                    >
-                                        Назад
-                                    </Button>
-                                    <Text typography='paragraph-2-regular' style='secondary'>
-                                        {currentPageIndex + 1} из {visiblePages.length}
-                                    </Text>
-                                    {isLastPage ? (
-                                        <Button
-                                            type='button'
-                                            mode='primary'
-                                            style='accent'
-                                            disabled={isPreview || isSubmitting}
-                                            onClick={submitHandler}
-                                        >
-                                            {isPreview
-                                                ? 'Отправка недоступна в предпросмотре'
-                                                : isSubmitting
-                                                  ? 'Отправляем...'
-                                                  : 'Отправить'}
-                                        </Button>
-                                    ) : (
-                                        <Button type='button' mode='primary' style='accent' onClick={goToNextPage}>
-                                            Далее
-                                        </Button>
-                                    )}
-                                </div>
-                                {submitError && (
-                                    <div className={style.submitError}>
-                                        <Text typography='paragraph-2-regular' style='negative'>
-                                            {submitError}
-                                        </Text>
+                        ) : (
+                            visiblePages.map((page) => (
+                                <section className={choiceStyle.container} key={page.id}>
+                                    <div className={pageSeparatorStyle.separator}>
+                                        <span>Страница {page.serialNumber}</span>
                                     </div>
-                                )}
-                            </section>
-                        ) : null}
+
+                                    {page.questions.map((question) => (
+                                        <article className={questionStyle.container} key={question.id}>
+                                            {question.isMandatory && <span className={questionStyle.mandatory}>*</span>}
+                                            <section className={style.questionSettings}>
+                                                <Input
+                                                    placeholder='Вопрос'
+                                                    value={question.title}
+                                                    onChange={() => {}}
+                                                    disabled
+                                                />
+                                            </section>
+                                            <section className={questionStyle.actions}>
+                                                <div>{renderQuestionControl(question)}</div>
+                                                <div className={questionStyle.hidden} />
+                                            </section>
+                                            {errors[question.id] && (
+                                                <div className={style.error}>
+                                                    <Text typography='paragraph-2-regular' style='negative'>
+                                                        {errors[question.id]}
+                                                    </Text>
+                                                </div>
+                                            )}
+                                        </article>
+                                    ))}
+                                </section>
+                            ))
+                        )}
+
+                        <div className={style.actions}>
+                            <Button
+                                type='button'
+                                mode='primary'
+                                style='accent'
+                                disabled={isPreview || isSubmitting}
+                                onClick={submitHandler}
+                            >
+                                {isPreview
+                                    ? 'Отправка недоступна в предпросмотре'
+                                    : isSubmitting
+                                      ? 'Отправляем...'
+                                      : 'Отправить'}
+                            </Button>
+                        </div>
+                        {submitError && (
+                            <div className={style.submitError}>
+                                <Text typography='paragraph-2-regular' style='negative'>
+                                    {submitError}
+                                </Text>
+                            </div>
+                        )}
                     </>
                 )}
             </div>
