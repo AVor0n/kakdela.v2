@@ -104,8 +104,8 @@ CREATE INDEX idx_answer_question_id
 ON answer (question_id);
 
 CREATE TABLE survey_notification_subscription (
-    survey_id uuid NOT NULL REFERENCES survey(id) ON DELETE CASCADE,
-    account_id uuid NOT NULL REFERENCES account(id) ON DELETE CASCADE,
+    survey_id uuid REFERENCES survey (id) ON DELETE CASCADE NOT NULL,
+    account_id uuid REFERENCES account (id) ON DELETE CASCADE NOT NULL,
     PRIMARY KEY (survey_id, account_id)
 );
 
@@ -114,7 +114,7 @@ CREATE INDEX idx_subscription_account ON survey_notification_subscription(accoun
 
 CREATE TABLE notification_schedule (
     id uuid PRIMARY KEY,
-    survey_id uuid NOT NULL REFERENCES survey(id) ON DELETE CASCADE,
+    survey_id uuid REFERENCES survey(id) ON DELETE CASCADE NOT NULL,
     name varchar(255) NOT NULL,
     schedule_type varchar(255) NOT NULL,
     -- Для WEEKLY: битовая маска
