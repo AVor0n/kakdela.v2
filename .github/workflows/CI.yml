@@ -29,7 +29,7 @@ jobs:
             backend:
               - 'backend/**'
               - '!backend/*.md'
-              - '!backend/src/main/resources/create_tables.sql'
+              - '!backend/src/main/resources/schema.sql'
           predicate-quantifier: every
   backend-verification:
     name: Run Maven verify phase (tests are temporary excluded)

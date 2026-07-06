@@ -24,8 +24,12 @@ jobs:
           filters: |
             frontend:
               - 'frontend/**'
+              - '!frontend/*.md'
             backend:
               - 'backend/**'
+              - '!backend/*.md'
+              - '!backend/src/main/resources/schema.sql'
+          predicate-quantifier: every
   backend-image:
     name: Build and push backend Docker image
     needs: changes
