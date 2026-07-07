@@ -20,7 +20,7 @@ public class EmailService {
   private String fromEmail;
 
   @Value("${app.url}")
-  private String host;
+  private String url;
 
   @Async
   public void sendSurveyPublishedEmail(String email, String surveyTitle, UUID surveyId) {
@@ -36,7 +36,7 @@ public class EmailService {
           "Вам необходимо пройти опрос \""
               + surveyTitle
               + "\". Автор указал вас как обязательного респондента."
-              + "\n Ссылка на опрос: " + host + "surveys/" + surveyId
+              + "\n Ссылка на опрос: " + url + "/surveys/" + surveyId
       );
 
       mailSender.send(message);
@@ -61,7 +61,7 @@ public class EmailService {
           "У вас есть незавершённый опрос \""
               + surveyTitle
               + "\". Не забудьте пройти его."
-              + "\n Ссылка на опрос: " + host + "/surveys/" + surveyId
+              + "\n Ссылка на опрос: " + url + "/surveys/" + surveyId
       );
 
       mailSender.send(message);
