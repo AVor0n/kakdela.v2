@@ -10,7 +10,7 @@ export function ErrorLayout({ children }: Props) {
     const error = useAppSelector((state) => state.error);
     return (
         <>
-            {error && <ErrorBlock error={error} />}
+            {error.message && <ErrorBlock error={error} />}
             {children}
         </>
     );

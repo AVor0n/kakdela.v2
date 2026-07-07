@@ -1,11 +1,13 @@
-import { Link, Outlet, useLocation, useParams } from 'react-router-dom';
-import { routes } from '@/app/routes';
+import { Link, Outlet, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { routePatterns, routes } from '@/app/routes';
 import { Link as LinkHH, Button } from '@hh.ru/magritte-ui';
 import style from './SurveyLayout.module.css';
-import { updateSurvey } from '@/api/survey';
+import { getSurveyById, updateSurvey } from '@/api/survey';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { setSelectedSurvey } from '@/entities/Survey/Survey.slice';
+import { useEffect } from 'react';
+import { setErrorMessage } from '@/entities/Error/Error.slice';
 
 export function SurveyLayout() {
     const { id } = useParams();
@@ -13,6 +15,24 @@ export function SurveyLayout() {
     const { pathname } = useLocation();
     const { selectedSurvey } = useAppSelector((state) => state.survey);
     const dispatch = useAppDispatch();
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (!id) {
+            return;
+        }
+
+        getSurveyById(id)
+            .then((data) => {
+                dispatch(setSelectedSurvey({ survey: data }));
+            })
+            .catch((err) => {
+                if (err.response) {
+                    dispatch(setErrorMessage({ message: 'Такого опроса не существует' }));
+                    navigate(routePatterns.notFound);
+                }
+            });
+    }, [dispatch, id]);
 
     const publishingHandler = () => {
         if (id && selectedSurvey)

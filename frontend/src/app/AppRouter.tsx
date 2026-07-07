@@ -7,7 +7,7 @@ import { SurveyList } from '@/pages/Survey/components/SurveyList/SurveyList';
 import { SurveyView } from '@/pages/Survey/SurveyView/SurveyView';
 import { SurveyModify } from '@/pages/Survey/SurveyModify/SurveyModify';
 import { SurveyCreate } from '@/pages/Survey/SurveyCreate/SurveyCreate';
-import { SurveyLayout } from '@/layouts/SurveyLayout';
+import { SurveyLayout } from '@/layouts/SurveyLayout/SurveyLayout';
 import { RequireAuth } from '@/features/auth/RequireAuth';
 import { Settings } from '@/pages/Survey/SurveyModify/components/Settings/Settings';
 import { NotFound } from '@/pages/Errors/NotFound';
