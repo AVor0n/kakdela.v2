@@ -19,7 +19,7 @@ public class EmailService {
   @Value("${app.mail.from}")
   private String fromEmail;
 
-  @Value("${current.host}")
+  @Value("${app.url}")
   private String host;
 
   @Async
