@@ -1,18 +1,15 @@
 package ru.hh.kakdela.v2.config;
 
+import jakarta.annotation.PostConstruct;
+import java.util.Arrays;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
-import jakarta.annotation.PostConstruct;
-
 import org.springframework.web.cors.CorsConfigurationSource;
-
-import java.util.Arrays;
-import java.util.List;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Slf4j
 @Configuration
@@ -60,7 +57,7 @@ public class CorsConfig {
 
     configuration.setAllowedHeaders(List.of(allowedHeaders));
 
-    // configuration.setExposedHeaders(List.of(exposedHeaders)); пока что закомментированно
+    // configuration.setExposedHeaders(List.of(exposedHeaders)); пока что закомментировано
 
     configuration.setAllowCredentials(allowCredentials);
 
