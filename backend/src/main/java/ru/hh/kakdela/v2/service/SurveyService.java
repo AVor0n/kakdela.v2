@@ -105,8 +105,6 @@ public class SurveyService {
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
 
-    boolean isNeedToSendEmail = false;
-
     if (dto.getTitle() != null) {
       survey.setTitle(dto.getTitle());
     }
@@ -119,6 +117,7 @@ public class SurveyService {
     if (dto.getIsLimitedToOneResponse() != null) {
       survey.setLimitedToOneResponse(dto.getIsLimitedToOneResponse());
     }
+    boolean isNeedToSendEmail = false;
     if (dto.getIsPublished() != null) {
       boolean wasPublished = survey.isPublished();
       if (dto.getIsPublished() && !wasPublished) {
