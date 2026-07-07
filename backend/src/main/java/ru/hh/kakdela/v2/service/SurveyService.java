@@ -105,6 +105,8 @@ public class SurveyService {
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
 
+    boolean isNeedToSendEmail = false;
+
     if (dto.getTitle() != null) {
       survey.setTitle(dto.getTitle());
     }
@@ -120,7 +122,7 @@ public class SurveyService {
     if (dto.getIsPublished() != null) {
       boolean wasPublished = survey.isPublished();
       if (dto.getIsPublished() && !wasPublished) {
-        notificationService.sendSurveyPublishedNotifications(surveyId);
+        isNeedToSendEmail = true;
       }
 
       survey.setPublished(dto.getIsPublished());
@@ -151,6 +153,10 @@ public class SurveyService {
 
     surveyDao.update(survey);
     log.info("Изменен опрос id={} accountId={}", surveyId, accountId);
+
+    if (isNeedToSendEmail) {
+      notificationService.sendSurveyPublishedNotifications(surveyId);
+    }
     return surveyMapper.surveyToDto(survey);
   }
 

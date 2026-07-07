@@ -67,16 +67,19 @@ public class SurveyNotificationSubscriptionService {
 
         subscriptionDao.addSubscription(subscription);
         subscribedEmails.add(email);
-        emailService.sendSurveyPublishedEmail(email, survey.getTitle(), surveyId);
 
-        log.info("Пользователь {} подписался на опрос {}", email, surveyId);
+        if (survey.isPublished()) {
+          emailService.sendSurveyPublishedEmail(email, survey.getTitle(), surveyId);
+        }
+
+        log.info("Пользователь {} подписан на опрос {}", email, surveyId);
       } catch (ResponseStatusException e) {
         notFoundEmails.add(email);
         log.warn("Пользователь с адресом электронной почты {} не найден", email);
       }
     }
 
-    log.info("Подписалось {} пользователей на опрос {}", subscribedEmails.size(), surveyId);
+    log.info("Подписано {} пользователей на опрос {}", subscribedEmails.size(), surveyId);
     return new SubscriptionResponseDto(
         subscribedEmails,
         alreadySubscribedEmails,
