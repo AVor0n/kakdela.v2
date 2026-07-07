@@ -1,0 +1,27 @@
+# Результаты сборки
+target
+
+# Git
+.git
+.gitignore
+.github
+
+# IDE
+.idea
+.vscode
+*.iml
+
+# Логи
+*.log
+
+# Maven Wrapper
+.mvn
+mvnw
+mvnw.cmd
+
+# Docker
+Dockerfile
+.dockerignore
+
+# Документация
+*.md
