@@ -117,12 +117,8 @@ public class SurveyService {
     if (dto.getIsLimitedToOneResponse() != null) {
       survey.setLimitedToOneResponse(dto.getIsLimitedToOneResponse());
     }
+    final boolean wasPublished = survey.isPublished();
     if (dto.getIsPublished() != null) {
-      boolean wasPublished = survey.isPublished();
-      if (dto.getIsPublished() && !wasPublished) {
-        notificationService.sendSurveyPublishedNotifications(surveyId);
-      }
-
       survey.setPublished(dto.getIsPublished());
     }
     if (dto.getDoNotify() != null) {
@@ -151,6 +147,10 @@ public class SurveyService {
 
     surveyDao.update(survey);
     log.info("Изменен опрос id={} accountId={}", surveyId, accountId);
+
+    if (survey.isPublished() && !wasPublished) {
+      notificationService.sendSurveyPublishedNotifications(surveyId);
+    }
     return surveyMapper.surveyToDto(survey);
   }
 

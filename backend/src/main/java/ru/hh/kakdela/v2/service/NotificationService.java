@@ -33,7 +33,6 @@ public class NotificationService {
   public void sendSurveyPublishedNotifications(UUID surveyId) {
     Survey survey = checkSurvey(surveyId);
     if (survey == null) {
-      log.warn("Опрос {} не опубликован или не найден", surveyId);
       return;
     }
 
@@ -80,8 +79,8 @@ public class NotificationService {
 
   private Survey checkSurvey(UUID surveyId) {
     Survey survey = surveyDao.findById(surveyId).orElse(null);
-    if (survey == null || !survey.isPublished()) {
-      log.warn("Опрос {} не опубликован или не найден", surveyId);
+    if (survey == null) {
+      log.warn("Опрос {} не найден", surveyId);
       return null;
     }
     return survey;
