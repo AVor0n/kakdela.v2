@@ -19,7 +19,7 @@ public class EmailService {
   @Value("${app.mail.from}")
   private String fromEmail;
 
-  @Value("${cors.allowed-origins}")
+  @Value("${current.host}")
   private String host;
 
   @Async
@@ -36,7 +36,7 @@ public class EmailService {
           "Вам необходимо пройти опрос \""
               + surveyTitle
               + "\". Автор указал вас как обязательного респондента."
-              + "\n Ссылка на опрос: " + host + "/surveys/" + surveyId
+              + "\n Ссылка на опрос: " + host + "surveys/" + surveyId
       );
 
       mailSender.send(message);
