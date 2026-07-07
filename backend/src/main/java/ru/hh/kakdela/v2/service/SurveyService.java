@@ -117,6 +117,10 @@ public class SurveyService {
     if (dto.getIsLimitedToOneResponse() != null) {
       survey.setLimitedToOneResponse(dto.getIsLimitedToOneResponse());
     }
+    final boolean wasPublished = survey.isPublished();
+    if (dto.getIsPublished() != null) {
+      survey.setPublished(dto.getIsPublished());
+    }
     if (dto.getDoNotify() != null) {
       survey.setDoNotify(dto.getDoNotify());
     }
@@ -139,11 +143,6 @@ public class SurveyService {
           .toInstant()
           .truncatedTo(ChronoUnit.SECONDS));
       survey.setTargetTimezone(dto.getTargetTimezone());
-    }
-
-    boolean wasPublished = survey.isPublished();
-    if (dto.getIsPublished() != null) {
-      survey.setPublished(dto.getIsPublished());
     }
 
     surveyDao.update(survey);
