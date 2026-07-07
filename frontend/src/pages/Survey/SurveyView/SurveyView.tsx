@@ -4,18 +4,20 @@ import { useEffect, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { routes } from '@/app/routes';
 import { SurveyRunner, type SurveyRunnerMode } from './components/SurveyRunner/SurveyRunner';
+import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { clearErrorMessage, setErrorMessage } from '@/entities/Error/Error.slice';
 
 export function SurveyView() {
     const { id } = useParams();
     const [searchParams] = useSearchParams();
     const [survey, setSurvey] = useState<Survey | null>(null);
     const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const dispatch = useAppDispatch();
     const mode: SurveyRunnerMode = searchParams.get('preview') === 'true' ? 'preview' : 'respond';
 
     useEffect(() => {
         if (!id) {
-            setError('Опрос не найден');
+            dispatch(setErrorMessage({ message: 'Опрос не найден' }));
             setIsLoading(false);
             return;
         }
@@ -24,10 +26,10 @@ export function SurveyView() {
         getSurveyById(id)
             .then((data) => {
                 setSurvey(data);
-                setError(null);
+                dispatch(clearErrorMessage());
             })
             .catch(() => {
-                setError('Не удалось загрузить опрос');
+                dispatch(setErrorMessage({ message: 'Не удалось загрузить опрос' }));
             })
             .finally(() => {
                 setIsLoading(false);
@@ -38,10 +40,9 @@ export function SurveyView() {
         return <div>Загрузка...</div>;
     }
 
-    if (error || !survey) {
+    if (!survey) {
         return (
             <div>
-                <p>{error ?? 'Опрос не найден'}</p>
                 <Link to={routes.survey()}>Вернуться к списку опросов</Link>
             </div>
         );

@@ -3,39 +3,66 @@ import { useAppSelector } from '@/hooks/useAppSelector';
 import type { Subscribers } from '@/shared/types/Subscribers.type';
 import { FormLabel, Input } from '@hh.ru/magritte-ui';
 import { useEffect, useState, type KeyboardEvent } from 'react';
+import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { setErrorMessage } from '@/entities/Error/Error.slice';
 import style from './SubscribersInput.module.css';
-import { ErrorBlock } from '../../ErrorBlock/ErrorBlock';
-import type { Error } from '@/shared/types/Error.type';
+
 export function SubscribersInput() {
     const { selectedSurvey } = useAppSelector((state) => state.survey);
+    const dispatch = useAppDispatch();
     const [subscribers, setSubscribers] = useState<Subscribers[]>([]);
     const [subscribersInput, setSubscribersInput] = useState<string>('');
-    const [error, setError] = useState<Error | null>(null);
 
     useEffect(() => {
-        getSubscribers(selectedSurvey!.id).then((data) => setSubscribers(data));
+        getSubscribers(selectedSurvey!.id)
+            .then((data) => setSubscribers(data))
+            .catch((err) => {
+                if (err.response) {
+                    dispatch(
+                        setErrorMessage({
+                            message: 'Не удалось получить подписчиков этого опроса',
+                        }),
+                    );
+                }
+            });
     }, []);
 
     const addSubscriberHandle = () => {
         addSubscriber(selectedSurvey!.id, subscribersInput)
             .then((data) => {
                 if (data.alreadySubscribedEmails.length > 0) {
-                    setError({ message: 'Этот пользователь уже добавлен' });
+                    dispatch(
+                        setErrorMessage({
+                            message: 'Этот пользователь уже добавлен',
+                        }),
+                    );
                 } else if (data.notFoundEmails.length > 0) {
-                    setError({ message: 'Пользователя с таким email не существует' });
+                    dispatch(
+                        setErrorMessage({
+                            message: 'Пользователя с такой почтой не существует',
+                        }),
+                    );
                 } else {
                     getSubscribers(selectedSurvey!.id)
                         .then((data) => setSubscribers(data))
                         .catch((err) => {
                             if (err.response) {
-                                setError(err.response.data);
+                                dispatch(
+                                    setErrorMessage({
+                                        message: 'Не удалось получить подписчиков этого опроса',
+                                    }),
+                                );
                             }
                         });
                 }
             })
             .catch((err) => {
                 if (err.response) {
-                    setError(err.response.data);
+                    dispatch(
+                        setErrorMessage({
+                            message: 'Не удалось добавить пользователя',
+                        }),
+                    );
                 }
             });
     };
@@ -54,14 +81,17 @@ export function SubscribersInput() {
             })
             .catch((err) => {
                 if (err.response) {
-                    setError({ message: 'Не удалось удалить обязательного пользователя' });
+                    dispatch(
+                        setErrorMessage({
+                            message: 'Не удалось удалить подписчиков этого опроса',
+                        }),
+                    );
                 }
             });
     };
 
     return (
         <div className={style.content}>
-            {error && <ErrorBlock error={error} setError={setError} />}
             <FormLabel>Пользователи для обязательного прохождения</FormLabel>
             <Input
                 value={subscribersInput}

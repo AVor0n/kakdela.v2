@@ -1,15 +1,12 @@
 import type { AnswerOption } from '@/shared/types/Question.type';
-
-import style from './Option.module.css';
 import { useEffect, useState, type ReactNode } from 'react';
 import { deleteAnswerOption, updateAnswerOption } from '@/api/answer-option';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { deleteOption, setOptionValue } from '@/entities/Survey/Survey.slice';
 import { useDebounce } from '@/hooks/useDebounce';
 import { Button } from '@hh.ru/magritte-ui';
-import { ErrorBlock } from '@/pages/Survey/SurveyModify/components/ErrorBlock/ErrorBlock';
-import type { Error } from '@/shared/types/Error.type';
-
+import { setErrorMessage } from '@/entities/Error/Error.slice';
+import style from './Option.module.css';
 interface Props {
     option: AnswerOption;
     children: ReactNode;
@@ -17,7 +14,6 @@ interface Props {
 }
 
 export function Option({ option, children, isEdit }: Props) {
-    const [error, setError] = useState<Error | null>(null);
     const [optionAnswer, setOptionAnswer] = useState<string>(option.answerOptionText);
     const debouncedOptionAnswer = useDebounce(optionAnswer, 2000);
     const dispatch = useAppDispatch();
@@ -28,7 +24,7 @@ export function Option({ option, children, isEdit }: Props) {
             })
             .catch((err) => {
                 if (err.response) {
-                    setError(err.response.data);
+                    dispatch(setErrorMessage({ message: `Не удалось удалить варинат ответа` }));
                 }
             });
     };
@@ -40,7 +36,7 @@ export function Option({ option, children, isEdit }: Props) {
                     .then((data) => dispatch(setOptionValue({ answerOption: data })))
                     .catch((err) => {
                         if (err.response) {
-                            setError(err.response.data);
+                            dispatch(setErrorMessage({ message: `Не удалось изменить варинат ответа` }));
                         }
 
                         dispatch(
@@ -57,7 +53,6 @@ export function Option({ option, children, isEdit }: Props) {
     }, [debouncedOptionAnswer]);
     return (
         <>
-            {error && <ErrorBlock error={error} setError={setError} />}
             <div className={style.optionContent}>
                 <label className={style.option}>
                     {children}

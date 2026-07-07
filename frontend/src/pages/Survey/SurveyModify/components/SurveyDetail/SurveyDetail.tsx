@@ -3,12 +3,12 @@ import { TextArea } from '@hh.ru/magritte-ui-textarea';
 import type { Survey } from '@/shared/types/Survey.type';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { setSelectedSurvey } from '@/entities/Survey/Survey.slice';
-import style from './SurveyDetail.module.css';
 import { useEffect, useState } from 'react';
 import { useDebounce } from '@/hooks/useDebounce';
 import { updateSurvey } from '@/api/survey';
-import type { Error } from '@/shared/types/Error.type';
-import { ErrorBlock } from '../ErrorBlock/ErrorBlock';
+import { setErrorMessage } from '@/entities/Error/Error.slice';
+import style from './SurveyDetail.module.css';
+
 interface Props {
     survey: Survey;
 }
@@ -16,7 +16,6 @@ interface Props {
 export function SurveyDetail({ survey }: Props) {
     const [title, setTitle] = useState<string>(survey.title);
     const [description, setDescription] = useState<string>(survey.description ? survey.description : '');
-    const [error, setError] = useState<Error | null>(null);
     const debouncedTitle = useDebounce(title, 2000);
     const debouncedDescription = useDebounce(description, 2000);
     const dispatch = useAppDispatch();
@@ -29,7 +28,7 @@ export function SurveyDetail({ survey }: Props) {
                 })
                 .catch((error) => {
                     if (error.response) {
-                        setError(error.response.data);
+                        dispatch(setErrorMessage({ message: `Не удалось изменить название опроса` }));
                     }
                     setTitle(survey.title);
                 });
@@ -44,7 +43,7 @@ export function SurveyDetail({ survey }: Props) {
                 })
                 .catch((error) => {
                     if (error.response) {
-                        setError(error.response.data);
+                        dispatch(setErrorMessage({ message: `Не удалось изменить описание опроса` }));
                     }
                     setTitle(survey.description ? survey.description : '');
                 });
@@ -53,7 +52,6 @@ export function SurveyDetail({ survey }: Props) {
 
     return (
         <div className={style.container}>
-            {error && <ErrorBlock error={error} setError={setError} />}
             <Input placeholder='Название формы' value={title} onChange={(value: string) => setTitle(value)} />
 
             <TextArea

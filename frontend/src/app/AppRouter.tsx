@@ -10,6 +10,7 @@ import { SurveyCreate } from '@/pages/Survey/SurveyCreate/SurveyCreate';
 import { SurveyLayout } from '@/layouts/SurveyLayout';
 import { RequireAuth } from '@/features/auth/RequireAuth';
 import { Settings } from '@/pages/Survey/SurveyModify/components/Settings/Settings';
+import { NotFound } from '@/pages/Errors/NotFound';
 
 export function AppRouter() {
     return (
@@ -60,6 +61,7 @@ export function AppRouter() {
                         </Route>
                     </Route>
                 </Route>
+                <Route path='*' element={<NotFound />} />
             </Routes>
         </BrowserRouter>
     );

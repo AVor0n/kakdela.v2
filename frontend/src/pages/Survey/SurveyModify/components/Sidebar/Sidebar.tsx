@@ -1,17 +1,13 @@
 import { Box, Button } from '@hh.ru/magritte-ui';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { addPage, addQuestion } from '@/entities/Survey/Survey.slice';
-
-import style from './Sidebar.module.css';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { createSurveyPage } from '@/api/surveyPages';
-import { useState } from 'react';
-import { ErrorBlock } from '../ErrorBlock/ErrorBlock';
 import { createQuestion } from '@/api/question';
-import type { Error } from '@/shared/types/Error.type';
+import { setErrorMessage } from '@/entities/Error/Error.slice';
+import style from './Sidebar.module.css';
 
 export function Sidebar() {
-    const [error, setError] = useState<Error | null>(null);
     const { selectedSurvey, currentQuestionPageIndex } = useAppSelector((state) => state.survey);
     const dispatch = useAppDispatch();
 
@@ -29,7 +25,7 @@ export function Sidebar() {
                 })
                 .catch((err) => {
                     if (err.response) {
-                        setError(err.response.data);
+                        dispatch(setErrorMessage({ message: `Не удалось добавить новую страницу опроса` }));
                     }
                 });
         } else {
@@ -44,7 +40,7 @@ export function Sidebar() {
                 })
                 .catch((err) => {
                     if (err.response) {
-                        setError(err.response.data);
+                        dispatch(setErrorMessage({ message: `Не удалось добавить вопрос` }));
                     }
                 });
         }
@@ -69,14 +65,13 @@ export function Sidebar() {
             })
             .catch((err) => {
                 if (err.response) {
-                    setError(err.response.data);
+                    dispatch(setErrorMessage({ message: `Не удалось добавить новую страницу` }));
                 }
             });
     };
 
     return (
         <Box height='fit-content' className={style.container}>
-            {error && <ErrorBlock error={error} setError={setError} />}
             <Button
                 mode='secondary'
                 type='button'

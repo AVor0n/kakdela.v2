@@ -20,12 +20,11 @@ import {
 } from '@/entities/Survey/Survey.slice';
 import { Choice } from './components/Choice/Choice';
 import classNames from 'classnames';
-import style from './Question.module.css';
 import { useDebounce } from '@/hooks/useDebounce';
 import { deleteQuestion, updateQuestion } from '@/api/question';
-import { ErrorBlock } from '../../../ErrorBlock/ErrorBlock';
 import { useAppSelector } from '@/hooks/useAppSelector';
-import type { Error } from '@/shared/types/Error.type';
+import { setErrorMessage } from '@/entities/Error/Error.slice';
+import style from './Question.module.css';
 
 interface Props {
     question: Question;
@@ -42,7 +41,6 @@ const OPTIONS: StaticDataFetcherItem[] = [
 
 export function Question({ question, onClick, isEditMode }: Props) {
     const { selectedSurvey } = useAppSelector((state) => state.survey);
-    const [error, setError] = useState<Error | null>(null);
     const [title, setTitle] = useState<string>(question.title);
     const [typeQuestion, setTypeQuestion] = useState<QuestionType>(question.type);
     const [mandatory, setMandatory] = useState<boolean>(question.isMandatory);
@@ -60,7 +58,7 @@ export function Question({ question, onClick, isEditMode }: Props) {
                 })
                 .catch((err) => {
                     if (err.response) {
-                        setError(err.response.data);
+                        dispatch(setErrorMessage({ message: 'Не удалось изменить название вопроса' }));
                     }
                     setTitle(question.title);
                 });
@@ -80,7 +78,7 @@ export function Question({ question, onClick, isEditMode }: Props) {
                 })
                 .catch((err) => {
                     if (err.response) {
-                        setError(err.response.data);
+                        dispatch(setErrorMessage({ message: 'Не удалось изменить тип вопроса' }));
                     }
                     setTypeQuestion(question.type);
                 });
@@ -95,7 +93,7 @@ export function Question({ question, onClick, isEditMode }: Props) {
                 })
                 .catch((err) => {
                     if (err.response) {
-                        setError(err.response.data);
+                        dispatch(setErrorMessage({ message: 'Не удалось изменить описание опроса' }));
                     }
                     dispatch(setMandatoryState({ value: question.isMandatory }));
                 });
@@ -110,7 +108,7 @@ export function Question({ question, onClick, isEditMode }: Props) {
             })
             .catch((err) => {
                 if (err.response) {
-                    setError(err.response.data);
+                    dispatch(setErrorMessage({ message: 'Не удалось удалить вопрос' }));
                 }
             });
     };
@@ -135,7 +133,6 @@ export function Question({ question, onClick, isEditMode }: Props) {
     }, [question, typeQuestion, isEditMode]);
     return (
         <div className={classNames(style.container, { [style.edit]: isEditMode })} onClick={onClick}>
-            {error && <ErrorBlock error={error} setError={setError} />}
             <section className={style.settings}>
                 <Input
                     placeholder='Вопрос'

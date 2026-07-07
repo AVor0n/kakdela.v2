@@ -1,16 +1,15 @@
 import { Button, Checkbox, UncontrolledDateTimeInput } from '@hh.ru/magritte-ui';
 import { useEffect, useState } from 'react';
-import style from './Settings.module.css';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { useDebounce } from '@/hooks/useDebounce';
 import { deleteSurvey, updateSurvey } from '@/api/survey';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { setSelectedSurvey } from '@/entities/Survey/Survey.slice';
-import { ErrorBlock } from '../ErrorBlock/ErrorBlock';
-import type { Error } from '@/shared/types/Error.type';
 import { useNavigate } from 'react-router-dom';
 import { routePatterns } from '@/app/routes';
 import { SubscribersInput } from './Subscribers/SubscribersInput';
+import { setErrorMessage } from '@/entities/Error/Error.slice';
+import style from './Settings.module.css';
 
 function convertDateFromISO(isoStr: string): string {
     const date = new Date(isoStr);
@@ -38,7 +37,6 @@ export function Settings() {
 
         return null;
     });
-    const [error, setError] = useState<Error | null>(null);
     const debouncedIsAuthorizedOnly = useDebounce(isAuthorizedOnly, 1000);
     const debouncedIsLimitedToOneResponse = useDebounce(isLimitedToOneResponse, 1000);
     const debouncedDoNotify = useDebounce(doNotify, 1000);
@@ -52,7 +50,12 @@ export function Settings() {
                 })
                 .catch((err) => {
                     if (err.response) {
-                        setError(err.response.data);
+                        dispatch(
+                            setErrorMessage({
+                                message:
+                                    'Не удалось изменить настройку "Прохождение только для авторизированных пользователей"',
+                            }),
+                        );
                     }
                 });
 
@@ -62,7 +65,11 @@ export function Settings() {
                 })
                 .catch((err) => {
                     if (err.response) {
-                        setError(err.response.data);
+                        dispatch(
+                            setErrorMessage({
+                                message: 'Не удалось изменить настройку "Разрешить проходить опрос только один раз"',
+                            }),
+                        );
                     }
                 });
 
@@ -72,9 +79,35 @@ export function Settings() {
                 })
                 .catch((err) => {
                     if (err.response) {
-                        setError(err.response.data);
+                        dispatch(
+                            setErrorMessage({
+                                message: 'Не удалось изменить настройку "Присылать сообщение о прохождении опроса"',
+                            }),
+                        );
                     }
                 });
+            if (debouncedExpireAt) {
+                const [day, month, year] = debouncedExpireAt.split('.').map(Number);
+                if (!day || !month || !year) {
+                    return;
+                }
+                const isoString = new Date(year, month - 1, day, 10, 0, 0).toISOString();
+                const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+                updateSurvey(selectedSurvey.id, { expireAtAtTargetTimezone: isoString, targetTimezone: timeZone })
+                    .then((data) => {
+                        dispatch(setSelectedSurvey({ survey: data }));
+                    })
+                    .catch((err) => {
+                        if (err.response) {
+                            dispatch(
+                                setErrorMessage({
+                                    message: 'Не удалось изменить настройку "Присылать сообщение о прохождении опроса"',
+                                }),
+                            );
+                        }
+                    });
+            }
         };
     }, []);
 
@@ -86,7 +119,12 @@ export function Settings() {
                 })
                 .catch((err) => {
                     if (err.response) {
-                        setError(err.response.data);
+                        dispatch(
+                            setErrorMessage({
+                                message:
+                                    'Не удалось изменить настройку "Прохождение только для авторизированных пользователей"',
+                            }),
+                        );
                     }
                 });
         }
@@ -100,7 +138,11 @@ export function Settings() {
                 })
                 .catch((err) => {
                     if (err.response) {
-                        setError(err.response.data);
+                        dispatch(
+                            setErrorMessage({
+                                message: 'Не удалось изменить настройку "Разрешить проходить опрос только один раз"',
+                            }),
+                        );
                     }
                 });
         }
@@ -114,7 +156,11 @@ export function Settings() {
                 })
                 .catch((err) => {
                     if (err.response) {
-                        setError(err.response.data);
+                        dispatch(
+                            setErrorMessage({
+                                message: 'Не удалось изменить настройку "Дата окончания прохождения опроса"',
+                            }),
+                        );
                     }
                 });
         }
@@ -135,7 +181,11 @@ export function Settings() {
                 })
                 .catch((err) => {
                     if (err.response) {
-                        setError(err.response.data);
+                        dispatch(
+                            setErrorMessage({
+                                message: 'Не удалось изменить настройку "Присылать сообщение о прохождении опроса"',
+                            }),
+                        );
                     }
                 });
         }
@@ -152,14 +202,17 @@ export function Settings() {
             .then(() => navigate(routePatterns.surveys))
             .catch((err) => {
                 if (err.response) {
-                    setError(err.response.data);
+                    dispatch(
+                        setErrorMessage({
+                            message: 'Не удалось удалить опрос',
+                        }),
+                    );
                 }
             });
     };
 
     return (
         <section className={style.container}>
-            {error && <ErrorBlock error={error} setError={setError} />}
             <div className={style.content}>
                 <p className={style.title}>Настройки</p>
                 <div className={style.option}>

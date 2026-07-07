@@ -12,6 +12,7 @@ import style from './SurveyModify.module.css';
 import { getSurveyById } from '@/api/survey';
 import { useParams } from 'react-router-dom';
 import { PageSeparator } from './components/PageSeparator/PageSeparator';
+import { setErrorMessage } from '@/entities/Error/Error.slice';
 
 export function SurveyModify() {
     const { id } = useParams();
@@ -23,9 +24,15 @@ export function SurveyModify() {
             return;
         }
 
-        getSurveyById(id).then((data) => {
-            dispatch(setSelectedSurvey({ survey: data }));
-        });
+        getSurveyById(id)
+            .then((data) => {
+                dispatch(setSelectedSurvey({ survey: data }));
+            })
+            .catch((err) => {
+                if (err.response) {
+                    dispatch(setErrorMessage({ message: `Такого опроса не существует` }));
+                }
+            });
     }, [dispatch, id]);
 
     if (!selectedSurvey) {
