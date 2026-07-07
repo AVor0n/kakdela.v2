@@ -83,10 +83,12 @@ public class SurveyService {
         .doNotify(dto.getDoNotify())
         .isPublished(false)
         .isTemplate(false)
-        .expireAt(dto.getExpireAtAtTargetTimezone()
-            .atZone(ZoneId.of(dto.getTargetTimezone()))
-            .toInstant()
-            .truncatedTo(ChronoUnit.SECONDS))
+        .expireAt(dto.getExpireAtAtTargetTimezone() != null
+            ? dto.getExpireAtAtTargetTimezone()
+                .atZone(ZoneId.of(dto.getTargetTimezone()))
+                .toInstant()
+                .truncatedTo(ChronoUnit.SECONDS)
+            : null)
         .targetTimezone(dto.getTargetTimezone())
         .createdAt(Instant.now().truncatedTo(ChronoUnit.SECONDS))
         .build();
