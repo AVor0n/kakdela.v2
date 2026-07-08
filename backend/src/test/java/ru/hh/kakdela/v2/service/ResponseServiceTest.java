@@ -164,22 +164,6 @@ class ResponseServiceTest {
     assertEquals("Просмотр завершённых анонимных ответов запрещён", exception.getReason());
   }
 
-  // TODO: а если аккаунт не null, а токен null?
-  // Кажется должно проверяться условие
-  // if (response.getAccount() == null && token == null)
-  // сейчас там &&
-
-  /*@Test
-  void testGetByIdThrowsExceptionWhenTokenIsNull() {
-    when(responseDao.findById(responseId)).thenReturn(Optional.ofNullable(testResponse));
-
-    ResponseStatusException exception = assertThrows(
-        ResponseStatusException.class,
-        () -> responseService.getById(testResponse.getId(), accountId, null)
-    );
-    assertEquals("Не предоставлены учётные данные для доступа к прохождению", exception.getReason());
-  }*/
-
 
   // ----------------------- GetCompletedBySurveyId tests -----------------------
   @Test
