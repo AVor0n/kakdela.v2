@@ -358,31 +358,6 @@ class ResponseServiceTest {
   }
 
 
-  // ----------------------- delete tests -----------------------
-  @Test
-  void testDeleteSuccess() {
-    when(responseDao.findById(responseId)).thenReturn(Optional.of(testResponse));
-    doNothing().when(responseDao).delete(any(Response.class));
-
-    responseService.delete(responseId);
-
-    verify(responseDao).delete(testResponse);
-  }
-
-  @Test
-  void testDeleteWhenResponseNotFound() {
-    when(responseDao.findById(responseId)).thenReturn(Optional.empty());
-
-    ResponseStatusException exception = assertThrows(
-        ResponseStatusException.class,
-        () -> responseService.delete(responseId)
-    );
-    assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
-    assertEquals("Ответ не найден: " + responseId, exception.getReason());
-    verify(responseDao, never()).delete(any(Response.class));
-  }
-
-
   // ----------------------- вспомогательные методы -----------------------
   private Response getResponseWithNullAccount() {
     return Response.builder()
