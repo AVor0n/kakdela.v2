@@ -153,6 +153,7 @@ public class ResponseService {
     return ResponseMapper.responseToDto(response);
   }
 
+  // TODO: стоит проверять доступ, чтобы кто угодно не мог удалить ответ
   @Transactional
   public void delete(UUID id) {
     Response response = responseDao.findById(id)
