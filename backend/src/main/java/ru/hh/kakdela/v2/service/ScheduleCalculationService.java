@@ -32,7 +32,8 @@ public class ScheduleCalculationService {
     ZonedDateTime nowInTargetZone = now.atZone(targetZone);
 
     if (schedule.getScheduleType() == ScheduleType.CUSTOM) {
-      ZonedDateTime result = schedule.getScheduleType().findNext(schedule, nowInTargetZone, nowInTargetZone);
+      ZonedDateTime result = schedule.getScheduleType()
+          .findNext(schedule, nowInTargetZone, nowInTargetZone);
       return result.toInstant();
     }
 
