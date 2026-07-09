@@ -29,6 +29,7 @@ public class QuestionMapper {
 
     return new QuestionResponseDto(
         question.getId(),
+        question.getSurveyPage().getId(),
         question.getSerialNumber(),
         question.getTitle(),
         question.getDescription(),
