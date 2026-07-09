@@ -25,9 +25,9 @@ public class SurveyMapper {
         survey.getDescription(),
         survey.isAuthorizedOnly(),
         survey.isLimitedToOneResponse(),
-        survey.isPublished(),
-        survey.isTemplate(),
         survey.isDoNotify(),
+        survey.isTemplate(),
+        survey.isPublished(),
         survey.getExpireAt(),
         survey.getExpireAt() != null
             ? LocalDateTime.ofInstant(survey.getExpireAt(), 

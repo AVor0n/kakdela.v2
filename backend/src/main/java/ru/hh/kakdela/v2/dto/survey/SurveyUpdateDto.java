@@ -25,8 +25,8 @@ public class SurveyUpdateDto {
   private String description;
   private Boolean isAuthorizedOnly;
   private Boolean isLimitedToOneResponse;
-  private Boolean isPublished;
   private Boolean doNotify;
+  private Boolean isPublished;
   @FutureOrPresent(message = "Дедлайн не должен быть в прошлом")
   private LocalDateTime expireAtAtTargetTimezone;
   @NullOrNotBlank(message = "Часовой пояс не может быть пустым")

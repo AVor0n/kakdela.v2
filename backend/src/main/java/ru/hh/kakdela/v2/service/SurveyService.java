@@ -14,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import ru.hh.kakdela.v2.dao.AccountDao;
 import ru.hh.kakdela.v2.dao.SurveyDao;
-import ru.hh.kakdela.v2.dto.survey.SurveyCreateDto;
+import ru.hh.kakdela.v2.dto.survey.SurveyRequestDto;
 import ru.hh.kakdela.v2.dto.survey.SurveyResponseDto;
 import ru.hh.kakdela.v2.dto.survey.SurveyShortResponseDto;
 import ru.hh.kakdela.v2.dto.survey.SurveyUpdateDto;
@@ -42,7 +42,7 @@ public class SurveyService {
   public SurveyResponseDto getById(UUID id) {
     Survey survey = surveyDao.findById(id)
         .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Опрос не найден: " + id));
+            HttpStatus.NOT_FOUND, "Опрос не найден: id=" + id));
     return surveyMapper.surveyToDto(survey);
   }
 
@@ -69,10 +69,10 @@ public class SurveyService {
   }
 
   @Transactional
-  public SurveyResponseDto create(UUID authorId, SurveyCreateDto dto) {
+  public SurveyResponseDto create(UUID authorId, SurveyRequestDto dto) {
     Account author = accountDao.findById(authorId)
         .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Аккаунт не найден: " + authorId));
+            HttpStatus.NOT_FOUND, "Аккаунт не найден: id=" + authorId));
 
     Survey survey = Survey.builder()
         .author(author)
@@ -81,7 +81,7 @@ public class SurveyService {
         .isAuthorizedOnly(dto.getIsAuthorizedOnly())
         .isLimitedToOneResponse(dto.getIsLimitedToOneResponse())
         .doNotify(dto.getDoNotify())
-        .isPublished(false)
+        .isPublished(dto.getIsPublished())
         .isTemplate(false)
         .expireAt(dto.getExpireAtAtTargetTimezone() != null
             ? dto.getExpireAtAtTargetTimezone()
@@ -94,16 +94,50 @@ public class SurveyService {
         .build();
 
     surveyDao.save(survey);
-    log.info("Создан опрос id={} authorId={}", survey.getId(), authorId);
+    log.info("Создан опрос: id={}, authorId={}", survey.getId(), authorId);
+
     return surveyMapper.surveyToDto(survey);
   }
 
   @Transactional
-  public SurveyResponseDto update(UUID surveyId, SurveyUpdateDto dto, UUID accountId) {
+  public SurveyResponseDto updateFull(UUID surveyId, SurveyRequestDto dto, UUID accountId) {
     permissionService.checkAccess(surveyId, accountId, SurveyRole.EDITOR);
     Survey survey = surveyDao.findById(surveyId)
         .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
+            HttpStatus.NOT_FOUND, "Опрос не найден: id=" + surveyId));
+
+    final boolean wasPublished = survey.isPublished();
+
+    survey.setTitle(dto.getTitle());
+    survey.setDescription(dto.getDescription());
+    survey.setAuthorizedOnly(dto.getIsAuthorizedOnly());
+    survey.setLimitedToOneResponse(dto.getIsLimitedToOneResponse());
+    survey.setDoNotify(dto.getDoNotify());
+    survey.setPublished(dto.getIsPublished());
+    survey.setExpireAt(dto.getExpireAtAtTargetTimezone() != null
+        ? dto.getExpireAtAtTargetTimezone()
+          .atZone(ZoneId.of(dto.getTargetTimezone()))
+          .toInstant()
+          .truncatedTo(ChronoUnit.SECONDS)
+        : null);
+    survey.setTargetTimezone(dto.getTargetTimezone());
+
+    surveyDao.update(survey);
+    log.info("Заменён опрос: id={}, accountId={}", surveyId, accountId);
+
+    if (survey.isPublished() && !wasPublished) {
+      notificationService.sendSurveyPublishedNotifications(surveyId);
+    }
+
+    return surveyMapper.surveyToDto(survey);
+  }
+
+  @Transactional
+  public SurveyResponseDto updatePartial(UUID surveyId, SurveyUpdateDto dto, UUID accountId) {
+    permissionService.checkAccess(surveyId, accountId, SurveyRole.EDITOR);
+    Survey survey = surveyDao.findById(surveyId)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Опрос не найден: id=" + surveyId));
 
     if (dto.getTitle() != null) {
       survey.setTitle(dto.getTitle());
@@ -146,11 +180,12 @@ public class SurveyService {
     }
 
     surveyDao.update(survey);
-    log.info("Изменен опрос id={} accountId={}", surveyId, accountId);
+    log.info("Изменён опрос: id={}, accountId={}", surveyId, accountId);
 
     if (survey.isPublished() && !wasPublished) {
       notificationService.sendSurveyPublishedNotifications(surveyId);
     }
+
     return surveyMapper.surveyToDto(survey);
   }
 
@@ -158,13 +193,13 @@ public class SurveyService {
   public SurveyResponseDto clone(UUID surveyId, UUID accountId) {
     Survey originalSurvey = surveyDao.findById(surveyId)
         .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
+            HttpStatus.NOT_FOUND, "Опрос не найден: id=" + surveyId));
 
     permissionService.checkAccess(surveyId, accountId, SurveyRole.EDITOR);
 
     Account account = accountDao.findById(accountId)
         .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Аккаунт не найден: " + accountId));
+            HttpStatus.NOT_FOUND, "Аккаунт не найден: id=" + accountId));
 
     Survey surveyCopy = Survey.builder()
         .author(account)
@@ -226,8 +261,9 @@ public class SurveyService {
     }
 
     surveyDao.save(surveyCopy);
-    log.info("Клонирован опрос originalId={} copyId={} accountId={}",
+    log.info("Клонирован опрос: originalId={}, copyId={}, accountId={}",
         surveyId, surveyCopy.getId(), accountId);
+
     return surveyMapper.surveyToDto(surveyCopy);
   }
 
@@ -238,7 +274,7 @@ public class SurveyService {
         .orElseThrow(
             () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Опрос не найден: " + id));
     surveyDao.delete(survey);
-    log.info("Удален опрос id={} accountId={}", id, accountId);
+    log.info("Удалён опрос: id={}, accountId={}", id, accountId);
   }
 
 }
