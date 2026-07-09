@@ -51,9 +51,11 @@ class ResponseServiceTest {
   private static UUID surveyId;
   private static Account testAccount;
   private static Survey testSurvey;
+  private static Survey testLimitedSurvey;
+  private static Survey testUnpublishedSurvey;
   private static Response testResponse;
+  private static Response testResponseWithNullAccount;
   private static final String testToken = "test";
-  private static final UUID responseIdWithNullAccountId = UUID.randomUUID();
 
   @BeforeAll
   static void setupAll() {
@@ -88,6 +90,25 @@ class ResponseServiceTest {
         .isCompleted(true)
         .receivedAt(Instant.now())
         .build();
+
+    testResponseWithNullAccount = Response.builder()
+        .id(UUID.randomUUID())
+        .account(null)
+        .survey(testSurvey)
+        .isCompleted(true)
+        .receivedAt(Instant.now())
+        .build();
+
+    testLimitedSurvey = Survey.builder()
+        .id(surveyId)
+        .isPublished(true)
+        .isLimitedToOneResponse(true)
+        .build();
+
+    testUnpublishedSurvey = Survey.builder()
+        .id(surveyId)
+        .isPublished(false)
+        .build();
   }
 
   // ----------------------- getById tests -----------------------
@@ -115,7 +136,7 @@ class ResponseServiceTest {
 
   @Test
   void testGetByIdThrowsExceptionWhenAccountAndTokenIsNull() {
-    Response responseWithNullAccount = getResponseWithNullAccount();
+    Response responseWithNullAccount = testResponseWithNullAccount;
     when(responseDao.findById(responseWithNullAccount.getId()))
         .thenReturn(Optional.of(responseWithNullAccount));
 
@@ -151,7 +172,7 @@ class ResponseServiceTest {
 
   @Test
   void testGetByIdThrowsExceptionIfTryGetAnonResponse() {
-    Response responseWithNullAccount = getResponseWithNullAccount();
+    Response responseWithNullAccount = testResponseWithNullAccount;
     when(responseDao.findById(responseWithNullAccount.getId()))
         .thenReturn(Optional.of(responseWithNullAccount));
     when(jwtService.extractResponseId(testToken))
@@ -223,11 +244,7 @@ class ResponseServiceTest {
 
   @Test
   void testCreateThrowsExceptionWhenSurveyNotPublished() {
-    Survey unpublishedSurvey = Survey.builder()
-        .id(surveyId)
-        .isPublished(false)
-        .build();
-    when(surveyDao.findById(surveyId)).thenReturn(Optional.of(unpublishedSurvey));
+    when(surveyDao.findById(surveyId)).thenReturn(Optional.of(testUnpublishedSurvey));
 
     ResponseStatusException exception = assertThrows(
         ResponseStatusException.class,
@@ -239,12 +256,7 @@ class ResponseServiceTest {
 
   @Test
   void testCreateWhenLimitedToOneResponseAndAlreadyExists() {
-    Survey limitedSurvey = Survey.builder()
-        .id(surveyId)
-        .isPublished(true)
-        .isLimitedToOneResponse(true)
-        .build();
-    when(surveyDao.findById(surveyId)).thenReturn(Optional.of(limitedSurvey));
+    when(surveyDao.findById(surveyId)).thenReturn(Optional.of(testLimitedSurvey));
     when(responseDao.existsBySurveyIdAndAccountId(surveyId, accountId)).thenReturn(true);
 
     ResponseStatusException exception = assertThrows(
@@ -257,12 +269,7 @@ class ResponseServiceTest {
 
   @Test
   void testCreateWhenLimitedToOneResponseButAccountIsNull() {
-    Survey limitedSurvey = Survey.builder()
-        .id(surveyId)
-        .isPublished(true)
-        .isLimitedToOneResponse(true)
-        .build();
-    when(surveyDao.findById(surveyId)).thenReturn(Optional.of(limitedSurvey));
+    when(surveyDao.findById(surveyId)).thenReturn(Optional.of(testLimitedSurvey));
     mockResponseSave();
     when(jwtService.generateResponseAccessToken(any(UUID.class))).thenReturn(testToken);
 
@@ -291,17 +298,17 @@ class ResponseServiceTest {
   // ----------------------- complete tests -----------------------
   @Test
   void testCompleteSuccess() {
-    Response incompleteResponse = Response.builder()
+    Response incompletedResponse = Response.builder()
         .id(responseId)
         .account(testAccount)
         .survey(testSurvey)
         .isCompleted(false)
         .build();
 
-    when(responseDao.findById(responseId)).thenReturn(Optional.of(incompleteResponse));
+    when(responseDao.findById(responseId)).thenReturn(Optional.of(incompletedResponse));
     when(jwtService.extractResponseId(testToken)).thenReturn(responseId);
     when(responseDao.areAllMandatoryQuestionsAnswered(responseId)).thenReturn(true);
-    mockResponseUpdate();
+    doNothing().when(responseDao).update(any(Response.class));
 
     ResponseResponseDto result = responseService.complete(responseId, accountId, testToken);
 
@@ -336,15 +343,7 @@ class ResponseServiceTest {
 
   @Test
   void testCompleteThrowsExceptionWhenAlreadyCompleted() {
-    Response completedResponse = Response.builder()
-        .id(responseId)
-        .account(testAccount)
-        .survey(testSurvey)
-        .isCompleted(true)
-        .receivedAt(Instant.now())
-        .build();
-
-    when(responseDao.findById(responseId)).thenReturn(Optional.of(completedResponse));
+    when(responseDao.findById(responseId)).thenReturn(Optional.of(testResponse));
     when(jwtService.extractResponseId(testToken)).thenReturn(responseId);
     when(responseDao.areAllMandatoryQuestionsAnswered(responseId)).thenReturn(true);
 
@@ -359,23 +358,6 @@ class ResponseServiceTest {
 
 
   // ----------------------- вспомогательные методы -----------------------
-  private Response getResponseWithNullAccount() {
-    return Response.builder()
-        .id(responseIdWithNullAccountId)
-        .account(null)
-        .survey(testSurvey)
-        .isCompleted(true)
-        .receivedAt(Instant.now())
-        .build();
-  }
-  private void mockResponseUpdate() {
-    doAnswer(invocation -> {
-      Response response = invocation.getArgument(0);
-      response.setCompleted(true);
-      response.setReceivedAt(Instant.now());
-      return null;
-    }).when(responseDao).update(any(Response.class));
-  }
   private void mockResponseSave() {
     doAnswer(invocation -> {
       Response response = invocation.getArgument(0);
