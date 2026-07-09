@@ -10,8 +10,23 @@ export type SurveyAnswerResponse = {
     answerText: string;
 };
 
+export type SurveyCompletedResponse = {
+    id: string;
+    accountId: string | null;
+    surveyId: string;
+    isCompleted: boolean;
+    receivedAt: string | null;
+    answers: SurveyAnswerResponse[];
+};
+
 export async function createSurveyResponse(surveyId: string): Promise<CreateSurveyResponseResult> {
     const { data } = await apiClient.post<CreateSurveyResponseResult>(`/api/surveys/${surveyId}/responses`);
+
+    return data;
+}
+
+export async function getSurveyResponses(surveyId: string): Promise<SurveyCompletedResponse[]> {
+    const { data } = await apiClient.get<SurveyCompletedResponse[]>(`/api/surveys/${surveyId}/responses`);
 
     return data;
 }
