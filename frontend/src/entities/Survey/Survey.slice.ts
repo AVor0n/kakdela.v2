@@ -24,7 +24,7 @@ const surveySlice = createSlice({
             const { surveys } = action.payload;
             state.surveys = surveys;
         },
-        setSelectedSurvey: (state, action: PayloadAction<{ survey: Survey }>) => {
+        setSelectedSurvey: (state, action: PayloadAction<{ survey: Survey | null }>) => {
             const { survey } = action.payload;
             state.selectedSurvey = survey;
         },

@@ -51,7 +51,7 @@ export function SurveyList() {
     const handleCreateClick = () => {
         createSurvey()
             .then((data) => {
-                navigate(routes.surveyEdit(data.id));
+                navigate(routes.surveyQuestions(data.id));
             })
             .catch((err) => {
                 if (err.response) {

@@ -1,9 +1,9 @@
 import type { AnswerOption } from '@/shared/types/Question.type';
-import { useEffect, useState, type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { deleteAnswerOption, updateAnswerOption } from '@/api/answer-option';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { deleteOption, setOptionValue } from '@/entities/Survey/Survey.slice';
-import { useDebounce } from '@/hooks/useDebounce';
+
 import { Button } from '@hh.ru/magritte-ui';
 import { setErrorMessage } from '@/entities/Error/Error.slice';
 import style from './Option.module.css';
@@ -15,7 +15,7 @@ interface Props {
 
 export function Option({ option, children, isEdit }: Props) {
     const [optionAnswer, setOptionAnswer] = useState<string>(option.answerOptionText);
-    const debouncedOptionAnswer = useDebounce(optionAnswer, 2000);
+
     const dispatch = useAppDispatch();
     const deleteAnswerOptionHandler = () => {
         deleteAnswerOption(option.id)
@@ -29,28 +29,23 @@ export function Option({ option, children, isEdit }: Props) {
             });
     };
 
-    useEffect(() => {
-        if (debouncedOptionAnswer !== option.answerOptionText) {
-            const handler = setTimeout(() => {
-                updateAnswerOption(option.id, { serialNumber: option.serialNumber, answerOptionText: optionAnswer })
-                    .then((data) => dispatch(setOptionValue({ answerOption: data })))
-                    .catch((err) => {
-                        if (err.response) {
-                            dispatch(setErrorMessage({ message: `Не удалось изменить варинат ответа` }));
-                        }
+    const updateQuestionOptionHandler = () => {
+        if (optionAnswer !== option.answerOptionText) {
+            updateAnswerOption(option.id, { serialNumber: option.serialNumber, answerOptionText: optionAnswer })
+                .then((data) => dispatch(setOptionValue({ answerOption: data })))
+                .catch((err) => {
+                    if (err.response) {
+                        dispatch(setErrorMessage({ message: `Не удалось изменить варинат ответа` }));
+                    }
 
-                        dispatch(
-                            setOptionValue({
-                                answerOption: { ...option, answerOptionText: option.answerOptionText },
-                            }),
-                        );
-                    });
-            }, 2000);
-            return () => {
-                clearTimeout(handler);
-            };
+                    dispatch(
+                        setOptionValue({
+                            answerOption: { ...option, answerOptionText: option.answerOptionText },
+                        }),
+                    );
+                });
         }
-    }, [debouncedOptionAnswer]);
+    };
     return (
         <>
             <div className={style.optionContent}>
@@ -63,6 +58,7 @@ export function Option({ option, children, isEdit }: Props) {
                             onChange={(e) => {
                                 setOptionAnswer(e.target.value);
                             }}
+                            onBlur={updateQuestionOptionHandler}
                         />
                     ) : (
                         <div>

@@ -4,7 +4,7 @@ import type { Survey } from '@/shared/types/Survey.type';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { setSelectedSurvey } from '@/entities/Survey/Survey.slice';
 import { useEffect, useState } from 'react';
-import { useDebounce } from '@/hooks/useDebounce';
+
 import { updateSurvey } from '@/api/survey';
 import { setErrorMessage } from '@/entities/Error/Error.slice';
 import style from './SurveyDetail.module.css';
@@ -16,12 +16,11 @@ interface Props {
 export function SurveyDetail({ survey }: Props) {
     const [title, setTitle] = useState<string>(survey.title);
     const [description, setDescription] = useState<string>(survey.description ? survey.description : '');
-    const debouncedTitle = useDebounce(title, 2000);
-    const debouncedDescription = useDebounce(description, 2000);
+
     const dispatch = useAppDispatch();
 
-    useEffect(() => {
-        if (debouncedTitle !== survey.title) {
+    const updateTitleHandler = () => {
+        if (title !== survey.title) {
             updateSurvey(survey.id, { title })
                 .then((data) => {
                     dispatch(setSelectedSurvey({ survey: data }));
@@ -33,10 +32,10 @@ export function SurveyDetail({ survey }: Props) {
                     setTitle(survey.title);
                 });
         }
-    }, [debouncedTitle]);
+    };
 
-    useEffect(() => {
-        if (debouncedDescription !== survey.description) {
+    const updateDescriptionHandler = () => {
+        if (description !== survey.description) {
             updateSurvey(survey.id, { description })
                 .then((data) => {
                     dispatch(setSelectedSurvey({ survey: data }));
@@ -48,11 +47,23 @@ export function SurveyDetail({ survey }: Props) {
                     setTitle(survey.description ? survey.description : '');
                 });
         }
-    }, [debouncedDescription]);
+    };
+
+    useEffect(() => {
+        return () => {
+            updateTitleHandler();
+            updateDescriptionHandler();
+        };
+    }, []);
 
     return (
         <div className={style.container}>
-            <Input placeholder='Название формы' value={title} onChange={(value: string) => setTitle(value)} />
+            <Input
+                placeholder='Название формы'
+                value={title}
+                onChange={(value: string) => setTitle(value)}
+                onBlur={updateTitleHandler}
+            />
 
             <TextArea
                 placeholder='Описание формы'
@@ -63,6 +74,7 @@ export function SurveyDetail({ survey }: Props) {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 elevatePlaceholder={true}
+                onBlur={updateDescriptionHandler}
             />
         </div>
     );

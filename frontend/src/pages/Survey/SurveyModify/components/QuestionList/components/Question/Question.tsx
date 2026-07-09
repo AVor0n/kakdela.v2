@@ -44,14 +44,12 @@ export function Question({ question, onClick, isEditMode }: Props) {
     const [title, setTitle] = useState<string>(question.title);
     const [typeQuestion, setTypeQuestion] = useState<QuestionType>(question.type);
     const [mandatory, setMandatory] = useState<boolean>(question.isMandatory);
-    const debouncedTypeQuestion = useDebounce(typeQuestion, 2000);
-    const debouncedTitle = useDebounce(title, 2000);
-    const debouncedMandatory = useDebounce(mandatory, 1000);
+    const debouncedMandatory = useDebounce(mandatory, 500);
 
     const dispatch = useAppDispatch();
 
-    useEffect(() => {
-        if (debouncedTitle !== question.title) {
+    const updateQuestionTitleHandler = () => {
+        if (title !== question.title) {
             updateQuestion(question.id, { title })
                 .then((data) => {
                     dispatch(updateQuestionTitle({ id: question.id, title: data.title }));
@@ -63,10 +61,10 @@ export function Question({ question, onClick, isEditMode }: Props) {
                     setTitle(question.title);
                 });
         }
-    }, [debouncedTitle]);
+    };
 
-    useEffect(() => {
-        if (debouncedTypeQuestion !== question.type) {
+    const updateQuestionTypeHandler = () => {
+        if (typeQuestion !== question.type) {
             updateQuestion(question.id, { type: typeQuestion })
                 .then((data) => {
                     dispatch(
@@ -83,7 +81,7 @@ export function Question({ question, onClick, isEditMode }: Props) {
                     setTypeQuestion(question.type);
                 });
         }
-    }, [debouncedTypeQuestion]);
+    };
 
     useEffect(() => {
         if (debouncedMandatory !== question.isMandatory) {
@@ -140,6 +138,7 @@ export function Question({ question, onClick, isEditMode }: Props) {
                     onChange={(e) => {
                         setTitle(e);
                     }}
+                    onBlur={updateQuestionTitleHandler}
                 />
                 <div className={style.button}>
                     <img src='/img.svg' alt='img' />
@@ -152,6 +151,7 @@ export function Question({ question, onClick, isEditMode }: Props) {
                     onChange={(e) => {
                         setTypeQuestion(e.value as QuestionType);
                     }}
+                    onBlur={updateQuestionTypeHandler}
                 />
             </section>
 

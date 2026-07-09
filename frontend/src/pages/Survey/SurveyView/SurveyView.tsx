@@ -1,26 +1,22 @@
 import { getSurveyById } from '@/api/survey';
 import type { Survey } from '@/shared/types/Survey.type';
 import { useEffect, useState } from 'react';
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { routePatterns, routes } from '@/app/routes';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { routes } from '@/app/routes';
 import { SurveyRunner, type SurveyRunnerMode } from './components/SurveyRunner/SurveyRunner';
-import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { clearErrorMessage, setErrorMessage } from '@/entities/Error/Error.slice';
 
 export function SurveyView() {
     const { id } = useParams();
     const [searchParams] = useSearchParams();
     const [survey, setSurvey] = useState<Survey | null>(null);
     const [isLoading, setIsLoading] = useState(true);
-    const dispatch = useAppDispatch();
-    const navigate = useNavigate();
+    const [error, setError] = useState<string | null>(null);
     const mode: SurveyRunnerMode = searchParams.get('preview') === 'true' ? 'preview' : 'respond';
 
     useEffect(() => {
         if (!id) {
-            dispatch(setErrorMessage({ message: 'Опрос не найден' }));
+            setError('Опрос не найден');
             setIsLoading(false);
-            navigate(routePatterns.notFound);
             return;
         }
 
@@ -28,11 +24,10 @@ export function SurveyView() {
         getSurveyById(id)
             .then((data) => {
                 setSurvey(data);
-                dispatch(clearErrorMessage());
+                setError(null);
             })
             .catch(() => {
-                dispatch(setErrorMessage({ message: 'Не удалось загрузить опрос' }));
-                navigate(routePatterns.notFound);
+                setError('Не удалось загрузить опрос');
             })
             .finally(() => {
                 setIsLoading(false);
@@ -43,9 +38,10 @@ export function SurveyView() {
         return <div>Загрузка...</div>;
     }
 
-    if (!survey) {
+    if (error || !survey) {
         return (
             <div>
+                <p>{error ?? 'Опрос не найден'}</p>
                 <Link to={routes.survey()}>Вернуться к списку опросов</Link>
             </div>
         );
