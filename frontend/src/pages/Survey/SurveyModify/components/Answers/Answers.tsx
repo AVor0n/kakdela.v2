@@ -202,17 +202,29 @@ export function Answers() {
                 {responses.length > 0 && activeSection === 'question' && currentQuestion && (
                     <div className={style.list}>
                         <div className={style.switcher}>
-                            <Button mode='secondary' style='accent' onClick={() => switchQuestion(-1)}>
+                            <Button
+                                className={style.switcherArrow}
+                                mode='secondary'
+                                style='accent'
+                                onClick={() => switchQuestion(-1)}
+                            >
                                 ←
                             </Button>
-                            <Select
-                                type='label'
-                                value={getSelectValue(questionOptions, String(selectedQuestionIndex))}
-                                dataProvider={createStaticDataProvider(questionOptions, 'Вопрос')}
-                                name='question'
-                                onChange={(option) => setSelectedQuestionIndex(Number(option.value))}
-                            />
-                            <Button mode='secondary' style='accent' onClick={() => switchQuestion(1)}>
+                            <div className={style.switcherSelect}>
+                                <Select
+                                    type='label'
+                                    value={getSelectValue(questionOptions, String(selectedQuestionIndex))}
+                                    dataProvider={createStaticDataProvider(questionOptions, 'Вопрос')}
+                                    name='question'
+                                    onChange={(option) => setSelectedQuestionIndex(Number(option.value))}
+                                />
+                            </div>
+                            <Button
+                                className={style.switcherArrow}
+                                mode='secondary'
+                                style='accent'
+                                onClick={() => switchQuestion(1)}
+                            >
                                 →
                             </Button>
                         </div>
@@ -243,17 +255,29 @@ export function Answers() {
                 {responses.length > 0 && activeSection === 'user' && currentResponse && (
                     <div className={style.list}>
                         <div className={style.switcher}>
-                            <Button mode='secondary' style='accent' onClick={() => switchResponse(-1)}>
+                            <Button
+                                className={style.switcherArrow}
+                                mode='secondary'
+                                style='accent'
+                                onClick={() => switchResponse(-1)}
+                            >
                                 ←
                             </Button>
-                            <Select
-                                type='label'
-                                value={getSelectValue(responseOptions, String(selectedResponseIndex))}
-                                dataProvider={createStaticDataProvider(responseOptions, 'Пользователь')}
-                                name='response'
-                                onChange={(option) => setSelectedResponseIndex(Number(option.value))}
-                            />
-                            <Button mode='secondary' style='accent' onClick={() => switchResponse(1)}>
+                            <div className={style.switcherSelect}>
+                                <Select
+                                    type='label'
+                                    value={getSelectValue(responseOptions, String(selectedResponseIndex))}
+                                    dataProvider={createStaticDataProvider(responseOptions, 'Пользователь')}
+                                    name='response'
+                                    onChange={(option) => setSelectedResponseIndex(Number(option.value))}
+                                />
+                            </div>
+                            <Button
+                                className={style.switcherArrow}
+                                mode='secondary'
+                                style='accent'
+                                onClick={() => switchResponse(1)}
+                            >
                                 →
                             </Button>
                         </div>

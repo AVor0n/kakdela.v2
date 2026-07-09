@@ -88,10 +88,20 @@
 }
 
 .switcher {
-    display: grid;
-    grid-template-columns: 44px minmax(260px, 520px) 44px;
+    display: flex;
     gap: 12px;
     align-items: center;
+}
+
+.switcherArrow {
+    flex: 0 0 44px;
+    width: 44px;
+    min-width: 44px;
+}
+
+.switcherSelect {
+    min-width: 260px;
+    max-width: 420px;
 }
 
 .empty,
@@ -112,8 +122,9 @@
         width: 100%;
     }
 
-    .switcher {
-        grid-template-columns: 44px minmax(0, 1fr) 44px;
+    .switcherSelect {
+        width: 100%;
+        min-width: 0;
     }
 
 }
