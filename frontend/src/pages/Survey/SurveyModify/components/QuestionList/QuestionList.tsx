@@ -2,7 +2,10 @@ import type { Question } from '@/shared/types/Question.type';
 import { Question as QuestionComponent } from './components/Question/Question';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { reorderQuestions, setSelectedQuestion } from '@/entities/Survey/Survey.slice';
+import { reorderQuestions, setPageQuestions, setSelectedQuestion } from '@/entities/Survey/Survey.slice';
+import { cloneQuestion } from '@/entities/Survey/Survey.utils';
+import { updateQuestion } from '@/api/question';
+import { setErrorMessage } from '@/entities/Error/Error.slice';
 import {
     closestCenter,
     DndContext,
@@ -51,12 +54,25 @@ export function QuestionList({ questions, pageIndex }: Props) {
 
         if (!over || active.id === over.id) return;
 
+        const activeQuestionId = String(active.id);
+        const overQuestionId = String(over.id);
+        const overQuestion = questions.find((question) => question.id === overQuestionId);
+        if (!overQuestion) return;
+
+        const previousQuestions = questions.map(cloneQuestion);
+
         dispatch(
             reorderQuestions({
-                activeQuestionId: String(active.id),
-                overQuestionId: String(over.id),
+                pageIndex,
+                activeQuestionId,
+                overQuestionId,
             }),
         );
+
+        updateQuestion(activeQuestionId, { serialNumber: overQuestion.serialNumber }).catch(() => {
+            dispatch(setErrorMessage({ message: 'Не удалось изменить порядок вопросов' }));
+            dispatch(setPageQuestions({ pageIndex, questions: previousQuestions }));
+        });
     };
 
     return (
