@@ -1,8 +1,4 @@
-import {
-    addQuestionOptions,
-    reorderAnswerOptions,
-    setQuestionAnswerOptions,
-} from '@/entities/Survey/Survey.slice';
+import { addQuestionOptions, reorderAnswerOptions, setQuestionAnswerOptions } from '@/entities/Survey/Survey.slice';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { Checkbox, Link, Radio } from '@hh.ru/magritte-ui';
 import { addAnswerOption, updateAnswerOption } from '@/api/answer-option';

@@ -17,14 +17,7 @@ interface Props {
     dragHandleRef?: Ref<HTMLDivElement>;
 }
 
-export function Option({
-    option,
-    children,
-    isEdit,
-    dragHandleAttributes,
-    dragHandleListeners,
-    dragHandleRef,
-}: Props) {
+export function Option({ option, children, isEdit, dragHandleAttributes, dragHandleListeners, dragHandleRef }: Props) {
     const [optionAnswer, setOptionAnswer] = useState<string>(option.answerOptionText);
 
     const dispatch = useAppDispatch();

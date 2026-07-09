@@ -106,7 +106,11 @@ const surveySlice = createSlice({
                 .find((pageQuestion) => pageQuestion.id === state.selectedQuestion?.id);
             if (!question?.answerOptions) return;
 
-            question.answerOptions.splice(getInsertIndex(answerOption.serialNumber, question.answerOptions.length), 0, answerOption);
+            question.answerOptions.splice(
+                getInsertIndex(answerOption.serialNumber, question.answerOptions.length),
+                0,
+                answerOption,
+            );
             normalizeSerialNumbers(question.answerOptions);
             state.selectedQuestion = question;
         },
