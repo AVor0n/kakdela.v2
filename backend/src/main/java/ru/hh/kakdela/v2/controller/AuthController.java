@@ -1,5 +1,6 @@
 package ru.hh.kakdela.v2.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -13,15 +14,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-
-import io.swagger.v3.oas.annotations.tags.Tag;
 import ru.hh.kakdela.v2.dto.account.AccountCreateDto;
 import ru.hh.kakdela.v2.dto.account.AccountResponseDto;
 import ru.hh.kakdela.v2.dto.auth.AuthTokensDto;
 import ru.hh.kakdela.v2.dto.auth.LoginDto;
 import ru.hh.kakdela.v2.security.CustomUserDetails;
-import ru.hh.kakdela.v2.service.AuthService;
 import ru.hh.kakdela.v2.service.AccountService;
+import ru.hh.kakdela.v2.service.AuthService;
 
 @RequiredArgsConstructor
 @RestController
@@ -76,8 +75,8 @@ public class AuthController {
 
   @PostMapping("/auth/logout")
   @ResponseStatus(HttpStatus.NO_CONTENT)
-  public void logout(@AuthenticationPrincipal CustomUserDetails currentUser,
-                       HttpServletResponse response) {
+  public void logout(@AuthenticationPrincipal CustomUserDetails authenticatedUser,
+                     HttpServletResponse response) {
 
     ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken")
         .httpOnly(true)

@@ -1,4 +1,4 @@
-package ru.hh.kakdela.v2.dto.subscription;
+package ru.hh.kakdela.v2.dto.survey_subscription;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,10 +13,10 @@ import jakarta.validation.constraints.NotNull;
 @Getter
 @Setter
 @Schema(
-    name = "SubscriptionRequest",
+    name = "SurveySubscriptionRequest",
     title = "DTO для запроса на создание подписки на уведомления"
 )
-public class SubscriptionRequestDto {
+public class SurveySubscriptionRequestDto {
   @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
   @NotNull(message = "Список почт получателей обязателен")
   private List<String> emails;

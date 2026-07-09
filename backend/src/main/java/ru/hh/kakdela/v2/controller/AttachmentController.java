@@ -1,5 +1,6 @@
 package ru.hh.kakdela.v2.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -14,8 +15,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-
-import io.swagger.v3.oas.annotations.tags.Tag;
 import ru.hh.kakdela.v2.dto.object.ObjectUrlResponseDto;
 import ru.hh.kakdela.v2.security.CustomUserDetails;
 import ru.hh.kakdela.v2.service.AnswerOptionService;
@@ -40,11 +39,11 @@ public class AttachmentController {
   public ObjectUrlResponseDto addAttachmentToQuestion(
       @PathVariable UUID questionId,
       @RequestParam MultipartFile file,
-      @AuthenticationPrincipal CustomUserDetails currentUser
+      @AuthenticationPrincipal CustomUserDetails authenticatedUser
   ) {
     return questionService.addAttachment(
         questionId,
-        currentUser.getId(),
+        authenticatedUser.getId(),
         file
     );
   }
@@ -56,11 +55,11 @@ public class AttachmentController {
   public ObjectUrlResponseDto updateAttachmentInQuestion(
       @PathVariable UUID questionId,
       @RequestParam MultipartFile file,
-      @AuthenticationPrincipal CustomUserDetails currentUser
+      @AuthenticationPrincipal CustomUserDetails authenticatedUser
   ) {
     return questionService.updateAttachment(
         questionId,
-        currentUser.getId(),
+        authenticatedUser.getId(),
         file
     );
   }
@@ -69,11 +68,11 @@ public class AttachmentController {
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void deleteAttachmentFromQuestion(
       @PathVariable UUID questionId,
-      @AuthenticationPrincipal CustomUserDetails currentUser
+      @AuthenticationPrincipal CustomUserDetails authenticatedUser
   ) {
     questionService.deleteAttachment(
         questionId,
-        currentUser.getId()
+        authenticatedUser.getId()
     );
   }
 
@@ -87,11 +86,11 @@ public class AttachmentController {
   public ObjectUrlResponseDto addAttachmentToAnswerOption(
       @PathVariable UUID answerOptionId,
       @RequestParam MultipartFile file,
-      @AuthenticationPrincipal CustomUserDetails currentUser
+      @AuthenticationPrincipal CustomUserDetails authenticatedUser
   ) {
     return answerOptionService.addAttachment(
         answerOptionId,
-        currentUser.getId(),
+        authenticatedUser.getId(),
         file
     );
   }
@@ -104,11 +103,11 @@ public class AttachmentController {
   public ObjectUrlResponseDto updateAttachmentInAnswerOption(
       @PathVariable UUID answerOptionId,
       @RequestParam MultipartFile file,
-      @AuthenticationPrincipal CustomUserDetails currentUser
+      @AuthenticationPrincipal CustomUserDetails authenticatedUser
   ) {
     return answerOptionService.updateAttachment(
         answerOptionId,
-        currentUser.getId(),
+        authenticatedUser.getId(),
         file
     );
   }
@@ -117,11 +116,11 @@ public class AttachmentController {
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void deleteAttachmentFromAnswerOption(
       @PathVariable UUID answerOptionId,
-      @AuthenticationPrincipal CustomUserDetails currentUser
+      @AuthenticationPrincipal CustomUserDetails authenticatedUser
   ) {
     answerOptionService.deleteAttachment(
         answerOptionId,
-        currentUser.getId()
+        authenticatedUser.getId()
     );
   }
 }

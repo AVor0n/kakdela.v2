@@ -1,44 +1,46 @@
 package ru.hh.kakdela.v2.service;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
-
 import ru.hh.kakdela.v2.dao.AccountDao;
 import ru.hh.kakdela.v2.dao.SurveyDao;
-import ru.hh.kakdela.v2.dao.SurveyNotificationSubscriptionDao;
-import ru.hh.kakdela.v2.dto.subscription.SubscriptionResponseDto;
+import ru.hh.kakdela.v2.dao.SurveySubscriptionDao;
+import ru.hh.kakdela.v2.dto.account.AccountResponseDto;
+import ru.hh.kakdela.v2.dto.survey_subscription.SurveySubscriptionRequestDto;
+import ru.hh.kakdela.v2.dto.survey_subscription.SurveySubscriptionResponseDto;
+import ru.hh.kakdela.v2.mapper.AccountMapper;
 import ru.hh.kakdela.v2.model.Account;
 import ru.hh.kakdela.v2.model.Permission.SurveyRole;
 import ru.hh.kakdela.v2.model.Survey;
-import ru.hh.kakdela.v2.model.SurveyNotificationSubscription;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import ru.hh.kakdela.v2.model.SurveySubscription;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class SurveyNotificationSubscriptionService {
+public class SurveySubscriptionService {
 
-  private final SurveyNotificationSubscriptionDao subscriptionDao;
+  private final SurveySubscriptionDao subscriptionDao;
   private final AccountDao accountDao;
   private final SurveyDao surveyDao;
   private final PermissionService permissionService;
   private final EmailService emailService;
 
   @Transactional
-  public SubscriptionResponseDto subscribeUsers(
-      UUID surveyId, List<String> emails, UUID currentUserId) {
-    permissionService.checkAccess(surveyId, currentUserId, SurveyRole.EDITOR);
+  public SurveySubscriptionResponseDto subscribeUsers(
+      UUID surveyId, SurveySubscriptionRequestDto dto, UUID authenticatedUserId) {
+    permissionService.checkAccess(surveyId, authenticatedUserId, SurveyRole.EDITOR);
+
+    final List<String> emails = dto.getEmails();
 
     if (emails == null || emails.isEmpty()) {
-      return new SubscriptionResponseDto(List.of(), List.of(), List.of());
+      return new SurveySubscriptionResponseDto(List.of(), List.of(), List.of());
     }
 
     List<String> subscribedEmails = new ArrayList<>();
@@ -60,7 +62,7 @@ public class SurveyNotificationSubscriptionService {
           continue;
         }
 
-        SurveyNotificationSubscription subscription = SurveyNotificationSubscription.builder()
+        SurveySubscription subscription = SurveySubscription.builder()
             .survey(survey)
             .account(account)
             .build();
@@ -80,7 +82,7 @@ public class SurveyNotificationSubscriptionService {
     }
 
     log.info("Подписано {} пользователей на опрос {}", subscribedEmails.size(), surveyId);
-    return new SubscriptionResponseDto(
+    return new SurveySubscriptionResponseDto(
         subscribedEmails,
         alreadySubscribedEmails,
         notFoundEmails
@@ -88,13 +90,13 @@ public class SurveyNotificationSubscriptionService {
   }
 
   @Transactional
-  public void unsubscribeUser(UUID surveyId, String email, UUID currentUserId) {
-    permissionService.checkAccess(surveyId, currentUserId, SurveyRole.EDITOR);
+  public void unsubscribeUser(UUID surveyId, String email, UUID authenticatedUserId) {
+    permissionService.checkAccess(surveyId, authenticatedUserId, SurveyRole.EDITOR);
 
     Account account = findAccountByEmailOrThrow(email);
     UUID accountId = account.getId();
 
-    SurveyNotificationSubscription subscription = subscriptionDao
+    SurveySubscription subscription = subscriptionDao
         .findBySurveyIdAndAccountId(surveyId, accountId)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Подписка для " + email + " не найдена"));
@@ -104,9 +106,11 @@ public class SurveyNotificationSubscriptionService {
   }
 
   @Transactional(readOnly = true)
-  public List<Account> getSubscribers(UUID surveyId, UUID currentUserId) {
-    permissionService.checkAccess(surveyId, currentUserId, SurveyRole.EDITOR);
-    return subscriptionDao.findSubscribersBySurveyId(surveyId);
+  public List<AccountResponseDto> getSubscribers(UUID surveyId, UUID authenticatedUserId) {
+    permissionService.checkAccess(surveyId, authenticatedUserId, SurveyRole.EDITOR);
+    return subscriptionDao.findSubscribersBySurveyId(surveyId).stream()
+        .map(AccountMapper::accountToDto)
+        .toList();
   }
 
   @Transactional(readOnly = true)

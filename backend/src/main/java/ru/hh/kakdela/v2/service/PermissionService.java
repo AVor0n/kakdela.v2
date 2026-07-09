@@ -89,8 +89,9 @@ public class PermissionService {
   }
 
   @Transactional
-  public PermissionResponseDto create(UUID surveyId, UUID currentUserId, PermissionCreateDto dto) {
-    checkOwnership(surveyId, currentUserId);
+  public PermissionResponseDto create(UUID surveyId, UUID authenticatedUserId,
+                                      PermissionCreateDto dto) {
+    checkOwnership(surveyId, authenticatedUserId);
 
     if (permissionDao.existsBySurveyIdAndAccountId(surveyId, dto.getAccountId())) {
       throw new ResponseStatusException(
@@ -127,9 +128,9 @@ public class PermissionService {
   @Transactional
   public PermissionResponseDto update(UUID surveyId,
                                       UUID accountId,
-                                      UUID currentUserId,
+                                      UUID authenticatedUserId,
                                       PermissionUpdateDto dto) {
-    checkOwnership(surveyId, currentUserId);
+    checkOwnership(surveyId, authenticatedUserId);
 
     Permission permission = permissionDao.findBySurveyIdAndAccountId(surveyId, accountId)
         .orElseThrow(() -> new ResponseStatusException(

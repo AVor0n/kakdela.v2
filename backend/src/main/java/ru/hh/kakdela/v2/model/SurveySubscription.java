@@ -14,11 +14,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "survey_notification_subscription", indexes = {
-        @Index(name = "idx_subscription_survey_id", columnList = "survey_id"),
-        @Index(name = "idx_subscription_account_id", columnList = "account_id")
+@Table(name = "survey_subscription", indexes = {
+        @Index(name = "idx_survey_subscription_survey_id", columnList = "survey_id"),
+        @Index(name = "idx_survey_subscription_account_id", columnList = "account_id")
     })
-public class SurveyNotificationSubscription {
+public class SurveySubscription {
 
     @Id
     @ManyToOne(fetch = FetchType.LAZY)

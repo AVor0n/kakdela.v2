@@ -1,18 +1,25 @@
 package ru.hh.kakdela.v2.controller;
 
 import jakarta.validation.Valid;
+import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 import ru.hh.kakdela.v2.dto.notification_schedule.NotificationScheduleCreateDto;
 import ru.hh.kakdela.v2.dto.notification_schedule.NotificationScheduleResponseDto;
 import ru.hh.kakdela.v2.dto.notification_schedule.NotificationScheduleUpdateDto;
 import ru.hh.kakdela.v2.security.CustomUserDetails;
 import ru.hh.kakdela.v2.service.NotificationScheduleService;
-
-import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api")
@@ -22,13 +29,13 @@ public class NotificationScheduleController {
   private final NotificationScheduleService notificationScheduleService;
 
   @GetMapping("/surveys/{surveyId}/notifications")
-  List<NotificationScheduleResponseDto> getAllBySurveyId (@PathVariable UUID surveyId) {
+  List<NotificationScheduleResponseDto> getAllBySurveyId(@PathVariable UUID surveyId) {
     return notificationScheduleService.getAllBySurveyId(surveyId);
   }
 
-  @GetMapping("/notifications/{notificationId}")
-  NotificationScheduleResponseDto getById (@PathVariable UUID id) {
-    return notificationScheduleService.getById(id);
+  @GetMapping("/notifications/{scheduleId}")
+  NotificationScheduleResponseDto getById(@PathVariable UUID scheduleId) {
+    return notificationScheduleService.getById(scheduleId);
   }
 
   @PostMapping("/surveys/{surveyId}/notifications")
@@ -36,26 +43,26 @@ public class NotificationScheduleController {
   NotificationScheduleResponseDto create(
       @PathVariable UUID surveyId,
       @Valid @RequestBody NotificationScheduleCreateDto createDto,
-      @AuthenticationPrincipal CustomUserDetails currentUser
+      @AuthenticationPrincipal CustomUserDetails authenticatedUser
   ) {
-    return notificationScheduleService.create(surveyId, createDto, currentUser.getId());
+    return notificationScheduleService.create(surveyId, createDto, authenticatedUser.getId());
   }
 
-  @PatchMapping("notifications/{notificationId}")
+  @PatchMapping("notifications/{scheduleId}")
   NotificationScheduleResponseDto update(
-      @PathVariable UUID notificationId,
+      @PathVariable UUID scheduleId,
       @RequestBody NotificationScheduleUpdateDto dto,
-      @AuthenticationPrincipal CustomUserDetails currentUser
+      @AuthenticationPrincipal CustomUserDetails authenticatedUser
   ) {
-    return notificationScheduleService.update(notificationId, dto, currentUser.getId());
+    return notificationScheduleService.update(scheduleId, dto, authenticatedUser.getId());
   }
 
-  @DeleteMapping("notifications/{notificationId}")
+  @DeleteMapping("notifications/{scheduleId}")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void delete(
-      @PathVariable UUID notificationId,
-      @AuthenticationPrincipal CustomUserDetails currentUser
+      @PathVariable UUID scheduleId,
+      @AuthenticationPrincipal CustomUserDetails authenticatedUser
   ) {
-    notificationScheduleService.delete(notificationId, currentUser.getId());
+    notificationScheduleService.delete(scheduleId, authenticatedUser.getId());
   }
 }

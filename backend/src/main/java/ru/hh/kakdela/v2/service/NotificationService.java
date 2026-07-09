@@ -8,7 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.hh.kakdela.v2.dao.AccountDao;
 import ru.hh.kakdela.v2.dao.PermissionDao;
 import ru.hh.kakdela.v2.dao.SurveyDao;
-import ru.hh.kakdela.v2.dao.SurveyNotificationSubscriptionDao;
+import ru.hh.kakdela.v2.dao.SurveySubscriptionDao;
 import ru.hh.kakdela.v2.model.Account;
 import ru.hh.kakdela.v2.model.Permission;
 import ru.hh.kakdela.v2.model.Survey;
@@ -25,7 +25,7 @@ public class NotificationService {
   private final SurveyDao surveyDao;
   private final PermissionDao permissionDao;
   private final AccountDao accountDao;
-  private final SurveyNotificationSubscriptionDao subscriberDao;
+  private final SurveySubscriptionDao subscriberDao;
   private final EmailService emailService;
 
   @Async

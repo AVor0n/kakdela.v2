@@ -22,7 +22,7 @@ import java.util.UUID;
         @Index(name = "idx_question_survey_page_id", columnList = "survey_page_id")
     },
     uniqueConstraints = {
-        @UniqueConstraint(name = "uq_question_page_serial",
+        @UniqueConstraint(name = "uk_question_page_serial",
             columnNames = {"survey_page_id", "serial_number"})
     }
 )

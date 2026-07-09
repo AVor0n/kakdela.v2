@@ -1,5 +1,6 @@
 package ru.hh.kakdela.v2.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -15,8 +16,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-
-import io.swagger.v3.oas.annotations.tags.Tag;
 import ru.hh.kakdela.v2.dto.account.AccountDeleteDto;
 import ru.hh.kakdela.v2.dto.account.AccountPatchDto;
 import ru.hh.kakdela.v2.dto.account.AccountPutDto;
@@ -33,31 +32,32 @@ public class AccountController {
   private final AccountService accountService;
 
   @GetMapping("/accounts/me")
-  public AccountResponseDto getMyAccount(@AuthenticationPrincipal CustomUserDetails currentUser) {
-    return accountService.getById(currentUser.getId());
+  public AccountResponseDto getMyAccount(
+      @AuthenticationPrincipal CustomUserDetails authenticatedUser) {
+    return accountService.getById(authenticatedUser.getId());
   }
 
   @PutMapping("/accounts/me")
   public AccountResponseDto replaceMyAccount(
       @Valid @RequestBody AccountPutDto accountPutDto,
-      @AuthenticationPrincipal CustomUserDetails currentUser) {
-    return accountService.updateFull(currentUser, accountPutDto);
+      @AuthenticationPrincipal CustomUserDetails authenticatedUser) {
+    return accountService.updateFull(authenticatedUser, accountPutDto);
   }
 
   @PatchMapping("/accounts/me")
   public AccountResponseDto patchMyAccount(
       @Valid @RequestBody AccountPatchDto accountPatchDto,
-      @AuthenticationPrincipal CustomUserDetails currentUser) {
-    return accountService.updatePartial(currentUser, accountPatchDto);
+      @AuthenticationPrincipal CustomUserDetails authenticatedUser) {
+    return accountService.updatePartial(authenticatedUser, accountPatchDto);
   }
 
   @PostMapping("/accounts/me/delete")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void deleteMyAccount(
       @Valid @RequestBody AccountDeleteDto accountDeleteDto,
-      @AuthenticationPrincipal CustomUserDetails currentUser,
+      @AuthenticationPrincipal CustomUserDetails authenticatedUser,
       HttpServletResponse response) {
-    accountService.delete(currentUser, accountDeleteDto);
+    accountService.delete(authenticatedUser, accountDeleteDto);
 
     ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken")
         .httpOnly(true)

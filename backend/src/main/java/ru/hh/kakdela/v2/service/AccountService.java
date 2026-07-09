@@ -38,24 +38,24 @@ public class AccountService {
   }
 
   @Transactional
-  public AccountResponseDto create(AccountCreateDto accountCreateDto) {
-    if (accountDao.existsByLogin(accountCreateDto.getLogin())) {
+  public AccountResponseDto create(AccountCreateDto dto) {
+    if (accountDao.existsByLogin(dto.getLogin())) {
       throw new ResponseStatusException(HttpStatus.CONFLICT,
-          "Такой логин уже используется: " + accountCreateDto.getLogin());
+          "Такой логин уже используется: " + dto.getLogin());
     }
-    if (accountDao.existsByEmail(accountCreateDto.getEmail())) {
+    if (accountDao.existsByEmail(dto.getEmail())) {
       throw new ResponseStatusException(HttpStatus.CONFLICT,
-          "Такой email уже зарегистрирован: " + accountCreateDto.getEmail());
+          "Такой email уже зарегистрирован: " + dto.getEmail());
     }
-    if (!accountCreateDto.getPassword().equals(accountCreateDto.getPasswordConfirmation())) {
+    if (!dto.getPassword().equals(dto.getPasswordConfirmation())) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Пароли не совпадают");
     }
 
     Account account = Account.builder()
-        .login(accountCreateDto.getLogin())
-        .email(accountCreateDto.getEmail())
+        .login(dto.getLogin())
+        .email(dto.getEmail())
         .passwordHash(
-            passwordEncoder.encode(accountCreateDto.getPassword()))
+            passwordEncoder.encode(dto.getPassword()))
         .registeredAt(Instant.now())
         .build();
 
@@ -65,69 +65,69 @@ public class AccountService {
   }
 
   @Transactional
-  public AccountResponseDto updateFull(CustomUserDetails currentUser, AccountPutDto accountPutDto) {
-    authService.checkPassword(currentUser, accountPutDto.getPassword());
+  public AccountResponseDto updateFull(CustomUserDetails authenticatedUser, AccountPutDto dto) {
+    authService.checkPassword(authenticatedUser, dto.getPassword());
 
-    Account account = accountDao.findById(currentUser.getId())
+    Account account = accountDao.findById(authenticatedUser.getId())
         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-            "Аккаунт не найден: " + currentUser.getId()));
+            "Аккаунт не найден: " + authenticatedUser.getId()));
 
-    if (!Objects.equals(accountPutDto.getLogin(), account.getLogin())) {
-      if (accountDao.existsByLogin(accountPutDto.getLogin())) {
+    if (!Objects.equals(dto.getLogin(), account.getLogin())) {
+      if (accountDao.existsByLogin(dto.getLogin())) {
         throw new ResponseStatusException(HttpStatus.CONFLICT,
-            "Такой логин уже используется: " + accountPutDto.getLogin());
+            "Такой логин уже используется: " + dto.getLogin());
       }
-      account.setLogin(accountPutDto.getLogin());
+      account.setLogin(dto.getLogin());
     }
-    if (!Objects.equals(accountPutDto.getEmail(), account.getEmail())) {
-      if (accountDao.existsByEmail(accountPutDto.getEmail())) {
+    if (!Objects.equals(dto.getEmail(), account.getEmail())) {
+      if (accountDao.existsByEmail(dto.getEmail())) {
         throw new ResponseStatusException(HttpStatus.CONFLICT,
-            "Такой email уже зарегистрирован: " + accountPutDto.getEmail());
+            "Такой email уже зарегистрирован: " + dto.getEmail());
       }
-      account.setEmail(accountPutDto.getEmail());
+      account.setEmail(dto.getEmail());
     }
 
-    if (!Objects.equals(accountPutDto.getNewPassword(),
-        accountPutDto.getNewPasswordConfirmation())) {
+    if (!Objects.equals(dto.getNewPassword(),
+        dto.getNewPasswordConfirmation())) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Пароли не совпадают");
     }
-    account.setPasswordHash(passwordEncoder.encode(accountPutDto.getNewPassword()));
+    account.setPasswordHash(passwordEncoder.encode(dto.getNewPassword()));
 
     accountDao.update(account);
-    log.info("Изменен аккаунт id={}", currentUser.getId());
+    log.info("Изменен аккаунт id={}", authenticatedUser.getId());
     return AccountMapper.accountToDto(account);
   }
 
   @Transactional
-  public AccountResponseDto updatePartial(CustomUserDetails currentUser,
-                                          AccountPatchDto accountPatchDto) {
-    authService.checkPassword(currentUser, accountPatchDto.getPassword());
+  public AccountResponseDto updatePartial(CustomUserDetails authenticatedUser,
+                                          AccountPatchDto dto) {
+    authService.checkPassword(authenticatedUser, dto.getPassword());
 
-    Account account = accountDao.findById(currentUser.getId())
+    Account account = accountDao.findById(authenticatedUser.getId())
         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-            "Аккаунт не найден: " + currentUser.getId()));
+            "Аккаунт не найден: " + authenticatedUser.getId()));
 
-    if (accountPatchDto.getLogin() != null
-        && !accountPatchDto.getLogin().equals(account.getLogin())) {
-      if (accountDao.existsByLogin(accountPatchDto.getLogin())) {
+    if (dto.getLogin() != null
+        && !dto.getLogin().equals(account.getLogin())) {
+      if (accountDao.existsByLogin(dto.getLogin())) {
         throw new ResponseStatusException(HttpStatus.CONFLICT,
-            "Такой логин уже используется: " + accountPatchDto.getLogin());
+            "Такой логин уже используется: " + dto.getLogin());
       }
-      account.setLogin(accountPatchDto.getLogin());
+      account.setLogin(dto.getLogin());
     }
-    if (accountPatchDto.getEmail() != null
-        && !accountPatchDto.getEmail().equals(account.getEmail())) {
-      if (accountDao.existsByEmail(accountPatchDto.getEmail())) {
+    if (dto.getEmail() != null
+        && !dto.getEmail().equals(account.getEmail())) {
+      if (accountDao.existsByEmail(dto.getEmail())) {
         throw new ResponseStatusException(HttpStatus.CONFLICT,
-            "Такой email уже зарегистрирован: " + accountPatchDto.getEmail());
+            "Такой email уже зарегистрирован: " + dto.getEmail());
       }
-      account.setEmail(accountPatchDto.getEmail());
+      account.setEmail(dto.getEmail());
     }
-    if (accountPatchDto.getNewPassword() != null) {
-      if (!accountPatchDto.getNewPassword().equals(accountPatchDto.getNewPasswordConfirmation())) {
+    if (dto.getNewPassword() != null) {
+      if (!dto.getNewPassword().equals(dto.getNewPasswordConfirmation())) {
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Пароли не совпадают");
       }
-      account.setPasswordHash(passwordEncoder.encode(accountPatchDto.getNewPassword()));
+      account.setPasswordHash(passwordEncoder.encode(dto.getNewPassword()));
     }
 
     accountDao.update(account);
@@ -135,8 +135,8 @@ public class AccountService {
   }
 
   @Transactional
-  public void delete(CustomUserDetails currentUser, AccountDeleteDto accountDeleteDto) {
-    authService.checkPassword(currentUser, accountDeleteDto.getPassword());
+  public void delete(CustomUserDetails currentUser, AccountDeleteDto dto) {
+    authService.checkPassword(currentUser, dto.getPassword());
 
     Account account = accountDao.findById(currentUser.getId())
         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,

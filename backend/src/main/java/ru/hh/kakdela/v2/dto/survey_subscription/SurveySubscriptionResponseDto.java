@@ -1,4 +1,4 @@
-package ru.hh.kakdela.v2.dto.subscription;
+package ru.hh.kakdela.v2.dto.survey_subscription;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -14,10 +14,10 @@ import io.swagger.v3.oas.annotations.media.Schema;
 @Getter
 @Setter
 @Schema(
-    name = "SubscriptionResponse",
+    name = "SurveySubscriptionResponse",
     title = "DTO для получения данных о подписчиках опроса для уведомлений"
 )
-public class SubscriptionResponseDto {
+public class SurveySubscriptionResponseDto {
 
   private List<String> subscribedEmails;
   private List<String> alreadySubscribedEmails;
