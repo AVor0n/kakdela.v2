@@ -34,7 +34,7 @@ class ScheduleCalculationServiceTest {
 
   @Test
   @DisplayName("DAILY: должен вернуть сегодня, когда время выполнения в будущем")
-  void daily_timeInFuture_shouldReturnToday() {
+  void shouldReturnTodayWhenDailyTimeInFuture() {
     schedule.setScheduleType(ScheduleType.DAILY);
     schedule.setExecutionTime(LocalTime.of(10, 0));
     service = withFixedClock("2026-07-08T09:00:00Z");
@@ -46,7 +46,7 @@ class ScheduleCalculationServiceTest {
 
   @Test
   @DisplayName("DAILY: должен вернуть завтра, когда время выполнения прошло")
-  void daily_timePassed_shouldReturnTomorrow() {
+  void shouldReturnTomorrowWhenDailyTimePassed() {
     schedule.setScheduleType(ScheduleType.DAILY);
     schedule.setExecutionTime(LocalTime.of(10, 0));
     service = withFixedClock("2026-07-08T11:00:00Z");
@@ -58,7 +58,7 @@ class ScheduleCalculationServiceTest {
 
   @Test
   @DisplayName("DAILY: должен вернуть завтра, когда текущее время равно времени выполнения")
-  void daily_timeExactlyNow_shouldReturnTomorrow() {
+  void shouldReturnTomorrowWhenDailyTimeEqualsNow() {
     schedule.setScheduleType(ScheduleType.DAILY);
     schedule.setExecutionTime(LocalTime.of(10, 0));
     service = withFixedClock("2026-07-08T10:00:00Z");
@@ -70,7 +70,7 @@ class ScheduleCalculationServiceTest {
 
   @Test
   @DisplayName("DAILY: должен корректно обрабатывать выполнение в полночь")
-  void daily_midnight_shouldReturnCorrectDay() {
+  void shouldReturnNextDayAtMidnight() {
     schedule.setScheduleType(ScheduleType.DAILY);
     schedule.setExecutionTime(LocalTime.of(0, 0));
     service = withFixedClock("2026-07-08T23:00:00Z");
@@ -82,7 +82,7 @@ class ScheduleCalculationServiceTest {
 
   @Test
   @DisplayName("DAILY: должен корректно обрабатывать выполнение в 23:59")
-  void daily_endOfDay_shouldReturnCorrectDay() {
+  void shouldReturnTodayAtEndOfDay() {
     schedule.setScheduleType(ScheduleType.DAILY);
     schedule.setExecutionTime(LocalTime.of(23, 59));
     service = withFixedClock("2026-07-08T10:00:00Z");
@@ -94,7 +94,7 @@ class ScheduleCalculationServiceTest {
 
   @Test
   @DisplayName("WEEKLY: должен вернуть тот же день, когда время в будущем")
-  void weekly_timeInFuture_shouldReturnSameDay() {
+  void shouldReturnTodayWhenWeeklyTimeInFuture() {
     schedule.setScheduleType(ScheduleType.WEEKLY);
     schedule.setExecutionTime(LocalTime.of(14, 30));
     schedule.setDaysOfWeek(4);
@@ -107,7 +107,7 @@ class ScheduleCalculationServiceTest {
 
   @Test
   @DisplayName("WEEKLY: должен вернуть следующий выбранный день, когда время прошло")
-  void weekly_timePassed_shouldReturnNextDay() {
+  void shouldReturnNextDayWhenWeeklyTimePassed() {
     schedule.setScheduleType(ScheduleType.WEEKLY);
     schedule.setExecutionTime(LocalTime.of(10, 0));
     schedule.setDaysOfWeek(21);
@@ -120,7 +120,7 @@ class ScheduleCalculationServiceTest {
 
   @Test
   @DisplayName("WEEKLY: должен перейти на следующую неделю, когда дней на неделе не осталось")
-  void weekly_noDaysLeft_shouldMoveToNextWeek() {
+  void shouldMoveToNextWeekWhenNoDaysLeft() {
     schedule.setScheduleType(ScheduleType.WEEKLY);
     schedule.setExecutionTime(LocalTime.of(10, 0));
     schedule.setDaysOfWeek(7);
@@ -133,7 +133,7 @@ class ScheduleCalculationServiceTest {
 
   @Test
   @DisplayName("WEEKLY: должен корректно обрабатывать расписание только на выходных")
-  void weekly_weekendOnly_shouldReturnNextWeekend() {
+  void shouldReturnNextWeekendWhenOnlyWeekendDays() {
     schedule.setScheduleType(ScheduleType.WEEKLY);
     schedule.setExecutionTime(LocalTime.of(9, 0));
     schedule.setDaysOfWeek(96);
@@ -146,7 +146,7 @@ class ScheduleCalculationServiceTest {
 
   @Test
   @DisplayName("WEEKLY: должен корректно обрабатывать расписание на один день")
-  void weekly_OneDayOnly_shouldReturnCorrectDay() {
+  void shouldReturnCorrectDayWhenSingleDaySelected() {
     schedule.setScheduleType(ScheduleType.WEEKLY);
     schedule.setExecutionTime(LocalTime.of(9, 0));
     schedule.setDaysOfWeek(32);
@@ -159,7 +159,7 @@ class ScheduleCalculationServiceTest {
 
   @Test
   @DisplayName("WEEKLY: должен корректно обрабатывать выполнение в воскресенье")
-  void weekly_sunday_shouldReturnNextSunday() {
+  void shouldReturnNextSunday() {
     schedule.setScheduleType(ScheduleType.WEEKLY);
     schedule.setExecutionTime(LocalTime.of(10, 0));
     schedule.setDaysOfWeek(64);
@@ -172,7 +172,7 @@ class ScheduleCalculationServiceTest {
 
   @Test
   @DisplayName("MONTHLY: должен вернуть тот же месяц, когда день в будущем")
-  void monthly_dayInFuture_shouldReturnSameMonth() {
+  void shouldReturnSameMonthWhenDayInFuture() {
     schedule.setScheduleType(ScheduleType.MONTHLY);
     schedule.setExecutionTime(LocalTime.of(12, 0));
     schedule.setDayOfMonth(15);
@@ -185,7 +185,7 @@ class ScheduleCalculationServiceTest {
 
   @Test
   @DisplayName("MONTHLY: должен вернуть следующий месяц, когда день прошёл")
-  void monthly_dayPassed_shouldReturnNextMonth() {
+  void shouldReturnNextMonthWhenDayPassed() {
     schedule.setScheduleType(ScheduleType.MONTHLY);
     schedule.setExecutionTime(LocalTime.of(10, 0));
     schedule.setDayOfMonth(5);
@@ -198,7 +198,7 @@ class ScheduleCalculationServiceTest {
 
   @Test
   @DisplayName("MONTHLY: должен вернуть следующий месяц, когда тот же день, но время прошло")
-  void monthly_sameDayTimePassed_shouldReturnNextMonth() {
+  void shouldReturnNextMonthWhenSameDayButTimePassed() {
     schedule.setScheduleType(ScheduleType.MONTHLY);
     schedule.setExecutionTime(LocalTime.of(10, 0));
     schedule.setDayOfMonth(8);
@@ -211,7 +211,7 @@ class ScheduleCalculationServiceTest {
 
   @Test
   @DisplayName("MONTHLY: должен корректно обрабатывать 31-й день, когда в месяце 31 день")
-  void monthly_day31_shouldReturnCorrectMonth() {
+  void shouldReturnSameDayWhenMonthHas31Days() {
     schedule.setScheduleType(ScheduleType.MONTHLY);
     schedule.setExecutionTime(LocalTime.of(10, 0));
     schedule.setDayOfMonth(31);
@@ -224,7 +224,7 @@ class ScheduleCalculationServiceTest {
 
   @Test
   @DisplayName("MONTHLY: должен выбрасывать исключение для 31-го дня, когда в месяце 30 дней")
-  void monthly_day31ForMonthWith30Days_shouldThrowException() {
+  void shouldThrowExceptionWhenMonthHas30Days() {
     schedule.setScheduleType(ScheduleType.MONTHLY);
     schedule.setExecutionTime(LocalTime.of(10, 0));
     schedule.setDayOfMonth(31);
@@ -235,7 +235,7 @@ class ScheduleCalculationServiceTest {
 
   @Test
   @DisplayName("MONTHLY: должен корректно обрабатывать 29 февраля в високосный год")
-  void monthly_feb29InLeapYear_shouldReturnFeb29() {
+  void shouldReturnFeb29WhenLeapYear() {
     schedule.setScheduleType(ScheduleType.MONTHLY);
     schedule.setExecutionTime(LocalTime.of(10, 0));
     schedule.setDayOfMonth(29);
@@ -248,7 +248,7 @@ class ScheduleCalculationServiceTest {
 
   @Test
   @DisplayName("MONTHLY: для 29 февраля в невисокосный год - выбрасывает исключение в феврале")
-  void monthly_feb29InNonLeapYear_shouldThrowException() {
+  void shouldThrowExceptionWhenNonLeapYearInFebruary() {
     schedule.setScheduleType(ScheduleType.MONTHLY);
     schedule.setExecutionTime(LocalTime.of(10, 0));
     schedule.setDayOfMonth(29);
@@ -265,7 +265,7 @@ class ScheduleCalculationServiceTest {
       "UTC, 2026-07-08T09:00:00Z, 2026-07-08T10:00:00Z"})
 
   @DisplayName("TIMEZONE: должен корректно обрабатывать разные часовые пояса")
-  void timezone_shouldWorkCorrectly(String timezone, String now, String expected) {
+  void shouldWorkCorrectlyForDifferentTimezones(String timezone, String now, String expected) {
     schedule.setScheduleType(ScheduleType.DAILY);
     schedule.setExecutionTime(LocalTime.of(10, 0));
     schedule.setTargetTimezone(timezone);
@@ -278,7 +278,7 @@ class ScheduleCalculationServiceTest {
 
   @Test
   @DisplayName("EDGE CASE: должен корректно обрабатывать невалидный часовой пояс")
-  void invalidTimezone_shouldThrowException() {
+  void shouldThrowExceptionWhenTimezoneInvalid() {
     schedule.setScheduleType(ScheduleType.DAILY);
     schedule.setExecutionTime(LocalTime.of(10, 0));
     schedule.setTargetTimezone("Invalid/Timezone");
@@ -289,7 +289,7 @@ class ScheduleCalculationServiceTest {
 
   @Test
   @DisplayName("EDGE CASE: должен корректно обрабатывать переход через год")
-  void yearBoundary_shouldHandleCorrectly() {
+  void shouldHandleYearBoundaryCorrectly() {
     schedule.setScheduleType(ScheduleType.DAILY);
     schedule.setExecutionTime(LocalTime.of(10, 0));
     service = withFixedClock("2026-12-31T11:00:00Z");
@@ -301,7 +301,7 @@ class ScheduleCalculationServiceTest {
 
   @Test
   @DisplayName("EDGE CASE: должен корректно обрабатывать переход через месяц")
-  void monthBoundary_shouldHandleCorrectly() {
+  void shouldHandleMonthBoundaryCorrectly() {
     schedule.setScheduleType(ScheduleType.DAILY);
     schedule.setExecutionTime(LocalTime.of(10, 0));
     service = withFixedClock("2026-07-31T11:00:00Z");
@@ -313,7 +313,7 @@ class ScheduleCalculationServiceTest {
 
   @Test
   @DisplayName("CUSTOM: должен корректно выполнять cron-выражение")
-  void custom_shouldWorkCorrectly() {
+  void shouldExecuteCustomCronCorrectly() {
     schedule.setScheduleType(ScheduleType.CUSTOM);
     schedule.setCronExpression("0 0 15 * * ?");
     schedule.setTargetTimezone("UTC");
@@ -330,7 +330,7 @@ class ScheduleCalculationServiceTest {
 
   @Test
   @DisplayName("CUSTOM: должен выбрасывать исключение при невалидном cron-выражении")
-  void custom_invalidCron_shouldThrowException() {
+  void shouldThrowExceptionWhenCronInvalid() {
     schedule.setScheduleType(ScheduleType.CUSTOM);
     schedule.setCronExpression("invalid cron");
     schedule.setTargetTimezone("UTC");
