@@ -39,10 +39,15 @@ public class SurveyService {
   private final SurveyMapper surveyMapper;
 
   @Transactional(readOnly = true)
-  public SurveyResponseDto getById(UUID id) {
-    Survey survey = surveyDao.findById(id)
+  public SurveyResponseDto getById(UUID surveyId, UUID accountId) {
+    Survey survey = surveyDao.findById(surveyId)
         .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Опрос не найден: id=" + id));
+            HttpStatus.NOT_FOUND, "Опрос не найден: id=" + surveyId));
+
+    if (!survey.isPublished()) {
+      permissionService.checkAccess(surveyId, accountId, SurveyRole.ANALYST);
+    }
+
     return surveyMapper.surveyToDto(survey);
   }
 
