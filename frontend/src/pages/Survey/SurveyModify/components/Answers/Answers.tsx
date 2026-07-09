@@ -84,7 +84,10 @@ export function Answers() {
         setIsLoading(true);
         setError(null);
 
-        Promise.all([selectedSurvey?.id === id ? Promise.resolve(selectedSurvey) : getSurveyById(id), getSurveyResponses(id)])
+        Promise.all([
+            selectedSurvey?.id === id ? Promise.resolve(selectedSurvey) : getSurveyById(id),
+            getSurveyResponses(id),
+        ])
             .then(([surveyData, responsesData]) => {
                 setSurvey(surveyData);
                 setResponses(responsesData);
@@ -181,7 +184,10 @@ export function Answers() {
                                     ) : (
                                         <ul className={style.answers}>
                                             {answers.map(({ answer, responseIndex }) => (
-                                                <li className={style.answer} key={`${answer.responseId}-${answer.questionId}`}>
+                                                <li
+                                                    className={style.answer}
+                                                    key={`${answer.responseId}-${answer.questionId}`}
+                                                >
                                                     <button
                                                         className={style.answerButton}
                                                         type='button'
@@ -235,17 +241,22 @@ export function Answers() {
                                 <div className={style.empty}>Нет ответов на этот вопрос</div>
                             ) : (
                                 <ul className={style.answers}>
-                                    {getQuestionAnswers(responses, currentQuestion.id).map(({ answer, responseIndex }) => (
-                                        <li className={style.answer} key={`${answer.responseId}-${answer.questionId}`}>
-                                            <button
-                                                className={style.answerButton}
-                                                type='button'
-                                                onClick={() => openResponse(responseIndex)}
+                                    {getQuestionAnswers(responses, currentQuestion.id).map(
+                                        ({ answer, responseIndex }) => (
+                                            <li
+                                                className={style.answer}
+                                                key={`${answer.responseId}-${answer.questionId}`}
                                             >
-                                                {answer.answerText}
-                                            </button>
-                                        </li>
-                                    ))}
+                                                <button
+                                                    className={style.answerButton}
+                                                    type='button'
+                                                    onClick={() => openResponse(responseIndex)}
+                                                >
+                                                    {answer.answerText}
+                                                </button>
+                                            </li>
+                                        ),
+                                    )}
                                 </ul>
                             )}
                         </article>
