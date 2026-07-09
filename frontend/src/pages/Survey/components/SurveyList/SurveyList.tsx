@@ -8,19 +8,21 @@ import { SurveyCreateCard } from '@/pages/Survey/components/SurveyList/SurveyCre
 import { SurveyItem } from '@/pages/Survey/components/SurveyList/SurveyItem';
 import type { SurveyListItem } from '@/shared/types/Survey.type';
 import styles from './SurveyList.module.css';
+import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { clearErrorMessage, setErrorMessage } from '@/entities/Error/Error.slice';
 
 export function SurveyList() {
     const navigate = useNavigate();
     const [surveys, setSurveys] = useState<SurveyListItem[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState('');
+    const dispatch = useAppDispatch();
 
     useEffect(() => {
         let isMounted = true;
 
         const loadSurveys = async () => {
             try {
-                setError('');
+                dispatch(clearErrorMessage());
                 const mySurveys = await getMySurveys();
 
                 if (isMounted) {
@@ -30,7 +32,7 @@ export function SurveyList() {
                 const status = axios.isAxiosError(requestError) ? requestError.response?.status : undefined;
 
                 if (isMounted && status !== 401 && status !== 403) {
-                    setError('Не удалось загрузить список опросов');
+                    dispatch(setErrorMessage({ message: 'Не удалось загрузить список опросов' }));
                 }
             } finally {
                 if (isMounted) {
@@ -49,11 +51,11 @@ export function SurveyList() {
     const handleCreateClick = () => {
         createSurvey()
             .then((data) => {
-                navigate(routes.surveyEdit(data.id));
+                navigate(routes.surveyQuestions(data.id));
             })
             .catch((err) => {
                 if (err.response) {
-                    setError('Не удалось создать опрос');
+                    dispatch(setErrorMessage({ message: 'Не удалось создать опрос' }));
                 }
             });
     };
@@ -76,16 +78,9 @@ export function SurveyList() {
                                 Загружаем опросы
                             </Text>
                         </div>
-                    ) : error ? (
-                        <div className={styles.message}>
-                            <Text typography='paragraph-2-regular' style='negative'>
-                                {error}
-                            </Text>
-                        </div>
                     ) : (
                         <div className={styles.grid}>
                             <SurveyCreateCard onClick={handleCreateClick} />
-
                             {surveys.map((survey) => (
                                 <SurveyItem
                                     key={survey.id}

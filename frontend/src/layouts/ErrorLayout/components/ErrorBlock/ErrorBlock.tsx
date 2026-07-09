@@ -1,17 +1,17 @@
-import type { Error } from '@/shared/types/Error.type';
-import type { Dispatch, SetStateAction } from 'react';
 import { useEffect, useState } from 'react';
 import style from './ErrorBlock.module.css';
+import { clearErrorMessage, type IErrorState } from '@/entities/Error/Error.slice';
+import { useAppDispatch } from '@/hooks/useAppDispatch';
 interface Props {
-    error: Error;
-    setError: Dispatch<SetStateAction<Error | null>>;
+    error: IErrorState;
 }
 
 const CLOSE_DELAY = 2000;
 const CLOSE_ANIMATION_DURATION = 300;
 
-export function ErrorBlock({ error, setError }: Props) {
+export function ErrorBlock({ error }: Props) {
     const [isClosing, setIsClosing] = useState(false);
+    const dispatch = useAppDispatch();
 
     useEffect(() => {
         setIsClosing(false);
@@ -29,18 +29,18 @@ export function ErrorBlock({ error, setError }: Props) {
             return;
         }
         const removeTimeout = setTimeout(() => {
-            setError(null);
+            dispatch(clearErrorMessage());
         }, CLOSE_ANIMATION_DURATION);
 
         return () => {
             clearTimeout(removeTimeout);
         };
-    }, [isClosing, setError]);
+    }, [isClosing, dispatch]);
 
     return (
         <div className={`${style.container} ${isClosing ? style.closing : ''}`}>
             <p className={style.content}>{error.message}</p>
-            <img src='/X.svg' alt='X' onClick={() => setError(null)} />
+            <img src='/X.svg' alt='X' onClick={() => dispatch(clearErrorMessage())} />
         </div>
     );
 }

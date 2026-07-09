@@ -1,0 +1,116 @@
+.main {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 24px;
+    background: linear-gradient(180deg, #fbfbfd 0%, #f4f5f9 100%);
+}
+
+.blobOne,
+.blobTwo {
+    position: absolute;
+    z-index: 0;
+    border-radius: 50%;
+    filter: blur(60px);
+    opacity: 0.35;
+    pointer-events: none;
+    animation: float 9s ease-in-out infinite alternate;
+}
+
+.blobOne {
+    top: -120px;
+    left: -100px;
+    width: 360px;
+    height: 360px;
+    background: radial-gradient(circle, #ff6a3d 0%, #d6001c 100%);
+}
+
+.blobTwo {
+    bottom: -140px;
+    right: -120px;
+    width: 420px;
+    height: 420px;
+    background: radial-gradient(circle, #6a5cff 0%, #2f2b8f 100%);
+    animation-delay: 1.5s;
+}
+
+.card {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 560px;
+    background: #fff;
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(20, 20, 43, 0.12);
+    animation: fadeInUp 0.6s 0.1s ease both;
+}
+
+.accent {
+    height: 10px;
+    background: linear-gradient(90deg, #d6001c 0%, #ff6a3d 50%, #6a5cff 100%);
+}
+
+.body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 56px 48px;
+    text-align: center;
+}
+
+.code {
+    font-size: 96px;
+    font-weight: 800;
+    line-height: 1;
+    background: linear-gradient(90deg, #d6001c 0%, #ff6a3d 50%, #6a5cff 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.description {
+    max-width: 400px;
+}
+
+.actions {
+    display: flex;
+    gap: 16px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(24px);
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@keyframes float {
+    from {
+        transform: translate(0, 0) scale(1);
+    }
+
+    to {
+        transform: translate(24px, 32px) scale(1.08);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .card,
+    .blobOne,
+    .blobTwo {
+        animation: none !important;
+    }
+}

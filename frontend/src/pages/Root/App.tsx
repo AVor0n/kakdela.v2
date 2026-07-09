@@ -2,6 +2,9 @@ import { useNavigate } from 'react-router-dom';
 import { Button, Card, Text, Title } from '@hh.ru/magritte-ui';
 import { routes } from '@/app/routes';
 import style from './App.module.css';
+import { createSurvey } from '@/api/survey';
+import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { setErrorMessage } from '@/entities/Error/Error.slice';
 
 const FEATURES = [
     {
@@ -23,6 +26,18 @@ const FEATURES = [
 
 function App() {
     const navigate = useNavigate();
+    const dispatch = useAppDispatch();
+    const handleCreateClick = () => {
+        createSurvey()
+            .then((data) => {
+                navigate(routes.surveyQuestions(data.id));
+            })
+            .catch((err) => {
+                if (err.response) {
+                    dispatch(setErrorMessage({ message: 'Не удалось создать опрос' }));
+                }
+            });
+    };
 
     return (
         <>
@@ -61,12 +76,7 @@ function App() {
                                 выводы — без лишних усилий.
                             </Text>
                             <div className={style.heroActions}>
-                                <Button
-                                    mode='primary'
-                                    style='accent'
-                                    size='large'
-                                    onClick={() => navigate(routes.surveyCreate())}
-                                >
+                                <Button mode='primary' style='accent' size='large' onClick={handleCreateClick}>
                                     Создать опрос
                                 </Button>
                                 <Button
