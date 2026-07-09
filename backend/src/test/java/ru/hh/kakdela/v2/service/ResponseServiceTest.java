@@ -113,7 +113,7 @@ class ResponseServiceTest {
 
   // ----------------------- getById tests -----------------------
   @Test
-  void testGetByIdWhenNormalInput() {
+  void getById_normalInput_returnsCorrectDto() {
     when(responseDao.findById(responseId)).thenReturn(Optional.ofNullable(testResponse));
     when(jwtService.extractResponseId(testToken)).thenReturn(responseId);
 
@@ -124,7 +124,7 @@ class ResponseServiceTest {
   }
 
   @Test
-  void testGetByIdThrowsExceptionWhenResponseIsNull() {
+  void getById_responseIsNull_throwsException() {
     when(responseDao.findById(responseId)).thenReturn(Optional.empty());
 
     ResponseStatusException exception = assertThrows(
@@ -135,7 +135,7 @@ class ResponseServiceTest {
   }
 
   @Test
-  void testGetByIdThrowsExceptionWhenAccountAndTokenIsNull() {
+  void getById_accountAndTokenIsNull_throwsException() {
     Response responseWithNullAccount = testResponseWithNullAccount;
     when(responseDao.findById(responseWithNullAccount.getId()))
         .thenReturn(Optional.of(responseWithNullAccount));
@@ -148,7 +148,7 @@ class ResponseServiceTest {
   }
 
   @Test
-  void testGetByIdThrowsExceptionWhenWrongAccount() {
+  void getById_wrongAccount_throwsException() {
     when(responseDao.findById(responseId)).thenReturn(Optional.ofNullable(testResponse));
 
     ResponseStatusException exception = assertThrows(
@@ -159,7 +159,7 @@ class ResponseServiceTest {
   }
 
   @Test
-  void testGetByIdThrowsExceptionWhenWrongToken() {
+  void getById_wrongToken_throwsException() {
     when(responseDao.findById(responseId)).thenReturn(Optional.ofNullable(testResponse));
     when(jwtService.extractResponseId("wrong_token")).thenReturn(UUID.randomUUID());
 
@@ -171,7 +171,7 @@ class ResponseServiceTest {
   }
 
   @Test
-  void testGetByIdThrowsExceptionIfTryGetAnonResponse() {
+  void getById_tryGetAnonResponse_throwsException() {
     Response responseWithNullAccount = testResponseWithNullAccount;
     when(responseDao.findById(responseWithNullAccount.getId()))
         .thenReturn(Optional.of(responseWithNullAccount));
@@ -188,7 +188,7 @@ class ResponseServiceTest {
 
   // ----------------------- GetCompletedBySurveyId tests -----------------------
   @Test
-  void testGetCompletedBySurveyIdThrowsExceptionFromCheckAccess() {
+  void getCompletedBySurveyId_exceptionFromCheckAccess_ThrowsException() {
     doThrow(ResponseStatusException.class)
         .when(permissionService)
         .checkAccess(surveyId, accountId, Permission.SurveyRole.ANALYST);
@@ -202,7 +202,7 @@ class ResponseServiceTest {
 
   // ----------------------- create tests -----------------------
   @Test
-  void testCreateSuccessWithAccount() {
+  void create_withAccount_success() {
     when(surveyDao.findById(surveyId)).thenReturn(Optional.of(testSurvey));
     when(accountDao.findById(accountId)).thenReturn(Optional.of(testAccount));
     mockResponseSave();
@@ -216,7 +216,7 @@ class ResponseServiceTest {
   }
 
   @Test
-  void testCreateWithoutAccount() {
+  void create_withoutAccount_success() {
     when(surveyDao.findById(surveyId)).thenReturn(Optional.of(testSurvey));
     mockResponseSave();
     when(jwtService.generateResponseAccessToken(any(UUID.class))).thenReturn(testToken);
@@ -231,7 +231,7 @@ class ResponseServiceTest {
   }
 
   @Test
-  void testCreateThrowsExceptionWhenSurveyNotFound() {
+  void create_surveyNotFound_throwsException() {
     when(surveyDao.findById(surveyId)).thenReturn(Optional.empty());
 
     ResponseStatusException exception = assertThrows(
@@ -243,7 +243,7 @@ class ResponseServiceTest {
   }
 
   @Test
-  void testCreateThrowsExceptionWhenSurveyNotPublished() {
+  void create_surveyNotPublished_throwsException() {
     when(surveyDao.findById(surveyId)).thenReturn(Optional.of(testUnpublishedSurvey));
 
     ResponseStatusException exception = assertThrows(
@@ -255,7 +255,7 @@ class ResponseServiceTest {
   }
 
   @Test
-  void testCreateWhenLimitedToOneResponseAndAlreadyExists() {
+  void create_limitedToOneResponseAndAlreadyExists_throwsException() {
     when(surveyDao.findById(surveyId)).thenReturn(Optional.of(testLimitedSurvey));
     when(responseDao.existsBySurveyIdAndAccountId(surveyId, accountId)).thenReturn(true);
 
@@ -268,7 +268,7 @@ class ResponseServiceTest {
   }
 
   @Test
-  void testCreateWhenLimitedToOneResponseButAccountIsNull() {
+  void create_limitedToOneResponseButAccountIsNull_success() {
     when(surveyDao.findById(surveyId)).thenReturn(Optional.of(testLimitedSurvey));
     mockResponseSave();
     when(jwtService.generateResponseAccessToken(any(UUID.class))).thenReturn(testToken);
@@ -282,7 +282,7 @@ class ResponseServiceTest {
   }
 
   @Test
-  void testCreateThrowsExceptionWhenAccountNotFound() {
+  void create_accountNotFound_throwsException() {
     when(surveyDao.findById(surveyId)).thenReturn(Optional.of(testSurvey));
     when(accountDao.findById(accountId)).thenReturn(Optional.empty());
 
@@ -297,7 +297,7 @@ class ResponseServiceTest {
 
   // ----------------------- complete tests -----------------------
   @Test
-  void testCompleteSuccess() {
+  void complete_normalInput_success() {
     Response incompletedResponse = Response.builder()
         .id(responseId)
         .account(testAccount)
@@ -320,7 +320,7 @@ class ResponseServiceTest {
   }
 
   @Test
-  void testCompleteThrowsExceptionWhenNotAllMandatoryQuestionsAnswered() {
+  void complete_notAllMandatoryQuestionsAnswered_throwsException() {
     Response incompleteResponse = Response.builder()
         .id(responseId)
         .account(testAccount)
@@ -342,7 +342,7 @@ class ResponseServiceTest {
   }
 
   @Test
-  void testCompleteThrowsExceptionWhenAlreadyCompleted() {
+  void complete_alreadyCompleted_throwsException() {
     when(responseDao.findById(responseId)).thenReturn(Optional.of(testResponse));
     when(jwtService.extractResponseId(testToken)).thenReturn(responseId);
     when(responseDao.areAllMandatoryQuestionsAnswered(responseId)).thenReturn(true);
