@@ -11,6 +11,7 @@ import { SurveyLayout } from '@/layouts/SurveyLayout/SurveyLayout';
 import { RequireAuth } from '@/features/auth/RequireAuth';
 import { Settings } from '@/pages/Survey/SurveyModify/components/Settings/Settings';
 import { NotFound } from '@/pages/Errors/NotFound';
+import { Answers } from '@/pages/Survey/SurveyModify/components/Answers/Answers';
 
 export function AppRouter() {
     return (
@@ -44,7 +45,7 @@ export function AppRouter() {
                             >
                                 <Route path='settings' element={<Settings />} />
                                 <Route path='questions' element={<SurveyModify />} />
-                                <Route path='answers' element={<div>Answers</div>} />
+                                <Route path='answers' element={<Answers />} />
                             </Route>
                             <Route
                                 path={routePatterns.surveyCreate}

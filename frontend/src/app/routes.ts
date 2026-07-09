@@ -20,6 +20,7 @@ export const routes = {
     surveyCreate: () => routePatterns.surveyCreate,
     surveyEdit: (id: string) => generatePath(routePatterns.surveyModify, { id }),
     surveyQuestions: (id: string) => `${generatePath(routePatterns.surveyModify, { id })}/questions`,
+    surveyAnswers: (id: string) => `${generatePath(routePatterns.surveyModify, { id })}/answers`,
     surveyView: (id: string) => generatePath(routePatterns.surveysView, { id }),
     surveyPreview: (id: string) => `${generatePath(routePatterns.surveysView, { id })}?preview=true`,
 };
