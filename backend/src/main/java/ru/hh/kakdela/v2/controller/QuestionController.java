@@ -44,6 +44,15 @@ public class QuestionController {
         return questionService.create(pageId, createDto, currentUser.getId());
     }
 
+    @PostMapping("/questions/{questionId}/clone")
+    @ResponseStatus(HttpStatus.CREATED)
+    public QuestionResponseDto clone(
+        @PathVariable UUID questionId,
+        @AuthenticationPrincipal CustomUserDetails currentUser
+    ) {
+        return questionService.clone(questionId, currentUser.getId());
+    }
+
     @PutMapping("/questions/{questionId}")
     public QuestionResponseDto update(
             @PathVariable UUID questionId,

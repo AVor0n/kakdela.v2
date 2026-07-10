@@ -18,6 +18,7 @@ import ru.hh.kakdela.v2.dto.question.QuestionCreateDto;
 import ru.hh.kakdela.v2.dto.question.QuestionResponseDto;
 import ru.hh.kakdela.v2.dto.question.QuestionUpdateDto;
 import ru.hh.kakdela.v2.mapper.QuestionMapper;
+import ru.hh.kakdela.v2.model.AnswerOption;
 import ru.hh.kakdela.v2.model.Permission.SurveyRole;
 import ru.hh.kakdela.v2.model.Question;
 import ru.hh.kakdela.v2.model.SurveyPage;
@@ -90,6 +91,54 @@ public class QuestionService {
     questionDao.save(question);
     log.info("Создан вопрос id={} pageId={}", question.getId(), pageId);
     return questionMapper.questionToDto(question);
+  }
+
+  @Transactional
+  public QuestionResponseDto clone(UUID questionId, UUID accountId) {
+    Question originalQuestion = questionDao.findById(questionId)
+        .orElseThrow(
+            () -> new ResponseStatusException(
+                HttpStatus.NOT_FOUND,
+                "Вопрос " + questionId + " не найден"
+            )
+        );
+
+    permissionService.checkAccess(
+        originalQuestion.getSurveyPage().getSurvey().getId(),
+        accountId,
+        SurveyRole.EDITOR
+    );
+
+    Question questionCopy = Question.builder()
+        .surveyPage(originalQuestion.getSurveyPage())
+        .serialNumber(originalQuestion.getSerialNumber() + 1)
+        .title(originalQuestion.getTitle())
+        .description(originalQuestion.getDescription())
+        .attachmentObjectKey(originalQuestion.getAttachmentObjectKey())
+        .type(originalQuestion.getType())
+        .answerOptionOrder(originalQuestion.getAnswerOptionOrder())
+        .isMandatory(originalQuestion.isMandatory())
+        .isVisible(originalQuestion.isVisible())
+        .condition(originalQuestion.getCondition())
+        .answers(List.of())
+        .build();
+
+    for (AnswerOption originalOption : originalQuestion.getAnswerOptions()) {
+      AnswerOption optionCopy = AnswerOption.builder()
+          .question(questionCopy)
+          .serialNumber(originalOption.getSerialNumber())
+          .answerOptionText(originalOption.getAnswerOptionText())
+          .build();
+      questionCopy.getAnswerOptions().add(optionCopy);
+    }
+
+    questionDao.increaseSerialNumbers(
+        originalQuestion.getSurveyPage().getId(),
+        originalQuestion.getSerialNumber() + 1
+    );
+    questionDao.save(questionCopy);
+
+    return questionMapper.questionToDto(questionCopy);
   }
 
   @Transactional
