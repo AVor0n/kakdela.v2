@@ -18,7 +18,7 @@ export type UpdateSurveyRequest = Partial<
 >;
 
 export async function createSurvey(): Promise<SurveyResponse> {
-    const { data } = await apiClient.post<SurveyResponse>('/api/surveys', {
+    const { data } = await apiClient.post<SurveyResponse>('/apis/surveys', {
         title: 'Новый опрос',
     });
 

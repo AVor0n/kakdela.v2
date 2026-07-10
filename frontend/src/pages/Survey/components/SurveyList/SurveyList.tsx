@@ -10,6 +10,7 @@ import type { SurveyListItem } from '@/shared/types/Survey.type';
 import styles from './SurveyList.module.css';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { clearErrorMessage, setErrorMessage } from '@/entities/Error/Error.slice';
+import { AccountDetail } from '@/shared/ui/AccountDetail/AccountDetail';
 
 export function SurveyList() {
     const navigate = useNavigate();
@@ -66,6 +67,9 @@ export function SurveyList() {
 
     return (
         <div className={styles.page}>
+            <div className={styles.avatar}>
+                <AccountDetail />
+            </div>
             <div className={styles.content}>
                 <Title Element='h1' size='large'>
                     Список опросов

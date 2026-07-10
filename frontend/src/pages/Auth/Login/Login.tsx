@@ -7,6 +7,9 @@ import { AuthCard } from '@/pages/Auth/components/AuthCard';
 import { AuthPageLayout } from '@/pages/Auth/components/AuthPageLayout';
 import { LoginForm } from '@/pages/Auth/Login/LoginForm';
 import { validateLogin, validateLoginPassword } from '@/pages/Auth/validation';
+import { getAccountDetails } from '@/api/account';
+import { setAccount } from '@/entities/Account/Account.slice';
+import { useAppDispatch } from '@/hooks/useAppDispatch';
 
 type LoginFormValues = {
     login: string;
@@ -46,6 +49,8 @@ export function Login() {
     const [touched, setTouched] = useState<LoginFormTouched>(initialTouched);
     const [errors, setErrors] = useState<LoginFormErrors>(initialErrors);
     const [formError, setFormError] = useState('');
+
+    const dispatch = useAppDispatch();
 
     const validateField = (field: keyof LoginFormValues, value: string): string => {
         if (field === 'login') {
@@ -101,6 +106,9 @@ export function Login() {
         try {
             setFormError('');
             await login(values);
+
+            const accountData = await getAccountDetails();
+            dispatch(setAccount(accountData));
 
             const from = (location.state as LoginLocationState | null)?.from;
             const redirectPath = from
