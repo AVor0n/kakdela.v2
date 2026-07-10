@@ -152,13 +152,4 @@ public class ResponseService {
 
     return ResponseMapper.responseToDto(response);
   }
-
-  @Transactional
-  public void delete(UUID id) {
-    Response response = responseDao.findById(id)
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Ответ не найден: " + id));
-    responseDao.delete(response);
-    log.info("Удален ответ на опрос id={}", id);
-  }
 }
