@@ -60,7 +60,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/logout").authenticated()
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers(HttpMethod.GET,
-                    "/api/surveys/{surveyId}/my-incomplete-responses").authenticated()
+                    "/api/surveys/{surveyId}/my-incompleted-responses").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/surveys/{surveyId}/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/surveys/{surveyId}/responses").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/responses/{responseId}").permitAll()
