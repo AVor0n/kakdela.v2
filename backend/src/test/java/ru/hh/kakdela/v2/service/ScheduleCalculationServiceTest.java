@@ -13,7 +13,7 @@ import ru.hh.kakdela.v2.model.NotificationSchedule.ScheduleType;
 
 import java.time.*;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @DisplayName("Unit тесты ScheduleCalculationService")
@@ -40,7 +40,7 @@ class ScheduleCalculationServiceTest {
 
     service = withFixedClock("2026-07-08T09:00:00Z");
 
-    assertThat(service.calculateNextExecution(schedule)).isEqualTo(Instant.parse("2026-07-08T10:00:00Z"));
+    assertEquals(Instant.parse("2026-07-08T10:00:00Z"), service.calculateNextExecution(schedule));
   }
 
   @Test
@@ -51,7 +51,7 @@ class ScheduleCalculationServiceTest {
 
     service = withFixedClock("2026-07-08T11:00:00Z");
 
-    assertThat(service.calculateNextExecution(schedule)).isEqualTo(Instant.parse("2026-07-09T10:00:00Z"));
+    assertEquals(Instant.parse("2026-07-09T10:00:00Z"), service.calculateNextExecution(schedule));
   }
 
   @Test
@@ -62,7 +62,7 @@ class ScheduleCalculationServiceTest {
 
     service = withFixedClock("2026-07-08T10:00:00Z");
 
-    assertThat(service.calculateNextExecution(schedule)).isEqualTo(Instant.parse("2026-07-09T10:00:00Z"));
+    assertEquals(Instant.parse("2026-07-09T10:00:00Z"), service.calculateNextExecution(schedule));
   }
 
   @Test
@@ -73,7 +73,7 @@ class ScheduleCalculationServiceTest {
 
     service = withFixedClock("2026-07-08T23:00:00Z");
 
-    assertThat(service.calculateNextExecution(schedule)).isEqualTo(Instant.parse("2026-07-09T00:00:00Z"));
+    assertEquals(Instant.parse("2026-07-09T00:00:00Z"), service.calculateNextExecution(schedule));
   }
 
   @Test
@@ -83,8 +83,8 @@ class ScheduleCalculationServiceTest {
     schedule.setExecutionTime(LocalTime.of(23, 59));
 
     service = withFixedClock("2026-07-08T10:00:00Z");
-    
-    assertThat(service.calculateNextExecution(schedule)).isEqualTo(Instant.parse("2026-07-08T23:59:00Z"));
+
+    assertEquals(Instant.parse("2026-07-08T23:59:00Z"), service.calculateNextExecution(schedule));
   }
 
   @Test
@@ -96,7 +96,7 @@ class ScheduleCalculationServiceTest {
 
     service = withFixedClock("2026-07-08T10:00:00Z");
 
-    assertThat(service.calculateNextExecution(schedule)).isEqualTo(Instant.parse("2026-07-08T14:30:00Z"));
+    assertEquals(Instant.parse("2026-07-08T14:30:00Z"), service.calculateNextExecution(schedule));
   }
 
   @Test
@@ -108,7 +108,7 @@ class ScheduleCalculationServiceTest {
 
     service = withFixedClock("2026-07-08T15:00:00Z");
 
-    assertThat(service.calculateNextExecution(schedule)).isEqualTo(Instant.parse("2026-07-10T10:00:00Z"));
+    assertEquals(Instant.parse("2026-07-10T10:00:00Z"), service.calculateNextExecution(schedule));
   }
 
   @Test
@@ -120,7 +120,7 @@ class ScheduleCalculationServiceTest {
 
     service = withFixedClock("2026-07-08T15:00:00Z");
 
-    assertThat(service.calculateNextExecution(schedule)).isEqualTo(Instant.parse("2026-07-13T10:00:00Z"));
+    assertEquals(Instant.parse("2026-07-13T10:00:00Z"), service.calculateNextExecution(schedule));
   }
 
   @Test
@@ -132,7 +132,7 @@ class ScheduleCalculationServiceTest {
 
     service = withFixedClock("2026-07-08T10:00:00Z");
 
-    assertThat(service.calculateNextExecution(schedule)).isEqualTo(Instant.parse("2026-07-11T09:00:00Z"));
+    assertEquals(Instant.parse("2026-07-11T09:00:00Z"), service.calculateNextExecution(schedule));
   }
 
   @Test
@@ -144,7 +144,7 @@ class ScheduleCalculationServiceTest {
 
     service = withFixedClock("2026-07-08T10:00:00Z");
 
-    assertThat(service.calculateNextExecution(schedule)).isEqualTo(Instant.parse("2026-07-11T09:00:00Z"));
+    assertEquals(Instant.parse("2026-07-11T09:00:00Z"), service.calculateNextExecution(schedule));
   }
 
   @Test
@@ -156,7 +156,7 @@ class ScheduleCalculationServiceTest {
 
     service = withFixedClock("2026-07-08T10:00:00Z");
 
-    assertThat(service.calculateNextExecution(schedule)).isEqualTo(Instant.parse("2026-07-12T10:00:00Z"));
+    assertEquals(Instant.parse("2026-07-12T10:00:00Z"), service.calculateNextExecution(schedule));
   }
 
   @Test
@@ -168,7 +168,7 @@ class ScheduleCalculationServiceTest {
 
     service = withFixedClock("2026-07-08T10:00:00Z");
 
-    assertThat(service.calculateNextExecution(schedule)).isEqualTo(Instant.parse("2026-07-15T12:00:00Z"));
+    assertEquals(Instant.parse("2026-07-15T12:00:00Z"), service.calculateNextExecution(schedule));
   }
 
   @Test
@@ -180,7 +180,7 @@ class ScheduleCalculationServiceTest {
 
     service = withFixedClock("2026-07-08T15:00:00Z");
 
-    assertThat(service.calculateNextExecution(schedule)).isEqualTo(Instant.parse("2026-08-05T10:00:00Z"));
+    assertEquals(Instant.parse("2026-08-05T10:00:00Z"), service.calculateNextExecution(schedule));
   }
 
   @Test
@@ -192,7 +192,7 @@ class ScheduleCalculationServiceTest {
 
     service = withFixedClock("2026-07-08T15:00:00Z");
 
-    assertThat(service.calculateNextExecution(schedule)).isEqualTo(Instant.parse("2026-08-08T10:00:00Z"));
+    assertEquals(Instant.parse("2026-08-08T10:00:00Z"), service.calculateNextExecution(schedule));
   }
 
   @Test
@@ -204,7 +204,7 @@ class ScheduleCalculationServiceTest {
 
     service = withFixedClock("2026-07-08T10:00:00Z");
 
-    assertThat(service.calculateNextExecution(schedule)).isEqualTo(Instant.parse("2026-07-31T10:00:00Z"));
+    assertEquals(Instant.parse("2026-07-31T10:00:00Z"), service.calculateNextExecution(schedule));
   }
 
   @Test
@@ -228,7 +228,7 @@ class ScheduleCalculationServiceTest {
 
     service = withFixedClock("2024-02-15T10:00:00Z");
 
-    assertThat(service.calculateNextExecution(schedule)).isEqualTo(Instant.parse("2024-02-29T10:00:00Z"));
+    assertEquals(Instant.parse("2024-02-29T10:00:00Z"), service.calculateNextExecution(schedule));
   }
 
   @Test
@@ -250,7 +250,6 @@ class ScheduleCalculationServiceTest {
       "Asia/Tokyo, 2026-07-07T23:00:00Z, 2026-07-08T01:00:00Z",
       "UTC, 2026-07-08T09:00:00Z, 2026-07-08T10:00:00Z"
   })
-
   @DisplayName("TIMEZONE: должен корректно обрабатывать разные часовые пояса")
   void calculateNextExecution_TimezoneDifferentTimezones_shouldWorkCorrectly(String timezone, String now, String expected) {
     schedule.setScheduleType(ScheduleType.DAILY);
@@ -259,7 +258,7 @@ class ScheduleCalculationServiceTest {
 
     service = withFixedClock(now);
 
-    assertThat(service.calculateNextExecution(schedule)).isEqualTo(Instant.parse(expected));
+    assertEquals(Instant.parse(expected), service.calculateNextExecution(schedule));
   }
 
   @Test
@@ -282,7 +281,7 @@ class ScheduleCalculationServiceTest {
 
     service = withFixedClock("2026-12-31T11:00:00Z");
 
-    assertThat(service.calculateNextExecution(schedule)).isEqualTo(Instant.parse("2027-01-01T10:00:00Z"));
+    assertEquals(Instant.parse("2027-01-01T10:00:00Z"), service.calculateNextExecution(schedule));
   }
 
   @Test
@@ -293,12 +292,12 @@ class ScheduleCalculationServiceTest {
 
     service = withFixedClock("2026-07-31T11:00:00Z");
 
-    assertThat(service.calculateNextExecution(schedule)).isEqualTo(Instant.parse("2026-08-01T10:00:00Z"));
+    assertEquals(Instant.parse("2026-08-01T10:00:00Z"), service.calculateNextExecution(schedule));
   }
 
   @Test
   @DisplayName("CUSTOM: должен корректно выполнять cron-выражение")
-  void calculateNextExecution_CustomValidCron_shouldWorkCorrectly() {
+  void shouldExecuteCustomCronCorrectly() {
     schedule.setScheduleType(ScheduleType.CUSTOM);
     schedule.setCronExpression("0 0 15 * * ?");
     schedule.setTargetTimezone("UTC");
@@ -311,7 +310,7 @@ class ScheduleCalculationServiceTest {
     SimpleTriggerContext context = new SimpleTriggerContext();
     Instant expectedFromTrigger = trigger.nextExecution(context);
 
-    assertThat(result).isEqualTo(expectedFromTrigger);
+    assertEquals(expectedFromTrigger, result);
   }
 
   @Test
