@@ -1,10 +1,12 @@
 package ru.hh.kakdela.v2.config;
 
 import jakarta.servlet.DispatcherType;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -13,7 +15,9 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfigurationSource;
 
@@ -26,6 +30,7 @@ public class SecurityConfig {
 
   private final JwtRequestFilter jwtRequestFilter;
   private final CorsConfigurationSource corsConfigurationSource;
+  private final AuthenticationEntryPoint authenticationEntryPoint;
 
 
   @Bean
@@ -40,13 +45,13 @@ public class SecurityConfig {
 
   @Bean
   public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+
     http
         .cors(cors -> cors.configurationSource(corsConfigurationSource))
         .csrf(AbstractHttpConfigurer::disable)
         .sessionManagement(
             session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-        )
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(
             auth -> auth
                 .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
@@ -66,9 +71,12 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/questions/{questionId}/**").permitAll()
                 .requestMatchers(HttpMethod.GET,
                     "/api/answer-options/{answerOptionId}/**").permitAll()
-                .anyRequest().authenticated()
-        );
-    http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
+                .anyRequest().authenticated())
+        .exceptionHandling(exception -> exception
+            .authenticationEntryPoint(authenticationEntryPoint)
+            .accessDeniedHandler((request, response, ex) ->
+                response.sendError(HttpStatus.FORBIDDEN.value(), ex.getMessage())))
+        .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 
     return http.build();
   }
