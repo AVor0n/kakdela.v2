@@ -124,7 +124,7 @@ class ResponseServiceTest {
   }
 
   @Test
-  void getById_responseIsNull_throwsException() {
+  void getById_responseNotFound_throwsException() {
     when(responseDao.findById(responseId)).thenReturn(Optional.empty());
 
     ResponseStatusException exception = assertThrows(
@@ -171,7 +171,7 @@ class ResponseServiceTest {
   }
 
   @Test
-  void getById_tryGetAnonResponse_throwsException() {
+  void getById_tryGetCompletedAnonResponse_throwsException() {
     Response responseWithNullAccount = testResponseWithNullAccount;
     when(responseDao.findById(responseWithNullAccount.getId()))
         .thenReturn(Optional.of(responseWithNullAccount));
@@ -188,7 +188,7 @@ class ResponseServiceTest {
 
   // ----------------------- GetCompletedBySurveyId tests -----------------------
   @Test
-  void getCompletedBySurveyId_exceptionFromCheckAccess_ThrowsException() {
+  void getCompletedBySurveyId_permissionDenied_ThrowsException() {
     doThrow(ResponseStatusException.class)
         .when(permissionService)
         .checkAccess(surveyId, accountId, Permission.SurveyRole.ANALYST);
