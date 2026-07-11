@@ -18,7 +18,14 @@ services:
     volumes:
       - ./logs:/app/logs
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/monitor/health"]
+      test:
+        [
+          "CMD",
+          "wget",
+          "--spider",
+          "-q",
+          "http://localhost:8080/monitor/health",
+        ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -29,8 +36,8 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    ports:
-      - "4173:4173"
+    expose:
+      - "80"
     depends_on:
       backend:
         condition: service_healthy
@@ -49,7 +56,7 @@ services:
       - ./backend/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
     restart: unless-stopped
     healthcheck:
-      test: [ "CMD", "pg_isready", "-U", "postgres" ]
+      test: ["CMD", "pg_isready", "-U", "postgres"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -89,6 +96,19 @@ services:
     ports:
       - "1025:1025"
       - "8025:8025"
+    restart: unless-stopped
+
+  nginx:
+    image: ghcr.io/avor0n/kakdela.v2:nginx-latest
+    container_name: kd2-nginx
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    ports:
+      - "4173:80"
+    depends_on:
+      - frontend
+      - backend
     restart: unless-stopped
 
 volumes:

@@ -23,8 +23,8 @@ services:
   frontend:
     image: kakdelav2/kakdela.v2:frontend-latest
     container_name: kd2-frontend
-    ports:
-      - "4173:4173"
+    expose:
+      - "80"
     depends_on:
       backend:
         condition: service_healthy
@@ -37,8 +37,8 @@ services:
     container_name: kd2-postgres
     env_file:
       - .env
-    ports:
-      - "5432:5432"
+    expose:
+      - "5432"
     volumes:
       - db-data:/var/lib/postgresql/data
       - ./schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
@@ -54,9 +54,9 @@ services:
     container_name: kd2-seaweedfs
     env_file:
       - .env
-    ports:
-      - "8333:8333"
-      - "9333:9333"
+    expose:
+      - "8333"
+      - "9333"
     volumes:
       - obs-data:/data
     restart: unless-stopped
@@ -64,6 +64,16 @@ services:
       - server
       - -dir=/data
       - -s3
+
+  nginx:
+    image: kakdelav2/kakdela.v2:nginx-latest
+    container_name: kd2-nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - frontend
+      - backend
+    restart: unless-stopped
 
 volumes:
   db-data:
