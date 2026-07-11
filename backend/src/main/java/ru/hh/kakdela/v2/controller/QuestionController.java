@@ -22,43 +22,52 @@ import java.util.UUID;
 @Tag(name = "Questions", description = "Управление вопросами")
 public class QuestionController {
 
-    private final QuestionService questionService;
+  private final QuestionService questionService;
 
-    @GetMapping("/pages/{pageId}/questions")
-    public List<QuestionResponseDto> getAllByPageId(@PathVariable UUID pageId) {
-        return questionService.getAllByPageId(pageId);
-    }
+  @GetMapping("/pages/{pageId}/questions")
+  public List<QuestionResponseDto> getAllByPageId(@PathVariable UUID pageId) {
+    return questionService.getAllByPageId(pageId);
+  }
 
-    @GetMapping("/questions/{questionId}")
-    public QuestionResponseDto getById(@PathVariable UUID questionId) {
-        return questionService.getById(questionId);
-    }
+  @GetMapping("/questions/{questionId}")
+  public QuestionResponseDto getById(@PathVariable UUID questionId) {
+    return questionService.getById(questionId);
+  }
 
-    @PostMapping("/pages/{pageId}/questions")
-    @ResponseStatus(HttpStatus.CREATED)
-    public QuestionResponseDto create(
-            @PathVariable UUID pageId,
-            @Valid @RequestBody QuestionCreateDto createDto,
-            @AuthenticationPrincipal CustomUserDetails currentUser
-    ) {
-        return questionService.create(pageId, createDto, currentUser.getId());
-    }
+  @PostMapping("/pages/{pageId}/questions")
+  @ResponseStatus(HttpStatus.CREATED)
+  public QuestionResponseDto create(
+      @PathVariable UUID pageId,
+      @Valid @RequestBody QuestionCreateDto createDto,
+      @AuthenticationPrincipal CustomUserDetails currentUser
+  ) {
+    return questionService.create(pageId, createDto, currentUser.getId());
+  }
 
-    @PutMapping("/questions/{questionId}")
-    public QuestionResponseDto update(
-            @PathVariable UUID questionId,
-            @Valid @RequestBody QuestionUpdateDto updateDto,
-            @AuthenticationPrincipal CustomUserDetails currentUser
-    ) {
-        return questionService.update(questionId, updateDto, currentUser.getId());
-    }
+  @PostMapping("/questions/{questionId}/clone")
+  @ResponseStatus(HttpStatus.CREATED)
+  public QuestionResponseDto clone(
+      @PathVariable UUID questionId,
+      @AuthenticationPrincipal CustomUserDetails currentUser
+  ) {
+    return questionService.clone(questionId, currentUser.getId());
+  }
 
-    @DeleteMapping("/questions/{questionId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(
-            @PathVariable UUID questionId,
-            @AuthenticationPrincipal CustomUserDetails currentUser
-    ) {
-        questionService.delete(questionId, currentUser.getId());
-    }
+  @PutMapping("/questions/{questionId}")
+  public QuestionResponseDto update(
+      @PathVariable UUID questionId,
+      @Valid @RequestBody QuestionUpdateDto updateDto,
+      @AuthenticationPrincipal CustomUserDetails currentUser
+  ) {
+    return questionService.update(questionId, updateDto, currentUser.getId());
+  }
+
+  @DeleteMapping("/questions/{questionId}")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void delete(
+      @PathVariable UUID questionId,
+      @AuthenticationPrincipal CustomUserDetails currentUser
+  ) {
+    questionService.delete(questionId, currentUser.getId());
+  }
 }
