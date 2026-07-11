@@ -109,14 +109,14 @@ export function Question({ question, onClick, isEditMode }: Props) {
         if (!question.attachmentUrl)
             attachImageToQuestion(question.id, file)
                 .then((data) => {
-                    dispatch(setQuestion({ question: data }));
+                    dispatch(setQuestion({ question: { ...question, attachmentUrl: data.attachmentUrl } }));
                     setQuestionImage(data.attachmentUrl);
                 })
                 .catch(() => dispatch(setErrorMessage({ message: 'Не удалось прикрепить изображение' })));
         else
             updateAttachmentOfQuestion(question.id, file)
                 .then((data) => {
-                    dispatch(setQuestion({ question: data }));
+                    dispatch(setQuestion({ question: { ...question, attachmentUrl: data.attachmentUrl } }));
                     setQuestionImage(data.attachmentUrl);
                 })
                 .catch(() => dispatch(setErrorMessage({ message: 'Не удалось прикрепить изображение' })));
