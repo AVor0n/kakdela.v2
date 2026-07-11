@@ -100,7 +100,7 @@ services:
 
   proxy:
     build:
-      context: ./frontend/proxy
+      context: ./proxy
       dockerfile: Dockerfile
     ports:
       - "4173:80"
