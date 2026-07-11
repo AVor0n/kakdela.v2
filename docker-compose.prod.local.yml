@@ -53,7 +53,7 @@ services:
     image: chrislusf/seaweedfs:latest
     container_name: kd2-seaweedfs
     env_file:
-      - .env
+      - .env.prod
     expose:
       - "8333"
       - "9333"
@@ -70,6 +70,10 @@ services:
     container_name: kd2-nginx
     ports:
       - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.prod.conf:/etc/nginx/conf.d/default.conf:ro
+      - /opt/kakdela.v2/ssl:/etc/nginx/ssl:ro
     depends_on:
       - frontend
       - backend
