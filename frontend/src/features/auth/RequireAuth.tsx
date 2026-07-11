@@ -1,4 +1,4 @@
-import { routePatterns } from '@/app/routes';
+import { routes } from '@/app/routes';
 
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { LoadingContent } from '@/shared/ui/LoadingContent/LoadingContent';
@@ -14,6 +14,6 @@ export function RequireAuth({ children }: RequireAuthProps) {
     const location = useLocation();
 
     if (loading) return <LoadingContent />;
-    if (!account) return <Navigate to={routePatterns.authLogin} state={{ from: location }} replace />;
+    if (!account) return <Navigate to={routes.login()} state={{ from: location }} replace />;
     return children;
 }

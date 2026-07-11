@@ -1,7 +1,7 @@
 import { getSurveyById } from '@/api/survey';
 import type { Survey } from '@/shared/types/Survey.type';
 import { useEffect, useState } from 'react';
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { routes } from '@/app/routes';
 import { SurveyRunner, type SurveyRunnerMode } from './components/SurveyRunner/SurveyRunner';
 import { useAppSelector } from '@/hooks/useAppSelector';
@@ -18,6 +18,7 @@ export function SurveyView() {
     const { account } = useAppSelector((state) => state.account);
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
+    const location = useLocation();
     useEffect(() => {
         if (!id) {
             setError('Опрос не найден');
@@ -41,7 +42,7 @@ export function SurveyView() {
 
     useEffect(() => {
         if (!account && survey && survey.isAuthorizedOnly) {
-            navigate(routes.login());
+            navigate(routes.login(), { state: { from: location } });
             dispatch(setErrorMessage({ message: 'Этот опрос только для зарегистрированных пользователей' }));
         }
     }, [survey]);
