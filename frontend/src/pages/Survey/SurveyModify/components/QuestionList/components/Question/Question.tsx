@@ -7,7 +7,7 @@ import {
     Select,
     type StaticDataFetcherItem,
 } from '@hh.ru/magritte-ui';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ChangeEvent } from 'react';
 import { ShortText } from './components/ShortText/ShortText';
 import { LongText } from './components/LongText/LongText';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
@@ -15,6 +15,7 @@ import {
     deleteQuestion as deleteQuestionState,
     duplicateQuestion,
     setMandatory as setMandatoryState,
+    setQuestion,
     updateQuestionTitle,
     updateQuestionType,
 } from '@/entities/Survey/Survey.slice';
@@ -25,6 +26,7 @@ import { deleteQuestion, updateQuestion } from '@/api/question';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { setErrorMessage } from '@/entities/Error/Error.slice';
 import style from './Question.module.css';
+import { attachImageToQuestion, removeImageFromQuestion, updateAttachmentOfQuestion } from '@/api/attachments';
 
 interface Props {
     question: Question;
@@ -44,6 +46,8 @@ export function Question({ question, onClick, isEditMode }: Props) {
     const [title, setTitle] = useState<string>(question.title);
     const [typeQuestion, setTypeQuestion] = useState<QuestionType>(question.type);
     const [mandatory, setMandatory] = useState<boolean>(question.isMandatory);
+    const [file, setFile] = useState<File | null>(null);
+    const [questionImage, setQuestionImage] = useState<string | null>(null);
     const debouncedMandatory = useDebounce(mandatory, 500);
 
     const dispatch = useAppDispatch();
@@ -82,6 +86,46 @@ export function Question({ question, onClick, isEditMode }: Props) {
                 });
         }
     };
+
+    const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files.length > 0) {
+            setFile(e.target.files[0]);
+        }
+    };
+
+    const deleteAttachmentUrlHandler = () => {
+        removeImageFromQuestion(question.id)
+            .then(() => {
+                setQuestionImage(null);
+                dispatch(setQuestion({ question: { ...question, attachmentUrl: null } }));
+            })
+            .catch(() => {
+                dispatch(setErrorMessage({ message: 'Не удалось удалить изображение для вопроса' }));
+            });
+    };
+
+    useEffect(() => {
+        if (!file) return;
+        if (!question.attachmentUrl)
+            attachImageToQuestion(question.id, file)
+                .then((data) => {
+                    dispatch(setQuestion({ question: data }));
+                    setQuestionImage(data.attachmentUrl);
+                })
+                .catch(() => dispatch(setErrorMessage({ message: 'Не удалось прикрепить изображение' })));
+        else
+            updateAttachmentOfQuestion(question.id, file)
+                .then((data) => {
+                    dispatch(setQuestion({ question: data }));
+                    setQuestionImage(data.attachmentUrl);
+                })
+                .catch(() => dispatch(setErrorMessage({ message: 'Не удалось прикрепить изображение' })));
+    }, [file]);
+
+    useEffect(() => {
+        if (!question.attachmentUrl) return;
+        setQuestionImage(question.attachmentUrl);
+    }, [question]);
 
     useEffect(() => {
         if (debouncedMandatory !== question.isMandatory) {
@@ -131,6 +175,7 @@ export function Question({ question, onClick, isEditMode }: Props) {
     }, [question, typeQuestion, isEditMode]);
     return (
         <div className={classNames(style.container, { [style.edit]: isEditMode })} onClick={onClick}>
+            {questionImage && <img src={questionImage} alt='img' className={style.attachmentUrl} />}
             <section className={style.settings}>
                 <Input
                     placeholder='Вопрос'
@@ -140,9 +185,25 @@ export function Question({ question, onClick, isEditMode }: Props) {
                     }}
                     onBlur={updateQuestionTitleHandler}
                 />
-                <div className={style.button}>
-                    <img src='/img.svg' alt='img' />
+                <div className={style.imageSettings}>
+                    <input
+                        type='file'
+                        id={`file-upload-${question.id}`}
+                        onChange={handleFileChange}
+                        style={{ display: 'none' }} // Полностью скрываем стандартный вид
+                    />
+
+                    <label htmlFor={`file-upload-${question.id}`} className={style.button}>
+                        <img src='/img.svg' alt='Выбрать файл' />
+                    </label>
+
+                    {questionImage && (
+                        <button className={style.button} onClick={deleteAttachmentUrlHandler}>
+                            <img src='/trash.svg' />
+                        </button>
+                    )}
                 </div>
+
                 <Select
                     type='label'
                     value={questionType}

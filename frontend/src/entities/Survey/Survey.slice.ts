@@ -144,6 +144,16 @@ const surveySlice = createSlice({
             const { pageId } = action.payload;
             state.selectedSurvey.pages = state.selectedSurvey.pages.filter((page) => page.id !== pageId);
         },
+        setQuestion: (state, action: PayloadAction<{ question: Question }>) => {
+            const { question } = action.payload;
+            state.selectedSurvey?.pages.map((page) => {
+                page.questions.map((q) => {
+                    if (q.id === question.id) {
+                        Object.assign(q, question);
+                    }
+                });
+            });
+        },
     },
 });
 
@@ -162,5 +172,6 @@ export const {
     duplicateQuestion,
     addPage,
     deletePage,
+    setQuestion,
 } = surveySlice.actions;
 export default surveySlice.reducer;

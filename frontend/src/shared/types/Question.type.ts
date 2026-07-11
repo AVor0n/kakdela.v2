@@ -15,6 +15,7 @@ type BaseQuestion<T extends QuestionType> = {
     description: null;
     visible?: boolean;
     isVisible?: boolean;
+    attachmentUrl: string | null;
 };
 
 type SimpleQuestion = BaseQuestion<'SHORT_TEXT' | 'LONG_TEXT'> & {
