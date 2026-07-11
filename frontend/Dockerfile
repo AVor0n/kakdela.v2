@@ -1,5 +1,5 @@
 # ---- Stage 1: build ----
-FROM node:26-alpine AS build
+FROM node:26-alpine AS builder
 
 # Явная установка yarn
 RUN npm install -g yarn
@@ -23,7 +23,7 @@ FROM nginx:1.31.2-alpine
 RUN rm -rf /usr/share/nginx/html/*
 
 # Копируем собранный dist из первого этапа
-COPY --from=build /app/dist /usr/share/nginx/html
+COPY --from=builder /app/dist /usr/share/nginx/html
 
 # Свой конфиг nginx
 COPY nginx.conf /etc/nginx/conf.d/default.conf
