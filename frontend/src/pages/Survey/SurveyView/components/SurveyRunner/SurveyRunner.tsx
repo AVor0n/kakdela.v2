@@ -73,8 +73,6 @@ export function SurveyRunner({ survey, mode }: Props) {
     const isPreview = mode === 'preview';
     const { account } = useAppSelector((state) => state.account);
 
-    
-
     useEffect(() => {
         setCurrentPageIndex(0);
         setAnswers({});
