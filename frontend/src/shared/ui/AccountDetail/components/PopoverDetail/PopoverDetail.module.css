@@ -6,7 +6,7 @@
     border-radius: 16px;
     margin-top: 10px;
     border: solid var(--color-border) 1px;
-    z-index: 1000;
+    z-index: 10;
 }
 
 .login {
@@ -19,6 +19,7 @@
     color: #0000006d;
     max-width: 200px;
     overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .menu {

@@ -2,24 +2,24 @@ import { Loader } from '@hh.ru/magritte-ui';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { UserCircleOutlinedSize24, LineArrowRightOutlinedSize24 } from '@hh.ru/magritte-ui/icon';
 
-import style from './ModalDetail.module.css';
 import { logout } from '@/api/account';
 import { useNavigate } from 'react-router-dom';
-import { routePatterns } from '@/app/routes';
+import { routes } from '@/app/routes';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { setErrorMessage } from '@/entities/Error/Error.slice';
+import style from './PopoverDetail.module.css';
 
 interface Props {
     onMouseLeave: () => void;
 }
-export function ModalDetail({ onMouseLeave }: Props) {
+export function PopoverDetail({ onMouseLeave }: Props) {
     const { account, loading } = useAppSelector((state) => state.account);
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
     const logoutHandler = () => {
         logout()
             .then(() => {
-                navigate(routePatterns.root);
+                navigate(routes.root());
             })
             .catch(() => {
                 dispatch(setErrorMessage({ message: 'Не удалось выйти с аккаунта' }));

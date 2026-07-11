@@ -1,7 +1,7 @@
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { Avatar } from '@hh.ru/magritte-ui';
 import { useEffect, useState } from 'react';
-import { ModalDetail } from './components/ModalDetail/ModalDetail';
+import { PopoverDetail } from './components/PopoverDetail/PopoverDetail';
 import style from './AccountDetail.module.css';
 function getLetters(value?: string): string {
     if (!value) return '';
@@ -25,7 +25,7 @@ export function AccountDetail() {
                 Element='button'
                 mode='letters'
                 letters={letters}
-                aria-label='Борис Якубович'
+                aria-label={account?.login ?? ''}
                 style='color-9'
                 size={48}
                 disabled={false}
@@ -35,7 +35,7 @@ export function AccountDetail() {
                 video={false}
                 onClick={() => setIsOpenModal(!isOpenModal)}
             />
-            {isOpenModal && <ModalDetail onMouseLeave={() => setIsOpenModal(false)} />}
+            {isOpenModal && <PopoverDetail onMouseLeave={() => setIsOpenModal(false)} />}
         </div>
     );
 }

@@ -8,7 +8,7 @@ export interface IAccountState {
 
 const initialState: IAccountState = {
     account: null,
-    loading: false,
+    loading: true,
 };
 
 export const accountSlice = createSlice({

@@ -5,6 +5,8 @@ import style from './App.module.css';
 import { createSurvey } from '@/api/survey';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { setErrorMessage } from '@/entities/Error/Error.slice';
+import { useAppSelector } from '@/hooks/useAppSelector';
+import { AccountDetail } from '@/shared/ui/AccountDetail/AccountDetail';
 
 const FEATURES = [
     {
@@ -26,6 +28,7 @@ const FEATURES = [
 
 function App() {
     const navigate = useNavigate();
+    const { account } = useAppSelector((state) => state.account);
     const dispatch = useAppDispatch();
     const handleCreateClick = () => {
         createSurvey()
@@ -47,12 +50,18 @@ function App() {
                     <h1 className={style.title}>KakDela V2.0</h1>
                 </section>
                 <section className={style.auth}>
-                    <Button mode='secondary' style='accent' onClick={() => navigate(routes.register())}>
-                        Регистрация
-                    </Button>
-                    <Button mode='primary' style='accent' onClick={() => navigate(routes.login())}>
-                        Войти
-                    </Button>
+                    {account !== null ? (
+                        <AccountDetail />
+                    ) : (
+                        <>
+                            <Button mode='secondary' style='accent' onClick={() => navigate(routes.register())}>
+                                Регистрация
+                            </Button>
+                            <Button mode='primary' style='accent' onClick={() => navigate(routes.login())}>
+                                Войти
+                            </Button>
+                        </>
+                    )}
                 </section>
             </header>
             <main className={style.main}>
