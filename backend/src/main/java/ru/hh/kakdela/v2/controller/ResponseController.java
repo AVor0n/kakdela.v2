@@ -1,7 +1,6 @@
 package ru.hh.kakdela.v2.controller;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
@@ -9,7 +8,6 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,11 +15,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import ru.hh.kakdela.v2.constants.CookieNames;
 import ru.hh.kakdela.v2.dto.response.ResponseCreateResponseDto;
 import ru.hh.kakdela.v2.dto.response.ResponseResponseDto;
 import ru.hh.kakdela.v2.dto.response.ResponseWithTokenDto;
 import ru.hh.kakdela.v2.security.CustomUserDetails;
 import ru.hh.kakdela.v2.service.ResponseService;
+import ru.hh.kakdela.v2.util.CookieUtil;
 
 @RestController
 @RequestMapping("/api")
@@ -41,23 +41,21 @@ public class ResponseController {
   public ResponseCreateResponseDto create(
       @PathVariable UUID surveyId,
       @AuthenticationPrincipal CustomUserDetails currentUser,
-      HttpServletResponse response) {
+      HttpServletResponse response
+  ) {
 
     ResponseWithTokenDto responseWithTokenDto = responseService.create(surveyId,
-        (currentUser != null ? currentUser.getId() : null));
+        currentUser != null ? currentUser.getId() : null);
 
     if (responseWithTokenDto.getResponseAccessToken() != null) {
 
-      ResponseCookie responseAccessTokenCookie = ResponseCookie.from(
-              "responseAccessToken_" + responseWithTokenDto.getId(),
-              responseWithTokenDto.getResponseAccessToken())
-          .httpOnly(true)
-          .sameSite("Strict")
-          .path("/api/responses")
-          .maxAge(responseTokenMaxAge)
-          .build();
-
-      response.addHeader("Set-Cookie", responseAccessTokenCookie.toString());
+      CookieUtil.setHttpOnlySameSiteStrictCookie(
+          response,
+          "/api/responses",
+          responseTokenMaxAge,
+          CookieNames.responseAccessTokenPrefix + responseWithTokenDto.getId(),
+          responseWithTokenDto.getResponseAccessToken()
+      );
     }
 
     return new ResponseCreateResponseDto(responseWithTokenDto.getId());
@@ -68,31 +66,20 @@ public class ResponseController {
       @PathVariable UUID responseId,
       @AuthenticationPrincipal CustomUserDetails currentUser,
       HttpServletRequest request,
-      HttpServletResponse response) {
+      HttpServletResponse response
+  ) {
 
-    Cookie[] cookies = request.getCookies();
-    String token = null;
-
-    for (Cookie cookie : cookies) {
-      if (cookie.getName().equals("responseAccessToken_" + responseId)) {
-        token = cookie.getValue();
-        break;
-      }
-    }
+    final String token = CookieUtil.getCookieValueByName(
+        request, CookieNames.responseAccessTokenPrefix + responseId);
 
     ResponseResponseDto responseDto = responseService.complete(
-        responseId, (currentUser != null ? currentUser.getId() : null), token);
+        responseId, currentUser != null ? currentUser.getId() : null, token);
 
     if (token != null) {
-      ResponseCookie responseAccessTokenCookie = ResponseCookie.from(
-              "responseAccessToken_" + responseId)
-          .httpOnly(true)
-          .sameSite("Strict")
-          .path("/api/responses")
-          .maxAge(0)
-          .build();
 
-      response.addHeader("Set-Cookie", responseAccessTokenCookie.toString());
+      CookieUtil.setHttpOnlySameSiteStrictCookie(
+          response, "/api/responses", 0,
+          CookieNames.responseAccessTokenPrefix + responseId);
     }
 
     return responseDto;
@@ -102,34 +89,31 @@ public class ResponseController {
   public ResponseResponseDto getById(
       @PathVariable UUID responseId,
       @AuthenticationPrincipal CustomUserDetails currentUser,
-      HttpServletRequest request) {
-
-    Cookie[] cookies = request.getCookies();
-    String token = null;
-
-    for (Cookie cookie : cookies) {
-      if (cookie.getName().equals("responseAccessToken_" + responseId)) {
-        token = cookie.getValue();
-        break;
-      }
-    }
+      HttpServletRequest request
+  ) {
 
     return responseService.getById(
-        responseId, (currentUser != null ? currentUser.getId() : null), token);
+        responseId,
+        currentUser != null ? currentUser.getId() : null,
+        CookieUtil.getCookieValueByName(
+            request, CookieNames.responseAccessTokenPrefix + responseId)
+    );
   }
 
   @GetMapping("/surveys/{surveyId}/my-incompleted-responses")
   public List<ResponseResponseDto> findIncompleted(
       @PathVariable UUID surveyId,
       @AuthenticationPrincipal CustomUserDetails currentUser,
-      HttpServletRequest request) {
+      HttpServletRequest request
+  ) {
 
     return responseService.getIncompletedBySurveyIdAndAccountId(surveyId, currentUser.getId());
   }
 
   @GetMapping("/accounts/me/responses")
   public List<ResponseResponseDto> getMyResponses(
-      @AuthenticationPrincipal CustomUserDetails currentUser) {
+      @AuthenticationPrincipal CustomUserDetails currentUser
+  ) {
 
     return responseService.getAllByAccountId(currentUser.getId());
   }
@@ -139,7 +123,8 @@ public class ResponseController {
   @GetMapping("/surveys/{surveyId}/responses")
   public List<ResponseResponseDto> getResponsesBySurvey(
       @PathVariable UUID surveyId,
-      @AuthenticationPrincipal CustomUserDetails currentUser) {
+      @AuthenticationPrincipal CustomUserDetails currentUser
+  ) {
 
     return responseService.getCompletedBySurveyId(surveyId, currentUser.getId());
   }
