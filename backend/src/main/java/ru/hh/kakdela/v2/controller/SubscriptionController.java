@@ -1,20 +1,27 @@
 package ru.hh.kakdela.v2.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
-
-import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+import ru.hh.kakdela.v2.dto.account.AccountResponseDto;
 import ru.hh.kakdela.v2.dto.subscription.SubscriptionRequestDto;
 import ru.hh.kakdela.v2.dto.subscription.SubscriptionResponseDto;
-import ru.hh.kakdela.v2.dto.account.AccountResponseDto;
 import ru.hh.kakdela.v2.mapper.AccountMapper;
-import ru.hh.kakdela.v2.service.SurveyNotificationSubscriptionService;
 import ru.hh.kakdela.v2.security.CustomUserDetails;
-
-import java.util.List;
-import java.util.UUID;
+import ru.hh.kakdela.v2.service.SurveyNotificationSubscriptionService;
 
 @RestController
 @RequestMapping("/api")
@@ -28,7 +35,7 @@ public class SubscriptionController {
     @ResponseStatus(HttpStatus.OK)
     public SubscriptionResponseDto subscribeUsers(
             @PathVariable UUID surveyId,
-            @RequestBody SubscriptionRequestDto dto,
+            @Valid @RequestBody SubscriptionRequestDto dto,
             @AuthenticationPrincipal CustomUserDetails currentUser) {
         return subscriptionService.subscribeUsers(surveyId, dto.getEmails(), currentUser.getId());
     }

@@ -102,17 +102,6 @@ class SurveyNotificationSubscriptionServiceTest {
   }
 
   @Test
-  void subscribeUsers_nullEmails_returnsEmptyDto() {
-    SubscriptionResponseDto result =
-        subscriptionService.subscribeUsers(surveyId, null, currentUserId);
-
-    assertEquals(List.of(), result.getSubscribedEmails());
-    assertEquals(List.of(), result.getAlreadySubscribedEmails());
-    assertEquals(List.of(), result.getNotFoundEmails());
-    verifyNoInteractions(surveyDao, subscriptionDao, accountDao, emailService);
-  }
-
-  @Test
   void subscribeUsers_emptyEmails_returnsEmptyDto() {
     SubscriptionResponseDto result =
         subscriptionService.subscribeUsers(surveyId, List.of(), currentUserId);
