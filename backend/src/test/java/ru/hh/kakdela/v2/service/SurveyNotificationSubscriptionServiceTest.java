@@ -1,5 +1,21 @@
 package ru.hh.kakdela.v2.service;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
+
+import java.time.Instant;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,14 +33,6 @@ import ru.hh.kakdela.v2.model.Account;
 import ru.hh.kakdela.v2.model.Permission;
 import ru.hh.kakdela.v2.model.Survey;
 import ru.hh.kakdela.v2.model.SurveyNotificationSubscription;
-
-import java.time.Instant;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class SurveyNotificationSubscriptionServiceTest {
@@ -312,6 +320,15 @@ class SurveyNotificationSubscriptionServiceTest {
     List<Account> result = subscriptionService.getSubscribers(surveyId, currentUserId);
 
     assertEquals(subscribers, result);
+  }
+
+  @Test
+  void getSubscribers_noSubscribers_returnsEmptyList() {
+    when(subscriptionDao.findSubscribersBySurveyId(surveyId)).thenReturn(List.of());
+
+    List<Account> result = subscriptionService.getSubscribers(surveyId, currentUserId);
+
+    assertEquals(List.of(), result);
   }
 
   // ----------------------- isSubscribed tests -----------------------
