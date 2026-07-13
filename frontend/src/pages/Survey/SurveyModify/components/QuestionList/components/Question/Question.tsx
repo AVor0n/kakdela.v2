@@ -24,7 +24,7 @@ import {
 import { Choice } from './components/Choice/Choice';
 import classNames from 'classnames';
 import { useDebounce } from '@/hooks/useDebounce';
-import { deleteQuestion, updateQuestion } from '@/api/question';
+import { cloneQuestion, deleteQuestion, updateQuestion } from '@/api/question';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { setErrorMessage } from '@/entities/Error/Error.slice';
 import { attachImageToQuestion, removeImageFromQuestion, updateAttachmentOfQuestion } from '@/api/attachments';
@@ -109,6 +109,16 @@ export function Question({ question, onClick, isEditMode }: Props) {
         if (e.target.files && e.target.files.length > 0) {
             setFile(e.target.files[0]);
         }
+    };
+
+    const cloneQuestionHandler = () => {
+        cloneQuestion(question.id)
+            .then((data) => {
+                dispatch(duplicateQuestion({ afterQuestionId: question.id, question: data }));
+            })
+            .catch(() => {
+                dispatch(setErrorMessage({ message: 'Не удалось клонировать вопрос' }));
+            });
     };
 
     const deleteAttachmentUrlHandler = () => {
@@ -258,7 +268,7 @@ export function Question({ question, onClick, isEditMode }: Props) {
                         mode='secondary'
                         type='button'
                         icon={<img src='/copy.svg' alt='Дублировать' />}
-                        onClick={() => dispatch(duplicateQuestion({ id: question.id }))}
+                        onClick={cloneQuestionHandler}
                     />
                     <Button
                         mode='secondary'

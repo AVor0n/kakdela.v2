@@ -130,22 +130,13 @@ const surveySlice = createSlice({
                 state.currentQuestionPageIndex
             ].questions.filter((question) => question.id !== id);
         },
-        duplicateQuestion: (state, action: PayloadAction<{ id: string }>) => {
+        duplicateQuestion: (state, action: PayloadAction<{ afterQuestionId: string; question: Question }>) => {
             if (!state.selectedSurvey) return;
-            const { id } = action.payload;
-            const questionToDuplicate = state.selectedSurvey.pages[state.currentQuestionPageIndex].questions.find(
-                (question) => question.id === id,
-            );
-            const index = state.selectedSurvey.pages[state.currentQuestionPageIndex].questions.findIndex(
-                (question) => question.id === id,
-            );
-            if (questionToDuplicate) {
-                const duplicatedQuestion = {
-                    ...questionToDuplicate,
-                    id: (state.selectedSurvey.pages[0].questions.length + 1).toString(),
-                    serialNumber: state.selectedSurvey.pages[0].questions.length + 1,
-                };
-                state.selectedSurvey.pages[0].questions.splice(index + 1, 0, duplicatedQuestion);
+            const { afterQuestionId, question } = action.payload;
+            const questions = state.selectedSurvey.pages[state.currentQuestionPageIndex].questions;
+            const index = questions.findIndex((q) => q.id === afterQuestionId);
+            if (index !== -1) {
+                questions.splice(index + 1, 0, question);
             }
         },
         deletePage: (state, action: PayloadAction<{ pageId: string }>) => {

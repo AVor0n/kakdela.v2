@@ -11,6 +11,12 @@ export async function createQuestion(pageId: string, questionData: CreateQuestio
     return data;
 }
 
+export async function cloneQuestion(questionId: string): Promise<Question> {
+    const { data } = await apiClient.post<Question>(`/api/questions/${questionId}/clone`);
+
+    return data;
+}
+
 export async function updateQuestion(questionId: string, updateData: UpdateQuestionRequest): Promise<Question> {
     const { data } = await apiClient.put<Question>(`/api/questions/${questionId}`, updateData);
 
