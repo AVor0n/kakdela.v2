@@ -67,6 +67,12 @@
     text-align: right;
 }
 
+.accountDetail {
+    position: absolute;
+    right: 20px;
+    top: 20px;
+}
+
 @media (max-width: 800px) {
     .container {
         padding: 20px;
