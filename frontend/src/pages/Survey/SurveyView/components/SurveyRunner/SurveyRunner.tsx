@@ -6,7 +6,6 @@ import { Link } from 'react-router-dom';
 import { routes } from '@/app/routes';
 import { completeSurveyResponse, createSurveyAnswer, createSurveyResponse } from '@/api/surveyResponses';
 import surveyDetailStyle from '@/pages/Survey/SurveyModify/components/SurveyDetail/SurveyDetail.module.css';
-import pageSeparatorStyle from '@/pages/Survey/SurveyModify/components/PageSeparator/PageSeparator.module.css';
 import questionStyle from '@/pages/Survey/SurveyModify/components/QuestionList/components/Question/Question.module.css';
 import choiceStyle from '@/pages/Survey/SurveyModify/components/QuestionList/components/Question/components/Choice/Choice.module.css';
 import optionStyle from '@/pages/Survey/SurveyModify/components/QuestionList/components/Question/components/Choice/components/Option/Option.module.css';
@@ -306,37 +305,56 @@ export function SurveyRunner({ survey, mode }: Props) {
                         <Text typography='subtitle-1-semibold' style='primary'>
                             {survey.title}
                         </Text>
-                        {survey.description && (
-                            <Text typography='paragraph-2-regular' style='primary'>
-                                {survey.description}
-                            </Text>
-                        )}
-                    </header>
+                    </section>
+                ) : (
+                    <>
+                        {visiblePages.length === 0 ? (
+                            <div className={surveyDetailStyle.container}>В этом опросе пока нет вопросов.</div>
+                        ) : currentPage ? (
+                            <section className={choiceStyle.container}>
+                                {(currentPage.description || currentPage.title) && (
+                                    <header className={`${surveyDetailStyle.container} ${style.formHeader}`}>
+                                        <Text typography='subtitle-1-semibold' style='primary'>
+                                            {currentPage.title}
+                                        </Text>
+                                        {currentPage.description && (
+                                            <Text typography='paragraph-2-regular' style='primary'>
+                                                {currentPage.description}
+                                            </Text>
+                                        )}
+                                    </header>
+                                )}
 
-                    {isComplete ? (
-                        <section className={surveyDetailStyle.container}>
-                            <Title Element='h2' size='medium'>
-                                Спасибо за ответ
-                            </Title>
-                            <Text typography='paragraph-2-regular' style='primary'>
-                                {survey.closingPage ?? 'Ваши ответы приняты.'}
-                            </Text>
-                        </section>
-                    ) : (
-                        <>
-                            {visiblePages.length === 0 ? (
-                                <div className={surveyDetailStyle.container}>В этом опросе пока нет вопросов.</div>
-                            ) : currentPage ? (
-                                <section className={choiceStyle.container}>
-                                    <div className={pageSeparatorStyle.separator}>
-                                        <span>Страница {currentPage.serialNumber}</span>
-                                    </div>
-
-                                    {currentPage.questions.map((question) => (
-                                        <article className={questionStyle.container} key={question.id}>
-                                            <div className={style.questionTitle}>
-                                                <Text typography='paragraph-2-regular' style='primary'>
-                                                    {question.title}
+                                {currentPage.questions.map((question) => (
+                                    <article className={questionStyle.container} key={question.id}>
+                                        {question.attachmentUrl && (
+                                            <img
+                                                src={question.attachmentUrl}
+                                                alt='img'
+                                                className={style.attachmentUrl}
+                                            />
+                                        )}
+                                        <div className={style.questionTitle}>
+                                            <Text typography='paragraph-2-regular' style='primary'>
+                                                {question.title}
+                                            </Text>
+                                            {question.isMandatory && <span className={style.mandatory}>*</span>}
+                                        </div>
+                                        {question.description && (
+                                            <div className={style.questionDescription}>
+                                                <Text typography='paragraph-3-regular' style='primary'>
+                                                    {question.description}
+                                                </Text>
+                                            </div>
+                                        )}
+                                        <section className={questionStyle.actions}>
+                                            <div>{renderQuestionControl(question)}</div>
+                                            <div className={questionStyle.hidden} />
+                                        </section>
+                                        {errors[question.id] && (
+                                            <div className={style.error}>
+                                                <Text typography='paragraph-2-regular' style='negative'>
+                                                    {errors[question.id]}
                                                 </Text>
                                                 {question.isMandatory && <span className={style.mandatory}>*</span>}
                                             </div>

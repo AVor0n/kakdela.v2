@@ -5,6 +5,7 @@ import {
     createStaticDataProvider,
     Input,
     Select,
+    TextArea,
     type StaticDataFetcherItem,
 } from '@hh.ru/magritte-ui';
 import { useCallback, useEffect, useMemo, useState, type ChangeEvent } from 'react';
@@ -16,6 +17,7 @@ import {
     duplicateQuestion,
     setMandatory as setMandatoryState,
     setQuestion,
+    updateQuestionDescription,
     updateQuestionTitle,
     updateQuestionType,
 } from '@/entities/Survey/Survey.slice';
@@ -25,8 +27,8 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { deleteQuestion, updateQuestion } from '@/api/question';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { setErrorMessage } from '@/entities/Error/Error.slice';
-import style from './Question.module.css';
 import { attachImageToQuestion, removeImageFromQuestion, updateAttachmentOfQuestion } from '@/api/attachments';
+import style from './Question.module.css';
 
 interface Props {
     question: Question;
@@ -48,6 +50,7 @@ export function Question({ question, onClick, isEditMode }: Props) {
     const [mandatory, setMandatory] = useState<boolean>(question.isMandatory);
     const [file, setFile] = useState<File | null>(null);
     const [questionImage, setQuestionImage] = useState<string | null>(null);
+    const [description, setDescription] = useState<string>(question.description ?? '');
     const debouncedMandatory = useDebounce(mandatory, 500);
 
     const dispatch = useAppDispatch();
@@ -63,6 +66,21 @@ export function Question({ question, onClick, isEditMode }: Props) {
                         dispatch(setErrorMessage({ message: 'Не удалось изменить название вопроса' }));
                     }
                     setTitle(question.title);
+                });
+        }
+    };
+
+    const updateQuestionDescriptionHandler = () => {
+        if (description !== question.description) {
+            updateQuestion(question.id, { description })
+                .then((data) => {
+                    dispatch(updateQuestionDescription({ id: question.id, description: data.description }));
+                })
+                .catch((err) => {
+                    if (err.response) {
+                        dispatch(setErrorMessage({ message: 'Не удалось изменить описание вопроса' }));
+                    }
+                    setDescription(question.description ?? '');
                 });
         }
     };
@@ -177,14 +195,22 @@ export function Question({ question, onClick, isEditMode }: Props) {
         <div className={classNames(style.container, { [style.edit]: isEditMode })} onClick={onClick}>
             {questionImage && <img src={questionImage} alt='img' className={style.attachmentUrl} />}
             <section className={style.settings}>
-                <Input
-                    placeholder='Вопрос'
-                    value={title}
-                    onChange={(e) => {
-                        setTitle(e);
-                    }}
-                    onBlur={updateQuestionTitleHandler}
-                />
+                <div className={style.questionDetail}>
+                    <Input
+                        placeholder='Вопрос'
+                        value={title}
+                        onChange={(e) => {
+                            setTitle(e);
+                        }}
+                        onBlur={updateQuestionTitleHandler}
+                    />
+                    <TextArea
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        placeholder='Описание вопроса'
+                        onBlur={updateQuestionDescriptionHandler}
+                    />
+                </div>
                 <div className={style.imageSettings}>
                     <input
                         type='file'

@@ -12,7 +12,7 @@ type BaseQuestion<T extends QuestionType> = {
     isMandatory: boolean;
     serialNumber: number;
     condition: null;
-    description: null;
+    description: string | null;
     visible?: boolean;
     isVisible?: boolean;
     attachmentUrl: string | null;

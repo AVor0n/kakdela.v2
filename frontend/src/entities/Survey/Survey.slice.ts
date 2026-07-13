@@ -47,6 +47,15 @@ const surveySlice = createSlice({
                 }
             });
         },
+        updateQuestionDescription: (state, action: PayloadAction<{ id: string; description: string | null }>) => {
+            if (!state.selectedSurvey) return;
+            const { id, description } = action.payload;
+            state.selectedSurvey.pages[state.currentQuestionPageIndex].questions.map((question) => {
+                if (question.id === id) {
+                    question.description = description;
+                }
+            });
+        },
 
         updateQuestionType: (state, action: PayloadAction<{ id: string; type: QuestionType }>) => {
             if (state.selectedSurvey === null) return;
@@ -170,6 +179,7 @@ export const {
     setSelectedSurvey,
     updateQuestionTitle,
     updateQuestionType,
+    updateQuestionDescription,
     addQuestionOptions,
     setSelectedQuestion,
     deleteOption,
