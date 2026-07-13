@@ -37,6 +37,10 @@ public class SurveyNotificationSubscriptionService {
       UUID surveyId, List<String> emails, UUID currentUserId) {
     permissionService.checkAccess(surveyId, currentUserId, SurveyRole.EDITOR);
 
+    if (emails == null || emails.isEmpty()) {
+      return new SubscriptionResponseDto(List.of(), List.of(), List.of());
+    }
+
     List<String> subscribedEmails = new ArrayList<>();
     List<String> alreadySubscribedEmails = new ArrayList<>();
     List<String> notFoundEmails = new ArrayList<>();
