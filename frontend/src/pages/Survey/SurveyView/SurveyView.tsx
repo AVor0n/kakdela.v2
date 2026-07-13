@@ -2,7 +2,7 @@ import { getSurveyById } from '@/api/survey';
 import type { Survey } from '@/shared/types/Survey.type';
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { routes } from '@/app/routes';
+import { routePatterns, routes } from '@/app/routes';
 import { SurveyRunner, type SurveyRunnerMode } from './components/SurveyRunner/SurveyRunner';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
@@ -41,9 +41,13 @@ export function SurveyView() {
     }, [id]);
 
     useEffect(() => {
+        if (survey && !survey.isPublished) {
+            dispatch(setErrorMessage({ message: 'Опрос не существует или ещё не опубликован' }));
+            navigate(routePatterns.notFound);
+        }
         if (!account && survey && survey.isAuthorizedOnly) {
-            navigate(routes.login(), { state: { from: location } });
             dispatch(setErrorMessage({ message: 'Этот опрос только для зарегистрированных пользователей' }));
+            navigate(routes.login(), { state: { from: location } });
         }
     }, [survey]);
 
