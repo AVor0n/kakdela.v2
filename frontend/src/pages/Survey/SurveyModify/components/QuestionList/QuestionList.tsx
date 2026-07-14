@@ -18,6 +18,7 @@ import {
     type DragStartEvent,
 } from '@dnd-kit/core';
 import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { restrictToParentElement } from '@dnd-kit/modifiers';
 import { useMemo, useState } from 'react';
 import { SortableQuestion } from './components/SortableQuestion/SortableQuestion';
 import style from './QuestionList.module.css';
@@ -79,6 +80,7 @@ export function QuestionList({ questions, pageIndex }: Props) {
         <DndContext
             sensors={sensors}
             collisionDetection={closestCenter}
+            modifiers={[restrictToParentElement]}
             autoScroll
             onDragStart={handleDragStart}
             onDragCancel={() => setActiveQuestionId(null)}

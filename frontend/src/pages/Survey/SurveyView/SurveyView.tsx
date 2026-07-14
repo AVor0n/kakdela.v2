@@ -41,7 +41,7 @@ export function SurveyView() {
     }, [id]);
 
     useEffect(() => {
-        if (survey && !survey.isPublished) {
+        if (survey && !survey.isPublished && mode !== 'preview') {
             dispatch(setErrorMessage({ message: 'Опрос не существует или ещё не опубликован' }));
             navigate(routePatterns.notFound);
         }
@@ -49,7 +49,7 @@ export function SurveyView() {
             dispatch(setErrorMessage({ message: 'Этот опрос только для зарегистрированных пользователей' }));
             navigate(routes.login(), { state: { from: location } });
         }
-    }, [survey]);
+    }, [account, dispatch, location, mode, navigate, survey]);
 
     if (isLoading) {
         return <div>Загрузка...</div>;
