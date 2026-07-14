@@ -146,7 +146,6 @@ public class PermissionService {
     return PermissionMapper.permissionToDto(permission);
   }
 
-
   @Transactional
   public PermissionResponseDto updatePartial(
       UUID surveyId,
@@ -168,7 +167,8 @@ public class PermissionService {
     }
 
     permissionDao.update(permission);
-    log.info("Изменены права доступа (partial update) surveyId={} accountId={}", surveyId, accountId);
+    log.info("Изменены права доступа (partial update) surveyId={} accountId={}",
+        surveyId, accountId);
     return PermissionMapper.permissionToDto(permission);
   }
 
