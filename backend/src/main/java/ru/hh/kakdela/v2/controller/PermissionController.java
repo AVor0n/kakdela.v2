@@ -45,15 +45,6 @@ public class PermissionController {
     return permissionService.getAllByAccountId(currentUser.getId());
   }
 
-  @GetMapping("accounts/me/accessibleSurveys")
-  public List<SurveyShortResponseDto> getAllAccessibleSurveysForAccount(
-      @AuthenticationPrincipal CustomUserDetails currentUser
-  ) {
-    return permissionService.getAccessibleSurveys(currentUser.getId()).stream()
-        .map(surveyMapper::surveyToShortDto)
-        .toList();
-  }
-
   @PostMapping("surveys/{surveyId}/permissions")
   @ResponseStatus(HttpStatus.CREATED)
   public PermissionResponseDto create(
