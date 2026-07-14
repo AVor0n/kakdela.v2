@@ -71,6 +71,14 @@
     text-align: right;
 }
 
+.syncError {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 10px;
+}
+
 .accountDetail {
     position: absolute;
     right: 20px;
