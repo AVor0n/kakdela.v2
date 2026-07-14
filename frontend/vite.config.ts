@@ -19,6 +19,7 @@ export default defineConfig({
         },
     },
     server: {
+        port: 4173,
         proxy: {
             '/api': {
                 target: 'https://backend:8080',

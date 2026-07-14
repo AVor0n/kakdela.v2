@@ -47,6 +47,15 @@ const surveySlice = createSlice({
                 }
             });
         },
+        updateQuestionDescription: (state, action: PayloadAction<{ id: string; description: string | null }>) => {
+            if (!state.selectedSurvey) return;
+            const { id, description } = action.payload;
+            state.selectedSurvey.pages[state.currentQuestionPageIndex].questions.map((question) => {
+                if (question.id === id) {
+                    question.description = description;
+                }
+            });
+        },
 
         updateQuestionType: (state, action: PayloadAction<{ id: string; type: QuestionType }>) => {
             if (state.selectedSurvey === null) return;
@@ -121,28 +130,37 @@ const surveySlice = createSlice({
                 state.currentQuestionPageIndex
             ].questions.filter((question) => question.id !== id);
         },
-        duplicateQuestion: (state, action: PayloadAction<{ id: string }>) => {
+        duplicateQuestion: (state, action: PayloadAction<{ afterQuestionId: string; question: Question }>) => {
             if (!state.selectedSurvey) return;
-            const { id } = action.payload;
-            const questionToDuplicate = state.selectedSurvey.pages[state.currentQuestionPageIndex].questions.find(
-                (question) => question.id === id,
-            );
-            const index = state.selectedSurvey.pages[state.currentQuestionPageIndex].questions.findIndex(
-                (question) => question.id === id,
-            );
-            if (questionToDuplicate) {
-                const duplicatedQuestion = {
-                    ...questionToDuplicate,
-                    id: (state.selectedSurvey.pages[0].questions.length + 1).toString(),
-                    serialNumber: state.selectedSurvey.pages[0].questions.length + 1,
-                };
-                state.selectedSurvey.pages[0].questions.splice(index + 1, 0, duplicatedQuestion);
+            const { afterQuestionId, question } = action.payload;
+            const questions = state.selectedSurvey.pages[state.currentQuestionPageIndex].questions;
+            const index = questions.findIndex((q) => q.id === afterQuestionId);
+            if (index !== -1) {
+                questions.splice(index + 1, 0, question);
             }
         },
         deletePage: (state, action: PayloadAction<{ pageId: string }>) => {
             if (!state.selectedSurvey) return;
             const { pageId } = action.payload;
             state.selectedSurvey.pages = state.selectedSurvey.pages.filter((page) => page.id !== pageId);
+        },
+        setQuestion: (state, action: PayloadAction<{ question: Question }>) => {
+            const { question } = action.payload;
+            state.selectedSurvey?.pages.map((page) => {
+                page.questions.map((q) => {
+                    if (q.id === question.id) {
+                        Object.assign(q, question);
+                    }
+                });
+            });
+        },
+        setPage: (state, action: PayloadAction<{ page: Page }>) => {
+            const { page } = action.payload;
+            state.selectedSurvey?.pages.map((p) => {
+                if (p.id === page.id) {
+                    Object.assign(p, page);
+                }
+            });
         },
     },
 });
@@ -152,6 +170,7 @@ export const {
     setSelectedSurvey,
     updateQuestionTitle,
     updateQuestionType,
+    updateQuestionDescription,
     addQuestionOptions,
     setSelectedQuestion,
     deleteOption,
@@ -162,5 +181,7 @@ export const {
     duplicateQuestion,
     addPage,
     deletePage,
+    setQuestion,
+    setPage,
 } = surveySlice.actions;
 export default surveySlice.reducer;

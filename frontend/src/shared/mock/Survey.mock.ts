@@ -26,6 +26,7 @@ export const mockSurvey: Survey = {
                     title: 'Как вас зовут?',
                     type: 'SHORT_TEXT',
                     visible: true,
+                    attachmentUrl: null,
                 },
                 {
                     condition: null,
@@ -36,6 +37,7 @@ export const mockSurvey: Survey = {
                     title: 'Что стоит улучшить в процессе создания опросов?',
                     type: 'LONG_TEXT',
                     visible: true,
+                    attachmentUrl: null,
                 },
                 {
                     answerOptionOrder: null,
@@ -53,6 +55,7 @@ export const mockSurvey: Survey = {
                     title: 'Выберите возрастную группу',
                     type: 'SINGLE_CHOICE',
                     visible: true,
+                    attachmentUrl: null,
                 },
                 {
                     answerOptionOrder: null,
@@ -70,6 +73,7 @@ export const mockSurvey: Survey = {
                     title: 'Какие разделы вам интересны?',
                     type: 'MULTIPLE_CHOICE',
                     visible: true,
+                    attachmentUrl: null,
                 },
             ],
             serialNumber: 1,

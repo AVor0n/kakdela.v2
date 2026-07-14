@@ -46,6 +46,10 @@
     margin-bottom: 10px;
 }
 
+.questionDescription {
+    margin-bottom: 10px;
+}
+
 .mandatory {
     color: red;
 }
@@ -71,6 +75,14 @@
     position: absolute;
     right: 20px;
     top: 20px;
+}
+
+.attachmentUrl {
+    width: 100%;
+    height: 400px;
+    object-fit: cover;
+    border-radius: 16px;
+    margin-bottom: 10px;
 }
 
 @media (max-width: 800px) {

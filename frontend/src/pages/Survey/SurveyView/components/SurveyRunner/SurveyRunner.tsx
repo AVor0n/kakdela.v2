@@ -1,19 +1,16 @@
 import { useEffect, useState } from 'react';
 import type { Question } from '@/shared/types/Question.type';
 import type { Survey } from '@/shared/types/Survey.type';
-import { Button, Checkbox, Input, Radio, Tag, Text, TextArea, TextAreaGrowLimiter, Title } from '@hh.ru/magritte-ui';
+import { Button, Checkbox, Input, Radio, Text, TextArea, TextAreaGrowLimiter, Title } from '@hh.ru/magritte-ui';
 import { Link } from 'react-router-dom';
 import { routes } from '@/app/routes';
 import { completeSurveyResponse, createSurveyAnswer, createSurveyResponse } from '@/api/surveyResponses';
 import surveyDetailStyle from '@/pages/Survey/SurveyModify/components/SurveyDetail/SurveyDetail.module.css';
-import pageSeparatorStyle from '@/pages/Survey/SurveyModify/components/PageSeparator/PageSeparator.module.css';
 import questionStyle from '@/pages/Survey/SurveyModify/components/QuestionList/components/Question/Question.module.css';
 import choiceStyle from '@/pages/Survey/SurveyModify/components/QuestionList/components/Question/components/Choice/Choice.module.css';
 import optionStyle from '@/pages/Survey/SurveyModify/components/QuestionList/components/Question/components/Choice/components/Option/Option.module.css';
 import longTextStyle from '@/pages/Survey/SurveyModify/components/QuestionList/components/Question/components/LongText/LongText.module.css';
 import style from './SurveyRunner.module.css';
-import { useAppSelector } from '@/hooks/useAppSelector';
-import { AccountDetail } from '@/shared/ui/AccountDetail/AccountDetail';
 
 export type SurveyRunnerMode = 'preview' | 'respond';
 
@@ -71,7 +68,6 @@ export function SurveyRunner({ survey, mode }: Props) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState<string | null>(null);
     const isPreview = mode === 'preview';
-    const { account } = useAppSelector((state) => state.account);
 
     useEffect(() => {
         setCurrentPageIndex(0);
@@ -283,123 +279,136 @@ export function SurveyRunner({ survey, mode }: Props) {
     };
 
     return (
-        <>
-            <div className={style.accountDetail}>
-                {account !== null ? <AccountDetail /> : <Tag>Анномное прохождение</Tag>}
-            </div>
-            <main className={style.container}>
-                <div className={style.content}>
-                    {isPreview && (
-                        <div className={style.previewActions}>
-                            <Button
-                                mode='secondary'
-                                style='accent'
-                                Element={Link}
-                                to={routes.surveyQuestions(survey.id)}
-                            >
-                                Выйти из предпросмотра
-                            </Button>
-                            <div className={style.previewBadge}>Предпросмотр</div>
-                        </div>
-                    )}
-                    <header className={`${surveyDetailStyle.container} ${style.formHeader}`}>
-                        <Text typography='subtitle-1-semibold' style='primary'>
-                            {survey.title}
+        <main className={style.container}>
+            <div className={style.content}>
+                {isPreview && (
+                    <div className={style.previewActions}>
+                        <Button mode='secondary' style='accent' Element={Link} to={routes.surveyQuestions(survey.id)}>
+                            Выйти из предпросмотра
+                        </Button>
+                        <div className={style.previewBadge}>Предпросмотр</div>
+                    </div>
+                )}
+                <header className={`${surveyDetailStyle.container} ${style.formHeader}`}>
+                    <Text typography='subtitle-1-semibold' style='primary'>
+                        {survey.title}
+                    </Text>
+                    {survey.description && (
+                        <Text typography='paragraph-2-regular' style='primary'>
+                            {survey.description}
                         </Text>
-                        {survey.description && (
-                            <Text typography='paragraph-2-regular' style='primary'>
-                                {survey.description}
-                            </Text>
-                        )}
-                    </header>
+                    )}
+                </header>
 
-                    {isComplete ? (
-                        <section className={surveyDetailStyle.container}>
-                            <Title Element='h2' size='medium'>
-                                Спасибо за ответ
-                            </Title>
-                            <Text typography='paragraph-2-regular' style='primary'>
-                                {survey.closingPage ?? 'Ваши ответы приняты.'}
-                            </Text>
-                        </section>
-                    ) : (
-                        <>
-                            {visiblePages.length === 0 ? (
-                                <div className={surveyDetailStyle.container}>В этом опросе пока нет вопросов.</div>
-                            ) : currentPage ? (
-                                <section className={choiceStyle.container}>
-                                    <div className={pageSeparatorStyle.separator}>
-                                        <span>Страница {currentPage.serialNumber}</span>
-                                    </div>
+                {isComplete ? (
+                    <section className={surveyDetailStyle.container}>
+                        <Title Element='h2' size='medium'>
+                            Спасибо за ответ
+                        </Title>
+                        <Text typography='paragraph-2-regular' style='primary'>
+                            {survey.closingPage ?? 'Ваши ответы приняты.'}
+                        </Text>
+                    </section>
+                ) : (
+                    <>
+                        {visiblePages.length === 0 ? (
+                            <div className={surveyDetailStyle.container}>В этом опросе пока нет вопросов.</div>
+                        ) : currentPage ? (
+                            <section className={choiceStyle.container}>
+                                {(currentPage.description || currentPage.title) && (
+                                    <section className={`${surveyDetailStyle.container} ${style.formHeader}`}>
+                                        <Text typography='subtitle-1-semibold' style='primary'>
+                                            {currentPage.title}
+                                        </Text>
+                                        {currentPage.description && (
+                                            <Text typography='paragraph-2-regular' style='primary'>
+                                                {currentPage.description}
+                                            </Text>
+                                        )}
+                                    </section>
+                                )}
 
-                                    {currentPage.questions.map((question) => (
-                                        <article className={questionStyle.container} key={question.id}>
-                                            <div className={style.questionTitle}>
-                                                <Text typography='paragraph-2-regular' style='primary'>
-                                                    {question.title}
+                                {currentPage.questions.map((question) => (
+                                    <article className={questionStyle.container} key={question.id}>
+                                        {question.attachmentUrl && (
+                                            <img
+                                                src={question.attachmentUrl}
+                                                alt='img'
+                                                className={style.attachmentUrl}
+                                            />
+                                        )}
+                                        <div className={style.questionTitle}>
+                                            <Text typography='paragraph-2-regular' style='primary'>
+                                                {question.title}
+                                            </Text>
+                                            {question.isMandatory && <span className={style.mandatory}>*</span>}
+                                        </div>
+                                        {question.description && (
+                                            <div className={style.questionDescription}>
+                                                <Text typography='paragraph-3-regular' style='primary'>
+                                                    {question.description}
                                                 </Text>
-                                                {question.isMandatory && <span className={style.mandatory}>*</span>}
                                             </div>
-                                            <section className={questionStyle.actions}>
-                                                <div>{renderQuestionControl(question)}</div>
-                                                <div className={questionStyle.hidden} />
-                                            </section>
-                                            {errors[question.id] && (
-                                                <div className={style.error}>
-                                                    <Text typography='paragraph-2-regular' style='negative'>
-                                                        {errors[question.id]}
-                                                    </Text>
-                                                </div>
-                                            )}
-                                        </article>
-                                    ))}
+                                        )}
+                                        <section className={questionStyle.actions}>
+                                            <div>{renderQuestionControl(question)}</div>
+                                            <div className={questionStyle.hidden} />
+                                        </section>
+                                        {errors[question.id] && (
+                                            <div className={style.error}>
+                                                <Text typography='paragraph-2-regular' style='negative'>
+                                                    {errors[question.id]}
+                                                </Text>
+                                            </div>
+                                        )}
+                                    </article>
+                                ))}
 
-                                    <div className={style.navigation}>
+                                <div className={style.navigation}>
+                                    <Button
+                                        type='button'
+                                        mode='secondary'
+                                        style='accent'
+                                        disabled={isFirstPage}
+                                        onClick={goToPreviousPage}
+                                    >
+                                        Назад
+                                    </Button>
+                                    <Text typography='paragraph-2-regular' style='secondary'>
+                                        {currentPageIndex + 1} из {visiblePages.length}
+                                    </Text>
+                                    {isLastPage ? (
                                         <Button
                                             type='button'
-                                            mode='secondary'
+                                            mode='primary'
                                             style='accent'
-                                            disabled={isFirstPage}
-                                            onClick={goToPreviousPage}
+                                            disabled={isPreview || isSubmitting}
+                                            onClick={submitHandler}
                                         >
-                                            Назад
+                                            {isPreview
+                                                ? 'Отправка недоступна в предпросмотре'
+                                                : isSubmitting
+                                                  ? 'Отправляем...'
+                                                  : 'Отправить'}
                                         </Button>
-                                        <Text typography='paragraph-2-regular' style='secondary'>
-                                            {currentPageIndex + 1} из {visiblePages.length}
-                                        </Text>
-                                        {isLastPage ? (
-                                            <Button
-                                                type='button'
-                                                mode='primary'
-                                                style='accent'
-                                                disabled={isPreview || isSubmitting}
-                                                onClick={submitHandler}
-                                            >
-                                                {isPreview
-                                                    ? 'Отправка недоступна в предпросмотре'
-                                                    : isSubmitting
-                                                      ? 'Отправляем...'
-                                                      : 'Отправить'}
-                                            </Button>
-                                        ) : (
-                                            <Button type='button' mode='primary' style='accent' onClick={goToNextPage}>
-                                                Далее
-                                            </Button>
-                                        )}
-                                    </div>
-                                    {submitError && (
-                                        <div className={style.submitError}>
-                                            <Text typography='paragraph-2-regular' style='negative'>
-                                                {submitError}
-                                            </Text>
-                                        </div>
+                                    ) : (
+                                        <Button type='button' mode='primary' style='accent' onClick={goToNextPage}>
+                                            Далее
+                                        </Button>
                                     )}
-                                </section>
-                            ) : null}
-                        </>
-                    )}
-                </div>
-            </main>
-        </>
+                                </div>
+                                {submitError && (
+                                    <div className={style.submitError}>
+                                        <Text typography='paragraph-2-regular' style='negative'>
+                                            {submitError}
+                                        </Text>
+                                    </div>
+                                )}
+                            </section>
+                        ) : null}
+                    </>
+                )}
+            </div>
+        </main>
     );
 }

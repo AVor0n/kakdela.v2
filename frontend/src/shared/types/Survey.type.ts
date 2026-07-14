@@ -20,7 +20,7 @@ export type Survey = {
 
 export type Page = {
     id: string;
-    title: string;
+    title: string | null;
     description: string | null;
     surveyId: string;
     serialNumber: number;

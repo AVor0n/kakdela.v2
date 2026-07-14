@@ -4,6 +4,7 @@ import { deletePage } from '@/entities/Survey/Survey.slice';
 import type { Page } from '@/shared/types/Survey.type';
 import { setErrorMessage } from '@/entities/Error/Error.slice';
 import style from './PageSeparator.module.css';
+import { PageDetail } from './components/PageDetail/PageDetail';
 interface Props {
     page: Page;
 }
@@ -28,6 +29,7 @@ export function PageSeparator({ page }: Props) {
                 <span className={style.content}>Страница {page.serialNumber}</span>
                 <img className={style.trash} src='/trash.svg' alt='X' onClick={deletePageHandler} />
             </div>
+            <PageDetail page={page} />
         </>
     );
 }
