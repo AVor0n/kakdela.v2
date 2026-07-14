@@ -24,7 +24,7 @@ export async function addAnswerOption(
 
 export async function updateAnswerOption(
     answerOptionId: string,
-    payload: Partial<CreateAnswerOptionRequest>,
+    payload: UpdateAnswerOptionRequest,
 ): Promise<AnswerOptionResponse> {
     const { data } = await apiClient.put(`/api/answer-options/${answerOptionId}`, payload);
 

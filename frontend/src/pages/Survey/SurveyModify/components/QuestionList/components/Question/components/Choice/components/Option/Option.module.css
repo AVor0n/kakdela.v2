@@ -3,6 +3,12 @@
     align-items: center;
     justify-content: space-between;
 }
+
+.optionContent:hover .dragHandle,
+.dragHandle:hover {
+    opacity: 1;
+}
+
 .input {
     transition: border-bottom 0.2s ease-in-out;
     border: none;
@@ -17,4 +23,29 @@
     display: flex;
     align-items: center;
     gap: 5px;
+}
+
+.dragHandle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    color: #5f6c7b;
+    opacity: 0;
+    cursor: grab;
+    transition:
+        opacity 0.2s ease,
+        color 0.2s ease;
+    touch-action: none;
+}
+
+.dragHandle:active {
+    cursor: grabbing;
+    color: #1785e5;
+}
+
+.dragHandleIcon {
+    width: 16px;
+    height: 8px;
 }
