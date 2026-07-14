@@ -1,0 +1,88 @@
+package ru.hh.kakdela.v2.controller;
+
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+import ru.hh.kakdela.v2.dto.permission.PermissionRequestDto;
+import ru.hh.kakdela.v2.dto.permission.PermissionResponseDto;
+import ru.hh.kakdela.v2.dto.permission.PermissionUpdateDto;
+import ru.hh.kakdela.v2.dto.survey.SurveyShortResponseDto;
+import ru.hh.kakdela.v2.mapper.SurveyMapper;
+import ru.hh.kakdela.v2.security.CustomUserDetails;
+import ru.hh.kakdela.v2.service.PermissionService;
+
+import java.util.List;
+import java.util.UUID;
+
+@RestController
+@RequestMapping("/api")
+@RequiredArgsConstructor
+@Tag(name = "Permissions", description = "Управление правами пользователей в опросе")
+public class PermissionController {
+
+  private final PermissionService permissionService;
+  private final SurveyMapper surveyMapper;
+
+  @GetMapping("surveys/{surveyId}/permissions")
+  public List<PermissionResponseDto> getAllBySurveyId(@PathVariable UUID surveyId) {
+    return permissionService.getAllBySurveyId(surveyId);
+  }
+
+  @GetMapping("accounts/me/permissions")
+  public List<PermissionResponseDto> getAllByAccountId(
+      @AuthenticationPrincipal CustomUserDetails currentUser
+  ) {
+    return permissionService.getAllByAccountId(currentUser.getId());
+  }
+
+  @GetMapping("accounts/me/accessibleSurveys")
+  public List<SurveyShortResponseDto> getAllAccessibleSurveysForAccount(
+      @AuthenticationPrincipal CustomUserDetails currentUser
+  ) {
+    return permissionService.getAccessibleSurveys(currentUser.getId()).stream()
+        .map(surveyMapper::surveyToShortDto)
+        .toList();
+  }
+
+  @PostMapping("surveys/{surveyId}/permissions")
+  @ResponseStatus(HttpStatus.CREATED)
+  public PermissionResponseDto create(
+      @PathVariable UUID surveyId,
+      @AuthenticationPrincipal CustomUserDetails currentUser,
+      @RequestBody PermissionRequestDto dto
+  ) {
+    return permissionService.create(surveyId, currentUser.getId(), dto);
+  }
+
+  @PutMapping("surveys/{surveyId}/permissions/{accountId}")
+  public PermissionResponseDto updateFull(
+      @PathVariable UUID surveyId,
+      @PathVariable UUID accountId,
+      @AuthenticationPrincipal CustomUserDetails currentUser,
+      @RequestBody PermissionRequestDto dto
+  ) {
+    return permissionService.updateFull(surveyId, accountId, currentUser.getId(), dto);
+  }
+
+  @PatchMapping("surveys/{surveyId}/permissions/{accountId}")
+  public PermissionResponseDto updatePartial(
+      @PathVariable UUID surveyId,
+      @PathVariable UUID accountId,
+      @AuthenticationPrincipal CustomUserDetails currentUser,
+      @RequestBody PermissionUpdateDto dto
+  ) {
+    return permissionService.updatePartial(surveyId, accountId, currentUser.getId(), dto);
+  }
+
+  @DeleteMapping("surveys/{surveyId}/permissions/{accountId}")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void delete(
+      @PathVariable UUID surveyId,
+      @PathVariable UUID accountId,
+      @AuthenticationPrincipal CustomUserDetails currentUser
+  ) {
+    permissionService.delete(surveyId, accountId, currentUser.getId());
+  }
+}

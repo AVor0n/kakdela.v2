@@ -13,7 +13,7 @@ import org.springframework.web.server.ResponseStatusException;
 import ru.hh.kakdela.v2.dao.AccountDao;
 import ru.hh.kakdela.v2.dao.PermissionDao;
 import ru.hh.kakdela.v2.dao.SurveyDao;
-import ru.hh.kakdela.v2.dto.permission.PermissionCreateDto;
+import ru.hh.kakdela.v2.dto.permission.PermissionRequestDto;
 import ru.hh.kakdela.v2.dto.permission.PermissionResponseDto;
 import ru.hh.kakdela.v2.dto.permission.PermissionUpdateDto;
 import ru.hh.kakdela.v2.mapper.PermissionMapper;
@@ -89,7 +89,7 @@ public class PermissionService {
   }
 
   @Transactional
-  public PermissionResponseDto create(UUID surveyId, UUID currentUserId, PermissionCreateDto dto) {
+  public PermissionResponseDto create(UUID surveyId, UUID currentUserId, PermissionRequestDto dto) {
     checkOwnership(surveyId, currentUserId);
 
     if (permissionDao.existsBySurveyIdAndAccountId(surveyId, dto.getAccountId())) {
@@ -125,10 +125,35 @@ public class PermissionService {
   }
 
   @Transactional
-  public PermissionResponseDto update(UUID surveyId,
-                                      UUID accountId,
-                                      UUID currentUserId,
-                                      PermissionUpdateDto dto) {
+  public PermissionResponseDto updateFull(
+      UUID surveyId,
+      UUID accountId,
+      UUID currentUserId,
+      PermissionRequestDto dto
+  ) {
+    checkOwnership(surveyId, currentUserId);
+
+    Permission permission = permissionDao.findBySurveyIdAndAccountId(surveyId, accountId)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Доступ не найден"));
+
+    permission.setRole(dto.getRole());
+    permission.setDoNotify(dto.getDoNotify());
+
+    permissionDao.update(permission);
+    log.info("Изменены права доступа (full update) surveyId={} accountId={}", surveyId, accountId);
+
+    return PermissionMapper.permissionToDto(permission);
+  }
+
+
+  @Transactional
+  public PermissionResponseDto updatePartial(
+      UUID surveyId,
+      UUID accountId,
+      UUID currentUserId,
+      PermissionUpdateDto dto
+  ) {
     checkOwnership(surveyId, currentUserId);
 
     Permission permission = permissionDao.findBySurveyIdAndAccountId(surveyId, accountId)
@@ -143,7 +168,7 @@ public class PermissionService {
     }
 
     permissionDao.update(permission);
-    log.info("Изменены права доступа surveyId={} accountId={}", surveyId, accountId);
+    log.info("Изменены права доступа (partial update) surveyId={} accountId={}", surveyId, accountId);
     return PermissionMapper.permissionToDto(permission);
   }
 
