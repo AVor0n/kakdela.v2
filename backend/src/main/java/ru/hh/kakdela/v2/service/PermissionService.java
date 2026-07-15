@@ -1,8 +1,9 @@
 package ru.hh.kakdela.v2.service;
 
+import static java.util.stream.Collectors.toList;
+
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,8 +25,6 @@ import ru.hh.kakdela.v2.model.Permission;
 import ru.hh.kakdela.v2.model.Permission.PermissionId;
 import ru.hh.kakdela.v2.model.Permission.SurveyRole;
 import ru.hh.kakdela.v2.model.Survey;
-
-import static java.util.stream.Collectors.toList;
 
 @Slf4j
 @Service
