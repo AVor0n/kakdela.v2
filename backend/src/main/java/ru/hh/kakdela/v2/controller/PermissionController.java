@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.hh.kakdela.v2.dto.permission.PermissionRequestDto;
 import ru.hh.kakdela.v2.dto.permission.PermissionResponseDto;
 import ru.hh.kakdela.v2.dto.permission.PermissionUpdateDto;
-import ru.hh.kakdela.v2.dto.survey.SurveyShortResponseDto;
 import ru.hh.kakdela.v2.mapper.SurveyMapper;
 import ru.hh.kakdela.v2.security.CustomUserDetails;
 import ru.hh.kakdela.v2.service.PermissionService;
@@ -36,13 +35,6 @@ public class PermissionController {
   @GetMapping("surveys/{surveyId}/permissions")
   public List<PermissionResponseDto> getAllBySurveyId(@PathVariable UUID surveyId) {
     return permissionService.getAllBySurveyId(surveyId);
-  }
-
-  @GetMapping("accounts/me/permissions")
-  public List<PermissionResponseDto> getAllByAccountId(
-      @AuthenticationPrincipal CustomUserDetails currentUser
-  ) {
-    return permissionService.getAllByAccountId(currentUser.getId());
   }
 
   @PostMapping("surveys/{surveyId}/permissions")

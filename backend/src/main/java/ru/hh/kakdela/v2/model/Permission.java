@@ -55,6 +55,7 @@ public class Permission {
   }
 
   public enum SurveyRole {
+    AUTHOR,
     EDITOR,
     ANALYST
   }

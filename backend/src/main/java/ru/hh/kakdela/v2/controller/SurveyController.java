@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import ru.hh.kakdela.v2.dto.survey.SurveyCreateDto;
 import ru.hh.kakdela.v2.dto.survey.SurveyResponseDto;
-import ru.hh.kakdela.v2.dto.survey.SurveyShortResponseDto;
+import ru.hh.kakdela.v2.dto.survey.SurveyShortResponseWithPermissionDto;
 import ru.hh.kakdela.v2.dto.survey.SurveyUpdateDto;
 import ru.hh.kakdela.v2.service.SurveyService;
 import ru.hh.kakdela.v2.security.CustomUserDetails;
@@ -25,18 +25,13 @@ public class SurveyController {
 
     private final SurveyService surveyService;
 
-    @GetMapping("/surveys/public")
-    public List<SurveyShortResponseDto> getPublished() {
-        return surveyService.getAllPublished();
-    }
-
     @GetMapping("/accounts/me/surveys")
-    public List<SurveyShortResponseDto> getMySurveys(@AuthenticationPrincipal CustomUserDetails currentUser) {
+    public List<SurveyShortResponseWithPermissionDto> getMySurveys(@AuthenticationPrincipal CustomUserDetails currentUser) {
         return surveyService.getMySurveys(currentUser.getId());
     }
 
     @GetMapping("/accounts/{authorId}/surveys")
-    public List<SurveyShortResponseDto> getByAuthor(@PathVariable UUID authorId) {
+    public List<SurveyShortResponseWithPermissionDto> getByAuthor(@PathVariable UUID authorId) {
         return surveyService.getAllByAuthorId(authorId);
     }
 
