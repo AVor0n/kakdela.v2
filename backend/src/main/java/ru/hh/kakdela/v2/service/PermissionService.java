@@ -187,13 +187,13 @@ public class PermissionService {
   public List<SurveyWithUserRoleDto> getAccessibleSurveys(UUID accountId) {
     List<SurveyWithUserRoleDto> authored = surveyDao.findAllByAuthorId(accountId).stream()
         .map(survey ->
-            surveyMapper.surveyToRoleDto(survey, SurveyRole.AUTHOR)
+            surveyMapper.surveyToSurveyWithRoleDto(survey, SurveyRole.AUTHOR)
         )
         .toList();
 
     List<SurveyWithUserRoleDto> shared = permissionDao.findAllByAccountId(accountId).stream()
         .map(permission ->
-            surveyMapper.surveyToRoleDto(permission.getSurvey(), permission.getRole())
+            surveyMapper.surveyToSurveyWithRoleDto(permission.getSurvey(), permission.getRole())
         )
         .toList();
 

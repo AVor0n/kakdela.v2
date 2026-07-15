@@ -74,7 +74,7 @@ public class SurveyMapper {
     );
   }
 
-  public SurveyWithUserRoleDto surveyToRoleDto(
+  public SurveyWithUserRoleDto surveyToSurveyWithRoleDto(
       Survey survey,
       Permission.SurveyRole role
   ) {
