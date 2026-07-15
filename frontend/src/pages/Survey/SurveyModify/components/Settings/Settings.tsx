@@ -281,7 +281,7 @@ export function Settings() {
                         style='neutral'
                         onClick={() =>
                             handleCopyClick(
-                                `http://${window.location.hostname}:${window.location.port}/surveys/${selectedSurvey.id}?responde=true`,
+                                `https://${window.location.hostname}:${window.location.port}/surveys/${selectedSurvey.id}?responde=true`,
                             )
                         }
                     >
