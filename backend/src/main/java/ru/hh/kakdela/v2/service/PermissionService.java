@@ -16,12 +16,16 @@ import ru.hh.kakdela.v2.dao.SurveyDao;
 import ru.hh.kakdela.v2.dto.permission.PermissionRequestDto;
 import ru.hh.kakdela.v2.dto.permission.PermissionResponseDto;
 import ru.hh.kakdela.v2.dto.permission.PermissionUpdateDto;
+import ru.hh.kakdela.v2.dto.survey.SurveyWithUserRoleDto;
 import ru.hh.kakdela.v2.mapper.PermissionMapper;
+import ru.hh.kakdela.v2.mapper.SurveyMapper;
 import ru.hh.kakdela.v2.model.Account;
 import ru.hh.kakdela.v2.model.Permission;
 import ru.hh.kakdela.v2.model.Permission.PermissionId;
 import ru.hh.kakdela.v2.model.Permission.SurveyRole;
 import ru.hh.kakdela.v2.model.Survey;
+
+import static java.util.stream.Collectors.toList;
 
 @Slf4j
 @Service
@@ -31,6 +35,7 @@ public class PermissionService {
   private final PermissionDao permissionDao;
   private final SurveyDao surveyDao;
   private final AccountDao accountDao;
+  private final SurveyMapper surveyMapper;
 
   @Transactional(readOnly = true)
   public void checkAccess(UUID surveyId, UUID accountId, SurveyRole requiredRole) {
@@ -180,14 +185,21 @@ public class PermissionService {
   }
 
   @Transactional(readOnly = true)
-  public List<Survey> getAccessibleSurveys(UUID accountId) {
-    List<Survey> authored = surveyDao.findAllByAuthorId(accountId);
-    List<Survey> shared = permissionDao.findAllByAccountId(accountId).stream()
-        .map(Permission::getSurvey)
+  public List<SurveyWithUserRoleDto> getAccessibleSurveys(UUID accountId) {
+    List<SurveyWithUserRoleDto> authored = surveyDao.findAllByAuthorId(accountId).stream()
+        .map(survey ->
+            surveyMapper.surveyToRoleDto(survey, SurveyRole.AUTHOR)
+        )
+        .toList();
+
+    List<SurveyWithUserRoleDto> shared = permissionDao.findAllByAccountId(accountId).stream()
+        .map(permission ->
+            surveyMapper.surveyToRoleDto(permission.getSurvey(), permission.getRole())
+        )
         .toList();
 
     return Stream.concat(authored.stream(), shared.stream())
         .distinct()
-        .collect(Collectors.toList());
+        .collect(toList());
   }
 }

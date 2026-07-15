@@ -16,10 +16,7 @@ import org.springframework.web.server.ResponseStatusException;
 import ru.hh.kakdela.v2.dao.AccountDao;
 import ru.hh.kakdela.v2.dao.PermissionDao;
 import ru.hh.kakdela.v2.dao.SurveyDao;
-import ru.hh.kakdela.v2.dto.survey.SurveyCreateDto;
-import ru.hh.kakdela.v2.dto.survey.SurveyResponseDto;
-import ru.hh.kakdela.v2.dto.survey.SurveyShortResponseWithPermissionDto;
-import ru.hh.kakdela.v2.dto.survey.SurveyUpdateDto;
+import ru.hh.kakdela.v2.dto.survey.*;
 import ru.hh.kakdela.v2.mapper.SurveyMapper;
 import ru.hh.kakdela.v2.model.Account;
 import ru.hh.kakdela.v2.model.AnswerOption;
@@ -61,30 +58,9 @@ public class SurveyService {
 
   @Transactional(readOnly = true)
   public List<SurveyShortResponseWithPermissionDto> getMySurveys(UUID accountId) {
-    List<Survey> surveys = permissionService.getAccessibleSurveys(accountId);
-    List<Permission> permissions = permissionDao.findAllByAccountId(accountId);
-    Map<UUID, SurveyRole> roleMap = permissions.stream()
-        .collect(Collectors.toMap(
-            p -> p.getSurvey().getId(),
-            Permission::getRole
-        ));
-
-    return surveys.stream()
-        .map(survey -> {
-          Permission.SurveyRole role = determineRole(survey, accountId, roleMap);
-          return surveyMapper.surveyToShortDto(survey, role);
-        })
-        .collect(Collectors.toList());
-  }
-
-  private Permission.SurveyRole determineRole(
-      Survey survey, UUID accountId,
-      Map<UUID, Permission.SurveyRole> roleMap
-  ) {
-    if (survey.getAuthor().getId().equals(accountId)) {
-      return Permission.SurveyRole.AUTHOR;
-    }
-    return roleMap.get(survey.getId());
+    return permissionService.getAccessibleSurveys(accountId).stream()
+        .map(surveyMapper::surveyWithRoleDtoToShortDto)
+        .toList();
   }
 
   @Transactional
