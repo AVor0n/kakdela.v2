@@ -46,7 +46,10 @@ public class SurveyMapper {
     );
   }
 
-  public SurveyShortResponseWithPermissionDto surveyToShortDto(Survey survey, Permission.SurveyRole role) {
+  public SurveyShortResponseWithPermissionDto surveyToShortDto(
+      Survey survey,
+      Permission.SurveyRole role
+  ) {
     return new SurveyShortResponseWithPermissionDto(
         survey.getId(),
         survey.getTitle(),

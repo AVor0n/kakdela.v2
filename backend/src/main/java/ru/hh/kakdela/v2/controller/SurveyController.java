@@ -26,7 +26,9 @@ public class SurveyController {
     private final SurveyService surveyService;
 
     @GetMapping("/accounts/me/surveys")
-    public List<SurveyShortResponseWithPermissionDto> getMySurveys(@AuthenticationPrincipal CustomUserDetails currentUser) {
+    public List<SurveyShortResponseWithPermissionDto> getMySurveys(
+        @AuthenticationPrincipal CustomUserDetails currentUser
+    ) {
         return surveyService.getMySurveys(currentUser.getId());
     }
 

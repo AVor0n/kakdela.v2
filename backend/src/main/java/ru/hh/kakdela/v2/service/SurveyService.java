@@ -21,8 +21,14 @@ import ru.hh.kakdela.v2.dto.survey.SurveyResponseDto;
 import ru.hh.kakdela.v2.dto.survey.SurveyShortResponseWithPermissionDto;
 import ru.hh.kakdela.v2.dto.survey.SurveyUpdateDto;
 import ru.hh.kakdela.v2.mapper.SurveyMapper;
-import ru.hh.kakdela.v2.model.*;
+import ru.hh.kakdela.v2.model.Account;
+import ru.hh.kakdela.v2.model.AnswerOption;
+import ru.hh.kakdela.v2.model.ClosingPage;
+import ru.hh.kakdela.v2.model.Permission;
 import ru.hh.kakdela.v2.model.Permission.SurveyRole;
+import ru.hh.kakdela.v2.model.Question;
+import ru.hh.kakdela.v2.model.Survey;
+import ru.hh.kakdela.v2.model.SurveyPage;
 
 @Slf4j
 @Service
