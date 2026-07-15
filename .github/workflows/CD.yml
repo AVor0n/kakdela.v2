@@ -26,6 +26,8 @@ jobs:
             nginx:
               - 'nginx/**'
               - '!nginx/*.md'
+              - '!nginx/nginx.dev.conf'
+              - '!nginx/nginx.prod.conf'
             frontend:
               - 'frontend/**'
               - '!frontend/*.md'
