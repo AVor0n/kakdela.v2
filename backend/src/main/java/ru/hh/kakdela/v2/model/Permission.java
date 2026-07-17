@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
@@ -54,8 +55,13 @@ public class Permission {
     private UUID surveyId;
   }
 
+  @AllArgsConstructor
+  @Getter
   public enum SurveyRole {
-    EDITOR,
-    ANALYST
+    EDITOR(true, true),
+    ANALYST(true, false);
+
+    private final boolean responseReadAccess;
+    private final boolean editAccess;
   }
 }

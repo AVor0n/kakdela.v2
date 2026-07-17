@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
@@ -16,6 +17,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -92,7 +94,7 @@ class SurveyNotificationSubscriptionServiceTest {
   void subscribeUsers_exceptionFromCheckAccess_throwsException() {
     doThrow(ResponseStatusException.class)
         .when(permissionService)
-        .checkAccess(surveyId, currentUserId, Permission.SurveyRole.EDITOR);
+        .checkCanEdit(surveyId, currentUserId);
 
     assertThrows(
         ResponseStatusException.class,
@@ -233,7 +235,7 @@ class SurveyNotificationSubscriptionServiceTest {
   void unsubscribeUser_exceptionFromCheckAccess_throwsException() {
     doThrow(ResponseStatusException.class)
         .when(permissionService)
-        .checkAccess(surveyId, currentUserId, Permission.SurveyRole.EDITOR);
+        .checkCanEdit(surveyId, currentUserId);
 
     assertThrows(
         ResponseStatusException.class,
@@ -292,7 +294,7 @@ class SurveyNotificationSubscriptionServiceTest {
   void getSubscribers_exceptionFromCheckAccess_throwsException() {
     doThrow(ResponseStatusException.class)
         .when(permissionService)
-        .checkAccess(surveyId, currentUserId, Permission.SurveyRole.EDITOR);
+        .checkCanEdit(surveyId, currentUserId);
 
     assertThrows(
         ResponseStatusException.class,
@@ -326,7 +328,7 @@ class SurveyNotificationSubscriptionServiceTest {
   void isSubscribed_exceptionFromCheckAccess_throwsException() {
     doThrow(ResponseStatusException.class)
         .when(permissionService)
-        .checkAccess(surveyId, currentUserId, Permission.SurveyRole.EDITOR);
+        .checkCanEdit(surveyId, currentUserId);
 
     assertThrows(
         ResponseStatusException.class,

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -20,7 +21,6 @@ import ru.hh.kakdela.v2.mapper.PermissionMapper;
 import ru.hh.kakdela.v2.model.Account;
 import ru.hh.kakdela.v2.model.Permission;
 import ru.hh.kakdela.v2.model.Permission.PermissionId;
-import ru.hh.kakdela.v2.model.Permission.SurveyRole;
 import ru.hh.kakdela.v2.model.Survey;
 
 @Slf4j
@@ -33,45 +33,45 @@ public class PermissionService {
   private final AccountDao accountDao;
 
   @Transactional(readOnly = true)
-  public void checkAccess(UUID surveyId, UUID accountId, SurveyRole requiredRole) {
-    Survey survey = surveyDao.findById(surveyId)
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
+  public void checkCanReadResponses(UUID surveyId, UUID accountId) {
+    Survey survey = getSurveyOrThrow(surveyId);
 
     if (survey.getAuthor().getId().equals(accountId)) {
       return;
     }
 
-    Permission permission = permissionDao.findBySurveyIdAndAccountId(surveyId, accountId)
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.FORBIDDEN, "Нет доступа к опросу"));
+    Permission permission = getPermissionOrThrow(surveyId, accountId);
 
-    if (!hasEnoughRole(permission.getRole(), requiredRole)) {
+    if (!permission.getRole().isResponseReadAccess()) {
       throw new ResponseStatusException(
-          HttpStatus.FORBIDDEN, "Недостаточно прав. Требуется: " + requiredRole);
+          HttpStatus.FORBIDDEN, "У вас нет прав на просмотр ответов");
+    }
+  }
+
+  @Transactional(readOnly = true)
+  public void checkCanEdit(UUID surveyId, UUID accountId) {
+    Survey survey = getSurveyOrThrow(surveyId);
+
+    if (survey.getAuthor().getId().equals(accountId)) {
+      return;
+    }
+
+    Permission permission = getPermissionOrThrow(surveyId, accountId);
+
+    if (!permission.getRole().isEditAccess()) {
+      throw new ResponseStatusException(
+          HttpStatus.FORBIDDEN, "У вас нет прав на редактирование опроса");
     }
   }
 
   @Transactional(readOnly = true)
   public void checkOwnership(UUID surveyId, UUID accountId) {
-    Survey survey = surveyDao.findById(surveyId)
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
+    Survey survey = getSurveyOrThrow(surveyId);
 
     if (!survey.getAuthor().getId().equals(accountId)) {
       throw new ResponseStatusException(
           HttpStatus.FORBIDDEN, "Вы не являетесь автором опроса");
     }
-  }
-
-  private boolean hasEnoughRole(SurveyRole userRole, SurveyRole requiredRole) {
-    if (requiredRole == SurveyRole.EDITOR) {
-      return userRole == SurveyRole.EDITOR;
-    }
-    if (requiredRole == SurveyRole.ANALYST) {
-      return userRole == SurveyRole.EDITOR || userRole == SurveyRole.ANALYST;
-    }
-    return false;
   }
 
   @Transactional(readOnly = true)
@@ -164,5 +164,17 @@ public class PermissionService {
     return Stream.concat(authored.stream(), shared.stream())
         .distinct()
         .collect(Collectors.toList());
+  }
+
+  private Survey getSurveyOrThrow(UUID surveyId) {
+    return surveyDao.findById(surveyId)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
+  }
+
+  private Permission getPermissionOrThrow(UUID surveyId, UUID accountId) {
+    return permissionDao.findBySurveyIdAndAccountId(surveyId, accountId)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.FORBIDDEN, "Нет доступа к опросу"));
   }
 }
