@@ -1,8 +1,9 @@
 package ru.hh.kakdela.v2.service;
 
+import static java.util.stream.Collectors.toList;
+
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,10 +14,12 @@ import org.springframework.web.server.ResponseStatusException;
 import ru.hh.kakdela.v2.dao.AccountDao;
 import ru.hh.kakdela.v2.dao.PermissionDao;
 import ru.hh.kakdela.v2.dao.SurveyDao;
-import ru.hh.kakdela.v2.dto.permission.PermissionCreateDto;
+import ru.hh.kakdela.v2.dto.permission.PermissionRequestDto;
 import ru.hh.kakdela.v2.dto.permission.PermissionResponseDto;
 import ru.hh.kakdela.v2.dto.permission.PermissionUpdateDto;
+import ru.hh.kakdela.v2.dto.survey.SurveyWithUserRoleDto;
 import ru.hh.kakdela.v2.mapper.PermissionMapper;
+import ru.hh.kakdela.v2.mapper.SurveyMapper;
 import ru.hh.kakdela.v2.model.Account;
 import ru.hh.kakdela.v2.model.Permission;
 import ru.hh.kakdela.v2.model.Permission.PermissionId;
@@ -31,6 +34,7 @@ public class PermissionService {
   private final PermissionDao permissionDao;
   private final SurveyDao surveyDao;
   private final AccountDao accountDao;
+  private final SurveyMapper surveyMapper;
 
   @Transactional(readOnly = true)
   public void checkAccess(UUID surveyId, UUID accountId, SurveyRole requiredRole) {
@@ -89,7 +93,7 @@ public class PermissionService {
   }
 
   @Transactional
-  public PermissionResponseDto create(UUID surveyId, UUID currentUserId, PermissionCreateDto dto) {
+  public PermissionResponseDto create(UUID surveyId, UUID currentUserId, PermissionRequestDto dto) {
     checkOwnership(surveyId, currentUserId);
 
     if (permissionDao.existsBySurveyIdAndAccountId(surveyId, dto.getAccountId())) {
@@ -125,10 +129,34 @@ public class PermissionService {
   }
 
   @Transactional
-  public PermissionResponseDto update(UUID surveyId,
-                                      UUID accountId,
-                                      UUID currentUserId,
-                                      PermissionUpdateDto dto) {
+  public PermissionResponseDto updateFull(
+      UUID surveyId,
+      UUID accountId,
+      UUID currentUserId,
+      PermissionRequestDto dto
+  ) {
+    checkOwnership(surveyId, currentUserId);
+
+    Permission permission = permissionDao.findBySurveyIdAndAccountId(surveyId, accountId)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Доступ не найден"));
+
+    permission.setRole(dto.getRole());
+    permission.setDoNotify(dto.getDoNotify());
+
+    permissionDao.update(permission);
+    log.info("Изменены права доступа (full update) surveyId={} accountId={}", surveyId, accountId);
+
+    return PermissionMapper.permissionToDto(permission);
+  }
+
+  @Transactional
+  public PermissionResponseDto updatePartial(
+      UUID surveyId,
+      UUID accountId,
+      UUID currentUserId,
+      PermissionUpdateDto dto
+  ) {
     checkOwnership(surveyId, currentUserId);
 
     Permission permission = permissionDao.findBySurveyIdAndAccountId(surveyId, accountId)
@@ -143,7 +171,8 @@ public class PermissionService {
     }
 
     permissionDao.update(permission);
-    log.info("Изменены права доступа surveyId={} accountId={}", surveyId, accountId);
+    log.info("Изменены права доступа (partial update) surveyId={} accountId={}",
+        surveyId, accountId);
     return PermissionMapper.permissionToDto(permission);
   }
 
@@ -155,14 +184,21 @@ public class PermissionService {
   }
 
   @Transactional(readOnly = true)
-  public List<Survey> getAccessibleSurveys(UUID accountId) {
-    List<Survey> authored = surveyDao.findAllByAuthorId(accountId);
-    List<Survey> shared = permissionDao.findAllByAccountId(accountId).stream()
-        .map(Permission::getSurvey)
+  public List<SurveyWithUserRoleDto> getAccessibleSurveys(UUID accountId) {
+    List<SurveyWithUserRoleDto> authored = surveyDao.findAllByAuthorId(accountId).stream()
+        .map(survey ->
+            surveyMapper.surveyToSurveyWithRoleDto(survey, SurveyRole.AUTHOR)
+        )
+        .toList();
+
+    List<SurveyWithUserRoleDto> shared = permissionDao.findAllByAccountId(accountId).stream()
+        .map(permission ->
+            surveyMapper.surveyToSurveyWithRoleDto(permission.getSurvey(), permission.getRole())
+        )
         .toList();
 
     return Stream.concat(authored.stream(), shared.stream())
         .distinct()
-        .collect(Collectors.toList());
+        .collect(toList());
   }
 }

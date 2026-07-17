@@ -5,7 +5,6 @@ import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -13,10 +12,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import ru.hh.kakdela.v2.dao.AccountDao;
+import ru.hh.kakdela.v2.dao.PermissionDao;
 import ru.hh.kakdela.v2.dao.SurveyDao;
 import ru.hh.kakdela.v2.dto.survey.SurveyCreateDto;
 import ru.hh.kakdela.v2.dto.survey.SurveyResponseDto;
-import ru.hh.kakdela.v2.dto.survey.SurveyShortResponseDto;
+import ru.hh.kakdela.v2.dto.survey.SurveyShortResponseWithPermissionDto;
 import ru.hh.kakdela.v2.dto.survey.SurveyUpdateDto;
 import ru.hh.kakdela.v2.mapper.SurveyMapper;
 import ru.hh.kakdela.v2.model.Account;
@@ -34,6 +34,7 @@ public class SurveyService {
 
   private final SurveyDao surveyDao;
   private final AccountDao accountDao;
+  private final PermissionDao permissionDao;
   private final PermissionService permissionService;
   private final NotificationService notificationService;
   private final SurveyMapper surveyMapper;
@@ -47,24 +48,18 @@ public class SurveyService {
   }
 
   @Transactional(readOnly = true)
-  public List<SurveyShortResponseDto> getAllByAuthorId(UUID authorId) {
+  public List<SurveyShortResponseWithPermissionDto> getAllByAuthorId(UUID authorId) {
     return surveyDao.findAllByAuthorId(authorId).stream()
-        .map(surveyMapper::surveyToShortDto)
+        .map(survey -> {
+          return surveyMapper.surveyToShortDto(survey, SurveyRole.AUTHOR);
+        })
         .toList();
   }
 
   @Transactional(readOnly = true)
-  public List<SurveyShortResponseDto> getMySurveys(UUID accountId) {
-    List<Survey> surveys = permissionService.getAccessibleSurveys(accountId);
-    return surveys.stream()
-        .map(surveyMapper::surveyToShortDto)
-        .collect(Collectors.toList());
-  }
-
-  @Transactional(readOnly = true)
-  public List<SurveyShortResponseDto> getAllPublished() {
-    return surveyDao.findAllPublished().stream()
-        .map(surveyMapper::surveyToShortDto)
+  public List<SurveyShortResponseWithPermissionDto> getMySurveys(UUID accountId) {
+    return permissionService.getAccessibleSurveys(accountId).stream()
+        .map(surveyMapper::surveyWithRoleDtoToShortDto)
         .toList();
   }
 

@@ -17,7 +17,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
     name = "PermissionCreate",
     title = "DTO для создания роли"
 )
-public class PermissionCreateDto {
+public class PermissionRequestDto {
 
   @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
   @NotNull(message = "ID аккаунта обязателен")
