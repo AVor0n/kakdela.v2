@@ -58,6 +58,7 @@ public class Permission {
   @AllArgsConstructor
   @Getter
   public enum SurveyRole {
+    AUTHOR(true,true),
     EDITOR(true, true),
     ANALYST(true, false);
 
