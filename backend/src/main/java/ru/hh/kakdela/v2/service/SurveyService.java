@@ -38,6 +38,14 @@ public class SurveyService {
   private final NotificationService notificationService;
   private final SurveyMapper surveyMapper;
 
+  private void validateAuthorizationConsistency(Survey survey) {
+    if (survey.isLimitedToOneResponse() && !survey.isAuthorizedOnly()) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+          "Ограничение \"один ответ на пользователя\" доступно только для опросов, "
+              + "ограниченных авторизованными пользователями");
+    }
+  }
+
   @Transactional(readOnly = true)
   public SurveyResponseDto getById(UUID id) {
     Survey survey = surveyDao.findById(id)
@@ -85,13 +93,15 @@ public class SurveyService {
         .isTemplate(false)
         .expireAt(dto.getExpireAtAtTargetTimezone() != null
             ? dto.getExpireAtAtTargetTimezone()
-                .atZone(ZoneId.of(dto.getTargetTimezone()))
-                .toInstant()
-                .truncatedTo(ChronoUnit.SECONDS)
+            .atZone(ZoneId.of(dto.getTargetTimezone()))
+            .toInstant()
+            .truncatedTo(ChronoUnit.SECONDS)
             : null)
         .targetTimezone(dto.getTargetTimezone())
         .createdAt(Instant.now().truncatedTo(ChronoUnit.SECONDS))
         .build();
+
+    validateAuthorizationConsistency(survey);
 
     surveyDao.save(survey);
     log.info("Создан опрос id={} authorId={}", survey.getId(), authorId);
@@ -117,6 +127,8 @@ public class SurveyService {
     if (dto.getIsLimitedToOneResponse() != null) {
       survey.setLimitedToOneResponse(dto.getIsLimitedToOneResponse());
     }
+    validateAuthorizationConsistency(survey);
+
     final boolean wasPublished = survey.isPublished();
     if (dto.getIsPublished() != null) {
       survey.setPublished(dto.getIsPublished());
