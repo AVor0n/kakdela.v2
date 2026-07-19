@@ -53,6 +53,11 @@ public class AnswerService {
   public List<AnswerResponseDto> getAllByResponseId(UUID responseId, UUID accountId, String token) {
     Response response = checkAccessAndGetResponse(responseId, accountId, token);
 
+    if (response.getAccount() == null && response.isCompleted()) {
+      throw new ResponseStatusException(
+          HttpStatus.FORBIDDEN, "Просмотр завершённых анонимных ответов запрещён");
+    }
+
     return response.getAnswers().stream()
         .map(AnswerMapper::answerToDto)
         .toList();
