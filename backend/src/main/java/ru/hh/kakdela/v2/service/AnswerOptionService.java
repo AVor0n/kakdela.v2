@@ -60,6 +60,11 @@ public class AnswerOptionService {
     if (dto.getSerialNumber() != null
         && !dto.getSerialNumber().equals(maxAvailableSerial)) {
 
+      if (dto.getSerialNumber() < 1) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+            "Порядковый номер должен быть не меньше 1");
+      }
+
       if (dto.getSerialNumber() > maxAvailableSerial) {
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
             "Порядковый номер должен быть не больше " + maxAvailableSerial);
@@ -96,6 +101,11 @@ public class AnswerOptionService {
 
     if (dto.getSerialNumber() != null && !dto.getSerialNumber().equals(oldSerial)) {
       int newSerial = dto.getSerialNumber();
+
+      if (newSerial < 1) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+            "Новый номер должен быть не меньше 1");
+      }
 
       int maxAvailableSerial = answerOptionDao.findMaxSerialNumber(questionId);
       if (newSerial > maxAvailableSerial) {
