@@ -98,6 +98,16 @@ public class ResponseService {
           HttpStatus.BAD_REQUEST, "Опрос ещё не опубликован");
     }
 
+    if (survey.getExpireAt() != null && survey.getExpireAt().isBefore(Instant.now())) {
+      throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST, "Дедлайн прохождения опроса истёк");
+    }
+
+    if (survey.isAuthorizedOnly() && accountId == null) {
+      throw new ResponseStatusException(
+          HttpStatus.UNAUTHORIZED, "Опрос доступен только авторизованным пользователям");
+    }
+
     if (survey.isLimitedToOneResponse() && accountId != null) {
       if (responseDao.existsBySurveyIdAndAccountId(surveyId, accountId)) {
         throw new ResponseStatusException(
