@@ -5,6 +5,7 @@ import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -80,9 +81,9 @@ public class SurveyService {
         .isTemplate(false)
         .expireAt(dto.getExpireAtAtTargetTimezone() != null
             ? dto.getExpireAtAtTargetTimezone()
-                .atZone(ZoneId.of(dto.getTargetTimezone()))
-                .toInstant()
-                .truncatedTo(ChronoUnit.SECONDS)
+            .atZone(ZoneId.of(dto.getTargetTimezone()))
+            .toInstant()
+            .truncatedTo(ChronoUnit.SECONDS)
             : null)
         .targetTimezone(dto.getTargetTimezone())
         .createdAt(Instant.now().truncatedTo(ChronoUnit.SECONDS))
@@ -95,7 +96,8 @@ public class SurveyService {
 
   @Transactional
   public SurveyResponseDto update(UUID surveyId, SurveyUpdateDto dto, UUID accountId) {
-    permissionService.checkAccess(surveyId, accountId, SurveyRole.EDITOR);
+    permissionService.checkCanEdit(surveyId, accountId);
+
     Survey survey = surveyDao.findById(surveyId)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
@@ -155,7 +157,7 @@ public class SurveyService {
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
 
-    permissionService.checkAccess(surveyId, accountId, SurveyRole.EDITOR);
+    permissionService.checkCanEdit(surveyId, accountId);
 
     Account account = accountDao.findById(accountId)
         .orElseThrow(() -> new ResponseStatusException(

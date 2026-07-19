@@ -2,6 +2,7 @@ package ru.hh.kakdela.v2.service;
 
 import java.util.List;
 import java.util.UUID;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -59,7 +60,7 @@ public class QuestionService {
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Страница не найдена: " + pageId));
 
-    permissionService.checkAccess(page.getSurvey().getId(), accountId, SurveyRole.EDITOR);
+    permissionService.checkCanEdit(page.getSurvey().getId(), accountId);
 
     int maxAvailableSerial = questionDao.findMaxSerialNumber(pageId) + 1;
 
@@ -103,11 +104,8 @@ public class QuestionService {
             )
         );
 
-    permissionService.checkAccess(
-        originalQuestion.getSurveyPage().getSurvey().getId(),
-        accountId,
-        SurveyRole.EDITOR
-    );
+    permissionService.checkCanEdit(
+        originalQuestion.getSurveyPage().getSurvey().getId(), accountId);
 
     Question questionCopy = Question.builder()
         .surveyPage(originalQuestion.getSurveyPage())
@@ -147,8 +145,7 @@ public class QuestionService {
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Вопрос не найден: " + questionId));
 
-    permissionService.checkAccess(question.getSurveyPage().getSurvey().getId(), accountId,
-        SurveyRole.EDITOR);
+    permissionService.checkCanEdit(question.getSurveyPage().getSurvey().getId(), accountId);
 
     UUID pageId = question.getSurveyPage().getId();
     int oldSerial = question.getSerialNumber();
@@ -203,8 +200,8 @@ public class QuestionService {
     Question question = questionDao.findById(id)
         .orElseThrow(
             () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Вопрос не найден: " + id));
-    permissionService.checkAccess(question.getSurveyPage().getSurvey().getId(), accountId,
-        SurveyRole.EDITOR);
+    permissionService.checkCanEdit(
+        question.getSurveyPage().getSurvey().getId(), accountId);
 
     UUID pageId = question.getSurveyPage().getId();
     int deletedSerial = question.getSerialNumber();
@@ -223,8 +220,8 @@ public class QuestionService {
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Вопрос не найден: " + questionId));
 
-    permissionService.checkAccess(
-        question.getSurveyPage().getSurvey().getId(), accountId, SurveyRole.EDITOR);
+    permissionService.checkCanEdit(
+        question.getSurveyPage().getSurvey().getId(), accountId);
 
     if (question.getAttachmentObjectKey() != null) {
       throw new ResponseStatusException(
@@ -254,8 +251,8 @@ public class QuestionService {
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Вопрос не найден: " + questionId));
 
-    permissionService.checkAccess(
-        question.getSurveyPage().getSurvey().getId(), accountId, SurveyRole.EDITOR);
+    permissionService.checkCanEdit(
+        question.getSurveyPage().getSurvey().getId(), accountId);
 
     ProcessedImage image = imageProcessingService.process(file);
 
@@ -283,8 +280,8 @@ public class QuestionService {
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Вопрос не найден: " + questionId));
 
-    permissionService.checkAccess(
-        question.getSurveyPage().getSurvey().getId(), accountId, SurveyRole.EDITOR);
+    permissionService.checkCanEdit(
+        question.getSurveyPage().getSurvey().getId(), accountId);
 
     if (question.getAttachmentObjectKey() == null) {
       throw new ResponseStatusException(

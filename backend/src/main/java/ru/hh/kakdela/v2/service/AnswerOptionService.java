@@ -2,6 +2,7 @@ package ru.hh.kakdela.v2.service;
 
 import java.util.List;
 import java.util.UUID;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -52,8 +53,7 @@ public class AnswerOptionService {
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Вопрос не найден: " + questionId));
 
-    permissionService.checkAccess(
-        question.getSurveyPage().getSurvey().getId(), accountId, SurveyRole.EDITOR);
+    permissionService.checkCanEdit(question.getSurveyPage().getSurvey().getId(), accountId);
 
     int maxAvailableSerial = answerOptionDao.findMaxSerialNumber(questionId) + 1;
 
@@ -87,9 +87,8 @@ public class AnswerOptionService {
         .orElseThrow(
             () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Вопрос не найден: " + id));
 
-    permissionService.checkAccess(
-        answerOption.getQuestion().getSurveyPage().getSurvey().getId(),
-        accountId, SurveyRole.EDITOR);
+    permissionService.checkCanEdit(
+        answerOption.getQuestion().getSurveyPage().getSurvey().getId(), accountId);
 
     UUID questionId = answerOption.getQuestion().getId();
     int oldSerial = answerOption.getSerialNumber();
@@ -128,8 +127,8 @@ public class AnswerOptionService {
 
     Question question = answerOption.getQuestion();
 
-    permissionService.checkAccess(answerOption.getQuestion().getSurveyPage().getSurvey().getId(),
-        accountId, SurveyRole.EDITOR);
+    permissionService.checkCanEdit(
+        answerOption.getQuestion().getSurveyPage().getSurvey().getId(), accountId);
     UUID questionId = question.getId();
     int deletedSerial = answerOption.getSerialNumber();
 
@@ -148,9 +147,8 @@ public class AnswerOptionService {
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Вариант ответа не найден: " + answerOptionId));
 
-    permissionService.checkAccess(
-        answerOption.getQuestion().getSurveyPage().getSurvey().getId(),
-        accountId, SurveyRole.EDITOR);
+    permissionService.checkCanEdit(
+        answerOption.getQuestion().getSurveyPage().getSurvey().getId(), accountId);
 
     if (answerOption.getAttachmentObjectKey() != null) {
       throw new ResponseStatusException(
@@ -181,9 +179,8 @@ public class AnswerOptionService {
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Вариант ответа не найден: " + answerOptionId));
 
-    permissionService.checkAccess(
-        answerOption.getQuestion().getSurveyPage().getSurvey().getId(), accountId,
-        SurveyRole.EDITOR);
+    permissionService.checkCanEdit(
+        answerOption.getQuestion().getSurveyPage().getSurvey().getId(), accountId);
 
     ProcessedImage image = imageProcessingService.process(file);
 
@@ -212,9 +209,8 @@ public class AnswerOptionService {
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Вариант ответа не найден: " + answerOptionId));
 
-    permissionService.checkAccess(
-        answerOption.getQuestion().getSurveyPage().getSurvey().getId(), accountId,
-        SurveyRole.EDITOR);
+    permissionService.checkCanEdit(
+        answerOption.getQuestion().getSurveyPage().getSurvey().getId(), accountId);
 
     if (answerOption.getAttachmentObjectKey() == null) {
       throw new ResponseStatusException(

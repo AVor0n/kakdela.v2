@@ -61,7 +61,8 @@ public class NotificationScheduleService {
       NotificationScheduleCreateDto dto,
       UUID accountId
   ) {
-    permissionService.checkAccess(surveyId, accountId, Permission.SurveyRole.EDITOR);
+    permissionService.checkCanEdit(surveyId, accountId);
+
     Survey survey = surveyDao.findById(surveyId).orElseThrow(
         () -> new ResponseStatusException(
             HttpStatus.NOT_FOUND,
@@ -104,11 +105,8 @@ public class NotificationScheduleService {
                 "Опрос " + id + " не найден"
             )
         );
-    permissionService.checkAccess(
-        notificationSchedule.getSurvey().getId(),
-        accountId,
-        Permission.SurveyRole.EDITOR
-    );
+    permissionService.checkCanEdit(
+        notificationSchedule.getSurvey().getId(), accountId);
 
     if (dto.getName() != null) {
       notificationSchedule.setName(dto.getName());
@@ -158,13 +156,13 @@ public class NotificationScheduleService {
   @Transactional
   public void delete(UUID id, UUID accountId) {
     NotificationSchedule toDelete = notificationScheduleDao.findById(id)
-            .orElseThrow(
-                () -> new ResponseStatusException(
-                    HttpStatus.NOT_FOUND,
-                    "Опрос " + id + " не найден"
-                )
-            );
-    permissionService.checkAccess(toDelete.getSurvey().getId(), accountId, Permission.SurveyRole.EDITOR);
+        .orElseThrow(
+            () -> new ResponseStatusException(
+                HttpStatus.NOT_FOUND,
+                "Опрос " + id + " не найден"
+            )
+        );
+    permissionService.checkCanEdit(toDelete.getSurvey().getId(), accountId);
 
     notificationScheduleDao.delete(toDelete);
   }

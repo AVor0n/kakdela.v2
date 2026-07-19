@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -66,7 +67,8 @@ public class ResponseService {
 
   @Transactional(readOnly = true)
   public List<ResponseResponseDto> getCompletedBySurveyId(UUID surveyId, UUID accountId) {
-    permissionService.checkAccess(surveyId, accountId, Permission.SurveyRole.ANALYST);
+    permissionService.checkCanReadResponses(surveyId, accountId);
+
     return responseDao.findCompletedBySurveyId(surveyId).stream()
         .map(ResponseMapper::responseToDto)
         .toList();
