@@ -55,7 +55,6 @@ public class SurveyPageService {
 
     if (dto.getSerialNumber() != null
         && !dto.getSerialNumber().equals(maxAvailableSerial)) {
-
       if (dto.getSerialNumber() > maxAvailableSerial) {
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
             "Порядковый номер должен быть не больше " + maxAvailableSerial);
@@ -91,7 +90,6 @@ public class SurveyPageService {
 
     if (dto.getSerialNumber() != null && !dto.getSerialNumber().equals(oldSerial)) {
       int newSerial = dto.getSerialNumber();
-
       int maxAvailableSerial = surveyPageDao.findMaxSerialNumber(surveyId);
       if (newSerial > maxAvailableSerial) {
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST,

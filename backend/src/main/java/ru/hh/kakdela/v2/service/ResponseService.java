@@ -34,10 +34,18 @@ public class ResponseService {
   private final PermissionService permissionService;
   private final JwtService jwtService;
 
+  private boolean isSurveyAuthor(Response response, UUID accountId) {
+    return response.getSurvey().getAuthor().getId().equals(accountId);
+  }
+
   private Response checkAccessAndGetResponse(UUID responseId, UUID accountId, String token) {
     Response response = responseDao.findById(responseId)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Ответ не найден: " + responseId));
+
+    if (response.isCompleted() && isSurveyAuthor(response, accountId)) {
+      return response;
+    }
 
     if (response.getAccount() == null && token == null) {
       throw new ResponseStatusException(
@@ -57,7 +65,8 @@ public class ResponseService {
   public ResponseResponseDto getById(UUID id, UUID accountId, String token) {
     Response response = checkAccessAndGetResponse(id, accountId, token);
 
-    if (response.getAccount() == null && response.isCompleted()) {
+    if (response.getAccount() == null && response.isCompleted()
+        && !isSurveyAuthor(response, accountId)) {
       throw new ResponseStatusException(
           HttpStatus.FORBIDDEN, "Просмотр завершённых анонимных ответов запрещён");
     }
@@ -98,6 +107,16 @@ public class ResponseService {
     if (!survey.isPublished()) {
       throw new ResponseStatusException(
           HttpStatus.BAD_REQUEST, "Опрос ещё не опубликован");
+    }
+
+    if (survey.getExpireAt() != null && survey.getExpireAt().isBefore(Instant.now())) {
+      throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST, "Дедлайн прохождения опроса истёк");
+    }
+
+    if (survey.isAuthorizedOnly() && accountId == null) {
+      throw new ResponseStatusException(
+          HttpStatus.UNAUTHORIZED, "Опрос доступен только авторизованным пользователям");
     }
 
     if (survey.isLimitedToOneResponse() && accountId != null) {
