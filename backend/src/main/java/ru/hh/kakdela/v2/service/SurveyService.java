@@ -182,7 +182,8 @@ public class SurveyService {
         .isTemplate(false)
         .doNotify(originalSurvey.isDoNotify())
         .expireAt(originalSurvey.getExpireAt())
-        .createdAt(Instant.now())
+        .targetTimezone(originalSurvey.getTargetTimezone())
+        .createdAt(Instant.now().truncatedTo(ChronoUnit.SECONDS))
         .build();
 
     for (SurveyPage originalPage : originalSurvey.getPages()) {
@@ -199,6 +200,7 @@ public class SurveyService {
             .serialNumber(originalQuestion.getSerialNumber())
             .title(originalQuestion.getTitle())
             .description(originalQuestion.getDescription())
+            .attachmentObjectKey(originalQuestion.getAttachmentObjectKey())
             .type(originalQuestion.getType())
             .answerOptionOrder(originalQuestion.getAnswerOptionOrder())
             .isMandatory(originalQuestion.isMandatory())
@@ -211,6 +213,7 @@ public class SurveyService {
               .question(questionCopy)
               .serialNumber(originalOption.getSerialNumber())
               .answerOptionText(originalOption.getAnswerOptionText())
+              .attachmentObjectKey(originalOption.getAttachmentObjectKey())
               .build();
           questionCopy.getAnswerOptions().add(optionCopy);
         }
@@ -226,6 +229,7 @@ public class SurveyService {
           .survey(surveyCopy)
           .title(originalSurvey.getClosingPage().getTitle())
           .description(originalSurvey.getClosingPage().getDescription())
+          .attachmentObjectKey(originalSurvey.getClosingPage().getAttachmentObjectKey())
           .websiteUrl(originalSurvey.getClosingPage().getWebsiteUrl())
           .build();
       surveyCopy.setClosingPage(closingPageCopy);
