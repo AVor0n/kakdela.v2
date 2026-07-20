@@ -61,8 +61,8 @@ public class AnswerService {
   public List<AnswerResponseDto> getAllByResponseId(UUID responseId, UUID accountId, String token) {
     Response response = checkAccessAndGetResponse(responseId, accountId, token);
 
-    if (response.getAccount() == null && response.isCompleted() &&
-        !isSurveyAuthor(response, accountId)) {
+    if (response.getAccount() == null && response.isCompleted()
+        && !isSurveyAuthor(response, accountId)) {
       throw new ResponseStatusException(
           HttpStatus.FORBIDDEN, "Просмотр завершённых анонимных ответов запрещён");
     }
