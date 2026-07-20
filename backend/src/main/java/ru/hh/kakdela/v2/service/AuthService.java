@@ -31,9 +31,6 @@ public class AuthService {
   }
 
   public void checkPassword(UserDetails userDetails, String providedPassword) {
-    if (providedPassword == null) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Текущий пароль обязателен");
-    }
     if (!passwordEncoder.matches(providedPassword, userDetails.getPassword())) {
       throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Предоставлен неверный пароль");
     }

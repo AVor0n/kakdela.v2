@@ -41,8 +41,8 @@ public class SurveyService {
   private void validateAuthorizationConsistency(Survey survey) {
     if (survey.isLimitedToOneResponse() && !survey.isAuthorizedOnly()) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-          "Ограничение \"один ответ на пользователя\" доступно только для опросов, "
-              + "ограниченных авторизованными пользователями");
+          "Опция \"Запретить проходить более одного раза\" доступна только при "
+              + "включённой опции \"Запретить анонимное прохождение\"");
     }
   }
 
