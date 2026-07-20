@@ -46,6 +46,8 @@ public class SurveyService {
     return surveyMapper.surveyToDto(survey);
   }
 
+  // TODO: метод getAllByAuthorId надо выпилить
+
   @Transactional(readOnly = true)
   public List<SurveyShortResponseDto> getAllByAuthorId(UUID authorId) {
     return surveyDao.findAllByAuthorId(authorId).stream()
@@ -60,6 +62,8 @@ public class SurveyService {
         .map(surveyMapper::surveyToShortDto)
         .collect(Collectors.toList());
   }
+
+  // TODO: метод getAllPublished надо выпилить
 
   @Transactional(readOnly = true)
   public List<SurveyShortResponseDto> getAllPublished() {
@@ -139,6 +143,8 @@ public class SurveyService {
       }
     } else if (dto.getTargetTimezone() != null) {
       survey.setExpireAt(survey.getExpireAt()
+          .atZone(ZoneId.of(survey.getTargetTimezone()))
+          .toLocalDateTime()
           .atZone(ZoneId.of(dto.getTargetTimezone()))
           .toInstant()
           .truncatedTo(ChronoUnit.SECONDS));
