@@ -44,7 +44,7 @@ public class Question {
   @Column(name = "title", length = 200, nullable = false)
   private String title;
 
-  @Column(name = "description", length = 5000)
+  @Column(name = "description", columnDefinition = "text")
   private String description;
 
   @Column(name = "attachment_object_key", length = 1024)
