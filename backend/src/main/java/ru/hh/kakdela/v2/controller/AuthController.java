@@ -1,27 +1,24 @@
 package ru.hh.kakdela.v2.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseCookie;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-
-import io.swagger.v3.oas.annotations.tags.Tag;
+import ru.hh.kakdela.v2.constants.CookieNames;
 import ru.hh.kakdela.v2.dto.account.AccountCreateDto;
 import ru.hh.kakdela.v2.dto.account.AccountResponseDto;
 import ru.hh.kakdela.v2.dto.auth.AuthTokensDto;
 import ru.hh.kakdela.v2.dto.auth.LoginDto;
-import ru.hh.kakdela.v2.security.CustomUserDetails;
-import ru.hh.kakdela.v2.service.AuthService;
 import ru.hh.kakdela.v2.service.AccountService;
+import ru.hh.kakdela.v2.service.AuthService;
+import ru.hh.kakdela.v2.util.CookieUtil;
 
 @RequiredArgsConstructor
 @RestController
@@ -40,60 +37,35 @@ public class AuthController {
 
   @PostMapping("/auth/register")
   @ResponseStatus(HttpStatus.CREATED)
-  public AccountResponseDto register(@Valid @RequestBody AccountCreateDto accountCreateDto) {
-    return accountService.create(accountCreateDto);
+  public AccountResponseDto register(@Valid @RequestBody AccountCreateDto dto) {
+
+    return accountService.create(dto);
   }
 
   @PostMapping("/auth/login")
   @ResponseStatus(HttpStatus.NO_CONTENT)
-  public void login(@RequestBody LoginDto loginDto, HttpServletResponse response) {
-    AuthTokensDto authTokensDto = authService.login(loginDto);
+  public void login(
+      @RequestBody LoginDto dto,
+      HttpServletResponse response
+  ) {
 
-    if (authTokensDto.getAccessToken() != null) {
-      ResponseCookie accessTokenCookie = ResponseCookie.from(
-              "accessToken", authTokensDto.getAccessToken())
-          .httpOnly(true)
-          .sameSite("Strict")
-          .path("/api")
-          .maxAge(accessTokenMaxAge)
-          .build();
+    AuthTokensDto authTokensDto = authService.login(dto);
 
-      response.addHeader(HttpHeaders.SET_COOKIE, accessTokenCookie.toString());
-    }
-
-    if (authTokensDto.getRefreshToken() != null) {
-      ResponseCookie refreshTokenCookie = ResponseCookie.from(
-              "refreshToken", authTokensDto.getRefreshToken())
-          .httpOnly(true)
-          .sameSite("Strict")
-          .path("/api/auth/refresh")
-          .maxAge(refreshTokenMaxAge)
-          .build();
-
-      response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
-    }
+    CookieUtil.setHttpOnlySameSiteStrictCookie(
+        response, "/api", accessTokenMaxAge,
+        CookieNames.accessToken, authTokensDto.getAccessToken());
+    CookieUtil.setHttpOnlySameSiteStrictCookie(
+        response, "/api", refreshTokenMaxAge,
+        CookieNames.refreshToken, authTokensDto.getRefreshToken());
   }
 
   @PostMapping("/auth/logout")
   @ResponseStatus(HttpStatus.NO_CONTENT)
-  public void logout(@AuthenticationPrincipal CustomUserDetails currentUser,
-                       HttpServletResponse response) {
+  public void logout(HttpServletResponse response) {
 
-    ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken")
-        .httpOnly(true)
-        .sameSite("Strict")
-        .path("/api")
-        .maxAge(0)
-        .build();
-
-    ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken")
-        .httpOnly(true)
-        .sameSite("Strict")
-        .path("/api/auth/refresh")
-        .maxAge(0)
-        .build();
-
-    response.addHeader(HttpHeaders.SET_COOKIE, accessTokenCookie.toString());
-    response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
+    CookieUtil.setHttpOnlySameSiteStrictCookie(
+        response, "/api", 0, CookieNames.accessToken);
+    CookieUtil.setHttpOnlySameSiteStrictCookie(
+        response, "/api", 0, CookieNames.refreshToken);
   }
 }

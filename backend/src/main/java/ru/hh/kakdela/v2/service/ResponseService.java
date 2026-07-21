@@ -122,12 +122,11 @@ public class ResponseService {
     log.info("Создан ответ на опрос id={} surveyId={} accountId={}",
         response.getId(), surveyId, accountId);
 
-    if (accountId == null) {
-      return new ResponseWithTokenDto(
-          response.getId(), jwtService.generateResponseAccessToken(response.getId()));
-    }
-
-    return new ResponseWithTokenDto(response.getId(), null);
+    return new ResponseWithTokenDto(
+        response.getId(),
+        accountId != null
+            ? null
+            : jwtService.generateResponseAccessToken(response.getId()));
   }
 
   @Transactional

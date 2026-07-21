@@ -1,12 +1,20 @@
 import type { Question } from '@/shared/types/Question.type';
 import { apiClient } from './client';
 
-export type UpdateQuestionRequest = Partial<Pick<Question, 'title' | 'isMandatory' | 'type'>>;
+export type UpdateQuestionRequest = Partial<
+    Pick<Question, 'title' | 'isMandatory' | 'type' | 'description' | 'serialNumber'>
+>;
 
 export type CreateQuestionRequest = Pick<Question, 'title' | 'serialNumber' | 'type'>;
 
 export async function createQuestion(pageId: string, questionData: CreateQuestionRequest): Promise<Question> {
     const { data } = await apiClient.post<Question>(`/api/pages/${pageId}/questions`, questionData);
+
+    return data;
+}
+
+export async function cloneQuestion(questionId: string): Promise<Question> {
+    const { data } = await apiClient.post<Question>(`/api/questions/${questionId}/clone`);
 
     return data;
 }

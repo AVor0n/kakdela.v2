@@ -10,9 +10,9 @@ apiClient.interceptors.response.use(
     (error) => {
         if (axios.isAxiosError(error) && (error.response?.status === 401 || error.response?.status === 403)) {
             const requestUrl = error.config?.url ?? '';
-            const isAuthRequest = requestUrl.includes('/auth/login') || requestUrl.includes('/auth/register');
+            const isAccountCheck = requestUrl.includes('/api/accounts/me');
 
-            if (!isAuthRequest && window.location.pathname !== routes.login()) {
+            if (!isAccountCheck && window.location.pathname !== routes.login()) {
                 window.location.assign(routes.login());
             }
         }

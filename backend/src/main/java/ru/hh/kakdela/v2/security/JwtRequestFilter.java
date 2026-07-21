@@ -6,25 +6,25 @@ import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.security.SignatureException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.CredentialsExpiredException;
+import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import ru.hh.kakdela.v2.dto.error.ErrorResponse;
-import tools.jackson.databind.ObjectMapper;
+import ru.hh.kakdela.v2.constants.CookieNames;
+import ru.hh.kakdela.v2.util.CookieUtil;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -33,22 +33,15 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
   private final JwtService jwtService;
   private final UserDetailsService userDetailsService;
+  private final AuthenticationEntryPoint authenticationEntryPoint;
 
   @Override
-  protected void doFilterInternal(HttpServletRequest request,
+  protected void doFilterInternal(
+      HttpServletRequest request,
       HttpServletResponse response,
       FilterChain chain) throws ServletException, IOException {
 
-    Cookie[] cookies = request.getCookies();
-    String token = null;
-
-    if (cookies != null) {
-      for (Cookie cookie : cookies) {
-        if ("accessToken".equals(cookie.getName())) {
-          token = cookie.getValue();
-        }
-      }
-    }
+    final String token = CookieUtil.getCookieValueByName(request, CookieNames.accessToken);
 
     try {
       if (token != null && SecurityContextHolder.getContext().getAuthentication() == null) {
@@ -62,49 +55,25 @@ public class JwtRequestFilter extends OncePerRequestFilter {
       }
 
       chain.doFilter(request, response);
-    } catch (UsernameNotFoundException e) {
-      log.warn("Аккаунт не найден: login={}", e.getName());
-      sendErrorResponse(
-          response,
-          request,
-          "Account not found",
-          HttpStatus.valueOf(HttpServletResponse.SC_UNAUTHORIZED));
-    } catch (ExpiredJwtException e) {
-      log.warn("Срок действия токена JWT для пользователя истек: {}", e.getClaims().getSubject());
-      sendErrorResponse(
-          response,
-          request,
-          "JWT token has expired",
-          HttpStatus.valueOf(HttpServletResponse.SC_UNAUTHORIZED));
-    } catch (MalformedJwtException ex) {
+    } catch (UsernameNotFoundException ex) {
+      log.warn("Аккаунт не найден: login={}", ex.getName());
+      SecurityContextHolder.clearContext();
+      authenticationEntryPoint.commence(request, response,
+          new UsernameNotFoundException("Account not found: login=%s".formatted(ex.getName())));
+    } catch (ExpiredJwtException ex) {
+      log.warn("Срок действия токена JWT для пользователя истек: {}", ex.getClaims().getSubject());
+      SecurityContextHolder.clearContext();
+      authenticationEntryPoint.commence(request, response,
+          new CredentialsExpiredException("Expired JWT"));
+    } catch (MalformedJwtException | SignatureException ex) {
       log.warn("Неверный токен JWT");
-      sendErrorResponse(response, request, "Invalid JWT token format", HttpStatus.BAD_REQUEST);
-    } catch (SignatureException ex) {
-      log.warn("Неверная подпись JWT");
-      sendErrorResponse(response, request, "Invalid token signature", HttpStatus.UNAUTHORIZED);
+      SecurityContextHolder.clearContext();
+      authenticationEntryPoint.commence(request, response,
+          new BadCredentialsException("Invalid JWT"));
     } catch (JwtException ex) {
-      log.error("Ошибка обработки JWT", ex);
-      sendErrorResponse(response, request, "JWT processing failed", HttpStatus.UNAUTHORIZED);
+      SecurityContextHolder.clearContext();
+      authenticationEntryPoint.commence(request, response,
+          new InternalAuthenticationServiceException("Unexpected JWT processing error"));
     }
-  }
-
-  private void sendErrorResponse(HttpServletResponse response,
-       HttpServletRequest request,
-       String message,
-       HttpStatus status) throws IOException {
-
-    response.setStatus(status.value());
-    response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-
-    ErrorResponse errResponse = new ErrorResponse(
-        LocalDateTime.now(),
-        status.value(),
-        status.getReasonPhrase(),
-        message,
-        request.getRequestURI(),
-        null
-    );
-
-    new ObjectMapper().writeValue(response.getOutputStream(), errResponse);
   }
 }

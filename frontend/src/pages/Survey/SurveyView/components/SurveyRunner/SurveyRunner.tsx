@@ -4,14 +4,14 @@ import type { Survey } from '@/shared/types/Survey.type';
 import { Button, Checkbox, Input, Radio, Text, TextArea, TextAreaGrowLimiter, Title } from '@hh.ru/magritte-ui';
 import { Link } from 'react-router-dom';
 import { routes } from '@/app/routes';
-import { completeSurveyResponse, createSurveyAnswer, createSurveyResponse } from '@/api/surveyResponses';
+import { completeSurveyResponse } from '@/api/surveyResponses';
 import surveyDetailStyle from '@/pages/Survey/SurveyModify/components/SurveyDetail/SurveyDetail.module.css';
-import pageSeparatorStyle from '@/pages/Survey/SurveyModify/components/PageSeparator/PageSeparator.module.css';
 import questionStyle from '@/pages/Survey/SurveyModify/components/QuestionList/components/Question/Question.module.css';
 import choiceStyle from '@/pages/Survey/SurveyModify/components/QuestionList/components/Question/components/Choice/Choice.module.css';
 import optionStyle from '@/pages/Survey/SurveyModify/components/QuestionList/components/Question/components/Choice/components/Option/Option.module.css';
 import longTextStyle from '@/pages/Survey/SurveyModify/components/QuestionList/components/Question/components/LongText/LongText.module.css';
 import style from './SurveyRunner.module.css';
+import { useSurveyResponseSync } from './useSurveyResponseSync';
 
 export type SurveyRunnerMode = 'preview' | 'respond';
 
@@ -69,6 +69,15 @@ export function SurveyRunner({ survey, mode }: Props) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState<string | null>(null);
     const isPreview = mode === 'preview';
+    const {
+        ensureResponse,
+        failedQuestionCount,
+        flushPendingAnswers,
+        flushQuestion,
+        isSaving,
+        retryFailedAnswers,
+        scheduleAnswerSave,
+    } = useSurveyResponseSync(survey.id, isPreview);
 
     useEffect(() => {
         setCurrentPageIndex(0);
@@ -78,27 +87,30 @@ export function SurveyRunner({ survey, mode }: Props) {
         setSubmitError(null);
     }, [survey.id]);
 
-    const updateAnswer = (questionId: string, value: AnswerValue) => {
+    const updateAnswer = (question: Question, value: AnswerValue) => {
         setAnswers((currentAnswers) => ({
             ...currentAnswers,
-            [questionId]: value,
+            [question.id]: value,
         }));
         setSubmitError(null);
         setErrors((currentErrors) => {
             const nextErrors = { ...currentErrors };
-            delete nextErrors[questionId];
+            delete nextErrors[question.id];
             return nextErrors;
+        });
+        scheduleAnswerSave(question.id, getAnswerText(question, value), {
+            debounce: question.type === 'SHORT_TEXT' || question.type === 'LONG_TEXT',
         });
     };
 
-    const toggleMultipleChoice = (questionId: string, optionId: string) => {
-        const currentValue = answers[questionId];
+    const toggleMultipleChoice = (question: Question, optionId: string) => {
+        const currentValue = answers[question.id];
         const selectedOptions = Array.isArray(currentValue) ? currentValue : [];
         const nextValue = selectedOptions.includes(optionId)
             ? selectedOptions.filter((selectedOptionId) => selectedOptionId !== optionId)
             : [...selectedOptions, optionId];
 
-        updateAnswer(questionId, nextValue);
+        updateAnswer(question, nextValue);
     };
 
     const validate = () => {
@@ -140,18 +152,6 @@ export function SurveyRunner({ survey, mode }: Props) {
         return Object.keys(nextErrors).length === 0;
     };
 
-    const prepareAnswers = () => {
-        return survey.pages.flatMap((page) =>
-            page.questions
-                .filter(isQuestionVisible)
-                .map((question) => ({
-                    questionId: question.id,
-                    answerText: getAnswerText(question, answers[question.id]),
-                }))
-                .filter((answer) => answer.answerText.trim().length > 0),
-        );
-    };
-
     const submitHandler = async () => {
         if (isPreview || !validate()) {
             return;
@@ -161,13 +161,9 @@ export function SurveyRunner({ survey, mode }: Props) {
         setSubmitError(null);
 
         try {
-            const response = await createSurveyResponse(survey.id);
-
-            for (const answer of prepareAnswers()) {
-                await createSurveyAnswer(response.id, answer.questionId, answer.answerText);
-            }
-
-            await completeSurveyResponse(response.id);
+            await flushPendingAnswers();
+            const responseId = await ensureResponse();
+            await completeSurveyResponse(responseId);
             setIsComplete(true);
         } catch {
             setSubmitError('Не удалось отправить ответы');
@@ -185,8 +181,10 @@ export function SurveyRunner({ survey, mode }: Props) {
                     <Input
                         placeholder='Короткий текст'
                         size='large'
+                        disabled={isSubmitting}
                         value={typeof value === 'string' ? value : ''}
-                        onChange={(nextValue) => updateAnswer(question.id, nextValue)}
+                        onChange={(nextValue) => updateAnswer(question, nextValue)}
+                        onBlur={() => void flushQuestion(question.id).catch(() => undefined)}
                     />
                 );
             case 'LONG_TEXT':
@@ -194,8 +192,10 @@ export function SurveyRunner({ survey, mode }: Props) {
                     <TextAreaGrowLimiter className={longTextStyle.content}>
                         <TextArea
                             placeholder='Длинный текст'
+                            disabled={isSubmitting}
                             value={typeof value === 'string' ? value : ''}
-                            onChange={(event) => updateAnswer(question.id, event.target.value)}
+                            onChange={(event) => updateAnswer(question, event.target.value)}
+                            onBlur={() => void flushQuestion(question.id).catch(() => undefined)}
                             size='large'
                             layout='hug'
                         />
@@ -209,8 +209,9 @@ export function SurveyRunner({ survey, mode }: Props) {
                                 <label className={optionStyle.option}>
                                     <Radio
                                         name={question.id}
+                                        disabled={isSubmitting}
                                         checked={value === option.id}
-                                        onChange={() => updateAnswer(question.id, option.id)}
+                                        onChange={() => updateAnswer(question, option.id)}
                                     />
                                     <Text typography='paragraph-2-regular' style='primary'>
                                         {option.answerOptionText}
@@ -230,8 +231,9 @@ export function SurveyRunner({ survey, mode }: Props) {
                                 <div className={optionStyle.optionContent} key={option.id}>
                                     <label className={optionStyle.option}>
                                         <Checkbox
+                                            disabled={isSubmitting}
                                             checked={selectedOptions.includes(option.id)}
-                                            onChange={() => toggleMultipleChoice(question.id, option.id)}
+                                            onChange={() => toggleMultipleChoice(question, option.id)}
                                         />
                                         <Text typography='paragraph-2-regular' style='primary'>
                                             {option.answerOptionText}
@@ -257,11 +259,14 @@ export function SurveyRunner({ survey, mode }: Props) {
     const isFirstPage = currentPageIndex === 0;
     const isLastPage = currentPageIndex === visiblePages.length - 1;
 
-    const goToPreviousPage = () => {
+    const goToPreviousPage = async () => {
+        if (!isPreview) {
+            await flushPendingAnswers().catch(() => setSubmitError('Не удалось сохранить некоторые ответы'));
+        }
         setCurrentPageIndex((pageIndex) => Math.max(pageIndex - 1, 0));
     };
 
-    const goToNextPage = () => {
+    const goToNextPage = async () => {
         if (!currentPage) {
             return;
         }
@@ -276,6 +281,7 @@ export function SurveyRunner({ survey, mode }: Props) {
             return;
         }
 
+        await flushPendingAnswers().catch(() => setSubmitError('Не удалось сохранить некоторые ответы'));
         setCurrentPageIndex((pageIndex) => Math.min(pageIndex + 1, visiblePages.length - 1));
     };
 
@@ -316,18 +322,41 @@ export function SurveyRunner({ survey, mode }: Props) {
                             <div className={surveyDetailStyle.container}>В этом опросе пока нет вопросов.</div>
                         ) : currentPage ? (
                             <section className={choiceStyle.container}>
-                                <div className={pageSeparatorStyle.separator}>
-                                    <span>Страница {currentPage.serialNumber}</span>
-                                </div>
+                                {(currentPage.description || currentPage.title) && (
+                                    <section className={`${surveyDetailStyle.container} ${style.formHeader}`}>
+                                        <Text typography='subtitle-1-semibold' style='primary'>
+                                            {currentPage.title}
+                                        </Text>
+                                        {currentPage.description && (
+                                            <Text typography='paragraph-2-regular' style='primary'>
+                                                {currentPage.description}
+                                            </Text>
+                                        )}
+                                    </section>
+                                )}
 
                                 {currentPage.questions.map((question) => (
                                     <article className={questionStyle.container} key={question.id}>
+                                        {question.attachmentUrl && (
+                                            <img
+                                                src={question.attachmentUrl}
+                                                alt='img'
+                                                className={style.attachmentUrl}
+                                            />
+                                        )}
                                         <div className={style.questionTitle}>
                                             <Text typography='paragraph-2-regular' style='primary'>
                                                 {question.title}
                                             </Text>
                                             {question.isMandatory && <span className={style.mandatory}>*</span>}
                                         </div>
+                                        {question.description && (
+                                            <div className={style.questionDescription}>
+                                                <Text typography='paragraph-3-regular' style='primary'>
+                                                    {question.description}
+                                                </Text>
+                                            </div>
+                                        )}
                                         <section className={questionStyle.actions}>
                                             <div>{renderQuestionControl(question)}</div>
                                             <div className={questionStyle.hidden} />
@@ -347,8 +376,8 @@ export function SurveyRunner({ survey, mode }: Props) {
                                         type='button'
                                         mode='secondary'
                                         style='accent'
-                                        disabled={isFirstPage}
-                                        onClick={goToPreviousPage}
+                                        disabled={isFirstPage || isSubmitting}
+                                        onClick={() => void goToPreviousPage()}
                                     >
                                         Назад
                                     </Button>
@@ -370,11 +399,33 @@ export function SurveyRunner({ survey, mode }: Props) {
                                                   : 'Отправить'}
                                         </Button>
                                     ) : (
-                                        <Button type='button' mode='primary' style='accent' onClick={goToNextPage}>
+                                        <Button
+                                            type='button'
+                                            mode='primary'
+                                            style='accent'
+                                            disabled={isSubmitting}
+                                            onClick={() => void goToNextPage()}
+                                        >
                                             Далее
                                         </Button>
                                     )}
                                 </div>
+                                {failedQuestionCount > 0 && (
+                                    <div className={style.syncError}>
+                                        <Text typography='paragraph-2-regular' style='negative'>
+                                            Не удалось сохранить некоторые ответы
+                                        </Text>
+                                        <Button
+                                            type='button'
+                                            mode='secondary'
+                                            style='accent'
+                                            disabled={isSaving || isSubmitting}
+                                            onClick={() => void retryFailedAnswers().catch(() => undefined)}
+                                        >
+                                            Повторить
+                                        </Button>
+                                    </div>
+                                )}
                                 {submitError && (
                                     <div className={style.submitError}>
                                         <Text typography='paragraph-2-regular' style='negative'>

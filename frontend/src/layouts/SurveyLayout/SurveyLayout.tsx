@@ -8,7 +8,8 @@ import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { setSelectedSurvey } from '@/entities/Survey/Survey.slice';
 import { useEffect, useState } from 'react';
 import { setErrorMessage } from '@/entities/Error/Error.slice';
-import { LoadingContent } from '@/shared/ui/LoadingContent';
+import { LoadingContent } from '@/shared/ui/LoadingContent/LoadingContent';
+import { AccountDetail } from '@/shared/ui/AccountDetail/AccountDetail';
 
 export function SurveyLayout() {
     const { id } = useParams();
@@ -93,6 +94,7 @@ export function SurveyLayout() {
                     <Button mode='tertiary' style='accent' onClick={publishingHandler} disabled={!selectedSurvey}>
                         {selectedSurvey?.isPublished ? 'Снять с публикации' : 'Опубликовать'}
                     </Button>
+                    <AccountDetail />
                 </div>
             </header>
 
