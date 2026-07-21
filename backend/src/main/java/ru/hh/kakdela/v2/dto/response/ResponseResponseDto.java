@@ -7,6 +7,7 @@ import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import ru.hh.kakdela.v2.dto.account.AccountResponseDto;
 import ru.hh.kakdela.v2.dto.answer.AnswerResponseDto;
 
 @AllArgsConstructor
@@ -19,7 +20,7 @@ import ru.hh.kakdela.v2.dto.answer.AnswerResponseDto;
 public class ResponseResponseDto {
 
   private final UUID id;
-  private final UUID accountId;   // может быть null — анонимное прохождение
+  private final AccountResponseDto account;   // может быть null — анонимное прохождение
   private final UUID surveyId;
   private final Boolean isCompleted;
   private final Instant receivedAt;
