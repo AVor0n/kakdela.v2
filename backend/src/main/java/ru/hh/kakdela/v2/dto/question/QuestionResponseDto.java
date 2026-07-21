@@ -1,7 +1,9 @@
 package ru.hh.kakdela.v2.dto.question;
 
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.ToString;
 import ru.hh.kakdela.v2.dto.answer_option.AnswerOptionResponseDto;
 
 import java.util.List;
@@ -11,6 +13,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 @AllArgsConstructor
 @Getter
+@EqualsAndHashCode
+@ToString
 @Schema(
     name = "QuestionResponse",
     title = "DTO для получения данных вопроса"

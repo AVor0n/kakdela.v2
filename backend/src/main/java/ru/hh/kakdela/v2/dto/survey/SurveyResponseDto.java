@@ -2,7 +2,9 @@ package ru.hh.kakdela.v2.dto.survey;
 
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.ToString;
 import ru.hh.kakdela.v2.dto.closing_page.ClosingPageResponseDto;
 import ru.hh.kakdela.v2.dto.survey_page.SurveyPageResponseDto;
 
@@ -14,6 +16,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 @AllArgsConstructor
 @Getter
+@EqualsAndHashCode
+@ToString
 @Schema(
     name = "SurveyResponse",
     title = "DTO для получения данных опроса"

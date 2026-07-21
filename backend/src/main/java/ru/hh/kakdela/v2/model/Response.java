@@ -19,7 +19,9 @@ import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -44,11 +46,15 @@ public class Response {
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "account_id")
   @OnDelete(action = OnDeleteAction.SET_NULL)
+  @EqualsAndHashCode.Exclude
+  @ToString.Exclude
   private Account account;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "survey_id", nullable = false)
   @OnDelete(action = OnDeleteAction.CASCADE)
+  @EqualsAndHashCode.Exclude
+  @ToString.Exclude
   private Survey survey;
 
   @Column(name = "is_completed", nullable = false)
