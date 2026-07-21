@@ -1,12 +1,10 @@
 package ru.hh.kakdela.v2.dto.account;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Instant;
 import java.util.UUID;
-
-import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
 @AllArgsConstructor
 @Getter

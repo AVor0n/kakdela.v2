@@ -1,15 +1,13 @@
 package ru.hh.kakdela.v2.dto.response;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import ru.hh.kakdela.v2.dto.answer.AnswerResponseDto;
-
-import java.time.Instant;
-import java.util.List;
-import java.util.UUID;
-
-import io.swagger.v3.oas.annotations.media.Schema;
 
 @AllArgsConstructor
 @Getter

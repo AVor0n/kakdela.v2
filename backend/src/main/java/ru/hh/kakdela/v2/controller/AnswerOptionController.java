@@ -7,9 +7,9 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
-import ru.hh.kakdela.v2.dto.answer_option.AnswerOptionCreateDto;
-import ru.hh.kakdela.v2.dto.answer_option.AnswerOptionResponseDto;
-import ru.hh.kakdela.v2.dto.answer_option.AnswerOptionUpdateDto;
+import ru.hh.kakdela.v2.dto.answer.option.AnswerOptionCreateDto;
+import ru.hh.kakdela.v2.dto.answer.option.AnswerOptionResponseDto;
+import ru.hh.kakdela.v2.dto.answer.option.AnswerOptionUpdateDto;
 import ru.hh.kakdela.v2.service.AnswerOptionService;
 import ru.hh.kakdela.v2.security.CustomUserDetails;
 

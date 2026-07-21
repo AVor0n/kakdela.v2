@@ -1,18 +1,16 @@
 package ru.hh.kakdela.v2.dto.survey;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 import ru.hh.kakdela.v2.dto.closing_page.ClosingPageResponseDto;
-import ru.hh.kakdela.v2.dto.survey_page.SurveyPageResponseDto;
-
-import java.time.Instant;
-import java.util.List;
-import java.util.UUID;
-
-import io.swagger.v3.oas.annotations.media.Schema;
+import ru.hh.kakdela.v2.dto.survey.page.SurveyPageResponseDto;
 
 @AllArgsConstructor
 @Getter

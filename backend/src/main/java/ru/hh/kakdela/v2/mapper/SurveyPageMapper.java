@@ -3,7 +3,7 @@ package ru.hh.kakdela.v2.mapper;
 import java.util.Comparator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import ru.hh.kakdela.v2.dto.survey_page.SurveyPageResponseDto;
+import ru.hh.kakdela.v2.dto.survey.page.SurveyPageResponseDto;
 import ru.hh.kakdela.v2.model.Question;
 import ru.hh.kakdela.v2.model.SurveyPage;
 

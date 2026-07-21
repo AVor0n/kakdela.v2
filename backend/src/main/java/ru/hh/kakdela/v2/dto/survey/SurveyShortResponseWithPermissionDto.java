@@ -1,13 +1,11 @@
 package ru.hh.kakdela.v2.dto.survey;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+import java.time.Instant;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-
-import java.time.Instant;
-import java.util.UUID;
-
-import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.ToString;
 import ru.hh.kakdela.v2.model.Permission;
 

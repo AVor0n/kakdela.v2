@@ -1,4 +1,4 @@
-package ru.hh.kakdela.v2.dto.survey_page;
+package ru.hh.kakdela.v2.dto.survey.page;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Min;
@@ -11,10 +11,10 @@ import lombok.Setter;
 @Getter
 @Setter
 @Schema(
-    name = "SurveyPageUpdate",
-    title = "DTO для обновления страницы в опросе"
+    name = "SurveyPageCreate",
+    title = "DTO для создания страницы в опросе"
 )
-public class SurveyPageUpdateDto {
+public class SurveyPageCreateDto {
 
   @Min(value = 1, message = "Порядковый номер должен быть больше 0")
   private Integer serialNumber;
