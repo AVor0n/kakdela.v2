@@ -34,8 +34,9 @@ import ru.hh.kakdela.v2.dto.closing_page.ClosingPageResponseDto;
 import ru.hh.kakdela.v2.dto.question.QuestionResponseDto;
 import ru.hh.kakdela.v2.dto.survey.SurveyCreateDto;
 import ru.hh.kakdela.v2.dto.survey.SurveyResponseDto;
-import ru.hh.kakdela.v2.dto.survey.SurveyShortResponseDto;
+import ru.hh.kakdela.v2.dto.survey.SurveyShortResponseWithPermissionDto;
 import ru.hh.kakdela.v2.dto.survey.SurveyUpdateDto;
+import ru.hh.kakdela.v2.dto.survey.SurveyWithUserRoleDto;
 import ru.hh.kakdela.v2.dto.survey_page.SurveyPageResponseDto;
 import ru.hh.kakdela.v2.mapper.AnswerOptionMapper;
 import ru.hh.kakdela.v2.mapper.ClosingPageMapper;
@@ -104,8 +105,8 @@ class SurveyServiceTest {
   private static SurveyResponseDto testSurvey2DtoTargetTimezoneChanged;
   private static SurveyResponseDto testSurvey2DtoUpdatedExceptIsPublished;
   private static SurveyResponseDto testSurvey3Dto;
-  private static SurveyShortResponseDto testSurvey1ShortDto;
-  private static SurveyShortResponseDto testSurvey2ShortDto;
+  private static SurveyShortResponseWithPermissionDto testSurvey1ShortDto;
+  private static SurveyShortResponseWithPermissionDto testSurvey2ShortDto;
   private static SurveyCreateDto testSurvey2CreateDto;
   private static SurveyCreateDto testSurvey3CreateDto;
   private static SurveyUpdateDto testSurvey2UpdateDtoEverythingExceptIsPublishedChanged;
@@ -785,19 +786,21 @@ class SurveyServiceTest {
         Collections.emptyList(),
         null
     );
-    testSurvey1ShortDto = new SurveyShortResponseDto(
+    testSurvey1ShortDto = new SurveyShortResponseWithPermissionDto(
         testSurvey1Id,
         "survey1",
         "description",
         true,
-        null
+        null,
+        Permission.SurveyRole.AUTHOR
     );
-    testSurvey2ShortDto = new SurveyShortResponseDto(
+    testSurvey2ShortDto = new SurveyShortResponseWithPermissionDto(
         testSurvey2Id,
         "survey2",
         "description",
         false,
-        null
+        null,
+        Permission.SurveyRole.AUTHOR
     );
 
     // Dto на создание, соответствующее testSurvey2
@@ -1328,16 +1331,19 @@ class SurveyServiceTest {
     Mockito.when(permissionService.getAccessibleSurveys(testAccount1Id))
         .thenReturn(Collections.emptyList());
 
-    List<SurveyShortResponseDto> result = surveyService.getMySurveys(testAccount1Id);
+    List<SurveyShortResponseWithPermissionDto> result = surveyService.getMySurveys(testAccount1Id);
     assertEquals(Collections.emptyList(), result);
   }
 
   @Test
   void getMySurveys_surveysFound_returnCorrectListOfDto() {
     Mockito.when(permissionService.getAccessibleSurveys(testAccount1Id))
-        .thenReturn(List.of(testSurvey1, testSurvey2));
+        .thenReturn(List.of(
+            new SurveyWithUserRoleDto(testSurvey1, Permission.SurveyRole.AUTHOR),
+            new SurveyWithUserRoleDto(testSurvey2, Permission.SurveyRole.AUTHOR)
+        ));
 
-    List<SurveyShortResponseDto> result = surveyService.getMySurveys(testAccount1Id);
+    List<SurveyShortResponseWithPermissionDto> result = surveyService.getMySurveys(testAccount1Id);
     assertEquals(List.of(testSurvey1ShortDto, testSurvey2ShortDto), result);
   }
 
@@ -1434,7 +1440,7 @@ class SurveyServiceTest {
     );
 
     Mockito.verify(permissionService)
-        .checkAccess(testSurvey2Id, testAccount1Id, Permission.SurveyRole.EDITOR);
+        .checkCanEdit(testSurvey2Id, testAccount1Id);
   }
 
   @Test
@@ -1469,7 +1475,7 @@ class SurveyServiceTest {
     );
 
     Mockito.verify(permissionService)
-        .checkAccess(testSurvey2Id, testAccount1Id, Permission.SurveyRole.EDITOR);
+        .checkCanEdit(testSurvey2Id, testAccount1Id);
   }
 
   @Test
@@ -1763,7 +1769,7 @@ class SurveyServiceTest {
     surveyService.clone(testSurvey1Id, testAccount2Id);
 
     Mockito.verify(permissionService)
-        .checkAccess(testSurvey1Id, testAccount2Id, Permission.SurveyRole.EDITOR);
+        .checkCanEdit(testSurvey1Id, testAccount2Id);
   }
 
   @Test
