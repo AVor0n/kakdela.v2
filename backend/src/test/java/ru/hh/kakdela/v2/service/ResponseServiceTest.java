@@ -198,7 +198,7 @@ class ResponseServiceTest {
   void getCompletedBySurveyId_permissionDenied_ThrowsException() {
     doThrow(ResponseStatusException.class)
         .when(permissionService)
-        .checkAccess(surveyId, accountId, Permission.SurveyRole.ANALYST);
+        .checkCanReadResponses(surveyId, accountId);
 
     assertThrows(
         ResponseStatusException.class,

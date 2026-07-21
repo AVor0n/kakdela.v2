@@ -13,10 +13,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import ru.hh.kakdela.v2.dao.AccountDao;
+import ru.hh.kakdela.v2.dao.PermissionDao;
 import ru.hh.kakdela.v2.dao.SurveyDao;
 import ru.hh.kakdela.v2.dto.survey.SurveyCreateDto;
 import ru.hh.kakdela.v2.dto.survey.SurveyResponseDto;
-import ru.hh.kakdela.v2.dto.survey.SurveyShortResponseDto;
+import ru.hh.kakdela.v2.dto.survey.SurveyShortResponseWithPermissionDto;
 import ru.hh.kakdela.v2.dto.survey.SurveyUpdateDto;
 import ru.hh.kakdela.v2.mapper.SurveyMapper;
 import ru.hh.kakdela.v2.model.Account;
@@ -34,9 +35,18 @@ public class SurveyService {
 
   private final SurveyDao surveyDao;
   private final AccountDao accountDao;
+  private final PermissionDao permissionDao;
   private final PermissionService permissionService;
   private final NotificationService notificationService;
   private final SurveyMapper surveyMapper;
+
+  private void validateAuthorizationConsistency(Survey survey) {
+    if (survey.isLimitedToOneResponse() && !survey.isAuthorizedOnly()) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+          "Опция \"Запретить проходить более одного раза\" доступна только при "
+              + "включённой опции \"Запретить анонимное прохождение\"");
+    }
+  }
 
   @Transactional(readOnly = true)
   public SurveyResponseDto getById(UUID id) {
@@ -49,26 +59,18 @@ public class SurveyService {
   // TODO: метод getAllByAuthorId надо выпилить
 
   @Transactional(readOnly = true)
-  public List<SurveyShortResponseDto> getAllByAuthorId(UUID authorId) {
+  public List<SurveyShortResponseWithPermissionDto> getAllByAuthorId(UUID authorId) {
     return surveyDao.findAllByAuthorId(authorId).stream()
-        .map(surveyMapper::surveyToShortDto)
+        .map(survey -> {
+          return surveyMapper.surveyToShortDto(survey, SurveyRole.AUTHOR);
+        })
         .toList();
   }
 
   @Transactional(readOnly = true)
-  public List<SurveyShortResponseDto> getMySurveys(UUID accountId) {
-    List<Survey> surveys = permissionService.getAccessibleSurveys(accountId);
-    return surveys.stream()
-        .map(surveyMapper::surveyToShortDto)
-        .collect(Collectors.toList());
-  }
-
-  // TODO: метод getAllPublished надо выпилить
-
-  @Transactional(readOnly = true)
-  public List<SurveyShortResponseDto> getAllPublished() {
-    return surveyDao.findAllPublished().stream()
-        .map(surveyMapper::surveyToShortDto)
+  public List<SurveyShortResponseWithPermissionDto> getMySurveys(UUID accountId) {
+    return permissionService.getAccessibleSurveys(accountId).stream()
+        .map(surveyMapper::surveyWithRoleDtoToShortDto)
         .toList();
   }
 
@@ -97,6 +99,8 @@ public class SurveyService {
         .createdAt(Instant.now().truncatedTo(ChronoUnit.SECONDS))
         .build();
 
+    validateAuthorizationConsistency(survey);
+
     surveyDao.save(survey);
     log.info("Создан опрос id={} authorId={}", survey.getId(), authorId);
     return surveyMapper.surveyToDto(survey);
@@ -104,7 +108,8 @@ public class SurveyService {
 
   @Transactional
   public SurveyResponseDto update(UUID surveyId, SurveyUpdateDto dto, UUID accountId) {
-    permissionService.checkAccess(surveyId, accountId, SurveyRole.EDITOR);
+    permissionService.checkCanEdit(surveyId, accountId);
+
     Survey survey = surveyDao.findById(surveyId)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
@@ -121,6 +126,8 @@ public class SurveyService {
     if (dto.getIsLimitedToOneResponse() != null) {
       survey.setLimitedToOneResponse(dto.getIsLimitedToOneResponse());
     }
+    validateAuthorizationConsistency(survey);
+
     final boolean wasPublished = survey.isPublished();
     if (dto.getIsPublished() != null) {
       survey.setPublished(dto.getIsPublished());
@@ -166,7 +173,7 @@ public class SurveyService {
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
 
-    permissionService.checkAccess(surveyId, accountId, SurveyRole.EDITOR);
+    permissionService.checkCanEdit(surveyId, accountId);
 
     Account account = accountDao.findById(accountId)
         .orElseThrow(() -> new ResponseStatusException(

@@ -71,7 +71,6 @@ public class AccountService {
     Account account = accountDao.findById(currentUser.getId())
         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
             "Аккаунт не найден: " + currentUser.getId()));
-
     if (!Objects.equals(accountPutDto.getLogin(), account.getLogin())) {
       if (accountDao.existsByLogin(accountPutDto.getLogin())) {
         throw new ResponseStatusException(HttpStatus.CONFLICT,

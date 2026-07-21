@@ -30,10 +30,18 @@ public class AnswerService {
   private final QuestionDao questionDao;
   private final JwtService jwtService;
 
+  private boolean isSurveyAuthor(Response response, UUID accountId) {
+    return response.getSurvey().getAuthor().getId().equals(accountId);
+  }
+
   private Response checkAccessAndGetResponse(UUID responseId, UUID accountId, String token) {
     Response response = responseDao.findById(responseId)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Прохождение не найдено: " + responseId));
+
+    if (response.isCompleted() && isSurveyAuthor(response, accountId)) {
+      return response;
+    }
 
     if (response.getAccount() == null && token == null) {
       throw new ResponseStatusException(
@@ -52,6 +60,12 @@ public class AnswerService {
   @Transactional(readOnly = true)
   public List<AnswerResponseDto> getAllByResponseId(UUID responseId, UUID accountId, String token) {
     Response response = checkAccessAndGetResponse(responseId, accountId, token);
+
+    if (response.getAccount() == null && response.isCompleted()
+        && !isSurveyAuthor(response, accountId)) {
+      throw new ResponseStatusException(
+          HttpStatus.FORBIDDEN, "Просмотр завершённых анонимных ответов запрещён");
+    }
 
     return response.getAnswers().stream()
         .map(AnswerMapper::answerToDto)
