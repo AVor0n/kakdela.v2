@@ -21,7 +21,6 @@ public class SurveyUpdateDto {
   @NullOrNotBlank(message = "Заголовок не должен быть пустым")
   @Size(max = 200, message = "Заголовок не должен быть длиннее 200 символов")
   private String title;
-  @Size(max = 5000, message = "Описание не должно быть длиннее 5000 символов")
   private String description;
   private Boolean isAuthorizedOnly;
   private Boolean isLimitedToOneResponse;
