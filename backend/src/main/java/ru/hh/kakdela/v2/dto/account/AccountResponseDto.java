@@ -19,6 +19,5 @@ public class AccountResponseDto {
   private final UUID id;
   private final String login;
   private final String email;
-  private final Instant registeredAt;
 
 }
