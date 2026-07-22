@@ -3,11 +3,17 @@ package ru.hh.kakdela.v2.controller;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,6 +26,7 @@ import ru.hh.kakdela.v2.dto.response.ResponseCreateResponseDto;
 import ru.hh.kakdela.v2.dto.response.ResponseResponseDto;
 import ru.hh.kakdela.v2.dto.response.ResponseWithTokenDto;
 import ru.hh.kakdela.v2.security.CustomUserDetails;
+import ru.hh.kakdela.v2.service.ResponseExportService;
 import ru.hh.kakdela.v2.service.ResponseService;
 import ru.hh.kakdela.v2.util.CookieUtil;
 
@@ -30,6 +37,7 @@ import ru.hh.kakdela.v2.util.CookieUtil;
 public class ResponseController {
 
   private final ResponseService responseService;
+  private final ResponseExportService exportService;
 
   @Value("${app.tokens.response-access.max-age}")
   private long responseTokenMaxAge;
@@ -127,6 +135,50 @@ public class ResponseController {
   ) {
 
     return responseService.getCompletedBySurveyId(surveyId, currentUser.getId());
+  }
+
+  @GetMapping("/surveys/{surveyId}/export_responses")
+  public ResponseEntity<byte[]> exportSurveyResponses(
+      @PathVariable UUID surveyId,
+      @AuthenticationPrincipal CustomUserDetails currentUser
+  ) {
+
+    List<ResponseResponseDto> completedResponses = responseService
+        .getCompletedBySurveyId(surveyId, currentUser.getId());
+
+    if (completedResponses.isEmpty()) {
+      return ResponseEntity.noContent().build();
+    }
+
+    // Экспортируем
+    Map<String, Object> params = new HashMap<>();
+    byte[] excelData = null;
+    try {
+      excelData = exportService.exportResponsesWithFilename(
+          completedResponses,
+          surveyId,
+          params
+      );
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+
+    String fileName = (String) params.get("fileName");
+    String encodedFileName = URLEncoder.encode(fileName, StandardCharsets.UTF_8)
+        .replace("+", "%20");
+
+
+    // Настройка заголовков
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+    headers.set(HttpHeaders.CONTENT_DISPOSITION,
+        String.format("attachment; filename=\"%s\"; filename*=UTF-8''%s",
+            encodedFileName, encodedFileName));
+    headers.setContentLength(excelData.length);
+
+    return ResponseEntity.ok()
+        .headers(headers)
+        .body(excelData);
   }
 
 }
