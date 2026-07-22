@@ -1,24 +1,9 @@
 import { apiClient } from './client';
-
+import type { SurveyAnswerResponse, SurveyCompletedResponse } from '@/shared/types/SurveyResponse.type';
 const SURVEY_RESPONSE_REQUEST_TIMEOUT_MS = 15_000;
 
 export type CreateSurveyResponseResult = {
     id: string;
-};
-
-export type SurveyAnswerResponse = {
-    responseId: string;
-    questionId: string;
-    answerText: string;
-};
-
-export type SurveyCompletedResponse = {
-    id: string;
-    accountId: string | null;
-    surveyId: string;
-    isCompleted: boolean;
-    receivedAt: string | null;
-    answers: SurveyAnswerResponse[];
 };
 
 export type SurveyResponsesExport = {
