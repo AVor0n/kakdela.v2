@@ -1,11 +1,31 @@
 package ru.hh.kakdela.v2.service;
 
-import org.apache.poi.ss.usermodel.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.ss.usermodel.BorderStyle;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.DataFormat;
+import org.apache.poi.ss.usermodel.FillPatternType;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.VerticalAlignment;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.server.ResponseStatusException;
 import ru.hh.kakdela.v2.dao.AccountDao;
 import ru.hh.kakdela.v2.dao.QuestionDao;
@@ -16,12 +36,6 @@ import ru.hh.kakdela.v2.model.Account;
 import ru.hh.kakdela.v2.model.Question;
 import ru.hh.kakdela.v2.model.Survey;
 import ru.hh.kakdela.v2.model.SurveyPage;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.*;
 
 @Slf4j
 @Service
@@ -51,9 +65,9 @@ public class ResponseExportService {
       Sheet sheet = workbook.createSheet("Ответы");
 
       // стили
-      CellStyle headerStyle = createHeaderStyle(workbook);
-      CellStyle dateStyle = createDateStyle(workbook);
-      CellStyle dataStyle = createDataStyle(workbook);
+      final CellStyle headerStyle = createHeaderStyle(workbook);
+      final CellStyle dateStyle = createDateStyle(workbook);
+      final CellStyle dataStyle = createDataStyle(workbook);
 
       // загаловки
       Row headerRow = sheet.createRow(0);
@@ -173,12 +187,13 @@ public class ResponseExportService {
   }
 
   private CellStyle createHeaderStyle(Workbook workbook) {
-    CellStyle style = workbook.createCellStyle();
-
     Font font = workbook.createFont();
     font.setBold(true);
     font.setFontHeightInPoints((short) 11);
     font.setColor(IndexedColors.WHITE.getIndex());
+
+    CellStyle style = workbook.createCellStyle();
+
     style.setFont(font);
 
     style.setFillForegroundColor(IndexedColors.DARK_BLUE.getIndex());
