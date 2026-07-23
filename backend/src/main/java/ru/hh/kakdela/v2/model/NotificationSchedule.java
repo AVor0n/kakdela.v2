@@ -5,8 +5,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -40,7 +38,6 @@ import org.springframework.web.server.ResponseStatusException;
 @AllArgsConstructor
 public class NotificationSchedule {
   @Id
-  @GeneratedValue(strategy = GenerationType.UUID)
   @Column(name = "id", updatable = false, nullable = false)
   private UUID id;
 
@@ -105,9 +102,9 @@ public class NotificationSchedule {
               "Должно быть указано время выполнения"
           );
         }
-        if (schedule.getDaysOfWeek() != null ||
-            schedule.getDayOfMonth() != null ||
-            schedule.getCronExpression() != null) {
+        if (schedule.getDaysOfWeek() != null
+            || schedule.getDayOfMonth() != null
+            || schedule.getCronExpression() != null) {
           throw new ResponseStatusException(
               HttpStatus.BAD_REQUEST,
               "Невалидные поля для данного типа уведомлений"
@@ -155,8 +152,8 @@ public class NotificationSchedule {
               "Дни недели должны быть указаны для этого типа уведомлений"
           );
         }
-        if (schedule.getDayOfMonth() != null ||
-            schedule.getCronExpression() != null) {
+        if (schedule.getDayOfMonth() != null
+            || schedule.getCronExpression() != null) {
           throw new ResponseStatusException(
               HttpStatus.BAD_REQUEST,
               "Невалидные поля для данного типа уведомлений"
@@ -219,8 +216,8 @@ public class NotificationSchedule {
               "Число месяца должно быть указано для этого типа уведомлений"
           );
         }
-        if (schedule.getDaysOfWeek() != null ||
-            schedule.getCronExpression() != null) {
+        if (schedule.getDaysOfWeek() != null
+            || schedule.getCronExpression() != null) {
           throw new ResponseStatusException(
               HttpStatus.BAD_REQUEST,
               "Невалидные поля для данного типа уведомлений"
@@ -277,9 +274,9 @@ public class NotificationSchedule {
               "Cron-выражение должно быть указано для этого типа уведомлений"
           );
         }
-        if (schedule.getDaysOfWeek() != null ||
-            schedule.getDayOfMonth() != null ||
-            schedule.getExecutionTime() != null) {
+        if (schedule.getDaysOfWeek() != null
+            || schedule.getDayOfMonth() != null
+            || schedule.getExecutionTime() != null) {
           throw new ResponseStatusException(
               HttpStatus.BAD_REQUEST,
               "Невалидные поля для данного типа уведомлений"

@@ -64,6 +64,7 @@ public class SurveyPageService {
     }
 
     SurveyPage surveyPage = SurveyPage.builder()
+        .id(UUID.randomUUID())
         .survey(survey)
         .serialNumber(dto.getSerialNumber() != null
             ? dto.getSerialNumber()

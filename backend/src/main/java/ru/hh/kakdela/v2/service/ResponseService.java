@@ -18,7 +18,6 @@ import ru.hh.kakdela.v2.dto.response.ResponseResponseDto;
 import ru.hh.kakdela.v2.dto.response.ResponseWithTokenDto;
 import ru.hh.kakdela.v2.mapper.ResponseMapper;
 import ru.hh.kakdela.v2.model.Account;
-import ru.hh.kakdela.v2.model.Permission;
 import ru.hh.kakdela.v2.model.Response;
 import ru.hh.kakdela.v2.model.Survey;
 import ru.hh.kakdela.v2.security.JwtService;
@@ -134,6 +133,7 @@ public class ResponseService {
     }
 
     Response response = Response.builder()
+        .id(UUID.randomUUID())
         .account(account)
         .survey(survey)
         .isCompleted(false)

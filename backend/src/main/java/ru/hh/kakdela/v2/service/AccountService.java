@@ -52,6 +52,7 @@ public class AccountService {
     }
 
     Account account = Account.builder()
+        .id(UUID.randomUUID())
         .login(accountCreateDto.getLogin())
         .email(accountCreateDto.getEmail())
         .passwordHash(
