@@ -181,7 +181,7 @@ public class ResponseService {
 
   @Transactional
   public ResponseExportWithFilenameDto export(UUID surveyId, UUID accountId) {
-    permissionService.checkAccess(surveyId, accountId, Permission.SurveyRole.ANALYST);
+    permissionService.checkCanReadResponses(surveyId, accountId);
 
     List<ResponseResponseDto> completedResponses = responseDao
         .findCompletedBySurveyId(surveyId).stream()
