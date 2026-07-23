@@ -298,11 +298,11 @@ export function SurveyRunner({ survey, mode }: Props) {
                 )}
                 <header className={`${surveyDetailStyle.container} ${style.formHeader}`}>
                     <Text typography='subtitle-1-semibold' style='primary'>
-                        {survey.title}
+                        <div dangerouslySetInnerHTML={{ __html: survey.title }}></div>
                     </Text>
                     {survey.description && (
                         <Text typography='paragraph-2-regular' style='primary'>
-                            {survey.description}
+                            <div dangerouslySetInnerHTML={{ __html: survey.description }}></div>
                         </Text>
                     )}
                 </header>
@@ -324,12 +324,16 @@ export function SurveyRunner({ survey, mode }: Props) {
                             <section className={choiceStyle.container}>
                                 {(currentPage.description || currentPage.title) && (
                                     <section className={`${surveyDetailStyle.container} ${style.formHeader}`}>
-                                        <Text typography='subtitle-1-semibold' style='primary'>
-                                            {currentPage.title}
-                                        </Text>
+                                        {currentPage.title && (
+                                            <Text typography='subtitle-1-semibold' style='primary'>
+                                                <div dangerouslySetInnerHTML={{ __html: currentPage.title }}></div>
+                                            </Text>
+                                        )}
                                         {currentPage.description && (
                                             <Text typography='paragraph-2-regular' style='primary'>
-                                                {currentPage.description}
+                                                <div
+                                                    dangerouslySetInnerHTML={{ __html: currentPage.description }}
+                                                ></div>
                                             </Text>
                                         )}
                                     </section>
@@ -346,14 +350,16 @@ export function SurveyRunner({ survey, mode }: Props) {
                                         )}
                                         <div className={style.questionTitle}>
                                             <Text typography='paragraph-2-regular' style='primary'>
-                                                {question.title}
+                                                <div dangerouslySetInnerHTML={{ __html: question.title }}></div>
                                             </Text>
                                             {question.isMandatory && <span className={style.mandatory}>*</span>}
                                         </div>
                                         {question.description && (
                                             <div className={style.questionDescription}>
                                                 <Text typography='paragraph-3-regular' style='primary'>
-                                                    {question.description}
+                                                    <div
+                                                        dangerouslySetInnerHTML={{ __html: question.description }}
+                                                    ></div>
                                                 </Text>
                                             </div>
                                         )}

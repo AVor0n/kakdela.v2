@@ -1,0 +1,18 @@
+.tiptap {
+    border: solid 1px var(--color-border);
+    padding: 15px;
+    border-radius: 14px;
+    z-index: 1000;
+}
+
+.tiptap p.is-editor-empty:first-child::before {
+    color: #adb5bd;
+    content: attr(data-placeholder);
+    float: left;
+    height: 0;
+    pointer-events: none;
+}
+
+.tiptap:focus {
+    box-shadow: rgb(0, 112, 255) 0px 0px 0px 2px inset;
+}
