@@ -1,5 +1,3 @@
-import { Input } from '@hh.ru/magritte-ui-input';
-import { TextArea } from '@hh.ru/magritte-ui-textarea';
 import type { Page } from '@/shared/types/Survey.type';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { setPage } from '@/entities/Survey/Survey.slice';
@@ -7,6 +5,7 @@ import { useEffect, useState } from 'react';
 import style from './PageDetail.module.css';
 import { updateSurveyPage } from '@/api/surveyPages';
 import { setErrorMessage } from '@/entities/Error/Error.slice';
+import { EditorInput } from '@/shared/ui/TipTap/EditorInput';
 interface Props {
     page: Page;
 }
@@ -52,14 +51,27 @@ export function PageDetail({ page }: Props) {
 
     return (
         <div className={style.container}>
-            <Input
+            <EditorInput
+                placeholder='Заголовок страницы'
+                value={title}
+                onChange={setTitle}
+                onBlur={updateTitleHandler}
+            />
+            {/* <Input
                 placeholder='Заголовок страницы'
                 value={title}
                 onChange={(value: string) => setTitle(value)}
                 onBlur={updateTitleHandler}
+            /> */}
+
+            <EditorInput
+                placeholder='Описание страницы'
+                value={description}
+                onChange={setDescription}
+                onBlur={updateDescriptionHandler}
             />
 
-            <TextArea
+            {/* <TextArea
                 placeholder='Описание страницы'
                 data-qa='textarea'
                 layout='fixed'
@@ -68,7 +80,7 @@ export function PageDetail({ page }: Props) {
                 onChange={(e) => setDescription(e.target.value)}
                 elevatePlaceholder={true}
                 onBlur={updateDescriptionHandler}
-            />
+            /> */}
         </div>
     );
 }
