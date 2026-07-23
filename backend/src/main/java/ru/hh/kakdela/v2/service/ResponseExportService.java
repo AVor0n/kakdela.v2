@@ -101,7 +101,10 @@ public class ResponseExportService {
           Row row = sheet.createRow(rowNum++);
           int cellNum = 0;
 
-          String login = getUserLogin(response.getAccountId(), userLoginCache);
+          String login = getUserLogin(
+              (response.getAccount() != null) ? response.getAccount().getId() : null,
+              userLoginCache
+          );
           row.createCell(cellNum++).setCellValue(login);
 
           Map<UUID, String> answerMap = new HashMap<>();
