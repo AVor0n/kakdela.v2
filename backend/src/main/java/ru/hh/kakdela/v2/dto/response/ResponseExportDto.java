@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @AllArgsConstructor
 @Getter
-public class ResponseExportWithFilenameDto {
+public class ResponseExportDto {
   byte[] file;
   String filename;
 }

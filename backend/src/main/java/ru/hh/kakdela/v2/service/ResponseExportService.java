@@ -33,7 +33,7 @@ import ru.hh.kakdela.v2.dao.AccountDao;
 import ru.hh.kakdela.v2.dao.QuestionDao;
 import ru.hh.kakdela.v2.dao.SurveyDao;
 import ru.hh.kakdela.v2.dto.answer.AnswerResponseDto;
-import ru.hh.kakdela.v2.dto.response.ResponseExportWithFilenameDto;
+import ru.hh.kakdela.v2.dto.response.ResponseExportDto;
 import ru.hh.kakdela.v2.dto.response.ResponseResponseDto;
 import ru.hh.kakdela.v2.model.Account;
 import ru.hh.kakdela.v2.model.Question;
@@ -158,12 +158,12 @@ public class ResponseExportService {
 
     return cache.computeIfAbsent(accountId, id ->
         accountDao.findById(id)
-            .map(Account::getLogin)
-            .orElse("Неизвестный")
+            .map(account -> account.getLogin() + " (" + account.getEmail() + ")")
+            .orElse("Удалённый пользователь (-)")
     );
   }
 
-  public ResponseExportWithFilenameDto exportResponsesWithFilename(
+  public ResponseExportDto exportResponsesWithFilename(
       List<ResponseResponseDto> responses,
       UUID surveyId
   ) throws IOException {
@@ -184,7 +184,7 @@ public class ResponseExportService {
     String encodedFileName = URLEncoder.encode(safeFileName + ".xlsx", StandardCharsets.UTF_8)
         .replace("+", "%20");
 
-    return new ResponseExportWithFilenameDto(
+    return new ResponseExportDto(
         exportResponses(responses, survey),
         encodedFileName
     );

@@ -1,8 +1,6 @@
 package ru.hh.kakdela.v2.service;
 
 import java.io.IOException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
@@ -11,19 +9,17 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import ru.hh.kakdela.v2.dao.AccountDao;
 import ru.hh.kakdela.v2.dao.ResponseDao;
 import ru.hh.kakdela.v2.dao.SurveyDao;
-import ru.hh.kakdela.v2.dto.response.ResponseExportWithFilenameDto;
+import ru.hh.kakdela.v2.dto.response.ResponseExportDto;
 import ru.hh.kakdela.v2.dto.response.ResponseResponseDto;
 import ru.hh.kakdela.v2.dto.response.ResponseWithTokenDto;
 import ru.hh.kakdela.v2.mapper.ResponseMapper;
 import ru.hh.kakdela.v2.model.Account;
-import ru.hh.kakdela.v2.model.Permission;
 import ru.hh.kakdela.v2.model.Response;
 import ru.hh.kakdela.v2.model.Survey;
 import ru.hh.kakdela.v2.security.JwtService;
@@ -180,7 +176,7 @@ public class ResponseService {
   }
 
   @Transactional
-  public ResponseExportWithFilenameDto export(UUID surveyId, UUID accountId) {
+  public ResponseExportDto export(UUID surveyId, UUID accountId) {
     permissionService.checkCanReadResponses(surveyId, accountId);
 
     List<ResponseResponseDto> completedResponses = responseDao
@@ -188,7 +184,7 @@ public class ResponseService {
         .map(ResponseMapper::responseToDto)
         .toList();
 
-    ResponseExportWithFilenameDto excelData = null;
+    ResponseExportDto excelData = null;
     try {
       excelData = exportService.exportResponsesWithFilename(
           completedResponses,

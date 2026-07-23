@@ -3,12 +3,8 @@ package ru.hh.kakdela.v2.controller;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
+
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,7 +21,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import ru.hh.kakdela.v2.constants.CookieNames;
 import ru.hh.kakdela.v2.dto.response.ResponseCreateResponseDto;
-import ru.hh.kakdela.v2.dto.response.ResponseExportWithFilenameDto;
+import ru.hh.kakdela.v2.dto.response.ResponseExportDto;
 import ru.hh.kakdela.v2.dto.response.ResponseResponseDto;
 import ru.hh.kakdela.v2.dto.response.ResponseWithTokenDto;
 import ru.hh.kakdela.v2.security.CustomUserDetails;
@@ -146,7 +142,7 @@ public class ResponseController {
       @AuthenticationPrincipal CustomUserDetails currentUser
   ) {
 
-    ResponseExportWithFilenameDto excelData = responseService.export(surveyId, currentUser.getId());
+    ResponseExportDto excelData = responseService.export(surveyId, currentUser.getId());
 
     HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
