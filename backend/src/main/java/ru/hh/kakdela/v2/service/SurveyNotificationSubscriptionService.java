@@ -13,7 +13,6 @@ import ru.hh.kakdela.v2.dao.SurveyDao;
 import ru.hh.kakdela.v2.dao.SurveyNotificationSubscriptionDao;
 import ru.hh.kakdela.v2.dto.subscription.SubscriptionResponseDto;
 import ru.hh.kakdela.v2.model.Account;
-import ru.hh.kakdela.v2.model.Permission.SurveyRole;
 import ru.hh.kakdela.v2.model.Survey;
 import ru.hh.kakdela.v2.model.SurveyNotificationSubscription;
 
@@ -35,7 +34,7 @@ public class SurveyNotificationSubscriptionService {
   @Transactional
   public SubscriptionResponseDto subscribeUsers(
       UUID surveyId, List<String> emails, UUID currentUserId) {
-    permissionService.checkAccess(surveyId, currentUserId, SurveyRole.EDITOR);
+    permissionService.checkCanEdit(surveyId, currentUserId);
 
     if (emails == null || emails.isEmpty()) {
       return new SubscriptionResponseDto(List.of(), List.of(), List.of());
@@ -89,7 +88,7 @@ public class SurveyNotificationSubscriptionService {
 
   @Transactional
   public void unsubscribeUser(UUID surveyId, String email, UUID currentUserId) {
-    permissionService.checkAccess(surveyId, currentUserId, SurveyRole.EDITOR);
+    permissionService.checkCanEdit(surveyId, currentUserId);
 
     Account account = findAccountByEmailOrThrow(email);
     UUID accountId = account.getId();
@@ -105,13 +104,14 @@ public class SurveyNotificationSubscriptionService {
 
   @Transactional(readOnly = true)
   public List<Account> getSubscribers(UUID surveyId, UUID currentUserId) {
-    permissionService.checkAccess(surveyId, currentUserId, SurveyRole.EDITOR);
+    permissionService.checkCanEdit(surveyId, currentUserId);
+
     return subscriptionDao.findSubscribersBySurveyId(surveyId);
   }
 
   @Transactional(readOnly = true)
   public boolean isSubscribed(UUID surveyId, String email, UUID currentUserId) {
-    permissionService.checkAccess(surveyId, currentUserId, SurveyRole.EDITOR);
+    permissionService.checkCanEdit(surveyId, currentUserId);
 
     Account account = findAccountByEmailOrThrow(email);
     return subscriptionDao.existsBySurveyIdAndAccountId(surveyId, account.getId());

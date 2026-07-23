@@ -7,6 +7,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -39,10 +40,18 @@ public class ResponseService {
   private final JwtService jwtService;
   private final ResponseExportService exportService;
 
+  private boolean isSurveyAuthor(Response response, UUID accountId) {
+    return response.getSurvey().getAuthor().getId().equals(accountId);
+  }
+
   private Response checkAccessAndGetResponse(UUID responseId, UUID accountId, String token) {
     Response response = responseDao.findById(responseId)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Ответ не найден: " + responseId));
+
+    if (response.isCompleted() && isSurveyAuthor(response, accountId)) {
+      return response;
+    }
 
     if (response.getAccount() == null && token == null) {
       throw new ResponseStatusException(
@@ -62,7 +71,8 @@ public class ResponseService {
   public ResponseResponseDto getById(UUID id, UUID accountId, String token) {
     Response response = checkAccessAndGetResponse(id, accountId, token);
 
-    if (response.getAccount() == null && response.isCompleted()) {
+    if (response.getAccount() == null && response.isCompleted()
+        && !isSurveyAuthor(response, accountId)) {
       throw new ResponseStatusException(
           HttpStatus.FORBIDDEN, "Просмотр завершённых анонимных ответов запрещён");
     }
@@ -72,7 +82,8 @@ public class ResponseService {
 
   @Transactional(readOnly = true)
   public List<ResponseResponseDto> getCompletedBySurveyId(UUID surveyId, UUID accountId) {
-    permissionService.checkAccess(surveyId, accountId, Permission.SurveyRole.ANALYST);
+    permissionService.checkCanReadResponses(surveyId, accountId);
+
     return responseDao.findCompletedBySurveyId(surveyId).stream()
         .map(ResponseMapper::responseToDto)
         .toList();
@@ -102,6 +113,16 @@ public class ResponseService {
     if (!survey.isPublished()) {
       throw new ResponseStatusException(
           HttpStatus.BAD_REQUEST, "Опрос ещё не опубликован");
+    }
+
+    if (survey.getExpireAt() != null && survey.getExpireAt().isBefore(Instant.now())) {
+      throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST, "Дедлайн прохождения опроса истёк");
+    }
+
+    if (survey.isAuthorizedOnly() && accountId == null) {
+      throw new ResponseStatusException(
+          HttpStatus.UNAUTHORIZED, "Опрос доступен только авторизованным пользователям");
     }
 
     if (survey.isLimitedToOneResponse() && accountId != null) {

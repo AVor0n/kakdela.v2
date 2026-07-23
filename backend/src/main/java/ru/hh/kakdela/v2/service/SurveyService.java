@@ -5,6 +5,7 @@ import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -38,6 +39,14 @@ public class SurveyService {
   private final PermissionService permissionService;
   private final NotificationService notificationService;
   private final SurveyMapper surveyMapper;
+
+  private void validateAuthorizationConsistency(Survey survey) {
+    if (survey.isLimitedToOneResponse() && !survey.isAuthorizedOnly()) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+          "Опция \"Запретить проходить более одного раза\" доступна только при "
+              + "включённой опции \"Запретить анонимное прохождение\"");
+    }
+  }
 
   @Transactional(readOnly = true)
   public SurveyResponseDto getById(UUID id) {
@@ -80,13 +89,15 @@ public class SurveyService {
         .isTemplate(false)
         .expireAt(dto.getExpireAtAtTargetTimezone() != null
             ? dto.getExpireAtAtTargetTimezone()
-                .atZone(ZoneId.of(dto.getTargetTimezone()))
-                .toInstant()
-                .truncatedTo(ChronoUnit.SECONDS)
+            .atZone(ZoneId.of(dto.getTargetTimezone()))
+            .toInstant()
+            .truncatedTo(ChronoUnit.SECONDS)
             : null)
         .targetTimezone(dto.getTargetTimezone())
         .createdAt(Instant.now().truncatedTo(ChronoUnit.SECONDS))
         .build();
+
+    validateAuthorizationConsistency(survey);
 
     surveyDao.save(survey);
     log.info("Создан опрос id={} authorId={}", survey.getId(), authorId);
@@ -95,7 +106,8 @@ public class SurveyService {
 
   @Transactional
   public SurveyResponseDto update(UUID surveyId, SurveyUpdateDto dto, UUID accountId) {
-    permissionService.checkAccess(surveyId, accountId, SurveyRole.EDITOR);
+    permissionService.checkCanEdit(surveyId, accountId);
+
     Survey survey = surveyDao.findById(surveyId)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
@@ -112,6 +124,8 @@ public class SurveyService {
     if (dto.getIsLimitedToOneResponse() != null) {
       survey.setLimitedToOneResponse(dto.getIsLimitedToOneResponse());
     }
+    validateAuthorizationConsistency(survey);
+
     final boolean wasPublished = survey.isPublished();
     if (dto.getIsPublished() != null) {
       survey.setPublished(dto.getIsPublished());
@@ -155,7 +169,7 @@ public class SurveyService {
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
 
-    permissionService.checkAccess(surveyId, accountId, SurveyRole.EDITOR);
+    permissionService.checkCanEdit(surveyId, accountId);
 
     Account account = accountDao.findById(accountId)
         .orElseThrow(() -> new ResponseStatusException(
