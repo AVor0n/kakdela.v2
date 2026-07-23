@@ -2,10 +2,12 @@ package ru.hh.kakdela.v2.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.never;
+import static org.mockito.internal.verification.VerificationModeFactory.times;
 
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -69,6 +71,7 @@ class SurveyServiceTest {
 
   private SurveyService surveyService;
 
+  private static final String uuidRegex = "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$";
   private static UUID testAccount1Id;
   private static UUID testAccount2Id;
   private static UUID testSurveyId;
@@ -127,6 +130,7 @@ class SurveyServiceTest {
         accountDao,
         permissionService,
         notificationService,
+        objectStorageService,
         surveyMapper
     );
   }
@@ -1365,6 +1369,10 @@ class SurveyServiceTest {
     Mockito.doAnswer(invocation -> {
       Survey survey = invocation.getArgument(0);
 
+      // Проверка автоматической генерации ID
+      assertNotEquals(null, survey.getId());
+      assertTrue(survey.getId().toString().matches(uuidRegex));
+
       survey.setId(testSurvey2Id);
 
       // Проверка времени создания
@@ -1397,6 +1405,10 @@ class SurveyServiceTest {
         .thenReturn(Optional.of(testAccount1));
     Mockito.doAnswer(invocation -> {
       Survey survey = invocation.getArgument(0);
+
+      // Проверка автоматической генерации ID
+      assertNotEquals(null, survey.getId());
+      assertTrue(survey.getId().toString().matches(uuidRegex));
 
       survey.setId(testSurvey3Id);
 
@@ -1784,6 +1796,10 @@ class SurveyServiceTest {
     Mockito.doAnswer(invocation -> {
       Survey survey = invocation.getArgument(0);
 
+      // Проверка автоматической генерации ID опроса
+      assertNotEquals(null, survey.getId());
+      assertTrue(survey.getId().toString().matches(uuidRegex));
+
       survey.setId(testSurvey1CloneId);
 
       // Проверка времени создания
@@ -1793,21 +1809,68 @@ class SurveyServiceTest {
 
       survey.setCreatedAt(null);
 
+      // Копия опроса должна иметь соответствующий префикс в названии
+      assertTrue(survey.getTitle().matches("^Копия — .*$"));
+      // Копия опроса не должна быть опубликована
+      assertFalse(survey.isPublished());
+      // Копия опроса не должна иметь ответов
+      assertEquals(Collections.emptyList(), survey.getResponses());
+      // Копия опроса не должна настроенных прав
+      assertEquals(Collections.emptyList(), survey.getPermissions());
+
       SurveyPage page = survey.getPages().getFirst();
+
+      // Проверка автоматической генерации ID страницы
+      assertNotEquals(null, page.getId());
+      assertTrue(page.getId().toString().matches(uuidRegex));
+
       page.setId(clonePage1Id);
 
+      // Проверка автоматической генерации ID вопроса
+      assertNotEquals(null, page.getQuestions().getFirst().getId());
+      assertTrue(page.getQuestions().getFirst().getId().toString().matches(uuidRegex));
+
+      // Проверка автоматической генерации ключа для картинки вопроса
+      assertNotEquals(null, page.getQuestions().getFirst().getAttachmentObjectKey());
+      assertTrue(page.getQuestions().getFirst().getAttachmentObjectKey()
+          .matches("^questions/" + page.getQuestions().getFirst().getId() +
+              "/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"));
+
+      page.getQuestions().getFirst().setAttachmentObjectKey("attachmentObjectKey");
       page.getQuestions().getFirst().setId(cloneQuestion1Id);
 
       Question question2 = page.getQuestions().get(1);
+      page.getQuestions().get(1).setAttachmentObjectKey("attachmentObjectKey");
       question2.setId(cloneQuestion2Id);
+
+      // Проверка автоматической генерации ID варианта ответа
+      assertNotEquals(null, question2.getAnswerOptions().getFirst().getId());
+      assertTrue(question2.getAnswerOptions().getFirst().getId().toString().matches(uuidRegex));
+
+      // Проверка автоматической генерации ключа для картинки варианта ответа
+      assertNotEquals(null, question2.getAnswerOptions().getFirst().getAttachmentObjectKey());
+      assertTrue(question2.getAnswerOptions().getFirst().getAttachmentObjectKey()
+          .matches("^answer-options/" + question2.getAnswerOptions().getFirst().getId() +
+              "/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"));
+
+      question2.getAnswerOptions().get(0).setAttachmentObjectKey("attachmentObjectKey");
       question2.getAnswerOptions().get(0).setId(cloneAnswerOption1Question2Id);
+      question2.getAnswerOptions().get(1).setAttachmentObjectKey("attachmentObjectKey");
       question2.getAnswerOptions().get(1).setId(cloneAnswerOption2Question2Id);
 
       Question question3 = page.getQuestions().get(2);
+      page.getQuestions().get(2).setAttachmentObjectKey("attachmentObjectKey");
       question3.setId(cloneQuestion3Id);
+      question3.getAnswerOptions().get(0).setAttachmentObjectKey("attachmentObjectKey");
       question3.getAnswerOptions().get(0).setId(cloneAnswerOption1Question3Id);
+      question3.getAnswerOptions().get(1).setAttachmentObjectKey("attachmentObjectKey");
       question3.getAnswerOptions().get(1).setId(cloneAnswerOption2Question3Id);
 
+      // Проверка автоматической генерации ID завершающей страницы
+      assertNotEquals(null, survey.getClosingPage().getId());
+      assertTrue(survey.getClosingPage().getId().toString().matches(uuidRegex));
+
+      survey.getClosingPage().setAttachmentObjectKey("attachmentObjectKey");
       survey.getClosingPage().setId(cloneClosingPage1Id);
 
       assertEquals(testSurvey1Clone, survey);
@@ -1817,6 +1880,8 @@ class SurveyServiceTest {
 
     SurveyResponseDto result = surveyService.clone(testSurvey1Id, testAccount2Id);
     assertEquals(testSurvey1CloneDto, result);
+
+    Mockito.verify(objectStorageService, times(7)).copyObject(Mockito.anyString(), Mockito.anyString());
   }
 
   @Test
@@ -1831,6 +1896,10 @@ class SurveyServiceTest {
     Mockito.doAnswer(invocation -> {
       Survey survey = invocation.getArgument(0);
 
+      // Проверка автоматической генерации ID опроса
+      assertNotEquals(null, survey.getId());
+      assertTrue(survey.getId().toString().matches(uuidRegex));
+
       survey.setId(testSurvey1CloneId);
 
       // Проверка времени создания
@@ -1840,19 +1909,63 @@ class SurveyServiceTest {
 
       survey.setCreatedAt(null);
 
+      // Копия опроса должна иметь соответствующий префикс в названии
+      assertTrue(survey.getTitle().matches("^Копия — .*$"));
+      // Копия опроса не должна быть опубликована
+      assertFalse(survey.isPublished());
+      // Копия опроса не должна иметь ответов
+      assertEquals(Collections.emptyList(), survey.getResponses());
+      // Копия опроса не должна настроенных прав
+      assertEquals(Collections.emptyList(), survey.getPermissions());
+      // Копия опроса без завершающей страницы не должна иметь её
+      assertNull(survey.getClosingPage());
+
       SurveyPage page = survey.getPages().getFirst();
+
+      // Проверка автоматической генерации ID страницы
+      assertNotEquals(null, page.getId());
+      assertTrue(page.getId().toString().matches(uuidRegex));
+
       page.setId(clonePage1Id);
 
+      // Проверка автоматической генерации ID вопроса
+      assertNotEquals(null, page.getQuestions().getFirst().getId());
+      assertTrue(page.getQuestions().getFirst().getId().toString().matches(uuidRegex));
+
+      // Проверка автоматической генерации ключа для картинки вопроса
+      assertNotEquals(null, page.getQuestions().getFirst().getAttachmentObjectKey());
+      assertTrue(page.getQuestions().getFirst().getAttachmentObjectKey()
+          .matches("^questions/" + page.getQuestions().getFirst().getId() +
+              "/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"));
+
+      page.getQuestions().getFirst().setAttachmentObjectKey("attachmentObjectKey");
       page.getQuestions().getFirst().setId(cloneQuestion1Id);
 
       Question question2 = page.getQuestions().get(1);
+      page.getQuestions().get(1).setAttachmentObjectKey("attachmentObjectKey");
       question2.setId(cloneQuestion2Id);
+
+      // Проверка автоматической генерации ID варианта ответа
+      assertNotEquals(null, question2.getAnswerOptions().getFirst().getId());
+      assertTrue(question2.getAnswerOptions().getFirst().getId().toString().matches(uuidRegex));
+
+      // Проверка автоматической генерации ключа для картинки варианта ответа
+      assertNotEquals(null, question2.getAnswerOptions().getFirst().getAttachmentObjectKey());
+      assertTrue(question2.getAnswerOptions().getFirst().getAttachmentObjectKey()
+          .matches("^answer-options/" + question2.getAnswerOptions().getFirst().getId() +
+              "/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"));
+
+      question2.getAnswerOptions().get(0).setAttachmentObjectKey("attachmentObjectKey");
       question2.getAnswerOptions().get(0).setId(cloneAnswerOption1Question2Id);
+      question2.getAnswerOptions().get(1).setAttachmentObjectKey("attachmentObjectKey");
       question2.getAnswerOptions().get(1).setId(cloneAnswerOption2Question2Id);
 
       Question question3 = page.getQuestions().get(2);
+      page.getQuestions().get(2).setAttachmentObjectKey("attachmentObjectKey");
       question3.setId(cloneQuestion3Id);
+      question3.getAnswerOptions().get(0).setAttachmentObjectKey("attachmentObjectKey");
       question3.getAnswerOptions().get(0).setId(cloneAnswerOption1Question3Id);
+      question3.getAnswerOptions().get(1).setAttachmentObjectKey("attachmentObjectKey");
       question3.getAnswerOptions().get(1).setId(cloneAnswerOption2Question3Id);
 
       assertEquals(testSurvey1CloneNoClosingPage, survey);
@@ -1862,6 +1975,8 @@ class SurveyServiceTest {
 
     SurveyResponseDto result = surveyService.clone(testSurvey1Id, testAccount2Id);
     assertEquals(testSurvey1CloneDtoNoClosingPage, result);
+
+    Mockito.verify(objectStorageService, times(7)).copyObject(Mockito.anyString(), Mockito.anyString());
   }
 
   // delete
@@ -1893,7 +2008,7 @@ class SurveyServiceTest {
   }
 
   @Test
-  void delete_surveyFound_callDaoDeleteMethod() {
+  void delete_deletionPermitted_callDaoDeleteMethod() {
     Mockito.when(surveyDao.findById(testSurvey1Id))
         .thenReturn(Optional.of(testSurvey1));
 
