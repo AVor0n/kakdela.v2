@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import ru.hh.kakdela.v2.constants.CookieNames;
 import ru.hh.kakdela.v2.dto.response.ResponseCreateResponseDto;
+import ru.hh.kakdela.v2.dto.response.ResponseExportWithFilenameDto;
 import ru.hh.kakdela.v2.dto.response.ResponseResponseDto;
 import ru.hh.kakdela.v2.dto.response.ResponseWithTokenDto;
 import ru.hh.kakdela.v2.security.CustomUserDetails;
@@ -139,48 +140,24 @@ public class ResponseController {
     return responseService.getCompletedBySurveyId(surveyId, currentUser.getId());
   }
 
-  @GetMapping("/surveys/{surveyId}/export_responses")
+  @GetMapping("/surveys/{surveyId}/responses/export")
   public ResponseEntity<byte[]> exportSurveyResponses(
       @PathVariable UUID surveyId,
       @AuthenticationPrincipal CustomUserDetails currentUser
   ) {
 
-    List<ResponseResponseDto> completedResponses = responseService
-        .getCompletedBySurveyId(surveyId, currentUser.getId());
+    ResponseExportWithFilenameDto excelData = responseService.export(surveyId, currentUser.getId());
 
-    if (completedResponses.isEmpty()) {
-      return ResponseEntity.noContent().build();
-    }
-
-    // Экспортируем
-    Map<String, Object> params = new HashMap<>();
-    byte[] excelData = null;
-    try {
-      excelData = exportService.exportResponsesWithFilename(
-          completedResponses,
-          surveyId,
-          params
-      );
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-
-    String fileName = (String) params.get("fileName");
-    String encodedFileName = URLEncoder.encode(fileName, StandardCharsets.UTF_8)
-        .replace("+", "%20");
-
-
-    // Настройка заголовков
     HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
     headers.set(HttpHeaders.CONTENT_DISPOSITION,
         String.format("attachment; filename=\"%s\"; filename*=UTF-8''%s",
-            encodedFileName, encodedFileName));
-    headers.setContentLength(excelData.length);
+            excelData.getFilename(), excelData.getFilename()));
+    headers.setContentLength(excelData.getFile().length);
 
     return ResponseEntity.ok()
         .headers(headers)
-        .body(excelData);
+        .body(excelData.getFile());
   }
 
 }

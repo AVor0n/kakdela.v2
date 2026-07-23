@@ -2,6 +2,8 @@ package ru.hh.kakdela.v2.service;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.HashMap;
@@ -31,6 +33,7 @@ import ru.hh.kakdela.v2.dao.AccountDao;
 import ru.hh.kakdela.v2.dao.QuestionDao;
 import ru.hh.kakdela.v2.dao.SurveyDao;
 import ru.hh.kakdela.v2.dto.answer.AnswerResponseDto;
+import ru.hh.kakdela.v2.dto.response.ResponseExportWithFilenameDto;
 import ru.hh.kakdela.v2.dto.response.ResponseResponseDto;
 import ru.hh.kakdela.v2.model.Account;
 import ru.hh.kakdela.v2.model.Question;
@@ -46,15 +49,10 @@ public class ResponseExportService {
   private final SurveyDao surveyDao;
   private final QuestionDao questionDao;
 
-  public byte[] exportResponses(List<ResponseResponseDto> responses) throws IOException {
-
-    Survey survey = surveyDao.findById(responses.getFirst().getSurveyId())
-        .orElseThrow(
-            () -> new ResponseStatusException(
-                HttpStatus.NOT_FOUND,
-                "Опрос не найден"
-            )
-        );
+  public byte[] exportResponses(
+      List<ResponseResponseDto> responses,
+      Survey survey
+  ) throws IOException {
 
     List<Question> questions = survey.getPages().stream()
         .map(SurveyPage::getQuestions)
@@ -94,42 +92,44 @@ public class ResponseExportService {
       dateHeaderCell.setCellStyle(headerStyle);
 
       // зполняем данными
-      int rowNum = 1;
+      if (!responses.isEmpty()) {
+        int rowNum = 1;
 
-      Map<UUID, String> userLoginCache = new HashMap<>();
+        Map<UUID, String> userLoginCache = new HashMap<>();
 
-      for (ResponseResponseDto response : responses) {
-        Row row = sheet.createRow(rowNum++);
-        int cellNum = 0;
+        for (ResponseResponseDto response : responses) {
+          Row row = sheet.createRow(rowNum++);
+          int cellNum = 0;
 
-        String login = getUserLogin(response.getAccountId(), userLoginCache);
-        row.createCell(cellNum++).setCellValue(login);
+          String login = getUserLogin(response.getAccountId(), userLoginCache);
+          row.createCell(cellNum++).setCellValue(login);
 
-        Map<UUID, String> answerMap = new HashMap<>();
-        if (response.getAnswers() != null) {
-          for (AnswerResponseDto answer : response.getAnswers()) {
-            answerMap.put(answer.getQuestionId(), answer.getAnswerText());
+          Map<UUID, String> answerMap = new HashMap<>();
+          if (response.getAnswers() != null) {
+            for (AnswerResponseDto answer : response.getAnswers()) {
+              answerMap.put(answer.getQuestionId(), answer.getAnswerText());
+            }
           }
-        }
 
-        for (Question question : questions) {
-          String answer = answerMap.getOrDefault(question.getId(), "");
-          Integer columnIndex = questionColumnMap.get(question.getId());
-          if (columnIndex != null) {
-            Cell cell = row.createCell(cellNum++);
-            cell.setCellValue(answer);
-            cell.setCellStyle(dataStyle);
+          for (Question question : questions) {
+            String answer = answerMap.getOrDefault(question.getId(), "");
+            Integer columnIndex = questionColumnMap.get(question.getId());
+            if (columnIndex != null) {
+              Cell cell = row.createCell(cellNum++);
+              cell.setCellValue(answer);
+              cell.setCellStyle(dataStyle);
+            }
           }
+
+          Cell dateCell = row.createCell(cellNum);
+          LocalDateTime dateTime = LocalDateTime.ofInstant(
+              response.getReceivedAt(),
+              ZoneId.systemDefault()
+          );
+          dateCell.setCellValue(dateTime);
+          dateCell.setCellStyle(dateStyle);
+
         }
-
-        Cell dateCell = row.createCell(cellNum);
-        LocalDateTime dateTime = LocalDateTime.ofInstant(
-            response.getReceivedAt(),
-            ZoneId.systemDefault()
-        );
-        dateCell.setCellValue(dateTime);
-        dateCell.setCellStyle(dateStyle);
-
       }
 
       // настройка ширины колонок
@@ -153,7 +153,7 @@ public class ResponseExportService {
 
   private String getUserLogin(UUID accountId, Map<UUID, String> cache) {
     if (accountId == null) {
-      return "Аноним";
+      return "Анонимный пользователь";
     }
 
     return cache.computeIfAbsent(accountId, id ->
@@ -163,27 +163,31 @@ public class ResponseExportService {
     );
   }
 
-  public byte[] exportResponsesWithFilename(
+  public ResponseExportWithFilenameDto exportResponsesWithFilename(
       List<ResponseResponseDto> responses,
-      UUID surveyId,
-      Map<String, Object> params
+      UUID surveyId
   ) throws IOException {
 
-    byte[] data = exportResponses(responses);
+    Survey survey = surveyDao.findById(surveyId)
+        .orElseThrow(
+            () -> new ResponseStatusException(
+                HttpStatus.NOT_FOUND,
+                "Опрос не найден"
+            )
+        );
 
-    String surveyTitle = surveyDao.findById(surveyId)
-        .map(Survey::getTitle)
-        .orElse("опрос");
-
-    String safeFileName = surveyTitle
+    String safeFileName = survey.getTitle()
         .replaceAll("[^a-zA-Zа-яА-Я0-9\\s]", "")
         .trim()
         .replace(" ", "_");
 
-    params.put("fileName", safeFileName + ".xlsx");
-    params.put("data", data);
+    String encodedFileName = URLEncoder.encode(safeFileName + ".xlsx", StandardCharsets.UTF_8)
+        .replace("+", "%20");
 
-    return data;
+    return new ResponseExportWithFilenameDto(
+        exportResponses(responses, survey),
+        encodedFileName
+    );
   }
 
   private CellStyle createHeaderStyle(Workbook workbook) {
