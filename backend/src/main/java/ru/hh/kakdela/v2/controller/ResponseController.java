@@ -3,8 +3,10 @@ package ru.hh.kakdela.v2.controller;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import java.util.List;
 import java.util.UUID;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -31,6 +33,8 @@ public class ResponseController {
 
   private final ResponseService responseService;
 
+  private static final String RESPONSE_TOKEN_PREFIX = "responseAccessToken_";
+
   @Value("${app.tokens.response-access.max-age}")
   private long responseTokenMaxAge;
 
@@ -49,12 +53,11 @@ public class ResponseController {
 
     if (responseWithTokenDto.getResponseAccessToken() != null) {
 
-      CookieUtil.setHttpOnlySameSiteStrictCookie(
+      setResponseTokenCookie(
           response,
-          "/api/responses",
-          responseTokenMaxAge,
-          CookieNames.responseAccessTokenPrefix + responseWithTokenDto.getId(),
-          responseWithTokenDto.getResponseAccessToken()
+          responseWithTokenDto.getId(),
+          responseWithTokenDto.getResponseAccessToken(),
+          responseTokenMaxAge
       );
     }
 
@@ -76,12 +79,8 @@ public class ResponseController {
         responseId, currentUser != null ? currentUser.getId() : null, token);
 
     if (token != null) {
-
-      CookieUtil.setHttpOnlySameSiteStrictCookie(
-          response, "/api/responses", 0,
-          CookieNames.responseAccessTokenPrefix + responseId);
+      clearResponseTokenCookie(response, responseId);
     }
-
     return responseDto;
   }
 
@@ -91,7 +90,6 @@ public class ResponseController {
       @AuthenticationPrincipal CustomUserDetails currentUser,
       HttpServletRequest request
   ) {
-
     return responseService.getById(
         responseId,
         currentUser != null ? currentUser.getId() : null,
@@ -129,4 +127,23 @@ public class ResponseController {
     return responseService.getCompletedBySurveyId(surveyId, currentUser.getId());
   }
 
+  private void setResponseTokenCookie(HttpServletResponse response, UUID responseId, String token, long maxAge) {
+    String cookieName = RESPONSE_TOKEN_PREFIX + responseId;
+    String cookiePath = "/api/responses";
+
+    CookieUtil.setHttpOnlyCookie(
+        response,
+        cookiePath,
+        maxAge,
+        cookieName,
+        token
+    );
+  }
+
+  private void clearResponseTokenCookie(HttpServletResponse response, UUID responseId) {
+    String cookieName = RESPONSE_TOKEN_PREFIX + responseId;
+    String cookiePath = "/api/responses";
+
+    CookieUtil.clearCookie(response, cookieName, cookiePath);
+  }
 }
