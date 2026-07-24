@@ -106,7 +106,7 @@ CREATE TABLE answer
 (
     response_id uuid REFERENCES response (id) ON DELETE CASCADE,
     question_id uuid REFERENCES question (id) ON DELETE CASCADE,
-    answer_text text NOT NULL,
+    answer_text varchar(5000) NOT NULL,
     PRIMARY KEY (response_id, question_id)
 );
 

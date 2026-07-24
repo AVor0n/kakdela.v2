@@ -46,7 +46,7 @@ public class Answer {
   @OnDelete(action = OnDeleteAction.CASCADE)
   private Question question;
 
-  @Column(name = "answer_text", columnDefinition = "text", nullable = false)
+  @Column(name = "answer_text", length = 5000, nullable = false)
   private String answerText;
 
   @Embeddable
