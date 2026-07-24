@@ -35,7 +35,6 @@ import ru.hh.kakdela.v2.dao.SurveyDao;
 import ru.hh.kakdela.v2.dto.answer.AnswerResponseDto;
 import ru.hh.kakdela.v2.dto.response.ResponseExportDto;
 import ru.hh.kakdela.v2.dto.response.ResponseResponseDto;
-import ru.hh.kakdela.v2.model.Account;
 import ru.hh.kakdela.v2.model.Question;
 import ru.hh.kakdela.v2.model.Survey;
 import ru.hh.kakdela.v2.model.SurveyPage;
@@ -67,7 +66,7 @@ public class ResponseExportService {
       final CellStyle dateStyle = createDateStyle(workbook);
       final CellStyle dataStyle = createDataStyle(workbook);
 
-      // загаловки
+      // заголовки
       Row headerRow = sheet.createRow(0);
       int colIndex = 0;
 
@@ -91,7 +90,7 @@ public class ResponseExportService {
       dateHeaderCell.setCellValue("Дата получения");
       dateHeaderCell.setCellStyle(headerStyle);
 
-      // зполняем данными
+      // заполняем данными
       if (!responses.isEmpty()) {
         int rowNum = 1;
 

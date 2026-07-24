@@ -5,7 +5,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -184,7 +183,7 @@ public class ResponseService {
         .map(ResponseMapper::responseToDto)
         .toList();
 
-    ResponseExportDto excelData = null;
+    ResponseExportDto excelData;
     try {
       excelData = exportService.exportResponsesWithFilename(
           completedResponses,

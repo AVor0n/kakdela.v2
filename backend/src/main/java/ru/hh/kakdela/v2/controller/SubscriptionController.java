@@ -29,40 +29,40 @@ import ru.hh.kakdela.v2.service.SurveyNotificationSubscriptionService;
 @Tag(name = "Subscribers", description = "Управление подписками на уведомления")
 public class SubscriptionController {
 
-    private final SurveyNotificationSubscriptionService subscriptionService;
+  private final SurveyNotificationSubscriptionService subscriptionService;
 
-    @PostMapping("/surveys/{surveyId}/subscribers")
-    @ResponseStatus(HttpStatus.OK)
-    public SubscriptionResponseDto subscribeUsers(
-            @PathVariable UUID surveyId,
-            @Valid @RequestBody SubscriptionRequestDto dto,
-            @AuthenticationPrincipal CustomUserDetails currentUser) {
-        return subscriptionService.subscribeUsers(surveyId, dto.getEmails(), currentUser.getId());
-    }
+  @PostMapping("/surveys/{surveyId}/subscribers")
+  @ResponseStatus(HttpStatus.OK)
+  public SubscriptionResponseDto subscribeUsers(
+      @PathVariable UUID surveyId,
+      @Valid @RequestBody SubscriptionRequestDto dto,
+      @AuthenticationPrincipal CustomUserDetails currentUser) {
+    return subscriptionService.subscribeUsers(surveyId, dto.getEmails(), currentUser.getId());
+  }
 
-    @DeleteMapping("/surveys/{surveyId}/subscribers")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void unsubscribeUser(
-            @PathVariable UUID surveyId,
-            @RequestParam String email,
-            @AuthenticationPrincipal CustomUserDetails currentUser) {
-        subscriptionService.unsubscribeUser(surveyId, email, currentUser.getId());
-    }
+  @DeleteMapping("/surveys/{surveyId}/subscribers")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void unsubscribeUser(
+      @PathVariable UUID surveyId,
+      @RequestParam String email,
+      @AuthenticationPrincipal CustomUserDetails currentUser) {
+    subscriptionService.unsubscribeUser(surveyId, email, currentUser.getId());
+  }
 
-    @GetMapping("/surveys/{surveyId}/subscribers")
-    public List<AccountResponseDto> getSubscribers(
-            @PathVariable UUID surveyId,
-            @AuthenticationPrincipal CustomUserDetails currentUser) {
-        return subscriptionService.getSubscribers(surveyId, currentUser.getId()).stream()
-            .map(AccountMapper::accountToDto)
-            .toList();
-    }
+  @GetMapping("/surveys/{surveyId}/subscribers")
+  public List<AccountResponseDto> getSubscribers(
+      @PathVariable UUID surveyId,
+      @AuthenticationPrincipal CustomUserDetails currentUser) {
+    return subscriptionService.getSubscribers(surveyId, currentUser.getId()).stream()
+        .map(AccountMapper::accountToDto)
+        .toList();
+  }
 
-    @GetMapping("/surveys/{surveyId}/subscribers/check")
-    public boolean isSubscribed(
-            @PathVariable UUID surveyId,
-            @RequestParam String email,
-            @AuthenticationPrincipal CustomUserDetails currentUser) {
-        return subscriptionService.isSubscribed(surveyId, email, currentUser.getId());
-    }
+  @GetMapping("/surveys/{surveyId}/subscribers/check")
+  public boolean isSubscribed(
+      @PathVariable UUID surveyId,
+      @RequestParam String email,
+      @AuthenticationPrincipal CustomUserDetails currentUser) {
+    return subscriptionService.isSubscribed(surveyId, email, currentUser.getId());
+  }
 }
