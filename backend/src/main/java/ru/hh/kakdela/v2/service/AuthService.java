@@ -35,17 +35,17 @@ public class AuthService {
   private final RefreshTokenService refreshTokenService;
 
   public Account authenticate(LoginDto loginDto) {
-    Account account = accountDao.findByLogin(loginDto.getLogin()).orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Неверный логин или пароль"));
+    Account account = accountDao.findByLogin(loginDto.getLogin()).orElseThrow(() ->
+        new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Неверный логин или пароль"));
 
     if (account.getIsDeleted() != null && account.getIsDeleted()) {
-      log.warn("Попытка входа в удалённый аккаунт: login={}", loginDto.getLogin());
       throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Аккаунт удалён");
     }
 
     try {
-      authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginDto.getLogin(), loginDto.getPassword()));
+      authenticationManager
+          .authenticate(new UsernamePasswordAuthenticationToken(loginDto.getLogin(), loginDto.getPassword()));
     } catch (AuthenticationException e) {
-      log.warn("Ошибка аутентификации для login={}: {}", loginDto.getLogin(), e.getMessage());
       throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Неверный логин или пароль");
     }
 
@@ -122,7 +122,8 @@ public class AuthService {
 
   @Transactional
   public void incrementTokenVersion(UUID accountId) {
-    Account account = accountDao.findById(accountId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Аккаунт не найден: " + accountId));
+    Account account = accountDao.findById(accountId).orElseThrow(() ->
+        new ResponseStatusException(HttpStatus.NOT_FOUND, "Аккаунт не найден: " + accountId));
 
     int currentVersion = account.getTokenVersion() != null ? account.getTokenVersion() : 1;
     int newVersion = currentVersion + 1;

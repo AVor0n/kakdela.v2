@@ -90,11 +90,11 @@ public class RefreshTokenService {
     Account account = oldRefreshToken.getAccount();
 
     refreshTokenDao.delete(oldRefreshToken);
-    log.debug(" Удалён старый refresh token при ротации для accountId={}", account.getId());
+    log.debug("Удалён старый refresh токен при ротации для accountId={}", account.getId());
 
     String newRawToken = createRefreshToken(account.getId(), deviceId, userAgent, ipAddress);
 
-    log.info("Произведена ротация refresh token для accountId={}, deviceId={}",
+    log.info("Произведена ротация refresh токена для accountId={}, deviceId={}",
         account.getId(), deviceId);
 
     return newRawToken;
@@ -116,7 +116,7 @@ public class RefreshTokenService {
   @Transactional
   public void revokeAllByAccountIdAndDeviceId(UUID accountId, String deviceId) {
     refreshTokenDao.deleteAllByAccountIdAndDeviceId(accountId, deviceId);
-    log.info("Отозваны refresh tokens для accountId={}, deviceId={}",
+    log.info("Отозваны refresh токены для accountId={}, deviceId={}",
         accountId, deviceId);
   }
 
@@ -130,6 +130,6 @@ public class RefreshTokenService {
   public void cleanExpiredTokens() {
     Instant now = Instant.now(clock);
     refreshTokenDao.deleteAllExpired(now);
-    log.info("Очищены истекшие refresh tokens");
+    log.info("Очищены истекшие refresh токены");
   }
 }

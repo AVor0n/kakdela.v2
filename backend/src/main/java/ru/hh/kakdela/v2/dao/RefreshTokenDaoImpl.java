@@ -65,7 +65,7 @@ public class RefreshTokenDaoImpl implements RefreshTokenDao {
 
   @Override
   public void deleteByTokenHash(String tokenHash) {
-    log.debug("Удаляем refresh token по hash");
+    log.debug("Удаляем refresh токен по hash");
     entityManager
         .createQuery("""
             DELETE FROM RefreshToken rt 
@@ -77,7 +77,7 @@ public class RefreshTokenDaoImpl implements RefreshTokenDao {
 
   @Override
   public void deleteAllByAccountId(UUID accountId) {
-    log.debug("Удаляем все refresh tokens для accountId={}", accountId);
+    log.debug("Удаляем все refresh токены для accountId={}", accountId);
     entityManager
         .createQuery("""
             DELETE FROM RefreshToken rt
@@ -89,7 +89,7 @@ public class RefreshTokenDaoImpl implements RefreshTokenDao {
 
   @Override
   public void deleteAllByAccountIdAndDeviceId(UUID accountId, String deviceId) {
-    log.debug("Удаляем refresh tokens для accountId={}, deviceId={}", accountId, deviceId);
+    log.debug("Удаляем refresh токены для accountId={}, deviceId={}", accountId, deviceId);
     entityManager
         .createQuery("""
             DELETE FROM RefreshToken rt
@@ -102,7 +102,7 @@ public class RefreshTokenDaoImpl implements RefreshTokenDao {
 
   @Override
   public void deleteAllExpired(Instant now) {
-    log.debug("Удаляем истекшие refresh tokens (до {})", now);
+    log.debug("Удаляем истекшие refresh токены (до {})", now);
     entityManager
         .createQuery("""
             DELETE FROM RefreshToken rt 
