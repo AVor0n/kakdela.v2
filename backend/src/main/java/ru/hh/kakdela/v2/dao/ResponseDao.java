@@ -1,10 +1,9 @@
 package ru.hh.kakdela.v2.dao;
 
-import ru.hh.kakdela.v2.model.Response;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import ru.hh.kakdela.v2.model.Response;
 
 public interface ResponseDao {
 

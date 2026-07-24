@@ -13,7 +13,7 @@ import ru.hh.kakdela.v2.validator.NullOrNotBlank;
 @Setter
 public class NotificationScheduleUpdateDto {
   @NullOrNotBlank(message = "Имя не может быть пустым")
-  @Size(max = 255, message = "Имя не может быть длинее 255 символов")
+  @Size(max = 255, message = "Имя не может быть длиннее 255 символов")
   private String name;
 
   private NotificationSchedule.ScheduleType type;

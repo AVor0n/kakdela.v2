@@ -9,7 +9,7 @@ public class ResponseMapper {
     return new ResponseResponseDto(
         response.getId(),
         response.getAccount() != null
-            ? response.getAccount().getId()
+            ? AccountMapper.accountToDto(response.getAccount())
             : null,
         response.getSurvey().getId(),
         response.isCompleted(),

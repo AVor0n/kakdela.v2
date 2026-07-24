@@ -312,8 +312,9 @@ public class NotificationSchedule {
 
     public abstract void verifyType(NotificationSchedule schedule);
 
-    public abstract ZonedDateTime findNext(NotificationSchedule schedule,
-                                           ZonedDateTime candidate,
-                                           ZonedDateTime now);
+    public abstract ZonedDateTime findNext(
+        NotificationSchedule schedule,
+        ZonedDateTime candidate,
+        ZonedDateTime now);
   }
 }

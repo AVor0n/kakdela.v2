@@ -2,13 +2,12 @@ package ru.hh.kakdela.v2.dao;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Repository;
-import ru.hh.kakdela.v2.model.Response;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Repository;
+import ru.hh.kakdela.v2.model.Response;
 
 @Slf4j
 @Repository
@@ -27,7 +26,7 @@ public class ResponseDaoImpl implements ResponseDao {
     return entityManager
         .createQuery(
             """
-            FROM Response r 
+            FROM Response r
             WHERE r.survey.id = :surveyId AND r.isCompleted = true
             """, Response.class)
         .setParameter("surveyId", surveyId)
@@ -48,7 +47,7 @@ public class ResponseDaoImpl implements ResponseDao {
         .createQuery(
             """
             SELECT COUNT(r)
-            FROM Response r 
+            FROM Response r
             WHERE r.survey.id = :surveyId
             """, Long.class)
         .setParameter("surveyId", surveyId)
@@ -61,13 +60,12 @@ public class ResponseDaoImpl implements ResponseDao {
         .createQuery(
             """
             SELECT COUNT(r)
-            FROM Response r 
+            FROM Response r
             WHERE r.survey.id = :surveyId AND r.isCompleted = false
             """, Long.class)
         .setParameter("surveyId", surveyId)
         .getSingleResultOrNull();
   }
-
 
   @Override
   public List<Response> findIncompletedBySurveyIdAndAccountId(UUID surveyId, UUID accountId) {
