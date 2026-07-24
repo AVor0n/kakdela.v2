@@ -3,9 +3,7 @@ package ru.hh.kakdela.v2.controller;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -23,6 +21,7 @@ import ru.hh.kakdela.v2.dto.account.AccountPutDto;
 import ru.hh.kakdela.v2.dto.account.AccountResponseDto;
 import ru.hh.kakdela.v2.security.CustomUserDetails;
 import ru.hh.kakdela.v2.service.AccountService;
+import ru.hh.kakdela.v2.util.CookieUtil;
 
 @RestController
 @RequestMapping("/api")
@@ -57,23 +56,8 @@ public class AccountController {
       @Valid @RequestBody AccountDeleteDto accountDeleteDto,
       @AuthenticationPrincipal CustomUserDetails currentUser,
       HttpServletResponse response) {
-    accountService.delete(currentUser, accountDeleteDto);
 
-    ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken")
-        .httpOnly(true)
-        .sameSite("Strict")
-        .path("/api")
-        .maxAge(0)
-        .build();
-
-    ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken")
-        .httpOnly(true)
-        .sameSite("Strict")
-        .path("/api/auth/refresh")
-        .maxAge(0)
-        .build();
-
-    response.addHeader(HttpHeaders.SET_COOKIE, accessTokenCookie.toString());
-    response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
+      accountService.softDelete(currentUser, accountDeleteDto);
+      CookieUtil.clearAllCookies(response);
   }
 }
