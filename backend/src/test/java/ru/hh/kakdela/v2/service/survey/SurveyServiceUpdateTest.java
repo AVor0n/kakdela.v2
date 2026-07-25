@@ -144,9 +144,10 @@ public class SurveyServiceUpdateTest extends SurveyServiceTest {
     Mockito.doAnswer(invocation -> {
       Survey survey = invocation.getArgument(0);
 
-      // Проверка дедлайна прохождения
-      assertEquals(plainSurveyUnpublishedAnotherExpireAt.getExpireAt(), survey.getExpireAt());
-      assertEquals(0, survey.getExpireAt().toEpochMilli() % 1000);
+      assertEquals(plainSurveyUnpublishedAnotherExpireAt.getExpireAt(), survey.getExpireAt(),
+          "Дедлайн прохождения должен быть правильно конвертирован в UTC");
+      assertEquals(0, survey.getExpireAt().toEpochMilli() % 1000,
+          "Дедлайн прохождения должен иметь обрезанные миллисекунды и наносекунды");
 
       assertEquals(plainSurveyUnpublishedAnotherExpireAt, survey);
 
@@ -159,9 +160,9 @@ public class SurveyServiceUpdateTest extends SurveyServiceTest {
         SurveyServiceTestIdAndTime.account1Id
     );
 
-    // Дедлайн прохождения должен быть правильно конвертирован в указанный часовой пояс
     assertEquals(plainSurveyUnpublishedAnotherExpireAtResponseDto.getExpireAtAtTargetTimezone(),
-        result.getExpireAtAtTargetTimezone());
+        result.getExpireAtAtTargetTimezone(),
+        "Дедлайн прохождения должен быть правильно конвертирован в указанный часовой пояс");
 
     assertEquals(plainSurveyUnpublishedAnotherExpireAtResponseDto, result);
   }
@@ -172,7 +173,7 @@ public class SurveyServiceUpdateTest extends SurveyServiceTest {
 
   @Test
   void update_targetTimezoneChanged_updateExpireAt() {
-    // Data prepare
+    // Подготовка данных
     Survey surveyToUpdate = SurveyServiceTestEntity.getPlainSurvey(
         false,
         false,
@@ -186,10 +187,12 @@ public class SurveyServiceUpdateTest extends SurveyServiceTest {
     Mockito.doAnswer(invocation -> {
       Survey survey = invocation.getArgument(0);
 
-      // Проверка дедлайна прохождения
       assertEquals(plainSurveyUnpublishedAnotherTargetTimezone.getExpireAt(),
-          survey.getExpireAt());
-      assertEquals(0, survey.getExpireAt().toEpochMilli() % 1000);
+          survey.getExpireAt(),
+          "Дедлайн прохождения должен быть правильно конвертирован в UTC "
+              + "в соответствие с новым часовым поясом");
+      assertEquals(0, survey.getExpireAt().toEpochMilli() % 1000,
+          "Дедлайн прохождения должен иметь обрезанные миллисекунды и наносекунды");
 
       assertEquals(plainSurveyUnpublishedAnotherTargetTimezone, survey);
 
@@ -202,18 +205,18 @@ public class SurveyServiceUpdateTest extends SurveyServiceTest {
         SurveyServiceTestIdAndTime.account1Id
     );
 
-    // Часовой пояс был изменён с Asia/Yekateringburg на Asia/Kamchatka,
-    // но значение времени при конвертации в новый часовой пояс должна остаться тем же,
-    // что и старое значение времени при конвертации в старый часовой пояс
     assertEquals(plainSurveyUnpublishedAnotherTargetTimezoneResponseDto.getExpireAtAtTargetTimezone(),
-        result.getExpireAtAtTargetTimezone());
+        result.getExpireAtAtTargetTimezone(),
+        "Часовой пояс был изменён с Asia/Yekateringburg на Asia/Kamchatka,"
+        + " но значение времени при конвертации в новый часовой пояс должно остаться тем же,"
+        + " что и старое значение времени при конвертации в старый часовой пояс");
 
     assertEquals(plainSurveyUnpublishedAnotherTargetTimezoneResponseDto, result);
   }
 
   @Test
   void update_everythingExceptIsPublishedChanged_updateEntityCorrectly() {
-    // Data prepare
+    // Подготовка данных
     Survey surveyToUpdate = SurveyServiceTestEntity.getPlainSurvey(
         false,
         false,

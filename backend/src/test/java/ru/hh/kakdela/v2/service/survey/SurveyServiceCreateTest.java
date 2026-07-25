@@ -2,7 +2,7 @@ package ru.hh.kakdela.v2.service.survey;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -36,26 +36,27 @@ public class SurveyServiceCreateTest extends SurveyServiceTest {
     Mockito.doAnswer(invocation -> {
       Survey survey = invocation.getArgument(0);
 
-      // Проверка автоматической генерации ID
-      assertNotEquals(null, survey.getId());
-      assertTrue(survey.getId().toString().matches(uuidRegex));
+      assertNotNull(survey.getId(), "ID опроса не был заполнен");
+      assertTrue(survey.getId().toString().matches(uuidRegex), "ID не является UUID");
 
       survey.setId(SurveyServiceTestIdAndTime.plainSurveyId);
 
-      // Проверка времени создания
       assertTrue(!survey.getCreatedAt().isBefore(Instant.now().minus(Duration.ofMinutes(1)))
-          && !survey.getCreatedAt().isAfter(Instant.now()));
-      assertEquals(0, survey.getCreatedAt().toEpochMilli() % 1000);
+          && !survey.getCreatedAt().isAfter(Instant.now()),
+          "Установленное время создания оказалось в будущем или было слишком давно");
+      assertEquals(0, survey.getCreatedAt().toEpochMilli() % 1000,
+          "Время создания должно иметь обрезанные миллисекунды и наносекунды");
 
       survey.setCreatedAt(null);
 
-      // Проверка автора
-      assertEquals(SurveyServiceTestEntity.account1, survey.getAuthor());
-      // Созданный опрос не должен быть шаблоном
-      assertFalse(survey.isTemplate());
-      // Проверка дедлайна прохождения
-      assertEquals(plainSurveyUnpublished.getExpireAt(), survey.getExpireAt());
-      assertEquals(0, survey.getExpireAt().toEpochMilli() % 1000);
+      assertEquals(SurveyServiceTestEntity.account1, survey.getAuthor(),
+          "Автор опроса должен быть установлен правильно");
+      assertFalse(survey.isTemplate(),
+          "Созданный опрос не должен быть шаблоном");
+      assertEquals(plainSurveyUnpublished.getExpireAt(), survey.getExpireAt(),
+          "Дедлайн прохождения должен быть правильно конвертирован в UTC");
+      assertEquals(0, survey.getExpireAt().toEpochMilli() % 1000,
+          "Дедлайн прохождения должен иметь обрезанные миллисекунды и наносекунды");
 
       assertEquals(plainSurveyUnpublished, survey);
 
@@ -73,27 +74,27 @@ public class SurveyServiceCreateTest extends SurveyServiceTest {
     Mockito.doAnswer(invocation -> {
       Survey survey = invocation.getArgument(0);
 
-      // Проверка автоматической генерации ID
-      assertNotEquals(null, survey.getId());
-      assertTrue(survey.getId().toString().matches(uuidRegex));
+      assertNotNull(survey.getId(), "ID опроса не был заполнен");
+      assertTrue(survey.getId().toString().matches(uuidRegex), "ID не является UUID");
 
       survey.setId(SurveyServiceTestIdAndTime.plainSurveyId);
 
-      // Проверка времени создания
       assertTrue(!survey.getCreatedAt().isBefore(Instant.now().minus(Duration.ofMinutes(1)))
-          && !survey.getCreatedAt().isAfter(Instant.now()));
-      assertEquals(0, survey.getCreatedAt().toEpochMilli() % 1000);
+              && !survey.getCreatedAt().isAfter(Instant.now()),
+          "Установленное время создания оказалось в будущем или было слишком давно");
+      assertEquals(0, survey.getCreatedAt().toEpochMilli() % 1000,
+          "Время создания должно иметь обрезанные миллисекунды и наносекунды");
 
       survey.setCreatedAt(null);
 
-      // Проверка автора
-      assertEquals(SurveyServiceTestEntity.account1, survey.getAuthor());
-      // Созданный опрос не должен быть шаблоном
-      assertFalse(survey.isTemplate());
-      // Проверка дедлайна прохождения
-      assertNull(survey.getExpireAt());
-      // Часовой пояс должен быть установлен в значение по умолчанию
-      assertEquals("Europe/Moscow", survey.getTargetTimezone());
+      assertEquals(SurveyServiceTestEntity.account1, survey.getAuthor(),
+          "Автор опроса должен быть установлен правильно");
+      assertFalse(survey.isTemplate(),
+          "Созданный опрос не должен быть шаблоном");
+      assertNull(survey.getExpireAt(),
+          "Дедлайн прохождения не должен быть заполнен, если он не был указан");
+      assertEquals("Europe/Moscow", survey.getTargetTimezone(),
+          "Часовой пояс должен быть установлен в значение по умолчанию");
 
       assertEquals(plainSurveyUnpublishedNoExpireAt, survey);
 
