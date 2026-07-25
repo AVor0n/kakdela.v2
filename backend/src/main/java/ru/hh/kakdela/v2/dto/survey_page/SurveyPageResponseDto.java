@@ -1,13 +1,11 @@
 package ru.hh.kakdela.v2.dto.survey_page;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.List;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import ru.hh.kakdela.v2.dto.question.QuestionResponseDto;
-
-import java.util.List;
-import java.util.UUID;
-
-import io.swagger.v3.oas.annotations.media.Schema;
 
 @AllArgsConstructor
 @Getter

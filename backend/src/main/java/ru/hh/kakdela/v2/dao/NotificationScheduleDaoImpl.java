@@ -2,13 +2,12 @@ package ru.hh.kakdela.v2.dao;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import org.springframework.stereotype.Repository;
-import ru.hh.kakdela.v2.model.NotificationSchedule;
-
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.stereotype.Repository;
+import ru.hh.kakdela.v2.model.NotificationSchedule;
 
 @Repository
 public class NotificationScheduleDaoImpl implements NotificationScheduleDao {
@@ -31,7 +30,8 @@ public class NotificationScheduleDaoImpl implements NotificationScheduleDao {
   @Override
   public List<NotificationSchedule> findAllBySurveyId(UUID surveyId) {
     return entityManager
-        .createQuery("FROM NotificationSchedule ns WHERE ns.survey.id = :surveyId", NotificationSchedule.class)
+        .createQuery("FROM NotificationSchedule ns WHERE ns.survey.id = :surveyId",
+            NotificationSchedule.class)
         .setParameter("surveyId", surveyId)
         .getResultList();
   }

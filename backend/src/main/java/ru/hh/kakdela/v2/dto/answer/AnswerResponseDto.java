@@ -1,11 +1,9 @@
 package ru.hh.kakdela.v2.dto.answer;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-
-import java.util.UUID;
-
-import io.swagger.v3.oas.annotations.media.Schema;
 
 @AllArgsConstructor
 @Getter

@@ -12,8 +12,8 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EnableScheduling
 public class KakdelaV2Application {
 
-	public static void main(String[] args) {
-		SpringApplication.run(KakdelaV2Application.class, args);
-	}
+  public static void main(String[] args) {
+    SpringApplication.run(KakdelaV2Application.class, args);
+  }
 
 }
