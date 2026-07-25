@@ -7,9 +7,9 @@ public class AnswerMapper {
 
   public static AnswerResponseDto answerToDto(Answer answer) {
     return new AnswerResponseDto(
-        answer.getId().getResponseId(),
-        answer.getId().getQuestionId(),
-        answer.getAnswerText()
+        answer.getResponse().getId(),
+        answer.getQuestion().getId(),
+        answer.getTextValue()
     );
   }
 }

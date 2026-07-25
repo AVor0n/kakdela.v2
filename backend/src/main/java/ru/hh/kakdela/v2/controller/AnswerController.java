@@ -81,7 +81,7 @@ public class AnswerController {
     return answerService.update(
         responseId,
         questionId,
-        dto.getAnswerText(),
+        dto,
         currentUser != null ? currentUser.getId() : null,
         CookieUtil.getCookieValueByName(
             request, CookieNames.responseAccessTokenPrefix + responseId)

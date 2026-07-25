@@ -34,7 +34,7 @@ import org.hibernate.annotations.OnDeleteAction;
         @Index(name = "idx_survey_page_survey_id", columnList = "survey_id")
     },
     uniqueConstraints = {
-        @UniqueConstraint(name = "uq_page_survey_serial",
+        @UniqueConstraint(name = "uk_page_survey_serial",
             columnNames = {"survey_id", "serial_number"})
     }
 )

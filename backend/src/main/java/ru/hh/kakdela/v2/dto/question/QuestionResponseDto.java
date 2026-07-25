@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import ru.hh.kakdela.v2.dto.answer_option.AnswerOptionResponseDto;
+import ru.hh.kakdela.v2.dto.answer.option.AnswerOptionResponseDto;
 
 @AllArgsConstructor
 @Getter
@@ -17,7 +17,7 @@ public class QuestionResponseDto {
 
   private final UUID id;
   private final int serialNumber;
-  private final String title;
+  private final String text;
   private final String description;
   private final String attachmentUrl;
   private final String type;

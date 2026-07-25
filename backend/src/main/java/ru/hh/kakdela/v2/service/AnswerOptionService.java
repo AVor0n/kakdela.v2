@@ -12,9 +12,9 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import ru.hh.kakdela.v2.dao.AnswerOptionDao;
 import ru.hh.kakdela.v2.dao.QuestionDao;
-import ru.hh.kakdela.v2.dto.answer_option.AnswerOptionCreateDto;
-import ru.hh.kakdela.v2.dto.answer_option.AnswerOptionResponseDto;
-import ru.hh.kakdela.v2.dto.answer_option.AnswerOptionUpdateDto;
+import ru.hh.kakdela.v2.dto.answer.option.AnswerOptionCreateDto;
+import ru.hh.kakdela.v2.dto.answer.option.AnswerOptionResponseDto;
+import ru.hh.kakdela.v2.dto.answer.option.AnswerOptionUpdateDto;
 import ru.hh.kakdela.v2.dto.image.ProcessedImage;
 import ru.hh.kakdela.v2.dto.object.ObjectUrlResponseDto;
 import ru.hh.kakdela.v2.mapper.AnswerOptionMapper;
@@ -70,7 +70,7 @@ public class AnswerOptionService {
         .serialNumber(dto.getSerialNumber() != null
             ? dto.getSerialNumber()
             : maxAvailableSerial)
-        .answerOptionText(dto.getAnswerOptionText())
+        .text(dto.getText())
         .build();
 
     answerOptionDao.save(answerOption);
@@ -107,8 +107,8 @@ public class AnswerOptionService {
       answerOption.setSerialNumber(newSerial);
     }
 
-    if (dto.getAnswerOptionText() != null) {
-      answerOption.setAnswerOptionText(dto.getAnswerOptionText());
+    if (dto.getText() != null) {
+      answerOption.setText(dto.getText());
     }
     answerOptionDao.update(answerOption);
     log.info("Изменен вариант ответа id={}", id);

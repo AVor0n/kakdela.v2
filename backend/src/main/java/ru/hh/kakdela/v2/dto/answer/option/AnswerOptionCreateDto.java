@@ -1,4 +1,4 @@
-package ru.hh.kakdela.v2.dto.answer_option;
+package ru.hh.kakdela.v2.dto.answer.option;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Min;
@@ -21,5 +21,5 @@ public class AnswerOptionCreateDto {
   private Integer serialNumber;
   @NotBlank(message = "Текст варианта ответа не должен быть пустым")
   @Size(max = 1000, message = "Текст варианта ответа не должен быть длиннее 1000 символов")
-  private String answerOptionText;
+  private String text;
 }

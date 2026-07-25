@@ -14,6 +14,7 @@ import ru.hh.kakdela.v2.dao.QuestionDao;
 import ru.hh.kakdela.v2.dao.ResponseDao;
 import ru.hh.kakdela.v2.dto.answer.AnswerCreateDto;
 import ru.hh.kakdela.v2.dto.answer.AnswerResponseDto;
+import ru.hh.kakdela.v2.dto.answer.AnswerUpdateDto;
 import ru.hh.kakdela.v2.mapper.AnswerMapper;
 import ru.hh.kakdela.v2.model.Answer;
 import ru.hh.kakdela.v2.model.Question;
@@ -95,21 +96,17 @@ public class AnswerService {
           HttpStatus.BAD_REQUEST, "Вопрос не принадлежит опросу этого прохождения");
     }
 
-    Answer.AnswerId answerId = Answer.AnswerId.builder()
-        .responseId(responseId)
-        .questionId(questionId)
-        .build();
-
-    if (answerDao.findById(answerId).isPresent()) {
+    if (answerDao.findByResponseIdAndQuestion(responseId, questionId).isPresent()) {
       throw new ResponseStatusException(
           HttpStatus.CONFLICT, "Ответ на этот вопрос уже существует");
     }
 
     Answer answer = Answer.builder()
-        .id(answerId)
+        .id(UUID.randomUUID())
         .response(response)
         .question(question)
-        .answerText(dto.getAnswerText())
+        .questionTitleSnapshot(Jsoup.parse(question.getTitle()).text())
+        .textValue(dto.getAnswerText())
         .build();
 
     answerDao.save(answer);
@@ -139,7 +136,7 @@ public class AnswerService {
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Ответ не найден"));
 
-    answer.setAnswerText(newAnswerText);
+    answer.setTextValue(dto.getAnswerText());
     answerDao.update(answer);
     log.info("Изменен ответ на вопрос responseId={} questionId={}", responseId, questionId);
     return AnswerMapper.answerToDto(answer);
@@ -154,14 +151,10 @@ public class AnswerService {
           HttpStatus.CONFLICT, "Нельзя удалить ответ — прохождение уже завершено");
     }
 
-    Answer.AnswerId id = Answer.AnswerId.builder()
-        .responseId(responseId)
-        .questionId(questionId)
-        .build();
-
-    Answer answer = answerDao.findById(id)
+    Answer answer = answerDao.findByResponseIdAndQuestion(responseId, questionId)
         .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Ответ не найден: " + id));
+            HttpStatus.NOT_FOUND,
+            "Ответ не найден: responseId=%s, questionId=%s".formatted(responseId, questionId)));
 
     answerDao.delete(answer);
     log.info("Удален ответ на вопрос responseId={} questionId={}", responseId, questionId);

@@ -77,7 +77,7 @@ public class QuestionService {
         .serialNumber(dto.getSerialNumber() != null
             ? dto.getSerialNumber()
             : maxAvailableSerial)
-        .title(dto.getTitle())
+        .text(dto.getText())
         .description(dto.getDescription())
         .type(dto.getType())
         .answerOptionOrder(dto.getAnswerOptionOrder())
@@ -107,7 +107,7 @@ public class QuestionService {
     Question questionCopy = Question.builder()
         .surveyPage(originalQuestion.getSurveyPage())
         .serialNumber(originalQuestion.getSerialNumber() + 1)
-        .title(originalQuestion.getTitle())
+        .text(originalQuestion.getText())
         .description(originalQuestion.getDescription())
         .attachmentObjectKey(originalQuestion.getAttachmentObjectKey())
         .type(originalQuestion.getType())
@@ -122,7 +122,7 @@ public class QuestionService {
       AnswerOption optionCopy = AnswerOption.builder()
           .question(questionCopy)
           .serialNumber(originalOption.getSerialNumber())
-          .answerOptionText(originalOption.getAnswerOptionText())
+          .text(originalOption.getText())
           .build();
       questionCopy.getAnswerOptions().add(optionCopy);
     }
@@ -164,8 +164,8 @@ public class QuestionService {
       question.setSerialNumber(newSerial);
     }
 
-    if (dto.getTitle() != null) {
-      question.setTitle(dto.getTitle());
+    if (dto.getText() != null) {
+      question.setText(dto.getText());
     }
     if (dto.getDescription() != null) {
       question.setDescription(dto.getDescription());

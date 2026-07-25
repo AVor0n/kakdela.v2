@@ -30,7 +30,7 @@ public class QuestionMapper {
     return new QuestionResponseDto(
         question.getId(),
         question.getSerialNumber(),
-        question.getTitle(),
+        question.getText(),
         question.getDescription(),
         attachmentUrl,
         question.getType().name(),

@@ -16,7 +16,7 @@ public class SurveyPageDaoImpl implements SurveyPageDao {
   @PersistenceContext
   private EntityManager entityManager;
 
-  private static final String CONSTRAINT_NAME = "uq_page_survey_serial";
+  private static final String CONSTRAINT_NAME = "uk_page_survey_serial";
 
   @Override
   public Optional<SurveyPage> findById(UUID id) {

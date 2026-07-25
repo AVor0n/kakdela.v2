@@ -3,7 +3,7 @@ package ru.hh.kakdela.v2.mapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import ru.hh.kakdela.v2.dto.answer_option.AnswerOptionResponseDto;
+import ru.hh.kakdela.v2.dto.answer.option.AnswerOptionResponseDto;
 import ru.hh.kakdela.v2.model.AnswerOption;
 import ru.hh.kakdela.v2.service.ObjectStorageService;
 
@@ -27,7 +27,7 @@ public class AnswerOptionMapper {
     return new AnswerOptionResponseDto(
         answerOption.getId(),
         answerOption.getSerialNumber(),
-        answerOption.getAnswerOptionText(),
+        answerOption.getText(),
         attachmentUrl
     );
   }

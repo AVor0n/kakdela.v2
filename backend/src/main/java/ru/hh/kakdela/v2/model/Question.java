@@ -19,9 +19,11 @@ import jakarta.persistence.UniqueConstraint;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
@@ -36,7 +38,7 @@ import org.hibernate.annotations.OnDeleteAction;
         @Index(name = "idx_question_survey_page_id", columnList = "survey_page_id")
     },
     uniqueConstraints = {
-        @UniqueConstraint(name = "uq_question_page_serial",
+        @UniqueConstraint(name = "uk_question_page_serial",
             columnNames = {"survey_page_id", "serial_number"})
     }
 )
@@ -55,8 +57,8 @@ public class Question {
   @Column(name = "serial_number", nullable = false)
   private Integer serialNumber;
 
-  @Column(name = "title", length = 200, nullable = false)
-  private String title;
+  @Column(name = "text", length = 200, nullable = false)
+  private String text;
 
   @Column(name = "description", length = 5000)
   private String description;
@@ -71,6 +73,14 @@ public class Question {
   @Column(name = "answer_option_order")
   @Enumerated(EnumType.STRING)
   private AnswerOptionOrder answerOptionOrder;
+
+  @Column(name = "has_other_option", nullable = false)
+  @Getter(AccessLevel.NONE)
+  private boolean hasOtherOption;
+
+  public boolean hasOtherOption() {
+    return this.hasOtherOption;
+  }
 
   @Column(name = "is_mandatory", nullable = false)
   private boolean isMandatory;
@@ -90,11 +100,22 @@ public class Question {
   @Builder.Default
   private List<Answer> answers = new ArrayList<>();
 
+  @AllArgsConstructor(access = AccessLevel.PRIVATE)
   public enum QuestionType {
-    SINGLE_CHOICE,
-    MULTIPLE_CHOICE,
-    SHORT_TEXT,
-    LONG_TEXT
+    SINGLE_CHOICE(true, false, false, false, true, true),
+    MULTIPLE_CHOICE(true, false, false, false, true, true),
+    SHORT_TEXT(true, false, false, false, false, false),
+    LONG_TEXT(true, false, false, false, false, false),
+    YES_NO(false, true, false, false, false, false),
+    DATE(false, false, true, false, false, false),
+    TIME(false, false, false, true, false, false);
+
+    public final boolean isTextAllowed;
+    public final boolean isBooleanAllowed;
+    public final boolean isDateAllowed;
+    public final boolean isTimeAllowed;
+    public final boolean isAnswerOptionsAllowed;
+    public final boolean isOtherOptionAllowed;
   }
 
   public enum AnswerOptionOrder {
