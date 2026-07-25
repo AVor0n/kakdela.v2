@@ -9,12 +9,10 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
 import java.io.IOException;
-
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.CredentialsExpiredException;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
@@ -30,8 +28,6 @@ import ru.hh.kakdela.v2.dao.AccountDao;
 import ru.hh.kakdela.v2.model.Account;
 import ru.hh.kakdela.v2.util.CookieUtil;
 
-import java.util.UUID;
-
 @Slf4j
 @RequiredArgsConstructor
 @Component
@@ -43,7 +39,10 @@ public class JwtRequestFilter extends OncePerRequestFilter {
   private final AccountDao accountDao;
 
   @Override
-  protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {
+  protected void doFilterInternal(
+      HttpServletRequest request,
+      HttpServletResponse response,
+      FilterChain chain) throws ServletException, IOException {
 
     final String token = CookieUtil.getAccessToken(request);
     try {
@@ -55,7 +54,8 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         UUID accountId = UUID.fromString(claims.get("accountId", String.class));
         Integer tokenVersion = claims.get("tokenVersion", Integer.class);
 
-        Account account = accountDao.findByLogin(login).orElseThrow(() -> new UsernameNotFoundException("Аккаунт не найден"));
+        Account account = accountDao.findByLogin(login).orElseThrow(() ->
+            new UsernameNotFoundException("Аккаунт не найден"));
 
         if (account.getIsDeleted() != null && account.getIsDeleted()) {
           throw new BadCredentialsException("Аккаунт удалён");
@@ -72,7 +72,10 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
         UserDetails userDetails = customUserDetailsService.toUserDetails(account);
 
-        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+            userDetails,
+            null,
+            userDetails.getAuthorities());
         authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
         SecurityContextHolder.getContext().setAuthentication(authToken);
       }

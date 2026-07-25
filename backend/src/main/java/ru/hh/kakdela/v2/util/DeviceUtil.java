@@ -2,7 +2,6 @@ package ru.hh.kakdela.v2.util;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
 import java.util.UUID;
 
 public final class DeviceUtil {
@@ -14,7 +13,9 @@ public final class DeviceUtil {
     return CookieUtil.getDeviceId(request);
   }
 
-  public static String getOrCreateDeviceId(HttpServletRequest request, HttpServletResponse response) {
+  public static String getOrCreateDeviceId(
+      HttpServletRequest request,
+      HttpServletResponse response) {
     String deviceId = getDeviceId(request);
     if (deviceId == null) {
       deviceId = generateDeviceId();

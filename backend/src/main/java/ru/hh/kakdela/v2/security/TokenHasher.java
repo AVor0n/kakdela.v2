@@ -1,12 +1,11 @@
 package ru.hh.kakdela.v2.security;
 
-import org.springframework.stereotype.Component;
-
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Base64;
+import org.springframework.stereotype.Component;
 
 @Component
 public final class TokenHasher {
@@ -16,7 +15,6 @@ public final class TokenHasher {
 
   private static final SecureRandom SECURE_RANDOM = new SecureRandom();
   private static final int TOKEN_BYTES_LENGTH = 32;
-
 
   public String generateRawToken() {
     byte[] bytes = new byte[TOKEN_BYTES_LENGTH];
@@ -40,8 +38,8 @@ public final class TokenHasher {
       return bytesToHex(encodedHash);
     } catch (NoSuchAlgorithmException e) {
       throw new IllegalStateException(
-          "Критическая ошибка: алгоритм " + ALGORITHM + " не поддерживается JVM. " +
-          "Проверьте установку Java.", e
+          "Критическая ошибка: алгоритм " + ALGORITHM
+              + " не поддерживается JVM. Проверьте установку Java.", e
       );
     }
   }

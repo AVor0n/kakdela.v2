@@ -2,14 +2,13 @@ package ru.hh.kakdela.v2.dao;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Repository;
-import ru.hh.kakdela.v2.model.RefreshToken;
-
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Repository;
+import ru.hh.kakdela.v2.model.RefreshToken;
 
 @Slf4j
 @Repository
@@ -22,7 +21,8 @@ public class RefreshTokenDaoImpl implements RefreshTokenDao {
   public Optional<RefreshToken> findByTokenHash(String tokenHash) {
     return Optional.ofNullable(
         entityManager
-            .createQuery("""
+            .createQuery(
+                """
                 FROM RefreshToken rt
                 WHERE rt.tokenHash = :tokenHash
                 """, RefreshToken.class)
@@ -34,7 +34,8 @@ public class RefreshTokenDaoImpl implements RefreshTokenDao {
   @Override
   public List<RefreshToken> findActiveByAccountId(UUID accountId, Instant now) {
     return entityManager
-        .createQuery("""
+        .createQuery(
+            """
             FROM RefreshToken rt
             WHERE rt.account.id = :accountId AND rt.expiresAt > :now
             ORDER BY rt.createdAt DESC
@@ -67,7 +68,8 @@ public class RefreshTokenDaoImpl implements RefreshTokenDao {
   public void deleteByTokenHash(String tokenHash) {
     log.debug("Удаляем refresh токен по hash");
     entityManager
-        .createQuery("""
+        .createQuery(
+            """
             DELETE FROM RefreshToken rt 
             WHERE rt.tokenHash = :tokenHash
             """)
@@ -79,7 +81,8 @@ public class RefreshTokenDaoImpl implements RefreshTokenDao {
   public void deleteAllByAccountId(UUID accountId) {
     log.debug("Удаляем все refresh токены для accountId={}", accountId);
     entityManager
-        .createQuery("""
+        .createQuery(
+            """
             DELETE FROM RefreshToken rt
             WHERE rt.account.id = :accountId
             """)
@@ -91,7 +94,8 @@ public class RefreshTokenDaoImpl implements RefreshTokenDao {
   public void deleteAllByAccountIdAndDeviceId(UUID accountId, String deviceId) {
     log.debug("Удаляем refresh токены для accountId={}, deviceId={}", accountId, deviceId);
     entityManager
-        .createQuery("""
+        .createQuery(
+            """
             DELETE FROM RefreshToken rt
             WHERE rt.account.id = :accountId AND rt.deviceId = :deviceId
             """)
@@ -104,7 +108,8 @@ public class RefreshTokenDaoImpl implements RefreshTokenDao {
   public void deleteAllExpired(Instant now) {
     log.debug("Удаляем истекшие refresh токены (до {})", now);
     entityManager
-        .createQuery("""
+        .createQuery(
+            """
             DELETE FROM RefreshToken rt 
             WHERE rt.expiresAt < :now
             """)

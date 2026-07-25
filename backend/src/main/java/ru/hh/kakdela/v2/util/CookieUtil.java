@@ -3,10 +3,9 @@ package ru.hh.kakdela.v2.util;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.http.ResponseCookie;
-
 import java.time.Duration;
 import java.util.Arrays;
+import org.springframework.http.ResponseCookie;
 
 public final class CookieUtil {
 
@@ -19,7 +18,7 @@ public final class CookieUtil {
   public static final Duration DEVICE_ID_TTL = Duration.ofDays(365);
 
   private static final String ACCESS_TOKEN_PATH = "/";
-  private static final String REFRESH_TOKEN_PATH  = "/api/auth";
+  private static final String REFRESH_TOKEN_PATH = "/api/auth";
   private static final String SAME_SITE = "Strict";
 
   private CookieUtil() {
@@ -50,11 +49,23 @@ public final class CookieUtil {
   }
 
   public static void setAccessTokenCookie(HttpServletResponse response, String token) {
-    setHttpOnlyCookie(response, ACCESS_TOKEN_PATH, ACCESS_TOKEN_TTL.getSeconds(), ACCESS_TOKEN_COOKIE_NAME, token);
+    setHttpOnlyCookie(
+        response,
+        ACCESS_TOKEN_PATH,
+        ACCESS_TOKEN_TTL.getSeconds(),
+        ACCESS_TOKEN_COOKIE_NAME,
+        token
+    );
   }
 
   public static void setRefreshTokenCookie(HttpServletResponse response, String token) {
-    setHttpOnlyCookie(response, REFRESH_TOKEN_PATH, REFRESH_TOKEN_TTL.getSeconds(), REFRESH_TOKEN_COOKIE_NAME, token);
+    setHttpOnlyCookie(
+        response,
+        REFRESH_TOKEN_PATH,
+        REFRESH_TOKEN_TTL.getSeconds(),
+        REFRESH_TOKEN_COOKIE_NAME,
+        token
+    );
   }
 
   public static void setDeviceIdCookie(HttpServletResponse response, String deviceId) {

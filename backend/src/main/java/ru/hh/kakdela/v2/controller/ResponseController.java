@@ -3,10 +3,8 @@ package ru.hh.kakdela.v2.controller;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
 import java.util.List;
 import java.util.UUID;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -132,7 +130,7 @@ public class ResponseController {
 
     return responseService.getCompletedBySurveyId(surveyId, currentUser.getId());
   }
-  
+
   @GetMapping("/surveys/{surveyId}/responses/export")
   public ResponseEntity<byte[]> exportSurveyResponses(
       @PathVariable UUID surveyId,
@@ -153,7 +151,11 @@ public class ResponseController {
         .body(excelData.getFile());
   }
 
-  private void setResponseTokenCookie(HttpServletResponse response, UUID responseId, String token, long maxAge) {
+  private void setResponseTokenCookie(
+      HttpServletResponse response,
+      UUID responseId,
+      String token,
+      long maxAge) {
     String cookieName = RESPONSE_TOKEN_PREFIX + responseId;
     String cookiePath = "/api/responses";
 

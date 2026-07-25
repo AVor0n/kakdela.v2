@@ -2,6 +2,7 @@ package ru.hh.kakdela.v2.service;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -20,8 +21,6 @@ import ru.hh.kakdela.v2.model.Account;
 import ru.hh.kakdela.v2.security.JwtService;
 import ru.hh.kakdela.v2.util.CookieUtil;
 import ru.hh.kakdela.v2.util.DeviceUtil;
-
-import java.util.UUID;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -44,7 +43,10 @@ public class AuthService {
 
     try {
       authenticationManager
-          .authenticate(new UsernamePasswordAuthenticationToken(loginDto.getLogin(), loginDto.getPassword()));
+          .authenticate(
+              new UsernamePasswordAuthenticationToken(
+                  loginDto.getLogin(),
+                  loginDto.getPassword()));
     } catch (AuthenticationException e) {
       throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Неверный логин или пароль");
     }
@@ -54,7 +56,10 @@ public class AuthService {
   }
 
   @Transactional
-  public AuthTokensDto login(LoginDto loginDto, HttpServletRequest request, HttpServletResponse response) {
+  public AuthTokensDto login(
+      LoginDto loginDto,
+      HttpServletRequest request,
+      HttpServletResponse response) {
     Account account = authenticate(loginDto);
 
     String deviceId = DeviceUtil.getOrCreateDeviceId(request, response);
@@ -63,7 +68,8 @@ public class AuthService {
 
     refreshTokenService.revokeAllByAccountIdAndDeviceId(account.getId(), deviceId);
 
-    String refreshToken = refreshTokenService.createRefreshToken(account.getId(), deviceId, userAgent, ipAddress);
+    String refreshToken = refreshTokenService
+        .createRefreshToken(account.getId(), deviceId, userAgent, ipAddress);
 
     String accessToken = jwtService.generateAccessToken(account);
 
@@ -89,7 +95,8 @@ public class AuthService {
     String userAgent = request.getHeader("User-Agent");
     String ipAddress = request.getRemoteAddr();
 
-    String newRefreshToken = refreshTokenService.rotateRefreshToken(refreshToken, deviceId, userAgent, ipAddress);
+    String newRefreshToken = refreshTokenService
+        .rotateRefreshToken(refreshToken, deviceId, userAgent, ipAddress);
 
     String newAccessToken = jwtService.generateAccessToken(account);
 
@@ -131,6 +138,10 @@ public class AuthService {
 
     accountDao.update(account);
 
-    log.info("Повышена версия токена для accountId={}: {} → {}", accountId, currentVersion, newVersion);
+    log.info(
+        "Повышена версия токена для accountId={}: {} → {}",
+        accountId,
+        currentVersion,
+        newVersion);
   }
 }

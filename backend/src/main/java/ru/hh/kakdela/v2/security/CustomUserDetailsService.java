@@ -1,7 +1,6 @@
 package ru.hh.kakdela.v2.security;
 
 import java.util.HashSet;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -28,11 +27,11 @@ public class CustomUserDetailsService implements UserDetailsService {
   }
 
   public UserDetails toUserDetails(Account account) {
-        return new CustomUserDetails(
-            account.getId(),
-            account.getLogin(),
-            account.getPasswordHash(),
-            new HashSet<>()
-        );
-    }
+    return new CustomUserDetails(
+        account.getId(),
+        account.getLogin(),
+        account.getPasswordHash(),
+        new HashSet<>()
+    );
+  }
 }

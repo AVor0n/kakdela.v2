@@ -14,11 +14,11 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import ru.hh.kakdela.v2.dto.account.AccountCreateDto;
 import ru.hh.kakdela.v2.dto.account.AccountResponseDto;
-import ru.hh.kakdela.v2.dto.auth.LoginDto;
 import ru.hh.kakdela.v2.dto.auth.AuthTokensDto;
+import ru.hh.kakdela.v2.dto.auth.LoginDto;
 import ru.hh.kakdela.v2.security.CustomUserDetails;
-import ru.hh.kakdela.v2.service.AuthService;
 import ru.hh.kakdela.v2.service.AccountService;
+import ru.hh.kakdela.v2.service.AuthService;
 import ru.hh.kakdela.v2.util.CookieUtil;
 
 @RequiredArgsConstructor

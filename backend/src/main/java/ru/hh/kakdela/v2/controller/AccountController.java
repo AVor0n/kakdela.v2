@@ -56,7 +56,7 @@ public class AccountController {
       @AuthenticationPrincipal CustomUserDetails currentUser,
       HttpServletResponse response) {
 
-      accountService.softDelete(currentUser, accountDeleteDto);
-      CookieUtil.clearAllCookies(response);
+    accountService.softDelete(currentUser, accountDeleteDto);
+    CookieUtil.clearAllCookies(response);
   }
 }

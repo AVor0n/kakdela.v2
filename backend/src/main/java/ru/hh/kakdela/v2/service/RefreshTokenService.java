@@ -1,5 +1,10 @@
 package ru.hh.kakdela.v2.service;
 
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -11,12 +16,6 @@ import ru.hh.kakdela.v2.dao.RefreshTokenDao;
 import ru.hh.kakdela.v2.model.Account;
 import ru.hh.kakdela.v2.model.RefreshToken;
 import ru.hh.kakdela.v2.security.TokenHasher;
-
-import java.time.Clock;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.List;
-import java.util.UUID;
 
 @Slf4j
 @Service
@@ -31,7 +30,11 @@ public class RefreshTokenService {
   private static final Duration REFRESH_TOKEN_TTL = Duration.ofDays(30);
 
   @Transactional
-  public String createRefreshToken(UUID accountId, String deviceId, String userAgent, String ipAddress) {
+  public String createRefreshToken(
+      UUID accountId,
+      String deviceId,
+      String userAgent,
+      String ipAddress) {
     Account account = accountDao.findById(accountId)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Аккаунт не найден"));
@@ -85,7 +88,11 @@ public class RefreshTokenService {
   }
 
   @Transactional
-  public String rotateRefreshToken(String oldRawToken, String deviceId, String userAgent, String ipAddress) {
+  public String rotateRefreshToken(
+      String oldRawToken,
+      String deviceId,
+      String userAgent,
+      String ipAddress) {
     RefreshToken oldRefreshToken = validateToken(oldRawToken, deviceId);
     Account account = oldRefreshToken.getAccount();
 
