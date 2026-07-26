@@ -32,6 +32,7 @@ public class AuthService {
   private final AccountDao accountDao;
   private final JwtService jwtService;
   private final RefreshTokenService refreshTokenService;
+  private final DeviceUtil deviceUtil;
 
   public Account authenticate(LoginDto loginDto) {
     Account account = accountDao.findByLogin(loginDto.getLogin()).orElseThrow(() ->
@@ -60,9 +61,10 @@ public class AuthService {
       LoginDto loginDto,
       HttpServletRequest request,
       HttpServletResponse response) {
+
     Account account = authenticate(loginDto);
 
-    String deviceId = DeviceUtil.getOrCreateDeviceId(request, response);
+    String deviceId = deviceUtil.getOrCreateDeviceId(request, response);
     String userAgent = request.getHeader("User-Agent");
     String ipAddress = request.getRemoteAddr();
 

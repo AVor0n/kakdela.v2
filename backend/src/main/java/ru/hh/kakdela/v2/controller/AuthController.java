@@ -29,6 +29,7 @@ public class AuthController {
 
   private final AuthService authService;
   private final AccountService accountService;
+  private final CookieUtil cookieUtil;
 
   @PostMapping("/auth/register")
   @ResponseStatus(HttpStatus.CREATED)
@@ -45,8 +46,8 @@ public class AuthController {
 
     AuthTokensDto tokens = authService.login(dto, request, response);
 
-    CookieUtil.setAccessTokenCookie(response, tokens.getAccessToken());
-    CookieUtil.setRefreshTokenCookie(response, tokens.getRefreshToken());
+    cookieUtil.setAccessTokenCookie(response, tokens.getAccessToken());
+    cookieUtil.setRefreshTokenCookie(response, tokens.getRefreshToken());
   }
 
   @PostMapping("/auth/refresh")
@@ -57,8 +58,8 @@ public class AuthController {
 
     AuthTokensDto tokens = authService.refreshTokens(request);
 
-    CookieUtil.setAccessTokenCookie(response, tokens.getAccessToken());
-    CookieUtil.setRefreshTokenCookie(response, tokens.getRefreshToken());
+    cookieUtil.setAccessTokenCookie(response, tokens.getAccessToken());
+    cookieUtil.setRefreshTokenCookie(response, tokens.getRefreshToken());
   }
 
   @PostMapping("/auth/logout")
@@ -68,7 +69,7 @@ public class AuthController {
       HttpServletResponse response) {
     authService.logout(request);
 
-    CookieUtil.clearAllCookies(response);
+    CookieUtil.clearAllAuthCookies(response);
   }
 
   @PostMapping("/auth/logout-everywhere")
@@ -79,6 +80,6 @@ public class AuthController {
 
     authService.logoutEverywhere(userDetails.getId());
 
-    CookieUtil.clearAllCookies(response);
+    CookieUtil.clearAllAuthCookies(response);
   }
 }
