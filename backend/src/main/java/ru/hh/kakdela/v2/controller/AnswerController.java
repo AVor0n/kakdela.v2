@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import ru.hh.kakdela.v2.constants.CookieNames;
 import ru.hh.kakdela.v2.dto.answer.AnswerCreateDto;
 import ru.hh.kakdela.v2.dto.answer.AnswerResponseDto;
 import ru.hh.kakdela.v2.dto.answer.AnswerUpdateDto;
@@ -44,8 +43,7 @@ public class AnswerController {
     return answerService.getAllByResponseId(
         responseId,
         currentUser != null ? currentUser.getId() : null,
-        CookieUtil.getCookieValueByName(
-            request, CookieNames.responseAccessTokenPrefix + responseId)
+        CookieUtil.getResponseToken(request, responseId)
     );
   }
 
@@ -64,8 +62,7 @@ public class AnswerController {
         questionId,
         dto,
         currentUser != null ? currentUser.getId() : null,
-        CookieUtil.getCookieValueByName(
-            request, CookieNames.responseAccessTokenPrefix + responseId)
+        CookieUtil.getResponseToken(request, responseId)
     );
   }
 
@@ -83,8 +80,7 @@ public class AnswerController {
         questionId,
         dto.getAnswerText(),
         currentUser != null ? currentUser.getId() : null,
-        CookieUtil.getCookieValueByName(
-            request, CookieNames.responseAccessTokenPrefix + responseId)
+        CookieUtil.getResponseToken(request, responseId)
     );
   }
 
@@ -101,8 +97,7 @@ public class AnswerController {
         responseId,
         questionId,
         currentUser != null ? currentUser.getId() : null,
-        CookieUtil.getCookieValueByName(
-            request, CookieNames.responseAccessTokenPrefix + responseId)
+        CookieUtil.getResponseToken(request, responseId)
     );
   }
 }
