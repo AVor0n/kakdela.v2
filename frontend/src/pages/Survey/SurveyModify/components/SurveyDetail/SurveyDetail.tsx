@@ -57,13 +57,22 @@ export function SurveyDetail({ survey }: Props) {
 
     return (
         <div className={style.container}>
-            <EditorInput placeholder='Название формы' value={title} onBlur={updateTitleHandler} onChange={setTitle} />
+            <EditorInput
+                placeholder='Название формы'
+                value={title}
+                onBlur={updateTitleHandler}
+                onChange={setTitle}
+                isTextColor={true}
+            />
 
             <EditorInput
                 placeholder='Описание формы'
                 value={description}
                 onBlur={updateDescriptionHandler}
                 onChange={setDescription}
+                isTextColor={true}
+                isMarkColor={true}
+                isHeading={true}
             />
         </div>
     );
