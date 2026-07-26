@@ -125,14 +125,14 @@ public class Question {
   @AllArgsConstructor
   public enum AnswerOptionOrder {
     ORIGINAL(
-        aord -> {
-          aord.sort(Comparator.comparingInt(AnswerOptionResponseDto::getSerialNumber));
-          return aord;
+        aords -> {
+          aords.sort(Comparator.comparingInt(AnswerOptionResponseDto::getSerialNumber));
+          return aords;
         }),
     RANDOM(
-        aord -> {
-          Collections.shuffle(aord);
-          return aord;
+        aords -> {
+          Collections.shuffle(aords);
+          return aords;
         });
 
     public final Function<List<AnswerOptionResponseDto>, List<AnswerOptionResponseDto>> function;

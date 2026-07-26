@@ -44,6 +44,9 @@ public class QuestionMapper {
             .map(answerOptionMapper::answerOptionToDto)
             .collect(Collectors.collectingAndThen(
                Collectors.toList(),
-               question.getAnswerOptionOrder().function)));
+               question.getAnswerOptionOrder() != null
+                   ? question.getAnswerOptionOrder().function
+                   : aords -> aords
+               )));
   }
 }
