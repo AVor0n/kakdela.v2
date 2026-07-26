@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { routePatterns } from '@/app/routes';
 import { SubscribersInput } from './Subscribers/SubscribersInput';
 import { setErrorMessage } from '@/entities/Error/Error.slice';
+import { Permissions } from './Permissions/Permissions';
 import style from './Settings.module.css';
 
 function convertDateFromISO(isoStr: string): string {
@@ -21,6 +22,7 @@ function convertDateFromISO(isoStr: string): string {
 
 export function Settings() {
     const { selectedSurvey } = useAppSelector((state) => state.survey);
+    const { account } = useAppSelector((state) => state.account);
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
 
@@ -269,13 +271,17 @@ export function Settings() {
 
                 <SubscribersInput />
 
+                {account?.id === selectedSurvey.authorId && <Permissions surveyId={selectedSurvey.id} />}
+
                 <div className={style.buttons}>
                     <Button mode='secondary' style='neutral' onClick={resetSettings}>
                         Сбросить настройки
                     </Button>
-                    <Button mode='secondary' style='negative' onClick={deleteSurveyHandler}>
-                        Удалить опрос
-                    </Button>
+                    {account?.id === selectedSurvey.authorId && (
+                        <Button mode='secondary' style='negative' onClick={deleteSurveyHandler}>
+                            Удалить опрос
+                        </Button>
+                    )}
                     <Button
                         mode='secondary'
                         style='neutral'
