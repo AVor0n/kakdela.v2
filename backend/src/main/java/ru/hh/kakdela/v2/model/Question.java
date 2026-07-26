@@ -106,19 +106,27 @@ public class Question {
 
   @AllArgsConstructor(access = AccessLevel.PRIVATE)
   public enum QuestionType {
-    SINGLE_CHOICE(true, false, false, false, true, true),
-    MULTIPLE_CHOICE(true, false, false, false, true, true),
-    SHORT_TEXT(true, false, false, false, false, false),
-    LONG_TEXT(true, false, false, false, false, false),
-    YES_NO(false, true, false, false, false, false),
-    DATE(false, false, true, false, false, false),
-    TIME(false, false, false, true, false, false);
+    SINGLE_CHOICE(true, false, false,
+        false, true, false, true),
+    MULTIPLE_CHOICE(true, false, false,
+        false, true, true, true),
+    SHORT_TEXT(true, false, false,
+        false, false, false, false),
+    LONG_TEXT(true, false, false,
+        false, false, false, false),
+    YES_NO(false, true, false,
+        false, false, false, false),
+    DATE(false, false, true,
+        false, false, false, false),
+    TIME(false, false, false,
+        true, false, false, false);
 
     public final boolean isTextAllowed;
     public final boolean isBooleanAllowed;
     public final boolean isDateAllowed;
     public final boolean isTimeAllowed;
     public final boolean isAnswerOptionsAllowed;
+    public final boolean isMultipleChoiceAllowed;
     public final boolean isOtherOptionAllowed;
   }
 

@@ -209,37 +209,116 @@ public class AnswerService {
       AnswerRequestDto dto,
       Question question
   ) {
-    if (dto.getTextValue() != null && !question.getType().isTextAllowed) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-          "Ответ на вопрос типа %s не должен иметь текстового значения"
-              .formatted(question.getType()));
+
+    final Question.QuestionType questionType = question.getType();
+    final boolean isOtherOptionAllowedForThisQuestion =
+        questionType.isOtherOptionAllowed && !question.hasOtherOption();
+
+    if (questionType.isTextAllowed) {
+      if (questionType.isOtherOptionAllowed) {
+        if (!question.hasOtherOption() && dto.getTextValue() != null) {
+          throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+              "Для данного вопроса не допускается вариант ответа \"Другое\"");
+        }
+      } else {
+        if (dto.getTextValue() == null) {
+          throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+              "Ответ на вопрос типа %s должен иметь текстовое значение"
+                  .formatted(questionType));
+        }
+      }
+    } else {
+      if (dto.getTextValue() != null) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+            "Ответ на вопрос типа %s не должен иметь текстового значения"
+                .formatted(questionType));
+      }
     }
-    if (dto.getTextValue() != null
-        && question.getType().isOtherOptionAllowed
-        && !question.hasOtherOption()) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-          "Для данного вопроса не допускается вариант ответа \"Другое\"");
+
+    if (questionType.isBooleanAllowed) {
+      if (dto.getBooleanValue() == null) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+            "Ответ на вопрос типа %s должен иметь булевое значение"
+                .formatted(questionType));
+      }
+    } else {
+      if (dto.getBooleanValue() != null) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+            "Ответ на вопрос типа %s не должен иметь булевого значения"
+                .formatted(questionType));
+      }
     }
-    if (dto.getBooleanValue() != null && !question.getType().isBooleanAllowed) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-          "Ответ на вопрос типа %s не должен иметь булевого значения"
-              .formatted(question.getType()));
+
+    if (questionType.isDateAllowed) {
+      if (dto.getDateValue() == null) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+            "Ответ на вопрос типа %s должен иметь значение даты"
+                .formatted(questionType));
+      }
+    } else {
+      if (dto.getDateValue() != null) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+            "Ответ на вопрос типа %s не должен иметь значения даты"
+                .formatted(questionType));
+      }
     }
-    if (dto.getDateValue() != null && !question.getType().isDateAllowed) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-          "Ответ на вопрос типа %s не должен иметь значения даты"
-              .formatted(question.getType()));
+
+    if (questionType.isTimeAllowed) {
+      if (dto.getTimeValue() == null) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+            "Ответ на вопрос типа %s должен иметь значение времени"
+                .formatted(questionType));
+      }
+    } else {
+      if (dto.getTimeValue() != null) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+            "Ответ на вопрос типа %s не должен иметь значения времени"
+                .formatted(questionType));
+      }
     }
-    if (dto.getTimeValue() != null && !question.getType().isTimeAllowed) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-          "Ответ на вопрос типа %s не должен иметь значения времени"
-              .formatted(question.getType()));
-    }
-    if (dto.getSelectedAnswerOptionIds() != null
-        && !question.getType().isAnswerOptionsAllowed) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-          "Ответ на вопрос типа %s не должен ссылаться на варианты ответа"
-              .formatted(question.getType()));
+
+    if (questionType.isAnswerOptionsAllowed) {
+      if (dto.getSelectedAnswerOptionIds() == null
+          || dto.getSelectedAnswerOptionIds().isEmpty()) {
+        if (isOtherOptionAllowedForThisQuestion) {
+          if (dto.getTextValue() == null) {
+            if (questionType.isMultipleChoiceAllowed) {
+              throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                  ("Ответ на вопрос типа %s должен ссылаться на варианты ответа "
+                      + "или иметь текстовое значение для варианта ответа \"Другое\"")
+                      .formatted(questionType));
+            } else {
+              throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                  ("Ответ на вопрос типа %s должен ссылаться ровно на один вариант ответа "
+                      + "или иметь текстовое значение для варианта ответа \"Другое\"")
+                      .formatted(questionType));
+            }
+          }
+        } else {
+          if (questionType.isMultipleChoiceAllowed) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                "Ответ на вопрос типа %s должен ссылаться на варианты ответа"
+                    .formatted(questionType));
+          } else {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                ("Ответ на вопрос типа %s должен ссылаться ровно на один вариант ответа")
+                    .formatted(questionType));
+          }
+        }
+      }
+      if (dto.getSelectedAnswerOptionIds() != null
+          && dto.getSelectedAnswerOptionIds().size() > 1
+          && !questionType.isMultipleChoiceAllowed) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+            ("Ответ на вопрос типа %s должен ссылаться ровно на один вариант ответа")
+                .formatted(questionType));
+      }
+    } else {
+      if (dto.getSelectedAnswerOptionIds() != null) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+            "Ответ на вопрос типа %s не должен ссылаться на варианты ответа"
+                .formatted(questionType));
+      }
     }
   }
 
