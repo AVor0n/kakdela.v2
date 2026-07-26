@@ -35,39 +35,12 @@ public class ResponseService {
   private final JwtService jwtService;
   private final ResponseExportService exportService;
 
-  private boolean isSurveyAuthor(Response response, UUID accountId) {
-    return response.getSurvey().getAuthor().getId().equals(accountId);
-  }
-
-  private Response checkAccessAndGetResponse(UUID responseId, UUID accountId, String token) {
-    Response response = responseDao.findById(responseId)
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Ответ не найден: " + responseId));
-
-    if (response.isCompleted() && isSurveyAuthor(response, accountId)) {
-      return response;
-    }
-
-    if (response.getAccount() == null && token == null) {
-      throw new ResponseStatusException(
-          HttpStatus.UNAUTHORIZED, "Не предоставлены учётные данные для доступа к прохождению");
-    }
-
-    if (response.getAccount() != null && !response.getAccount().getId().equals(accountId)
-        || token != null && !Objects.equals(jwtService.extractResponseId(token), responseId)) {
-      throw new ResponseStatusException(
-          HttpStatus.FORBIDDEN, "Вы не являетесь автором ответа");
-    }
-
-    return response;
-  }
-
   @Transactional(readOnly = true)
   public ResponseResponseDto getById(UUID id, UUID accountId, String token) {
     Response response = checkAccessAndGetResponse(id, accountId, token);
 
     if (response.getAccount() == null && response.isCompleted()
-        && !isSurveyAuthor(response, accountId)) {
+        && !response.getSurvey().isAuthor(accountId)) {
       throw new ResponseStatusException(
           HttpStatus.FORBIDDEN, "Просмотр завершённых анонимных ответов запрещён");
     }
@@ -92,8 +65,10 @@ public class ResponseService {
   }
 
   @Transactional(readOnly = true)
-  public List<ResponseResponseDto> getIncompletedBySurveyIdAndAccountId(UUID surveyId,
-                                                                        UUID accountId) {
+  public List<ResponseResponseDto> getIncompletedBySurveyIdAndAccountId(
+      UUID surveyId,
+      UUID accountId
+  ) {
     return responseDao.findIncompletedBySurveyIdAndAccountId(surveyId, accountId).stream()
         .map(ResponseMapper::responseToDto)
         .toList();
@@ -194,5 +169,30 @@ public class ResponseService {
     }
 
     return excelData;
+  }
+
+  // Вспомогательные методы
+
+  private Response checkAccessAndGetResponse(UUID responseId, UUID accountId, String token) {
+    Response response = responseDao.findByIdWithSurvey(responseId)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Ответ не найден: " + responseId));
+
+    if (response.isCompleted() && response.getSurvey().isAuthor(accountId)) {
+      return response;
+    }
+
+    if (response.getAccount() == null && token == null) {
+      throw new ResponseStatusException(
+          HttpStatus.UNAUTHORIZED, "Не предоставлены учётные данные для доступа к прохождению");
+    }
+
+    if (response.getAccount() != null && !response.getAccount().getId().equals(accountId)
+        || token != null && !Objects.equals(jwtService.extractResponseId(token), responseId)) {
+      throw new ResponseStatusException(
+          HttpStatus.FORBIDDEN, "Вы не являетесь автором ответа");
+    }
+
+    return response;
   }
 }

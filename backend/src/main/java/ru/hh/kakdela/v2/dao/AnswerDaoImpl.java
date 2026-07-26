@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.stereotype.Repository;
 import ru.hh.kakdela.v2.model.Answer;
 
@@ -17,6 +18,7 @@ public class AnswerDaoImpl implements AnswerDao {
   private EntityManager entityManager;
 
   @Override
+  @EntityGraph(attributePaths = "selectedAnswerOptions")
   public Optional<Answer> findByResponseIdAndQuestion(UUID responseId, UUID questionId) {
     return Optional.ofNullable(entityManager
         .createQuery(
@@ -31,12 +33,16 @@ public class AnswerDaoImpl implements AnswerDao {
   }
 
   @Override
+  @EntityGraph(attributePaths = "selectedAnswerOptions")
   public List<Answer> findAllByResponseId(UUID responseId) {
     return entityManager
-            .createQuery("FROM Answer a "
-                + "WHERE a.id.responseId = :responseId", Answer.class)
-            .setParameter("responseId", responseId)
-            .getResultList();
+        .createQuery(
+            """
+            FROM Answer a
+            WHERE a.id.responseId = :responseId
+            """, Answer.class)
+        .setParameter("responseId", responseId)
+        .getResultList();
   }
 
   @Override

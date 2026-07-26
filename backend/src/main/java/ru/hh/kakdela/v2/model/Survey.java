@@ -18,9 +18,11 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
@@ -64,7 +66,12 @@ public class Survey {
   private boolean isTemplate;
 
   @Column(name = "do_notify", nullable = false)
+  @Getter(AccessLevel.NONE)
   private boolean doNotify;
+
+  public boolean doNotify() {
+    return this.doNotify;
+  }
 
   @Column(name = "expire_at")
   private Instant expireAt;
@@ -91,4 +98,8 @@ public class Survey {
   @OneToMany(mappedBy = "survey", cascade = CascadeType.ALL, orphanRemoval = true)
   @Builder.Default
   private List<Response> responses = new ArrayList<>();
+
+  public boolean isAuthor(UUID accountId) {
+    return this.getAuthor().getId().equals(accountId);
+  }
 }

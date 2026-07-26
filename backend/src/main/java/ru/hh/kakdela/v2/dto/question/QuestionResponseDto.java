@@ -22,6 +22,7 @@ public class QuestionResponseDto {
   private final String attachmentUrl;
   private final String type;
   private final String answerOptionOrder;
+  private final Boolean hasOtherOption;
   private final Boolean isMandatory;
   private final Boolean isVisible;
   private final String condition;

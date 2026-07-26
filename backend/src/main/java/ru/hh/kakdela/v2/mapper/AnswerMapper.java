@@ -9,7 +9,15 @@ public class AnswerMapper {
     return new AnswerResponseDto(
         answer.getResponse().getId(),
         answer.getQuestion().getId(),
-        answer.getTextValue()
+        answer.getQuestionTextSnapshot(),
+        answer.getTextValue(),
+        answer.getBooleanValue(),
+        answer.getDateValue(),
+        answer.getTimeValue(),
+        answer.getSelectedAnswerOptions().stream()
+            .map((SelectedAnswerOptionMapper::selectedAnswerOptionToDto))
+            .toList(),
+        answer.getAnswerAsString()
     );
   }
 }

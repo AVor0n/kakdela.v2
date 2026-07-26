@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import ru.hh.kakdela.v2.dao.AccountDao;
-import ru.hh.kakdela.v2.dao.PermissionDao;
 import ru.hh.kakdela.v2.dao.SurveyDao;
 import ru.hh.kakdela.v2.dto.survey.SurveyCreateDto;
 import ru.hh.kakdela.v2.dto.survey.SurveyResponseDto;
@@ -34,7 +33,6 @@ public class SurveyService {
 
   private final SurveyDao surveyDao;
   private final AccountDao accountDao;
-  private final PermissionDao permissionDao;
   private final PermissionService permissionService;
   private final NotificationService notificationService;
   private final SurveyMapper surveyMapper;
@@ -52,15 +50,14 @@ public class SurveyService {
     Survey survey = surveyDao.findById(id)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Опрос не найден: " + id));
+
     return surveyMapper.surveyToDto(survey);
   }
 
   @Transactional(readOnly = true)
   public List<SurveyShortResponseWithPermissionDto> getAllByAuthorId(UUID authorId) {
     return surveyDao.findAllByAuthorId(authorId).stream()
-        .map(survey -> {
-          return surveyMapper.surveyToShortDto(survey, SurveyRole.AUTHOR);
-        })
+        .map(survey -> surveyMapper.surveyToShortDto(survey, SurveyRole.AUTHOR))
         .toList();
   }
 
@@ -100,6 +97,7 @@ public class SurveyService {
 
     surveyDao.save(survey);
     log.info("Создан опрос id={} authorId={}", survey.getId(), authorId);
+
     return surveyMapper.surveyToDto(survey);
   }
 
@@ -159,6 +157,7 @@ public class SurveyService {
     if (survey.isPublished() && !wasPublished) {
       notificationService.sendSurveyPublishedNotifications(surveyId);
     }
+
     return surveyMapper.surveyToDto(survey);
   }
 
@@ -182,7 +181,7 @@ public class SurveyService {
         .isLimitedToOneResponse(originalSurvey.isLimitedToOneResponse())
         .isPublished(false)
         .isTemplate(false)
-        .doNotify(originalSurvey.isDoNotify())
+        .doNotify(originalSurvey.doNotify())
         .expireAt(originalSurvey.getExpireAt())
         .createdAt(Instant.now())
         .build();
@@ -199,7 +198,7 @@ public class SurveyService {
         Question questionCopy = Question.builder()
             .surveyPage(pageCopy)
             .serialNumber(originalQuestion.getSerialNumber())
-            .title(originalQuestion.getTitle())
+            .text(originalQuestion.getText())
             .description(originalQuestion.getDescription())
             .type(originalQuestion.getType())
             .answerOptionOrder(originalQuestion.getAnswerOptionOrder())
@@ -212,7 +211,7 @@ public class SurveyService {
           AnswerOption optionCopy = AnswerOption.builder()
               .question(questionCopy)
               .serialNumber(originalOption.getSerialNumber())
-              .answerOptionText(originalOption.getAnswerOptionText())
+              .text(originalOption.getText())
               .build();
           questionCopy.getAnswerOptions().add(optionCopy);
         }
@@ -236,6 +235,7 @@ public class SurveyService {
     surveyDao.save(surveyCopy);
     log.info("Клонирован опрос originalId={} copyId={} accountId={}",
         surveyId, surveyCopy.getId(), accountId);
+
     return surveyMapper.surveyToDto(surveyCopy);
   }
 

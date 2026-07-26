@@ -17,8 +17,11 @@ import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Function;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -27,6 +30,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+import ru.hh.kakdela.v2.dto.answer.option.AnswerOptionResponseDto;
 
 @Data
 @Builder
@@ -118,8 +122,19 @@ public class Question {
     public final boolean isOtherOptionAllowed;
   }
 
+  @AllArgsConstructor
   public enum AnswerOptionOrder {
-    ORIGINAL,
-    RANDOM
+    ORIGINAL(
+        aord -> {
+          aord.sort(Comparator.comparingInt(AnswerOptionResponseDto::getSerialNumber));
+          return aord;
+        }),
+    RANDOM(
+        aord -> {
+          Collections.shuffle(aord);
+          return aord;
+        });
+
+    public final Function<List<AnswerOptionResponseDto>, List<AnswerOptionResponseDto>> function;
   }
 }

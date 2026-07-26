@@ -31,11 +31,10 @@ public class QuestionCreateDto {
   @NotNull(message = "Тип вопроса обязателен")
   private Question.QuestionType type;
   private Question.AnswerOptionOrder answerOptionOrder;
+  private Boolean hasOtherOption = false;
   @Schema(description = "Это необязательное поле, у него есть дефолтное значение")
-  @NotNull
   private Boolean isMandatory = true;
   @Schema(description = "Это необязательное поле, у него есть дефолтное значение")
-  @NotNull
   private Boolean isVisible = true;
   private String condition;
 }

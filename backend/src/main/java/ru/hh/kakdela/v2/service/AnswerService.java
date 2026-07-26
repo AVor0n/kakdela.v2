@@ -1,25 +1,34 @@
 package ru.hh.kakdela.v2.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jsoup.Jsoup;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import ru.hh.kakdela.v2.dao.AnswerDao;
+import ru.hh.kakdela.v2.dao.AnswerOptionDao;
 import ru.hh.kakdela.v2.dao.QuestionDao;
 import ru.hh.kakdela.v2.dao.ResponseDao;
-import ru.hh.kakdela.v2.dto.answer.AnswerCreateDto;
+import ru.hh.kakdela.v2.dto.answer.AnswerRequestDto;
 import ru.hh.kakdela.v2.dto.answer.AnswerResponseDto;
-import ru.hh.kakdela.v2.dto.answer.AnswerUpdateDto;
+import ru.hh.kakdela.v2.dto.answer.AnswerResponseDtoWithStatusDto;
+import ru.hh.kakdela.v2.dto.answer.AnswerWithStatusDto;
 import ru.hh.kakdela.v2.mapper.AnswerMapper;
 import ru.hh.kakdela.v2.model.Answer;
+import ru.hh.kakdela.v2.model.AnswerOption;
 import ru.hh.kakdela.v2.model.Question;
 import ru.hh.kakdela.v2.model.Response;
+import ru.hh.kakdela.v2.model.SelectedAnswerOption;
 import ru.hh.kakdela.v2.security.JwtService;
+import ru.hh.kakdela.v2.status.ObjectStatus;
 
 @Slf4j
 @Service
@@ -29,41 +38,15 @@ public class AnswerService {
   private final AnswerDao answerDao;
   private final ResponseDao responseDao;
   private final QuestionDao questionDao;
+  private final AnswerOptionDao answerOptionDao;
   private final JwtService jwtService;
-
-  private boolean isSurveyAuthor(Response response, UUID accountId) {
-    return response.getSurvey().getAuthor().getId().equals(accountId);
-  }
-
-  private Response checkAccessAndGetResponse(UUID responseId, UUID accountId, String token) {
-    Response response = responseDao.findById(responseId)
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Прохождение не найдено: " + responseId));
-
-    if (response.isCompleted() && isSurveyAuthor(response, accountId)) {
-      return response;
-    }
-
-    if (response.getAccount() == null && token == null) {
-      throw new ResponseStatusException(
-          HttpStatus.UNAUTHORIZED, "Не предоставлены учётные данные для доступа к прохождению");
-    }
-
-    if (response.getAccount() != null && !response.getAccount().getId().equals(accountId)
-        || token != null && !Objects.equals(jwtService.extractResponseId(token), responseId)) {
-      throw new ResponseStatusException(
-          HttpStatus.FORBIDDEN, "Вы не являетесь автором ответа");
-    }
-
-    return response;
-  }
 
   @Transactional(readOnly = true)
   public List<AnswerResponseDto> getAllByResponseId(UUID responseId, UUID accountId, String token) {
     Response response = checkAccessAndGetResponse(responseId, accountId, token);
 
     if (response.getAccount() == null && response.isCompleted()
-        && !isSurveyAuthor(response, accountId)) {
+        && !response.getSurvey().isAuthor(accountId)) {
       throw new ResponseStatusException(
           HttpStatus.FORBIDDEN, "Просмотр завершённых анонимных ответов запрещён");
     }
@@ -74,11 +57,13 @@ public class AnswerService {
   }
 
   @Transactional
-  public AnswerResponseDto create(UUID responseId,
-                                  UUID questionId,
-                                  AnswerCreateDto dto,
-                                  UUID accountId,
-                                  String token) {
+  public AnswerResponseDtoWithStatusDto upsert(
+      UUID responseId,
+      UUID questionId,
+      AnswerRequestDto dto,
+      UUID accountId,
+      String token
+  ) {
     Response response = checkAccessAndGetResponse(responseId, accountId, token);
 
     if (response.isCompleted()) {
@@ -93,53 +78,48 @@ public class AnswerService {
     if (!question.getSurveyPage().getSurvey().getId()
         .equals(response.getSurvey().getId())) {
       throw new ResponseStatusException(
-          HttpStatus.BAD_REQUEST, "Вопрос не принадлежит опросу этого прохождения");
+          HttpStatus.BAD_REQUEST, "Вопрос принадлежит другому опросу");
     }
 
-    if (answerDao.findByResponseIdAndQuestion(responseId, questionId).isPresent()) {
-      throw new ResponseStatusException(
-          HttpStatus.CONFLICT, "Ответ на этот вопрос уже существует");
+    verifyAnswerRequestDto(dto, question);
+
+    List<AnswerOption> foundAnswerOptions = new ArrayList<>();
+    if (dto.getSelectedAnswerOptionIds() != null && !dto.getSelectedAnswerOptionIds().isEmpty()) {
+      foundAnswerOptions.addAll(answerOptionDao.findByIds(dto.getSelectedAnswerOptionIds()));
+
+      if (foundAnswerOptions.size() != dto.getSelectedAnswerOptionIds().size()) {
+        Set<UUID> foundIds = foundAnswerOptions.stream()
+            .map(AnswerOption::getId)
+            .collect(Collectors.toSet());
+
+        Set<UUID> missingIds = dto.getSelectedAnswerOptionIds().stream()
+            .filter(id -> !foundIds.contains(id))
+            .collect(Collectors.toSet());
+
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+            "Варианты ответа не найдены: ids=" + missingIds);
+      }
+
+      List<UUID> answerOptionsOfAnotherQuestionIds = foundAnswerOptions.stream()
+          .filter(ao -> !ao.getQuestion().getId().equals(question.getId()))
+          .map(AnswerOption::getId)
+          .toList();
+
+      if (!answerOptionsOfAnotherQuestionIds.isEmpty()) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+            "Варианты ответа принадлежат другому вопросу: ids="
+                + answerOptionsOfAnotherQuestionIds);
+      }
     }
 
-    Answer answer = Answer.builder()
-        .id(UUID.randomUUID())
-        .response(response)
-        .question(question)
-        .questionTitleSnapshot(Jsoup.parse(question.getTitle()).text())
-        .textValue(dto.getAnswerText())
-        .build();
+    AnswerWithStatusDto answerWithStatusDto =
+        answerDao.findByResponseIdAndQuestion(responseId, questionId)
+            .map(a -> update(a, response, question, dto, foundAnswerOptions))
+            .orElseGet(() -> create(response, question, dto, foundAnswerOptions));
 
-    answerDao.save(answer);
-    log.info("Создан ответ на вопрос responseId={} questionId={}", responseId, questionId);
-    return AnswerMapper.answerToDto(answer);
-  }
-
-  @Transactional
-  public AnswerResponseDto update(UUID responseId,
-                                  UUID questionId,
-                                  String newAnswerText,
-                                  UUID accountId,
-                                  String token) {
-    Response response = checkAccessAndGetResponse(responseId, accountId, token);
-
-    if (response.isCompleted()) {
-      throw new ResponseStatusException(
-          HttpStatus.CONFLICT, "Нельзя изменить ответ — прохождение уже завершено");
-    }
-
-    Answer.AnswerId id = Answer.AnswerId.builder()
-        .responseId(responseId)
-        .questionId(questionId)
-        .build();
-
-    Answer answer = answerDao.findById(id)
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Ответ не найден"));
-
-    answer.setTextValue(dto.getAnswerText());
-    answerDao.update(answer);
-    log.info("Изменен ответ на вопрос responseId={} questionId={}", responseId, questionId);
-    return AnswerMapper.answerToDto(answer);
+    return new AnswerResponseDtoWithStatusDto(
+        AnswerMapper.answerToDto(answerWithStatusDto.getAnswer()),
+        answerWithStatusDto.getStatus());
   }
 
   @Transactional
@@ -157,6 +137,132 @@ public class AnswerService {
             "Ответ не найден: responseId=%s, questionId=%s".formatted(responseId, questionId)));
 
     answerDao.delete(answer);
-    log.info("Удален ответ на вопрос responseId={} questionId={}", responseId, questionId);
+    log.info("Удалён ответ на вопрос: responseId={} questionId={}", responseId, questionId);
+  }
+
+  // Вспомогательные методы
+
+  private AnswerWithStatusDto update(
+      Answer answer,
+      Response response,
+      Question question,
+      AnswerRequestDto dto,
+      List<AnswerOption> foundAnswerOptions
+  ) {
+    answer.setQuestionTextSnapshot(Jsoup.parse(question.getText()).text());
+    answer.setTextValue(dto.getTextValue());
+    answer.setBooleanValue(dto.getBooleanValue());
+    answer.setDateValue(dto.getDateValue());
+    answer.setTimeValue(dto.getTimeValue());
+
+    answer.getSelectedAnswerOptions().clear();
+    answer.getSelectedAnswerOptions()
+        .addAll(foundAnswerOptions.stream()
+            .map(ao -> new SelectedAnswerOption(
+                UUID.randomUUID(),
+                answer,
+                ao,
+                Jsoup.parse(ao.getText()).text()))
+            .toList());
+
+    answerDao.update(answer);
+    log.info("Заменён ответ на вопрос: responseId={} questionId={}",
+        response.getId(), question.getId());
+
+    return new AnswerWithStatusDto(answer, ObjectStatus.UPDATED);
+  }
+
+  private AnswerWithStatusDto create(
+      Response response,
+      Question question,
+      AnswerRequestDto dto,
+      List<AnswerOption> foundAnswerOptions
+  ) {
+    Answer answer = Answer.builder()
+        .id(UUID.randomUUID())
+        .response(response)
+        .question(question)
+        .questionTextSnapshot(Jsoup.parse(question.getText()).text())
+        .textValue(dto.getTextValue())
+        .booleanValue(dto.getBooleanValue())
+        .dateValue(dto.getDateValue())
+        .timeValue(dto.getTimeValue())
+        .build();
+
+    answer.getSelectedAnswerOptions()
+        .addAll(foundAnswerOptions.stream()
+            .map(ao -> new SelectedAnswerOption(
+                UUID.randomUUID(),
+                answer,
+                ao,
+                Jsoup.parse(ao.getText()).text()))
+            .toList());
+
+    answerDao.save(answer);
+    log.info("Создан ответ на вопрос: responseId={} questionId={}",
+        response.getId(), question.getId());
+
+    return new AnswerWithStatusDto(answer, ObjectStatus.CREATED);
+  }
+
+  private void verifyAnswerRequestDto(
+      AnswerRequestDto dto,
+      Question question
+  ) {
+    if (dto.getTextValue() != null && !question.getType().isTextAllowed) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+          "Ответ на вопрос типа %s не должен иметь текстового значения"
+              .formatted(question.getType()));
+    }
+    if (dto.getTextValue() != null
+        && question.getType().isOtherOptionAllowed
+        && !question.hasOtherOption()) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+          "Для данного вопроса не допускается вариант ответа \"Другое\"");
+    }
+    if (dto.getBooleanValue() != null && !question.getType().isBooleanAllowed) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+          "Ответ на вопрос типа %s не должен иметь булевого значения"
+              .formatted(question.getType()));
+    }
+    if (dto.getDateValue() != null && !question.getType().isDateAllowed) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+          "Ответ на вопрос типа %s не должен иметь значения даты"
+              .formatted(question.getType()));
+    }
+    if (dto.getTimeValue() != null && !question.getType().isTimeAllowed) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+          "Ответ на вопрос типа %s не должен иметь значения времени"
+              .formatted(question.getType()));
+    }
+    if (dto.getSelectedAnswerOptionIds() != null
+        && !question.getType().isAnswerOptionsAllowed) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+          "Ответ на вопрос типа %s не должен ссылаться на варианты ответа"
+              .formatted(question.getType()));
+    }
+  }
+
+  private Response checkAccessAndGetResponse(UUID responseId, UUID accountId, String token) {
+    Response response = responseDao.findByIdWithSurvey(responseId)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Прохождение не найдено: " + responseId));
+
+    if (response.isCompleted() && response.getSurvey().isAuthor(accountId)) {
+      return response;
+    }
+
+    if (response.getAccount() == null && token == null) {
+      throw new ResponseStatusException(
+          HttpStatus.UNAUTHORIZED, "Не предоставлены учётные данные для доступа к прохождению");
+    }
+
+    if (response.getAccount() != null && !response.getAccount().getId().equals(accountId)
+        || token != null && !Objects.equals(jwtService.extractResponseId(token), responseId)) {
+      throw new ResponseStatusException(
+          HttpStatus.FORBIDDEN, "Вы не являетесь автором ответа");
+    }
+
+    return response;
   }
 }

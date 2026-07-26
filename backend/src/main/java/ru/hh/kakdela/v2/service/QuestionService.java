@@ -81,6 +81,7 @@ public class QuestionService {
         .description(dto.getDescription())
         .type(dto.getType())
         .answerOptionOrder(dto.getAnswerOptionOrder())
+        .hasOtherOption(dto.getHasOtherOption())
         .isMandatory(dto.getIsMandatory())
         .isVisible(dto.getIsVisible())
         .condition(dto.getCondition())
@@ -112,6 +113,7 @@ public class QuestionService {
         .attachmentObjectKey(originalQuestion.getAttachmentObjectKey())
         .type(originalQuestion.getType())
         .answerOptionOrder(originalQuestion.getAnswerOptionOrder())
+        .hasOtherOption(originalQuestion.hasOtherOption())
         .isMandatory(originalQuestion.isMandatory())
         .isVisible(originalQuestion.isVisible())
         .condition(originalQuestion.getCondition())
@@ -175,6 +177,9 @@ public class QuestionService {
     }
     if (dto.getAnswerOptionOrder() != null) {
       question.setAnswerOptionOrder(dto.getAnswerOptionOrder());
+    }
+    if (dto.getHasOtherOption() != null) {
+      question.setHasOtherOption(dto.getHasOtherOption());
     }
     if (dto.getIsMandatory() != null) {
       question.setMandatory(dto.getIsMandatory());

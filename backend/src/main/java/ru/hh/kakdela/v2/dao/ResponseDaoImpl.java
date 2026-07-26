@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.stereotype.Repository;
 import ru.hh.kakdela.v2.model.Response;
 
@@ -17,11 +18,15 @@ public class ResponseDaoImpl implements ResponseDao {
   private EntityManager entityManager;
 
   @Override
-  public Optional<Response> findById(UUID id) {
+  public Optional<Response> findByIdWithSurvey(UUID id) {
     return Optional.ofNullable(entityManager.find(Response.class, id));
   }
 
   @Override
+  @EntityGraph(attributePaths = {
+      "account",
+      "answers",
+      "answers.selectedAnswerOptions"})
   public List<Response> findCompletedBySurveyId(UUID surveyId) {
     return entityManager
         .createQuery(
@@ -34,6 +39,9 @@ public class ResponseDaoImpl implements ResponseDao {
   }
 
   @Override
+  @EntityGraph(attributePaths = {
+      "answers",
+      "answers.selectedAnswerOptions"})
   public List<Response> findAllByAccountId(UUID accountId) {
     return entityManager
         .createQuery("FROM Response r WHERE r.account.id = :accountId", Response.class)
