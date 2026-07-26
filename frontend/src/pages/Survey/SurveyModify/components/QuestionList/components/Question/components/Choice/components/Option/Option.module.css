@@ -10,12 +10,14 @@
 }
 
 .input {
+    flex: 1;
+    min-width: 0;
     transition: border-bottom 0.2s ease-in-out;
     border: none;
     border-bottom: 1px solid rgba(0, 0, 0, 0);
 }
 
-.input:focus {
+.input:focus-within {
     border-color: var(--color-primary);
 }
 
@@ -23,6 +25,8 @@
     display: flex;
     align-items: center;
     gap: 5px;
+    flex: 1;
+    min-width: 0;
 }
 
 .dragHandle {

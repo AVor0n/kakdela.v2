@@ -56,31 +56,18 @@ export function PageDetail({ page }: Props) {
                 value={title}
                 onChange={setTitle}
                 onBlur={updateTitleHandler}
+                isTextColor={true}
             />
-            {/* <Input
-                placeholder='Заголовок страницы'
-                value={title}
-                onChange={(value: string) => setTitle(value)}
-                onBlur={updateTitleHandler}
-            /> */}
 
             <EditorInput
                 placeholder='Описание страницы'
                 value={description}
                 onChange={setDescription}
                 onBlur={updateDescriptionHandler}
+                isTextColor={true}
+                isMarkColor={true}
+                isHeading={true}
             />
-
-            {/* <TextArea
-                placeholder='Описание страницы'
-                data-qa='textarea'
-                layout='fixed'
-                resize='none'
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                elevatePlaceholder={true}
-                onBlur={updateDescriptionHandler}
-            /> */}
         </div>
     );
 }

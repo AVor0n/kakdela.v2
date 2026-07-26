@@ -229,6 +229,7 @@ export function Question({
                         value={title}
                         onChange={setTitle}
                         onBlur={updateQuestionTitleHandler}
+                        isTextColor={true}
                     />
                 </div>
                 <div className={style.imageSettings}>
@@ -267,6 +268,9 @@ export function Question({
                     value={description}
                     onChange={setDescription}
                     onBlur={updateQuestionDescriptionHandler}
+                    isTextColor={true}
+                    isMarkColor={true}
+                    isHeading={true}
                 />
             </section>
 
