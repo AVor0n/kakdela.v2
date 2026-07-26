@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import ru.hh.kakdela.v2.constants.CookieNames;
 import ru.hh.kakdela.v2.dto.response.ResponseCreateResponseDto;
 import ru.hh.kakdela.v2.dto.response.ResponseExportDto;
 import ru.hh.kakdela.v2.dto.response.ResponseResponseDto;
@@ -36,8 +35,7 @@ public class ResponseController {
 
   private final ResponseService responseService;
   private final ResponseExportService exportService;
-
-  private static final String RESPONSE_TOKEN_PREFIX = "responseAccessToken_";
+  private final CookieUtil cookieUtil;
 
   @Value("${app.tokens.response-access.max-age}")
   private long responseTokenMaxAge;
@@ -57,11 +55,10 @@ public class ResponseController {
 
     if (responseWithTokenDto.getResponseAccessToken() != null) {
 
-      setResponseTokenCookie(
+      cookieUtil.setResponseTokenCookie(
           response,
           responseWithTokenDto.getId(),
-          responseWithTokenDto.getResponseAccessToken(),
-          responseTokenMaxAge
+          responseWithTokenDto.getResponseAccessToken()
       );
     }
 
@@ -75,15 +72,16 @@ public class ResponseController {
       HttpServletRequest request,
       HttpServletResponse response
   ) {
-
-    final String token = CookieUtil.getCookieValueByName(
-        request, CookieNames.responseAccessTokenPrefix + responseId);
+    String token = CookieUtil.getResponseToken(request, responseId);
 
     ResponseResponseDto responseDto = responseService.complete(
-        responseId, currentUser != null ? currentUser.getId() : null, token);
+        responseId,
+        currentUser != null ? currentUser.getId() : null,
+        token
+    );
 
     if (token != null) {
-      clearResponseTokenCookie(response, responseId);
+      CookieUtil.clearResponseTokenCookie(response, responseId);
     }
     return responseDto;
   }
@@ -94,11 +92,12 @@ public class ResponseController {
       @AuthenticationPrincipal CustomUserDetails currentUser,
       HttpServletRequest request
   ) {
+    String token = CookieUtil.getResponseToken(request, responseId);
+
     return responseService.getById(
         responseId,
         currentUser != null ? currentUser.getId() : null,
-        CookieUtil.getCookieValueByName(
-            request, CookieNames.responseAccessTokenPrefix + responseId)
+        token
     );
   }
 
@@ -149,29 +148,5 @@ public class ResponseController {
     return ResponseEntity.ok()
         .headers(headers)
         .body(excelData.getFile());
-  }
-
-  private void setResponseTokenCookie(
-      HttpServletResponse response,
-      UUID responseId,
-      String token,
-      long maxAge) {
-    String cookieName = RESPONSE_TOKEN_PREFIX + responseId;
-    String cookiePath = "/api/responses";
-
-    CookieUtil.setHttpOnlyCookie(
-        response,
-        cookiePath,
-        maxAge,
-        cookieName,
-        token
-    );
-  }
-
-  private void clearResponseTokenCookie(HttpServletResponse response, UUID responseId) {
-    String cookieName = RESPONSE_TOKEN_PREFIX + responseId;
-    String cookiePath = "/api/responses";
-
-    CookieUtil.clearCookie(response, cookieName, cookiePath);
   }
 }

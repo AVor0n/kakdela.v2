@@ -5,6 +5,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Base64;
+import java.util.HexFormat;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -35,7 +36,7 @@ public final class TokenHasher {
     try {
       MessageDigest digest = MessageDigest.getInstance(ALGORITHM);
       byte[] encodedHash = digest.digest(rawToken.getBytes(StandardCharsets.UTF_8));
-      return bytesToHex(encodedHash);
+      return HexFormat.of().formatHex(encodedHash);
     } catch (NoSuchAlgorithmException e) {
       throw new IllegalStateException(
           "Критическая ошибка: алгоритм " + ALGORITHM
@@ -49,17 +50,5 @@ public final class TokenHasher {
       return false;
     }
     return hash(rawToken).equals(hash);
-  }
-
-  private String bytesToHex(byte[] hash) {
-    StringBuilder hexString = new StringBuilder(2 * hash.length);
-    for (byte b : hash) {
-      String hex = Integer.toHexString(0xff & b);
-      if (hex.length() == 1) {
-        hexString.append('0');
-      }
-      hexString.append(hex);
-    }
-    return hexString.toString();
   }
 }

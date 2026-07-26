@@ -3,25 +3,35 @@ package ru.hh.kakdela.v2.util;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.time.Duration;
 import java.util.Arrays;
+import java.util.UUID;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
+import org.springframework.stereotype.Component;
 
+@Component
 public final class CookieUtil {
 
   public static final String ACCESS_TOKEN_COOKIE_NAME = "accessToken";
   public static final String REFRESH_TOKEN_COOKIE_NAME = "refreshToken";
   public static final String DEVICE_ID_COOKIE_NAME = "deviceId";
+  public static final String RESPONSE_TOKEN_PREFIX = "responseAccessToken_";
 
-  public static final Duration ACCESS_TOKEN_TTL = Duration.ofMinutes(15);
-  public static final Duration REFRESH_TOKEN_TTL = Duration.ofDays(30);
-  public static final Duration DEVICE_ID_TTL = Duration.ofDays(365);
+  @Value("${app.tokens.access.max-age}")
+  private long accessTokenMaxAge;
 
-  private static final String ACCESS_TOKEN_PATH = "/";
-  private static final String REFRESH_TOKEN_PATH = "/api/auth";
+  @Value("${app.tokens.refresh.max-age}")
+  private long refreshTokenMaxAge;
+
+  @Value("${app.tokens.device-id.max-age}")
+  private long deviceIdMaxAge;
+
+  @Value("${app.tokens.response-access.max-age}")
+  private long responseTokenMaxAge;
+
   private static final String SAME_SITE = "Strict";
 
-  private CookieUtil() {
+  public CookieUtil() {
   }
 
   public static String getCookieValueByName(HttpServletRequest request, String name) {
@@ -48,50 +58,62 @@ public final class CookieUtil {
     return getCookieValueByName(request, DEVICE_ID_COOKIE_NAME);
   }
 
-  public static void setAccessTokenCookie(HttpServletResponse response, String token) {
+  public void setAccessTokenCookie(HttpServletResponse response, String token) {
     setHttpOnlyCookie(
         response,
-        ACCESS_TOKEN_PATH,
-        ACCESS_TOKEN_TTL.getSeconds(),
+        accessTokenMaxAge,
         ACCESS_TOKEN_COOKIE_NAME,
         token
     );
   }
 
-  public static void setRefreshTokenCookie(HttpServletResponse response, String token) {
+  public void setRefreshTokenCookie(HttpServletResponse response, String token) {
     setHttpOnlyCookie(
         response,
-        REFRESH_TOKEN_PATH,
-        REFRESH_TOKEN_TTL.getSeconds(),
+        refreshTokenMaxAge,
         REFRESH_TOKEN_COOKIE_NAME,
         token
     );
   }
 
-  public static void setDeviceIdCookie(HttpServletResponse response, String deviceId) {
+  public void setDeviceIdCookie(HttpServletResponse response, String deviceId) {
     ResponseCookie cookie = ResponseCookie.from(DEVICE_ID_COOKIE_NAME, deviceId)
         .httpOnly(false)
         .secure(true)
         .sameSite(SAME_SITE)
-        .path(ACCESS_TOKEN_PATH)
-        .maxAge(DEVICE_ID_TTL.getSeconds())
+        .maxAge(deviceIdMaxAge)
         .build();
     response.addHeader("Set-Cookie", cookie.toString());
   }
 
+  public void setResponseTokenCookie(
+      HttpServletResponse response,
+      UUID responseId,
+      String token
+  ) {
+
+    String cookieName = RESPONSE_TOKEN_PREFIX + responseId;
+    setHttpOnlyCookie(
+        response,
+        responseTokenMaxAge,
+        cookieName,
+        token
+    );
+  }
+
   public static void clearAccessTokenCookie(HttpServletResponse response) {
-    clearCookie(response, ACCESS_TOKEN_COOKIE_NAME, ACCESS_TOKEN_PATH);
+    clearCookie(response, ACCESS_TOKEN_COOKIE_NAME);
   }
 
   public static void clearRefreshTokenCookie(HttpServletResponse response) {
-    clearCookie(response, REFRESH_TOKEN_COOKIE_NAME, REFRESH_TOKEN_PATH);
+    clearCookie(response, REFRESH_TOKEN_COOKIE_NAME);
   }
 
   public static void clearDeviceIdCookie(HttpServletResponse response) {
-    clearCookie(response, DEVICE_ID_COOKIE_NAME, ACCESS_TOKEN_PATH);
+    clearCookie(response, DEVICE_ID_COOKIE_NAME);
   }
 
-  public static void clearAllCookies(HttpServletResponse response) {
+  public static void clearAllAuthCookies(HttpServletResponse response) {
     clearAccessTokenCookie(response);
     clearRefreshTokenCookie(response);
     clearDeviceIdCookie(response);
@@ -99,7 +121,6 @@ public final class CookieUtil {
 
   public static void setHttpOnlyCookie(
       HttpServletResponse response,
-      String path,
       long maxAgeSeconds,
       String name,
       String value) {
@@ -108,20 +129,34 @@ public final class CookieUtil {
         .httpOnly(true)
         .secure(true)
         .sameSite(SAME_SITE)
-        .path(path)
         .maxAge(maxAgeSeconds)
         .build();
     response.addHeader("Set-Cookie", cookie.toString());
   }
 
-  public static void clearCookie(HttpServletResponse response, String name, String path) {
+  public static void clearCookie(HttpServletResponse response, String name) {
     ResponseCookie cookie = ResponseCookie.from(name, "")
         .httpOnly(true)
         .secure(true)
         .sameSite(SAME_SITE)
-        .path(path)
         .maxAge(0)
         .build();
     response.addHeader("Set-Cookie", cookie.toString());
+  }
+
+  public static void clearResponseTokenCookie(
+      HttpServletResponse response,
+      UUID responseId) {
+
+    String cookieName = RESPONSE_TOKEN_PREFIX + responseId;
+    clearCookie(response, cookieName);
+  }
+
+  public static String getResponseToken(
+      HttpServletRequest request,
+      UUID responseId) {
+
+    String cookieName = RESPONSE_TOKEN_PREFIX + responseId;
+    return getCookieValueByName(request, cookieName);
   }
 }
