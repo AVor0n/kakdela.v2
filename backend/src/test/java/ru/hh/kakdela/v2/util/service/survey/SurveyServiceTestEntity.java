@@ -4,7 +4,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
 import ru.hh.kakdela.v2.model.Account;
 import ru.hh.kakdela.v2.model.Answer;
 import ru.hh.kakdela.v2.model.AnswerOption;
@@ -14,10 +13,15 @@ import ru.hh.kakdela.v2.model.Question;
 import ru.hh.kakdela.v2.model.Response;
 import ru.hh.kakdela.v2.model.Survey;
 import ru.hh.kakdela.v2.model.SurveyPage;
+import ru.hh.kakdela.v2.util.service.survey.SurveyServiceTestConstants.FullSurveyConstants;
+import ru.hh.kakdela.v2.util.service.survey.SurveyServiceTestConstants.PlainSurveyConstants;
 
 public class SurveyServiceTestEntity {
+
+  private static final boolean IS_ORIGINAL = false;
+
   public static final Account account1 = new Account(
-      SurveyServiceTestIdAndTime.account1Id,
+      SurveyServiceTestConstants.account1Id,
         "account1",
             null,
             null,
@@ -26,7 +30,7 @@ public class SurveyServiceTestEntity {
             null,
             null);
   public static final Account account2 = new Account(
-      SurveyServiceTestIdAndTime.account2Id,
+      SurveyServiceTestConstants.account2Id,
         "account2",
             null,
             null,
@@ -35,24 +39,24 @@ public class SurveyServiceTestEntity {
             null,
             null);
 
+  private static Account getAuthorFor(boolean isClone) {
+    return isClone
+        ? account2
+        : account1;
+  }
+
   public static Survey getFullSurvey(boolean includeClosingPage, boolean isClone) {
     Survey survey = new Survey(
-        !isClone
-            ? SurveyServiceTestIdAndTime.fullSurveyId
-            : SurveyServiceTestIdAndTime.fullSurveyCloneId,
-        !isClone
-            ? account1
-            : account2,
-        !isClone
-            ? "fullSurvey"
-            : "Копия — fullSurvey",
+        FullSurveyConstants.SURVEY.getId(isClone),
+        getAuthorFor(isClone),
+        FullSurveyConstants.getTitle(isClone),
         "description",
         false,
         false,
         !isClone,
         false,
         false,
-        SurveyServiceTestIdAndTime.expireAt,
+        SurveyServiceTestConstants.expireAtSevenDays,
         "Europe/Moscow",
         null,
         new ArrayList<>(),
@@ -63,7 +67,8 @@ public class SurveyServiceTestEntity {
     if (!isClone) {
       survey.getPermissions().add(new Permission(
           new Permission.PermissionId(
-              SurveyServiceTestIdAndTime.account2Id, SurveyServiceTestIdAndTime.fullSurveyId),
+              SurveyServiceTestConstants.account2Id, FullSurveyConstants.SURVEY.getId(
+              IS_ORIGINAL)),
           account2,
           survey,
           Permission.SurveyRole.EDITOR,
@@ -72,36 +77,30 @@ public class SurveyServiceTestEntity {
 
     if (includeClosingPage) {
       survey.setClosingPage(new ClosingPage(
-          !isClone
-              ? UUID.fromString("8198aea4-3f54-43df-ac27-15d11500a744")
-              : SurveyServiceTestIdAndTime.closingPage1CloneId,
+          FullSurveyConstants.CLOSING_PAGE.getId(isClone),
           survey,
           "closingPage",
           "description",
-          "attachmentObjectKey",
+          SurveyServiceTestConstants.attachmentObjectKey,
           "websiteUrl"));
     }
 
     // Заполнение страниц и вопросов для Survey1
 
     SurveyPage surveyPage1 = new SurveyPage(
-        !isClone
-            ? UUID.fromString("e61ab944-4729-4277-af32-893c0470b442")
-            : SurveyServiceTestIdAndTime.page1CloneId,
+        FullSurveyConstants.PAGE1.getId(isClone),
         survey,
         1,
         "surveyPage",
         "description",
         new ArrayList<>());
     Question question1 = new Question(
-        !isClone
-            ? UUID.fromString("deb153eb-6065-4797-9337-a3505a3c33eb")
-            : SurveyServiceTestIdAndTime.question1CloneId,
+        FullSurveyConstants.QUESTION1.getId(isClone),
         surveyPage1,
         1,
         "question1",
         "description",
-        "attachmentObjectKey",
+        SurveyServiceTestConstants.attachmentObjectKey,
         Question.QuestionType.SHORT_TEXT,
         null,
         true,
@@ -110,14 +109,12 @@ public class SurveyServiceTestEntity {
         Collections.emptyList(),
         new ArrayList<>());
     Question question2 = new Question(
-        !isClone
-            ? UUID.fromString("1d0bd6fc-6d26-4830-b731-1ef8ad59e7f0")
-            : SurveyServiceTestIdAndTime.question2CloneId,
+        FullSurveyConstants.QUESTION2.getId(isClone),
         surveyPage1,
         2,
         "question2",
         "description",
-        "attachmentObjectKey",
+        SurveyServiceTestConstants.attachmentObjectKey,
         Question.QuestionType.SINGLE_CHOICE,
         Question.AnswerOptionOrder.RANDOM,
         true,
@@ -127,31 +124,25 @@ public class SurveyServiceTestEntity {
         new ArrayList<>());
     List<AnswerOption> question2AnswerOptionList = List.of(
         new AnswerOption(
-            !isClone
-                ? UUID.fromString("8789eec6-6ddf-4d40-af21-f6e52dbe14e0")
-                : SurveyServiceTestIdAndTime.answerOption1OfQuestion2CloneId,
+            FullSurveyConstants.ANSWER_OPTION1_OF_QUESTION2.getId(isClone),
             question2,
             1,
             "answerOption1",
-            "attachmentObjectKey"),
+            SurveyServiceTestConstants.attachmentObjectKey),
         new AnswerOption(
-            !isClone
-                ? UUID.fromString("62252b25-5f79-46d3-8b4c-77d2d1152e2b")
-                : SurveyServiceTestIdAndTime.answerOption2OfQuestion2CloneId,
+            FullSurveyConstants.ANSWER_OPTION2_OF_QUESTION2.getId(isClone),
             question2,
             2,
             "answerOption2",
-            "attachmentObjectKey"));
+            SurveyServiceTestConstants.attachmentObjectKey));
     question2.setAnswerOptions(question2AnswerOptionList);
     Question question3 = new Question(
-        !isClone
-            ? UUID.fromString("e1e2fbba-d861-45ec-8d20-6c6edb75a192")
-            : SurveyServiceTestIdAndTime.question3CloneId,
+        FullSurveyConstants.QUESTION3.getId(isClone),
         surveyPage1,
         3,
         "question3",
         "description",
-        "attachmentObjectKey",
+        SurveyServiceTestConstants.attachmentObjectKey,
         Question.QuestionType.MULTIPLE_CHOICE,
         Question.AnswerOptionOrder.ORIGINAL,
         true,
@@ -161,21 +152,17 @@ public class SurveyServiceTestEntity {
         new ArrayList<>());
     List<AnswerOption> question3AnswerOptionList = List.of(
         new AnswerOption(
-            !isClone
-                ? UUID.fromString("f17be065-b7ed-42ac-a29a-00cca73d9406")
-                : SurveyServiceTestIdAndTime.answerOption1OfQuestion3CloneId,
+            FullSurveyConstants.ANSWER_OPTION1_OF_QUESTION3.getId(isClone),
             question3,
             1,
             "answerOption1",
-            "attachmentObjectKey"),
+            SurveyServiceTestConstants.attachmentObjectKey),
         new AnswerOption(
-            !isClone
-                ? UUID.fromString("c739ac6b-6b9c-4b87-a88f-67a9ed196bba")
-                : SurveyServiceTestIdAndTime.answerOption2OfQuestion3CloneId,
+            FullSurveyConstants.ANSWER_OPTION2_OF_QUESTION3.getId(isClone),
             question3,
             2,
             "answerOption2",
-            "attachmentObjectKey"));
+            SurveyServiceTestConstants.attachmentObjectKey));
     question3.setAnswerOptions(question3AnswerOptionList);
     surveyPage1.getQuestions().add(question1);
     surveyPage1.getQuestions().add(question2);
@@ -186,7 +173,7 @@ public class SurveyServiceTestEntity {
 
     if (!isClone) {
       Response response1 = new Response(
-          UUID.fromString("1ac091de-05f5-449a-8fd2-e7f54c0a4fe6"),
+          FullSurveyConstants.getResponse1Id(),
           account2,
           survey,
           false,
@@ -221,25 +208,21 @@ public class SurveyServiceTestEntity {
 
   public static Survey getPlainSurvey(
       boolean otherValuesOfTitleAndDescription,
-      boolean booleanValuesExceptIsPublished,
+      boolean allSurveyOptionValues,
       boolean isPublished,
       Instant expireAt,
       String targetTimezone
   ) {
     return new Survey(
-        SurveyServiceTestIdAndTime.plainSurveyId,
+        SurveyServiceTestConstants.plainSurveyId,
         account1,
-        !otherValuesOfTitleAndDescription
-            ? "plainSurvey"
-            : "plainSurvey — updated",
-        !otherValuesOfTitleAndDescription
-            ? "description"
-            : "description — updated",
-        booleanValuesExceptIsPublished,
-        booleanValuesExceptIsPublished,
+        PlainSurveyConstants.getTitle(otherValuesOfTitleAndDescription),
+        PlainSurveyConstants.getDescription(otherValuesOfTitleAndDescription),
+        allSurveyOptionValues,
+        allSurveyOptionValues,
         isPublished,
         false,
-        booleanValuesExceptIsPublished,
+        allSurveyOptionValues,
         expireAt,
         targetTimezone,
         null,

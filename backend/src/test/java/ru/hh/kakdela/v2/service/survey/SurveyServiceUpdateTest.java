@@ -10,57 +10,51 @@ import org.mockito.Mockito;
 import org.springframework.web.server.ResponseStatusException;
 import ru.hh.kakdela.v2.dto.survey.SurveyResponseDto;
 import ru.hh.kakdela.v2.model.Survey;
-import ru.hh.kakdela.v2.util.service.survey.SurveyServiceTestEntity;
-import ru.hh.kakdela.v2.util.service.survey.SurveyServiceTestIdAndTime;
+import ru.hh.kakdela.v2.util.service.survey.SurveyServiceTestConstants;
 
-public class SurveyServiceUpdateTest extends SurveyServiceTest {
+public class SurveyServiceUpdateTest extends SurveyServiceTestBase {
 
   @Test
   void update_surveyNotFound_throwException() {
-    Mockito.when(surveyDao.findById(SurveyServiceTestIdAndTime.plainSurveyId))
+    Mockito.when(surveyDao.findById(SurveyServiceTestConstants.plainSurveyId))
         .thenReturn(Optional.empty());
 
     Exception ex = assertThrows(
         ResponseStatusException.class,
-        () -> surveyService.update(SurveyServiceTestIdAndTime.plainSurveyId, plainSurveyUnpublishedUpdateDtoNoChanges, SurveyServiceTestIdAndTime.account1Id)
+        () -> surveyService.update(SurveyServiceTestConstants.plainSurveyId, plainSurveyUnpublishedUpdateDtoNoChanges, SurveyServiceTestConstants.account1Id)
     );
     assertEquals(
-        "404 NOT_FOUND \"Опрос не найден: " + SurveyServiceTestIdAndTime.plainSurveyId + "\"",
+        "404 NOT_FOUND \"Опрос не найден: " + SurveyServiceTestConstants.plainSurveyId + "\"",
         ex.getMessage()
     );
 
     Mockito.verify(permissionService)
-        .checkCanEdit(SurveyServiceTestIdAndTime.plainSurveyId, SurveyServiceTestIdAndTime.account1Id);
+        .checkCanEdit(SurveyServiceTestConstants.plainSurveyId, SurveyServiceTestConstants.account1Id);
   }
 
   @Test
   void update_surveyFound_checkPermissions() {
-    // Подготовка данных
-    Survey surveyToUpdate =
-        SurveyServiceTestEntity.getPlainSurvey(
-            false,
-            false,
-            false,
-            SurveyServiceTestIdAndTime.expireAt,
-            "Asia/Yekaterinburg");
+    Survey surveyToUpdate = SurveyServiceTestBase.getFreshPlainSurveyUnpublished();
 
-    Mockito.when(surveyDao.findById(SurveyServiceTestIdAndTime.plainSurveyId))
+    Mockito.when(surveyDao.findById(SurveyServiceTestConstants.plainSurveyId))
         .thenReturn(Optional.of(surveyToUpdate));
 
     surveyService.update(
-        SurveyServiceTestIdAndTime.plainSurveyId,
+        SurveyServiceTestConstants.plainSurveyId,
         plainSurveyUnpublishedUpdateDtoNoChanges,
-        SurveyServiceTestIdAndTime.account1Id
+        SurveyServiceTestConstants.account1Id
     );
 
     Mockito.verify(permissionService)
-        .checkCanEdit(SurveyServiceTestIdAndTime.plainSurveyId, SurveyServiceTestIdAndTime.account1Id);
+        .checkCanEdit(SurveyServiceTestConstants.plainSurveyId, SurveyServiceTestConstants.account1Id);
   }
 
   @Test
   void update_nothingChanged_returnSameSurveyDto() {
-    Mockito.when(surveyDao.findById(SurveyServiceTestIdAndTime.plainSurveyId))
-        .thenReturn(Optional.of(plainSurveyUnpublished));
+    Survey surveyToUpdate = SurveyServiceTestBase.getFreshPlainSurveyUnpublished();
+
+    Mockito.when(surveyDao.findById(SurveyServiceTestConstants.plainSurveyId))
+        .thenReturn(Optional.of(surveyToUpdate));
 
     Mockito.doAnswer(invocation -> {
       Survey survey = invocation.getArgument(0);
@@ -71,74 +65,55 @@ public class SurveyServiceUpdateTest extends SurveyServiceTest {
     }).when(surveyDao).update(Mockito.any(Survey.class));
 
     SurveyResponseDto result = surveyService.update(
-        SurveyServiceTestIdAndTime.plainSurveyId,
+        SurveyServiceTestConstants.plainSurveyId,
         plainSurveyUnpublishedUpdateDtoNoChanges,
-        SurveyServiceTestIdAndTime.account1Id
+        SurveyServiceTestConstants.account1Id
     );
     assertEquals(plainSurveyUnpublishedResponseDto, result);
 
     Mockito.verify(notificationService, never())
-        .sendSurveyPublishedNotifications(SurveyServiceTestIdAndTime.plainSurveyId);
+        .sendSurveyPublishedNotifications(SurveyServiceTestConstants.plainSurveyId);
   }
 
   @Test
   void update_isPublishedChangedToTrueButSurveyAlreadyPublished_doNotSendNotificationToSurveyParticipants() {
-    // Подготовка данных
-    Survey surveyToUpdate =
-        SurveyServiceTestEntity.getPlainSurvey(
-            false,
-            false,
-            true,
-            SurveyServiceTestIdAndTime.expireAt,
-            "Asia/Yekaterinburg");
+    Survey surveyToUpdate = SurveyServiceTestBase.getFreshPlainSurveyPublished();
 
-    Mockito.when(surveyDao.findById(SurveyServiceTestIdAndTime.plainSurveyId))
+    Mockito.when(surveyDao.findById(SurveyServiceTestConstants.plainSurveyId))
         .thenReturn(Optional.of(surveyToUpdate));
 
     surveyService.update(
-        SurveyServiceTestIdAndTime.plainSurveyId,
+        SurveyServiceTestConstants.plainSurveyId,
         plainSurveyUnpublishedUpdateDtoPublished,
-        SurveyServiceTestIdAndTime.account1Id
+        SurveyServiceTestConstants.account1Id
     );
 
     Mockito.verify(notificationService, never())
-        .sendSurveyPublishedNotifications(SurveyServiceTestIdAndTime.plainSurveyId);
+        .sendSurveyPublishedNotifications(SurveyServiceTestConstants.plainSurveyId);
   }
 
   @Test
   void update_isPublishedChangedToTrue_sendNotificationToSurveyParticipants() {
-    // Подготовка данных
-    Survey surveyToUpdate = SurveyServiceTestEntity.getPlainSurvey(
-        false,
-        false,
-        false,
-        SurveyServiceTestIdAndTime.expireAt,
-        "Asia/Yekaterinburg");
+    Survey surveyToUpdate = SurveyServiceTestBase.getFreshPlainSurveyUnpublished();
 
-    Mockito.when(surveyDao.findById(SurveyServiceTestIdAndTime.plainSurveyId))
+    Mockito.when(surveyDao.findById(SurveyServiceTestConstants.plainSurveyId))
         .thenReturn(Optional.of(surveyToUpdate));
 
     surveyService.update(
-        SurveyServiceTestIdAndTime.plainSurveyId,
+        SurveyServiceTestConstants.plainSurveyId,
         plainSurveyUnpublishedUpdateDtoPublished,
-        SurveyServiceTestIdAndTime.account1Id
+        SurveyServiceTestConstants.account1Id
     );
 
     Mockito.verify(notificationService)
-        .sendSurveyPublishedNotifications(SurveyServiceTestIdAndTime.plainSurveyId);
+        .sendSurveyPublishedNotifications(SurveyServiceTestConstants.plainSurveyId);
   }
 
   @Test
   void update_expireAtChanged_convertNewExpireAtToUtcCorrectly() {
-    // Подготовка данных
-    Survey surveyToUpdate = SurveyServiceTestEntity.getPlainSurvey(
-        false,
-        false,
-        false,
-        SurveyServiceTestIdAndTime.expireAt,
-        "Asia/Yekaterinburg");
+    Survey surveyToUpdate = SurveyServiceTestBase.getFreshPlainSurveyUnpublished();
 
-    Mockito.when(surveyDao.findById(SurveyServiceTestIdAndTime.plainSurveyId))
+    Mockito.when(surveyDao.findById(SurveyServiceTestConstants.plainSurveyId))
         .thenReturn(Optional.of(surveyToUpdate));
 
     Mockito.doAnswer(invocation -> {
@@ -155,9 +130,9 @@ public class SurveyServiceUpdateTest extends SurveyServiceTest {
     }).when(surveyDao).update(Mockito.any(Survey.class));
 
     SurveyResponseDto result = surveyService.update(
-        SurveyServiceTestIdAndTime.plainSurveyId,
+        SurveyServiceTestConstants.plainSurveyId,
         plainSurveyUnpublishedUpdateDtoAnotherExpireAt,
-        SurveyServiceTestIdAndTime.account1Id
+        SurveyServiceTestConstants.account1Id
     );
 
     assertEquals(plainSurveyUnpublishedAnotherExpireAtResponseDto.getExpireAtAtTargetTimezone(),
@@ -173,15 +148,9 @@ public class SurveyServiceUpdateTest extends SurveyServiceTest {
 
   @Test
   void update_targetTimezoneChanged_updateExpireAt() {
-    // Подготовка данных
-    Survey surveyToUpdate = SurveyServiceTestEntity.getPlainSurvey(
-        false,
-        false,
-        false,
-        SurveyServiceTestIdAndTime.expireAt,
-        "Asia/Yekaterinburg");
+    Survey surveyToUpdate = SurveyServiceTestBase.getFreshPlainSurveyUnpublished();
 
-    Mockito.when(surveyDao.findById(SurveyServiceTestIdAndTime.plainSurveyId))
+    Mockito.when(surveyDao.findById(SurveyServiceTestConstants.plainSurveyId))
         .thenReturn(Optional.of(surveyToUpdate));
 
     Mockito.doAnswer(invocation -> {
@@ -200,9 +169,9 @@ public class SurveyServiceUpdateTest extends SurveyServiceTest {
     }).when(surveyDao).update(Mockito.any(Survey.class));
 
     SurveyResponseDto result = surveyService.update(
-        SurveyServiceTestIdAndTime.plainSurveyId,
+        SurveyServiceTestConstants.plainSurveyId,
         plainSurveyUnpublishedUpdateDtoAnotherTargetTimezone,
-        SurveyServiceTestIdAndTime.account1Id
+        SurveyServiceTestConstants.account1Id
     );
 
     assertEquals(plainSurveyUnpublishedAnotherTargetTimezoneResponseDto.getExpireAtAtTargetTimezone(),
@@ -216,15 +185,9 @@ public class SurveyServiceUpdateTest extends SurveyServiceTest {
 
   @Test
   void update_everythingExceptIsPublishedChanged_updateEntityCorrectly() {
-    // Подготовка данных
-    Survey surveyToUpdate = SurveyServiceTestEntity.getPlainSurvey(
-        false,
-        false,
-        false,
-        SurveyServiceTestIdAndTime.expireAt,
-        "Asia/Yekaterinburg");
+    Survey surveyToUpdate = SurveyServiceTestBase.getFreshPlainSurveyUnpublished();
 
-    Mockito.when(surveyDao.findById(SurveyServiceTestIdAndTime.plainSurveyId))
+    Mockito.when(surveyDao.findById(SurveyServiceTestConstants.plainSurveyId))
         .thenReturn(Optional.of(surveyToUpdate));
 
     Mockito.doAnswer(invocation -> {
@@ -236,13 +199,13 @@ public class SurveyServiceUpdateTest extends SurveyServiceTest {
     }).when(surveyDao).update(Mockito.any(Survey.class));
 
     SurveyResponseDto result = surveyService.update(
-        SurveyServiceTestIdAndTime.plainSurveyId,
+        SurveyServiceTestConstants.plainSurveyId,
         plainSurveyUnpublishedUpdateDtoOtherValuesExceptIsPublished,
-        SurveyServiceTestIdAndTime.account1Id
+        SurveyServiceTestConstants.account1Id
     );
     assertEquals(plainSurveyOtherValuesExceptIsPublishedResponseDto, result);
 
     Mockito.verify(notificationService, never())
-        .sendSurveyPublishedNotifications(SurveyServiceTestIdAndTime.plainSurveyId);
+        .sendSurveyPublishedNotifications(SurveyServiceTestConstants.plainSurveyId);
   }
 }

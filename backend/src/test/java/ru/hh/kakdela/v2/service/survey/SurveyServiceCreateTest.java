@@ -16,22 +16,22 @@ import org.springframework.web.server.ResponseStatusException;
 import ru.hh.kakdela.v2.dto.survey.SurveyResponseDto;
 import ru.hh.kakdela.v2.model.Survey;
 import ru.hh.kakdela.v2.util.service.survey.SurveyServiceTestEntity;
-import ru.hh.kakdela.v2.util.service.survey.SurveyServiceTestIdAndTime;
+import ru.hh.kakdela.v2.util.service.survey.SurveyServiceTestConstants;
 
-public class SurveyServiceCreateTest extends SurveyServiceTest {
+public class SurveyServiceCreateTest extends SurveyServiceTestBase {
 
   @Test
   void create_accountNotFound_throwsException() {
-    Mockito.when(accountDao.findById(SurveyServiceTestIdAndTime.account1Id))
+    Mockito.when(accountDao.findById(SurveyServiceTestConstants.account1Id))
         .thenReturn(Optional.empty());
 
     assertThrows(ResponseStatusException.class,
-        () -> surveyService.create(SurveyServiceTestIdAndTime.account1Id, plainSurveyUnpublishedCreateDto));
+        () -> surveyService.create(SurveyServiceTestConstants.account1Id, plainSurveyUnpublishedCreateDto));
   }
 
   @Test
   void create_expireAtSet_createCorrectEntity() {
-    Mockito.when(accountDao.findById(SurveyServiceTestIdAndTime.account1Id))
+    Mockito.when(accountDao.findById(SurveyServiceTestConstants.account1Id))
         .thenReturn(Optional.of(SurveyServiceTestEntity.account1));
     Mockito.doAnswer(invocation -> {
       Survey survey = invocation.getArgument(0);
@@ -39,7 +39,7 @@ public class SurveyServiceCreateTest extends SurveyServiceTest {
       assertNotNull(survey.getId(), "ID опроса не был заполнен");
       assertTrue(survey.getId().toString().matches(uuidRegex), "ID не является UUID");
 
-      survey.setId(SurveyServiceTestIdAndTime.plainSurveyId);
+      survey.setId(SurveyServiceTestConstants.plainSurveyId);
 
       assertTrue(!survey.getCreatedAt().isBefore(Instant.now().minus(Duration.ofMinutes(1)))
           && !survey.getCreatedAt().isAfter(Instant.now()),
@@ -63,13 +63,13 @@ public class SurveyServiceCreateTest extends SurveyServiceTest {
       return null;
     }).when(surveyDao).save(Mockito.any(Survey.class));
 
-    SurveyResponseDto result = surveyService.create(SurveyServiceTestIdAndTime.account1Id, plainSurveyUnpublishedCreateDto);
+    SurveyResponseDto result = surveyService.create(SurveyServiceTestConstants.account1Id, plainSurveyUnpublishedCreateDto);
     assertEquals(plainSurveyUnpublishedResponseDto, result);
   }
 
   @Test
   void create_noExpireAtSet_createCorrectEntity() {
-    Mockito.when(accountDao.findById(SurveyServiceTestIdAndTime.account1Id))
+    Mockito.when(accountDao.findById(SurveyServiceTestConstants.account1Id))
         .thenReturn(Optional.of(SurveyServiceTestEntity.account1));
     Mockito.doAnswer(invocation -> {
       Survey survey = invocation.getArgument(0);
@@ -77,7 +77,7 @@ public class SurveyServiceCreateTest extends SurveyServiceTest {
       assertNotNull(survey.getId(), "ID опроса не был заполнен");
       assertTrue(survey.getId().toString().matches(uuidRegex), "ID не является UUID");
 
-      survey.setId(SurveyServiceTestIdAndTime.plainSurveyId);
+      survey.setId(SurveyServiceTestConstants.plainSurveyId);
 
       assertTrue(!survey.getCreatedAt().isBefore(Instant.now().minus(Duration.ofMinutes(1)))
               && !survey.getCreatedAt().isAfter(Instant.now()),
@@ -101,7 +101,7 @@ public class SurveyServiceCreateTest extends SurveyServiceTest {
       return null;
     }).when(surveyDao).save(Mockito.any(Survey.class));
 
-    SurveyResponseDto result = surveyService.create(SurveyServiceTestIdAndTime.account1Id, plainSurveyUnpublishedNoExpireAtCreateDto);
+    SurveyResponseDto result = surveyService.create(SurveyServiceTestConstants.account1Id, plainSurveyUnpublishedNoExpireAtCreateDto);
     assertEquals(plainSurveyUnpublishedNoExpireAtResponseDto, result);
   }
 }

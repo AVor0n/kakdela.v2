@@ -37,14 +37,6 @@ public class SurveyService {
   private final ObjectStorageService objectStorageService;
   private final SurveyMapper surveyMapper;
 
-  private void validateAuthorizationConsistency(Survey survey) {
-    if (survey.isLimitedToOneResponse() && !survey.isAuthorizedOnly()) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-          "Опция \"Запретить проходить более одного раза\" доступна только при "
-              + "включённой опции \"Запретить анонимное прохождение\"");
-    }
-  }
-
   @Transactional(readOnly = true)
   public SurveyResponseDto getById(UUID id) {
     Survey survey = surveyDao.findById(id)
@@ -264,4 +256,13 @@ public class SurveyService {
     log.info("Удален опрос id={} accountId={}", id, accountId);
   }
 
+  // Вспомогательные методы
+
+  private void validateAuthorizationConsistency(Survey survey) {
+    if (survey.isLimitedToOneResponse() && !survey.isAuthorizedOnly()) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+          "Опция \"Запретить проходить более одного раза\" доступна только при "
+              + "включённой опции \"Запретить анонимное прохождение\"");
+    }
+  }
 }

@@ -7,42 +7,43 @@ import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.web.server.ResponseStatusException;
-import ru.hh.kakdela.v2.util.service.survey.SurveyServiceTestIdAndTime;
+import ru.hh.kakdela.v2.util.service.survey.SurveyServiceTestConstants;
+import ru.hh.kakdela.v2.util.service.survey.SurveyServiceTestConstants.FullSurveyConstants;
 
-public class SurveyServiceDeleteTest extends SurveyServiceTest {
+public class SurveyServiceDeleteTest extends SurveyServiceTestBase {
 
   @Test
   void delete_surveyNotFound_throwException() {
-    Mockito.when(surveyDao.findById(SurveyServiceTestIdAndTime.fullSurveyId))
+    Mockito.when(surveyDao.findById(FullSurveyConstants.SURVEY.getId(IS_ORIGINAL)))
         .thenReturn(Optional.empty());
 
     Exception ex = assertThrows(
         ResponseStatusException.class,
-        () -> surveyService.delete(SurveyServiceTestIdAndTime.fullSurveyId, SurveyServiceTestIdAndTime.account1Id)
+        () -> surveyService.delete(FullSurveyConstants.SURVEY.getId(IS_ORIGINAL), SurveyServiceTestConstants.account1Id)
     );
     assertEquals(
-        "404 NOT_FOUND \"Опрос не найден: " + SurveyServiceTestIdAndTime.fullSurveyId + "\"",
+        "404 NOT_FOUND \"Опрос не найден: " + FullSurveyConstants.SURVEY.getId(IS_ORIGINAL) + "\"",
         ex.getMessage()
     );
   }
 
   @Test
   void delete_surveyFound_checkPermissions() {
-    Mockito.when(surveyDao.findById(SurveyServiceTestIdAndTime.fullSurveyId))
+    Mockito.when(surveyDao.findById(FullSurveyConstants.SURVEY.getId(IS_ORIGINAL)))
         .thenReturn(Optional.of(fullSurvey));
 
-    surveyService.delete(SurveyServiceTestIdAndTime.fullSurveyId, SurveyServiceTestIdAndTime.account1Id);
+    surveyService.delete(FullSurveyConstants.SURVEY.getId(IS_ORIGINAL), SurveyServiceTestConstants.account1Id);
 
     Mockito.verify(permissionService)
-        .checkOwnership(SurveyServiceTestIdAndTime.fullSurveyId, SurveyServiceTestIdAndTime.account1Id);
+        .checkOwnership(FullSurveyConstants.SURVEY.getId(IS_ORIGINAL), SurveyServiceTestConstants.account1Id);
   }
 
   @Test
   void delete_deletionPermitted_callDaoDeleteMethod() {
-    Mockito.when(surveyDao.findById(SurveyServiceTestIdAndTime.fullSurveyId))
+    Mockito.when(surveyDao.findById(FullSurveyConstants.SURVEY.getId(IS_ORIGINAL)))
         .thenReturn(Optional.of(fullSurvey));
 
-    surveyService.delete(SurveyServiceTestIdAndTime.fullSurveyId, SurveyServiceTestIdAndTime.account1Id);
+    surveyService.delete(FullSurveyConstants.SURVEY.getId(IS_ORIGINAL), SurveyServiceTestConstants.account1Id);
 
     Mockito.verify(surveyDao).delete(fullSurvey);
   }
