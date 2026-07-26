@@ -4,17 +4,17 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import ru.hh.kakdela.v2.dto.account.AccountResponseDto;
 
 @AllArgsConstructor
 @Getter
 @Schema(
-    name = "PermissionResponse",
-    title = "DTO для получения данных роли"
+    name = "Permission/Response"
 )
 public class PermissionResponseDto {
 
-  private final UUID accountId;
   private final UUID surveyId;
+  private final AccountResponseDto account;
   private final String role;
   private final Boolean doNotify;
 }

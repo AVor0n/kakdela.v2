@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import ru.hh.kakdela.v2.dao.AccountDao;
-import ru.hh.kakdela.v2.dao.PermissionDao;
 import ru.hh.kakdela.v2.dao.SurveyDao;
 import ru.hh.kakdela.v2.dto.survey.SurveyCreateDto;
 import ru.hh.kakdela.v2.dto.survey.SurveyResponseDto;
@@ -34,7 +33,6 @@ public class SurveyService {
 
   private final SurveyDao surveyDao;
   private final AccountDao accountDao;
-  private final PermissionDao permissionDao;
   private final PermissionService permissionService;
   private final NotificationService notificationService;
   private final SurveyMapper surveyMapper;
@@ -48,19 +46,22 @@ public class SurveyService {
   }
 
   @Transactional(readOnly = true)
-  public SurveyResponseDto getById(UUID id) {
-    Survey survey = surveyDao.findById(id)
+  public SurveyResponseDto getById(UUID surveyId, UUID accountId) {
+    Survey survey = surveyDao.findById(surveyId)
         .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Опрос не найден: " + id));
+            HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
+
+    if (!survey.isPublished()) {
+      permissionService.checkHasAnyPermission(surveyId, accountId);
+    }
+
     return surveyMapper.surveyToDto(survey);
   }
 
   @Transactional(readOnly = true)
   public List<SurveyShortResponseWithPermissionDto> getAllByAuthorId(UUID authorId) {
     return surveyDao.findAllByAuthorId(authorId).stream()
-        .map(survey -> {
-          return surveyMapper.surveyToShortDto(survey, SurveyRole.AUTHOR);
-        })
+        .map(survey -> surveyMapper.surveyToShortDto(survey, SurveyRole.AUTHOR))
         .toList();
   }
 
@@ -100,6 +101,7 @@ public class SurveyService {
 
     surveyDao.save(survey);
     log.info("Создан опрос id={} authorId={}", survey.getId(), authorId);
+
     return surveyMapper.surveyToDto(survey);
   }
 
@@ -159,6 +161,7 @@ public class SurveyService {
     if (survey.isPublished() && !wasPublished) {
       notificationService.sendSurveyPublishedNotifications(surveyId);
     }
+
     return surveyMapper.surveyToDto(survey);
   }
 
@@ -236,12 +239,13 @@ public class SurveyService {
     surveyDao.save(surveyCopy);
     log.info("Клонирован опрос originalId={} copyId={} accountId={}",
         surveyId, surveyCopy.getId(), accountId);
+
     return surveyMapper.surveyToDto(surveyCopy);
   }
 
   @Transactional
   public void delete(UUID id, UUID accountId) {
-    permissionService.checkOwnership(id, accountId);
+    permissionService.checkCanDelete(id, accountId);
     Survey survey = surveyDao.findById(id)
         .orElseThrow(
             () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Опрос не найден: " + id));
