@@ -10,7 +10,7 @@ import Heading from '@tiptap/extension-heading';
 import style from './EditorInput.module.css';
 interface Props {
     value: string;
-    onChange: (content: string) => void;
+    onChange: (_content: string) => void;
     onBlur: () => void;
     placeholder?: string;
     isHeading?: boolean;
