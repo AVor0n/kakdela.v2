@@ -3,7 +3,13 @@ import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
 import { getSurveyById } from '@/api/survey';
-import { getSurveyResponses, type SurveyAnswerResponse, type SurveyCompletedResponse } from '@/api/surveyResponses';
+import {
+    exportSurveyResponses,
+    getSurveyResponses,
+    type SurveyAnswerResponse,
+    type SurveyCompletedResponse,
+} from '@/api/surveyResponses';
+import { setErrorMessage } from '@/entities/Error/Error.slice';
 import { setSelectedSurvey } from '@/entities/Survey/Survey.slice';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
@@ -72,6 +78,7 @@ export function Answers() {
     const [selectedQuestionIndex, setSelectedQuestionIndex] = useState(0);
     const [selectedResponseIndex, setSelectedResponseIndex] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
+    const [isExporting, setIsExporting] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
@@ -143,6 +150,29 @@ export function Answers() {
         setActiveSection('user');
     };
 
+    const handleExport = async () => {
+        if (!id || isExporting) return;
+
+        setIsExporting(true);
+
+        try {
+            const { file, filename } = await exportSurveyResponses(id);
+            const downloadUrl = URL.createObjectURL(file);
+            const downloadLink = document.createElement('a');
+
+            downloadLink.href = downloadUrl;
+            downloadLink.download = filename;
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            downloadLink.remove();
+            URL.revokeObjectURL(downloadUrl);
+        } catch {
+            dispatch(setErrorMessage({ message: 'Не удалось скачать ответы' }));
+        } finally {
+            setIsExporting(false);
+        }
+    };
+
     if (isLoading) {
         return <div className={style.status}>Загрузка...</div>;
     }
@@ -167,7 +197,18 @@ export function Answers() {
                     ))}
                 </div>
 
-                <div className={style.respondents}>Количество опрошенных пользователей: {responses.length}</div>
+                <div className={style.respondentsRow}>
+                    <div className={style.respondents}>Количество опрошенных пользователей: {responses.length}</div>
+                    <Button
+                        mode='secondary'
+                        style='positive'
+                        loading={isExporting}
+                        disabled={isExporting}
+                        onClick={handleExport}
+                    >
+                        Скачать ответы (xlsx)
+                    </Button>
+                </div>
 
                 {responses.length === 0 && <div className={style.empty}>Ответов пока нет</div>}
 
