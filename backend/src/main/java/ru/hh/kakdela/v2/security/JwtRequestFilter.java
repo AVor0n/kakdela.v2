@@ -15,17 +15,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.CredentialsExpiredException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import ru.hh.kakdela.v2.dao.AccountDao;
-import ru.hh.kakdela.v2.model.Account;
 import ru.hh.kakdela.v2.util.CookieUtil;
 
 @Slf4j
@@ -36,7 +34,6 @@ public class JwtRequestFilter extends OncePerRequestFilter {
   private final JwtService jwtService;
   private final CustomUserDetailsService customUserDetailsService;
   private final AuthenticationEntryPoint authenticationEntryPoint;
-  private final AccountDao accountDao;
 
   @Override
   protected void doFilterInternal(
@@ -45,6 +42,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
       FilterChain chain) throws ServletException, IOException {
 
     final String token = CookieUtil.getAccessToken(request);
+
     try {
       if (token != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
@@ -52,25 +50,18 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
         String login = claims.getSubject();
         UUID accountId = UUID.fromString(claims.get("accountId", String.class));
-        Integer tokenVersion = claims.get("tokenVersion", Integer.class);
+        Integer tokenVersionFromToken = claims.get("tokenVersion", Integer.class);
 
-        Account account = accountDao.findByLogin(login).orElseThrow(() ->
-            new UsernameNotFoundException("Аккаунт не найден"));
+        CustomUserDetails userDetails =
+            (CustomUserDetails) customUserDetailsService.loadUserByUsername(login);
 
-        if (account.getIsDeleted() != null && account.getIsDeleted()) {
-          throw new BadCredentialsException("Аккаунт удалён");
-        }
-
-        if (!account.getId().equals(accountId)) {
+        if (!userDetails.getId().equals(accountId)) {
           throw new BadCredentialsException("ID пользователя не совпадает");
         }
 
-        int currentVersion = account.getTokenVersion() != null ? account.getTokenVersion() : 1;
-        if (tokenVersion != currentVersion) {
+        if (userDetails.getTokenVersion() != tokenVersionFromToken) {
           throw new CredentialsExpiredException("Версия токена устарела");
         }
-
-        UserDetails userDetails = customUserDetailsService.toUserDetails(account);
 
         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
             userDetails,
@@ -87,6 +78,20 @@ public class JwtRequestFilter extends OncePerRequestFilter {
       SecurityContextHolder.clearContext();
       authenticationEntryPoint.commence(request, response,
           new UsernameNotFoundException("Account not found: login=%s".formatted(ex.getName())));
+    } catch (DisabledException ex) {
+      log.warn("Аккаунт удалён: {}", ex.getMessage());
+      SecurityContextHolder.clearContext();
+      authenticationEntryPoint.commence(request, response,
+          new DisabledException("Account disabled", ex));
+    } catch (BadCredentialsException ex) {
+      log.warn("Неверные учётные данные: {}", ex.getMessage());
+      SecurityContextHolder.clearContext();
+      authenticationEntryPoint.commence(request, response, ex);
+    } catch (CredentialsExpiredException ex) {
+      log.warn("Срок действия токена истёк: {}", ex.getMessage());
+      SecurityContextHolder.clearContext();
+      authenticationEntryPoint.commence(request, response,
+          new CredentialsExpiredException("Token expired", ex));
     } catch (ExpiredJwtException ex) {
       log.warn("Срок действия токена JWT для пользователя истек: {}", ex.getClaims().getSubject());
       SecurityContextHolder.clearContext();

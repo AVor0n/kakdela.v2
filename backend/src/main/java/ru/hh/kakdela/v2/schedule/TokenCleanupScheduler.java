@@ -13,8 +13,8 @@ public class TokenCleanupScheduler {
 
   private final RefreshTokenService refreshTokenService;
 
-  // "0 0 3 * * ?" - каждый день в 3:00
-  @Scheduled(cron = "0 0 3 * * ?", zone = "Europe/Moscow")
+  // "0 0 0 * * ?" - каждый день в 0:00 UTC
+  @Scheduled(cron = "0 0 0 * * ?")
   public void cleanExpiredTokens() {
     try {
       refreshTokenService.cleanExpiredTokens();

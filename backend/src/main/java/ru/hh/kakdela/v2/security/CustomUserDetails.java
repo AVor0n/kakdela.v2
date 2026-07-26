@@ -10,21 +10,26 @@ public class CustomUserDetails extends org.springframework.security.core.userdet
 
   @Getter
   UUID id;
+  @Getter
+  private final int tokenVersion;
 
   public CustomUserDetails(
       UUID id,
       String username,
       @Nullable String password,
+      int tokenVersion,
       Collection<? extends GrantedAuthority> authorities
   ) {
     super(username, password, authorities);
     this.id = id;
+    this.tokenVersion = tokenVersion;
   }
 
   public CustomUserDetails(
       UUID id,
       String username,
       @Nullable String password,
+      int tokenVersion,
       boolean enabled,
       boolean accountNonExpired,
       boolean credentialsNonExpired,
@@ -39,5 +44,6 @@ public class CustomUserDetails extends org.springframework.security.core.userdet
         accountNonLocked,
         authorities);
     this.id = id;
+    this.tokenVersion = tokenVersion;
   }
 }
