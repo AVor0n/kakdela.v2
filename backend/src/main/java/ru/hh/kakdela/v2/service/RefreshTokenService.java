@@ -15,7 +15,7 @@ import ru.hh.kakdela.v2.dao.AccountDao;
 import ru.hh.kakdela.v2.dao.RefreshTokenDao;
 import ru.hh.kakdela.v2.model.Account;
 import ru.hh.kakdela.v2.model.RefreshToken;
-import ru.hh.kakdela.v2.security.TokenHasher;
+import ru.hh.kakdela.v2.util.TokenUtil;
 
 @Slf4j
 @Service
@@ -24,7 +24,6 @@ public class RefreshTokenService {
 
   private final RefreshTokenDao refreshTokenDao;
   private final AccountDao accountDao;
-  private final TokenHasher tokenHasher;
   private final Clock clock;
 
   private static final Duration REFRESH_TOKEN_TTL = Duration.ofDays(30);
@@ -39,9 +38,8 @@ public class RefreshTokenService {
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Аккаунт не найден"));
 
-    String rawToken = tokenHasher.generateRawToken();
-
-    String tokenHash = tokenHasher.hash(rawToken);
+    String rawToken = TokenUtil.generateRawToken();
+    String tokenHash = TokenUtil.hash(rawToken);
 
     Instant now = Instant.now(clock);
     RefreshToken refreshToken = RefreshToken.builder()
@@ -61,8 +59,7 @@ public class RefreshTokenService {
 
   @Transactional
   public RefreshToken validateToken(String rawToken, String deviceId) {
-    String tokenHash = tokenHasher.hash(rawToken);
-
+    String tokenHash = TokenUtil.hash(rawToken);
     RefreshToken refreshToken = refreshTokenDao.findByTokenHash(tokenHash)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.UNAUTHORIZED, "Невалидный refresh токен"));
@@ -109,7 +106,7 @@ public class RefreshTokenService {
 
   @Transactional
   public void revokeByToken(String rawToken) {
-    String tokenHash = tokenHasher.hash(rawToken);
+    String tokenHash = TokenUtil.hash(rawToken);
     refreshTokenDao.deleteByTokenHash(tokenHash);
     log.info("Отозван refresh токен");
   }

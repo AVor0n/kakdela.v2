@@ -1,4 +1,4 @@
-package ru.hh.kakdela.v2.security;
+package ru.hh.kakdela.v2.util;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -6,18 +6,18 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.HexFormat;
-import org.springframework.stereotype.Component;
 
-@Component
-public final class TokenHasher {
+public final class TokenUtil{
 
   private static final String ALGORITHM = "SHA-256";
   private static final String TOKEN_PREFIX = "ref_";
-
-  private static final SecureRandom SECURE_RANDOM = new SecureRandom();
   private static final int TOKEN_BYTES_LENGTH = 32;
 
-  public String generateRawToken() {
+  private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+
+  private TokenUtil() {}
+
+  public static String generateRawToken() {
     byte[] bytes = new byte[TOKEN_BYTES_LENGTH];
     SECURE_RANDOM.nextBytes(bytes);
 
@@ -28,7 +28,7 @@ public final class TokenHasher {
     return TOKEN_PREFIX + randomPart;
   }
 
-  public String hash(String rawToken) {
+  public static String hash(String rawToken) {
     if (rawToken == null) {
       throw new IllegalArgumentException("Токен не может быть null");
     }
@@ -45,7 +45,7 @@ public final class TokenHasher {
     }
   }
 
-  public boolean matches(String rawToken, String hash) {
+  public static boolean matches(String rawToken, String hash) {
     if (rawToken == null || hash == null) {
       return false;
     }
