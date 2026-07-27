@@ -131,7 +131,6 @@ public class PermissionService {
         .survey(survey)
         .account(account)
         .role(dto.getRole())
-        .doNotify(true)
         .build();
 
     permissionDao.save(permission);
