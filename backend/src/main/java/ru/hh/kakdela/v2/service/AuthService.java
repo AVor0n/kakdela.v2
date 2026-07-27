@@ -62,7 +62,8 @@ public class AuthService {
 
     refreshTokenService.revokeAllByAccountIdAndDeviceId(account.getId(), deviceId);
 
-    String refreshToken = refreshTokenService.createRefreshToken(account.getId(), deviceId, userAgent, ipAddress);
+    String refreshToken = refreshTokenService
+        .createRefreshToken(account.getId(), deviceId, userAgent, ipAddress);
     String accessToken = jwtService.generateAccessToken(account);
 
     log.info("Успешный вход: accountId={}, deviceId={}", account.getId(), deviceId);
