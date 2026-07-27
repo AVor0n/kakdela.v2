@@ -1,5 +1,13 @@
 package ru.hh.kakdela.v2.service;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import java.time.Clock;
+import java.time.DateTimeException;
+import java.time.Instant;
+import java.time.LocalTime;
+import java.time.ZoneOffset;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -10,11 +18,6 @@ import org.springframework.scheduling.support.SimpleTriggerContext;
 import org.springframework.web.server.ResponseStatusException;
 import ru.hh.kakdela.v2.model.NotificationSchedule;
 import ru.hh.kakdela.v2.model.NotificationSchedule.ScheduleType;
-
-import java.time.*;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @DisplayName("Unit тесты ScheduleCalculationService")
 class ScheduleCalculationServiceTest {
@@ -251,7 +254,9 @@ class ScheduleCalculationServiceTest {
       "UTC, 2026-07-08T09:00:00Z, 2026-07-08T10:00:00Z"
   })
   @DisplayName("TIMEZONE: должен корректно обрабатывать разные часовые пояса")
-  void calculateNextExecution_TimezoneDifferentTimezones_shouldWorkCorrectly(String timezone, String now, String expected) {
+  void calculateNextExecution_TimezoneDifferentTimezones_shouldWorkCorrectly(String timezone,
+                                                                             String now,
+                                                                             String expected) {
     schedule.setScheduleType(ScheduleType.DAILY);
     schedule.setExecutionTime(LocalTime.of(10, 0));
     schedule.setTargetTimezone(timezone);

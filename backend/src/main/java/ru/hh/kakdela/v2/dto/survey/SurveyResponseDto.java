@@ -6,12 +6,16 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.ToString;
 import ru.hh.kakdela.v2.dto.closing_page.ClosingPageResponseDto;
-import ru.hh.kakdela.v2.dto.survey_page.SurveyPageResponseDto;
+import ru.hh.kakdela.v2.dto.survey.page.SurveyPageResponseDto;
 
 @AllArgsConstructor
 @Getter
+@EqualsAndHashCode
+@ToString
 @Schema(
     name = "SurveyResponse",
     title = "DTO для получения данных опроса"

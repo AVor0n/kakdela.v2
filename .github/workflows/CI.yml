@@ -16,6 +16,7 @@ jobs:
       nginx: ${{ steps.filter.outputs.nginx }}
       frontend: ${{ steps.filter.outputs.frontend }}
       backend: ${{ steps.filter.outputs.backend }}
+      backend-tests: ${{ steps.filter.outputs.backend-tests }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -32,13 +33,16 @@ jobs:
               - '!frontend/*.md'
             backend:
               - 'backend/**'
+              - '!backend/src/test/**'
               - '!backend/*.md'
               - '!backend/src/main/resources/schema.sql'
+            backend-tests:
+              - 'backend/src/test/**'
           predicate-quantifier: every
   backend-verification:
-    name: Run Maven verify phase (tests are temporary excluded)
+    name: Run Maven verify phase
     needs: changes
-    if: needs.changes.outputs.backend == 'true'
+    if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.backend-tests == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -55,7 +59,7 @@ jobs:
           java-version: 21
           cache: maven
       - name: Run Maven verify phase
-        run: ./mvnw verify -Dmaven.test.skip=true
+        run: ./mvnw verify
         working-directory: backend
       - name: Do Checkstyle report with Reviewdog
         run: >

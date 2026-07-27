@@ -61,8 +61,8 @@ export function SurveyList() {
             });
     };
 
-    const handleSurveyClick = (surveyId: string) => {
-        navigate(routes.surveyQuestions(surveyId));
+    const handleSurveyClick = (survey: SurveyListItem) => {
+        navigate(survey.userRole === 'ANALYST' ? routes.surveyAnswers(survey.id) : routes.surveyQuestions(survey.id));
     };
 
     return (
@@ -86,11 +86,7 @@ export function SurveyList() {
                         <div className={styles.grid}>
                             <SurveyCreateCard onClick={handleCreateClick} />
                             {surveys.map((survey) => (
-                                <SurveyItem
-                                    key={survey.id}
-                                    survey={survey}
-                                    onClick={() => handleSurveyClick(survey.id)}
-                                />
+                                <SurveyItem key={survey.id} survey={survey} onClick={() => handleSurveyClick(survey)} />
                             ))}
                         </div>
                     )}
