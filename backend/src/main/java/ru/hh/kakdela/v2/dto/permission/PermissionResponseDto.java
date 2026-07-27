@@ -9,7 +9,7 @@ import ru.hh.kakdela.v2.dto.account.AccountResponseDto;
 @AllArgsConstructor
 @Getter
 @Schema(
-    name = "Permission/Response"
+    name = "Permission.Response"
 )
 public class PermissionResponseDto {
 

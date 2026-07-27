@@ -11,7 +11,7 @@ import ru.hh.kakdela.v2.model.Permission;
 @Getter
 @Setter
 @Schema(
-    name = "Permission/Update"
+    name = "Permission.Update"
 )
 public class PermissionUpdateDto {
 
