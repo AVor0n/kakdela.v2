@@ -21,7 +21,6 @@ import ru.hh.kakdela.v2.mapper.SurveyMapper;
 import ru.hh.kakdela.v2.model.Account;
 import ru.hh.kakdela.v2.model.AnswerOption;
 import ru.hh.kakdela.v2.model.ClosingPage;
-import ru.hh.kakdela.v2.model.Permission.SurveyRole;
 import ru.hh.kakdela.v2.model.Question;
 import ru.hh.kakdela.v2.model.Survey;
 import ru.hh.kakdela.v2.model.SurveyPage;
@@ -35,15 +34,8 @@ public class SurveyService {
   private final AccountDao accountDao;
   private final PermissionService permissionService;
   private final NotificationService notificationService;
+  private final ObjectStorageService objectStorageService;
   private final SurveyMapper surveyMapper;
-
-  private void validateAuthorizationConsistency(Survey survey) {
-    if (survey.isLimitedToOneResponse() && !survey.isAuthorizedOnly()) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-          "Опция \"Запретить проходить более одного раза\" доступна только при "
-              + "включённой опции \"Запретить анонимное прохождение\"");
-    }
-  }
 
   @Transactional(readOnly = true)
   public SurveyResponseDto getById(UUID surveyId, UUID accountId) {
@@ -56,13 +48,6 @@ public class SurveyService {
     }
 
     return surveyMapper.surveyToDto(survey);
-  }
-
-  @Transactional(readOnly = true)
-  public List<SurveyShortResponseWithPermissionDto> getAllByAuthorId(UUID authorId) {
-    return surveyDao.findAllByAuthorId(authorId).stream()
-        .map(survey -> surveyMapper.surveyToShortDto(survey, SurveyRole.AUTHOR))
-        .toList();
   }
 
   @Transactional(readOnly = true)
@@ -79,6 +64,7 @@ public class SurveyService {
             HttpStatus.NOT_FOUND, "Аккаунт не найден: " + authorId));
 
     Survey survey = Survey.builder()
+        .id(UUID.randomUUID())
         .author(author)
         .title(dto.getTitle())
         .description(dto.getDescription())
@@ -89,9 +75,9 @@ public class SurveyService {
         .isTemplate(false)
         .expireAt(dto.getExpireAtAtTargetTimezone() != null
             ? dto.getExpireAtAtTargetTimezone()
-            .atZone(ZoneId.of(dto.getTargetTimezone()))
-            .toInstant()
-            .truncatedTo(ChronoUnit.SECONDS)
+              .atZone(ZoneId.of(dto.getTargetTimezone()))
+              .toInstant()
+              .truncatedTo(ChronoUnit.SECONDS)
             : null)
         .targetTimezone(dto.getTargetTimezone())
         .createdAt(Instant.now().truncatedTo(ChronoUnit.SECONDS))
@@ -149,6 +135,8 @@ public class SurveyService {
       }
     } else if (dto.getTargetTimezone() != null) {
       survey.setExpireAt(survey.getExpireAt()
+          .atZone(ZoneId.of(survey.getTargetTimezone()))
+          .toLocalDateTime()
           .atZone(ZoneId.of(dto.getTargetTimezone()))
           .toInstant()
           .truncatedTo(ChronoUnit.SECONDS));
@@ -178,6 +166,7 @@ public class SurveyService {
             HttpStatus.NOT_FOUND, "Аккаунт не найден: " + accountId));
 
     Survey surveyCopy = Survey.builder()
+        .id(UUID.randomUUID())
         .author(account)
         .title("Копия — " + originalSurvey.getTitle())
         .description(originalSurvey.getDescription())
@@ -187,11 +176,13 @@ public class SurveyService {
         .isTemplate(false)
         .doNotify(originalSurvey.isDoNotify())
         .expireAt(originalSurvey.getExpireAt())
-        .createdAt(Instant.now())
+        .targetTimezone(originalSurvey.getTargetTimezone())
+        .createdAt(Instant.now().truncatedTo(ChronoUnit.SECONDS))
         .build();
 
     for (SurveyPage originalPage : originalSurvey.getPages()) {
       SurveyPage pageCopy = SurveyPage.builder()
+          .id(UUID.randomUUID())
           .survey(surveyCopy)
           .serialNumber(originalPage.getSerialNumber())
           .title(originalPage.getTitle())
@@ -199,7 +190,10 @@ public class SurveyService {
           .build();
 
       for (Question originalQuestion : originalPage.getQuestions()) {
+        UUID questionId = UUID.randomUUID();
+
         Question questionCopy = Question.builder()
+            .id(questionId)
             .surveyPage(pageCopy)
             .serialNumber(originalQuestion.getSerialNumber())
             .title(originalQuestion.getTitle())
@@ -211,13 +205,29 @@ public class SurveyService {
             .condition(originalQuestion.getCondition())
             .build();
 
+        String questionAttachmentObjectKey =
+            "questions/%s/%s".formatted(questionId, UUID.randomUUID());
+        objectStorageService.copyObject(
+            originalQuestion.getAttachmentObjectKey(), questionAttachmentObjectKey);
+        questionCopy.setAttachmentObjectKey(questionAttachmentObjectKey);
+
         for (AnswerOption originalOption : originalQuestion.getAnswerOptions()) {
+          UUID optionId = UUID.randomUUID();
+
           AnswerOption optionCopy = AnswerOption.builder()
+              .id(optionId)
               .question(questionCopy)
               .serialNumber(originalOption.getSerialNumber())
               .answerOptionText(originalOption.getAnswerOptionText())
+              .attachmentObjectKey(originalOption.getAttachmentObjectKey())
               .build();
           questionCopy.getAnswerOptions().add(optionCopy);
+
+          String optionAttachmentObjectKey =
+              "answer-options/%s/%s".formatted(optionId, UUID.randomUUID());
+          objectStorageService.copyObject(
+              originalOption.getAttachmentObjectKey(), optionAttachmentObjectKey);
+          optionCopy.setAttachmentObjectKey(optionAttachmentObjectKey);
         }
 
         pageCopy.getQuestions().add(questionCopy);
@@ -228,6 +238,7 @@ public class SurveyService {
 
     if (originalSurvey.getClosingPage() != null) {
       ClosingPage closingPageCopy = ClosingPage.builder()
+          .id(UUID.randomUUID())
           .survey(surveyCopy)
           .title(originalSurvey.getClosingPage().getTitle())
           .description(originalSurvey.getClosingPage().getDescription())
@@ -253,4 +264,13 @@ public class SurveyService {
     log.info("Удален опрос id={} accountId={}", id, accountId);
   }
 
+  // Вспомогательные методы
+
+  private void validateAuthorizationConsistency(Survey survey) {
+    if (survey.isLimitedToOneResponse() && !survey.isAuthorizedOnly()) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+          "Опция \"Запретить проходить более одного раза\" доступна только при "
+              + "включённой опции \"Запретить анонимное прохождение\"");
+    }
+  }
 }

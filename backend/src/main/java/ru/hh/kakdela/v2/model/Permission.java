@@ -16,8 +16,10 @@ import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -36,12 +38,16 @@ public class Permission {
   @MapsId("surveyId")
   @JoinColumn(name = "survey_id", nullable = false)
   @OnDelete(action = OnDeleteAction.CASCADE)
+  @EqualsAndHashCode.Exclude
+  @ToString.Exclude
   private Survey survey;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @MapsId("accountId")
   @JoinColumn(name = "account_id", nullable = false)
   @OnDelete(action = OnDeleteAction.CASCADE)
+  @EqualsAndHashCode.Exclude
+  @ToString.Exclude
   private Account account;
 
   @Column(name = "role", nullable = false)

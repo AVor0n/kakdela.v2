@@ -7,6 +7,8 @@ import { useNavigate } from 'react-router-dom';
 import { routes } from '@/app/routes';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { setErrorMessage } from '@/entities/Error/Error.slice';
+import { shortenUuid } from '@/shared/lib/uuid';
+import { useState } from 'react';
 import style from './PopoverDetail.module.css';
 
 interface Props {
@@ -16,6 +18,7 @@ export function PopoverDetail({ onMouseLeave }: Props) {
     const { account, loading } = useAppSelector((state) => state.account);
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
+    const [isAccountIdCopied, setIsAccountIdCopied] = useState(false);
     const logoutHandler = () => {
         logout()
             .then(() => {
@@ -33,6 +36,21 @@ export function PopoverDetail({ onMouseLeave }: Props) {
             }),
         );
     };
+
+    const copyAccountIdHandler = () => {
+        if (!account) return;
+
+        navigator.clipboard
+            .writeText(account.id)
+            .then(() => {
+                setIsAccountIdCopied(true);
+                window.setTimeout(() => setIsAccountIdCopied(false), 2000);
+            })
+            .catch(() => {
+                dispatch(setErrorMessage({ message: 'Не удалось скопировать UUID пользователя' }));
+            });
+    };
+
     return (
         <div className={style.modal} onMouseLeave={onMouseLeave}>
             {loading ? (
@@ -42,6 +60,18 @@ export function PopoverDetail({ onMouseLeave }: Props) {
                     <div>
                         <p className={style.login}>{account!.login}</p>
                         <p className={style.email}>{account!.email}</p>
+                        <div className={style.accountId}>
+                            <span title={account!.id}>ID: {shortenUuid(account!.id)}</span>
+                            <button
+                                className={style.copyButton}
+                                type='button'
+                                title={isAccountIdCopied ? 'UUID скопирован' : 'Скопировать полный UUID'}
+                                aria-label={isAccountIdCopied ? 'UUID скопирован' : 'Скопировать UUID пользователя'}
+                                onClick={copyAccountIdHandler}
+                            >
+                                <img className={style.copyIcon} src='/copy.svg' alt='' />
+                            </button>
+                        </div>
                     </div>
                     <div className={style.separator} />
                     <div className={style.menu}>

@@ -1,5 +1,7 @@
 import type { Question } from './Question.type';
 
+export type SurveyRole = 'AUTHOR' | 'EDITOR' | 'ANALYST';
+
 export type Survey = {
     id: string;
     authorId: string;
@@ -27,4 +29,6 @@ export type Page = {
     questions: Question[];
 };
 
-export type SurveyListItem = Pick<Survey, 'id' | 'title' | 'description' | 'createdAt' | 'isPublished'>;
+export type SurveyListItem = Pick<Survey, 'id' | 'title' | 'description' | 'createdAt' | 'isPublished'> & {
+    userRole: SurveyRole;
+};
