@@ -1,12 +1,13 @@
 package ru.hh.kakdela.v2.service;
 
 import java.time.Clock;
-import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,7 +27,8 @@ public class RefreshTokenService {
   private final AccountDao accountDao;
   private final Clock clock;
 
-  private static final Duration REFRESH_TOKEN_TTL = Duration.ofDays(30);
+  @Value("${app.tokens.refresh.max-age}") 
+  private long refreshTokenMaxAge;
 
   @Transactional
   public String createRefreshToken(
@@ -49,7 +51,7 @@ public class RefreshTokenService {
         .userAgent(userAgent)
         .ipAddress(ipAddress)
         .createdAt(now)
-        .expiresAt(now.plus(REFRESH_TOKEN_TTL))
+        .expiresAt(now.plus(refreshTokenMaxAge, ChronoUnit.SECONDS))
         .build();
 
     refreshTokenDao.save(refreshToken);

@@ -123,8 +123,7 @@ public class AuthService {
     Account account = accountDao.findById(accountId).orElseThrow(() ->
         new ResponseStatusException(HttpStatus.NOT_FOUND, "Аккаунт не найден: " + accountId));
 
-    int currentVersion = account.getTokenVersion() != null ? account.getTokenVersion() : 1;
-    int newVersion = currentVersion + 1;
+    int newVersion = account.getTokenVersion() + 1;
     account.setTokenVersion(newVersion);
 
     accountDao.update(account);
@@ -132,7 +131,7 @@ public class AuthService {
     log.info(
         "Повышена версия токена для accountId={}: {} → {}",
         accountId,
-        currentVersion,
+        account.getTokenVersion() - 1,
         newVersion);
   }
 }

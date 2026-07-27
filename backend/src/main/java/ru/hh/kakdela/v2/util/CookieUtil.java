@@ -1,5 +1,6 @@
 package ru.hh.kakdela.v2.util;
 
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -17,6 +18,11 @@ public final class CookieUtil {
   public static final String DEVICE_ID_COOKIE_NAME = "deviceId";
   public static final String RESPONSE_TOKEN_PREFIX = "responseAccessToken_";
 
+  private static long accessTokenMaxAgeStatic;
+  private static long refreshTokenMaxAgeStatic;
+  private static long deviceIdMaxAgeStatic;
+  private static long responseTokenMaxAgeStatic;
+
   @Value("${app.tokens.access.max-age}")
   private long accessTokenMaxAge;
 
@@ -31,7 +37,15 @@ public final class CookieUtil {
 
   private static final String SAME_SITE = "Strict";
 
-  public CookieUtil() {
+  @PostConstruct
+  private void init() {
+    accessTokenMaxAgeStatic = accessTokenMaxAge;
+    refreshTokenMaxAgeStatic = refreshTokenMaxAge;
+    deviceIdMaxAgeStatic = deviceIdMaxAge;
+    responseTokenMaxAgeStatic = responseTokenMaxAge;
+  }
+
+  private CookieUtil() {
   }
 
   public static String getCookieValueByName(HttpServletRequest request, String name) {
@@ -58,35 +72,35 @@ public final class CookieUtil {
     return getCookieValueByName(request, DEVICE_ID_COOKIE_NAME);
   }
 
-  public void setAccessTokenCookie(HttpServletResponse response, String token) {
+  public static void setAccessTokenCookie(HttpServletResponse response, String token) {
     setHttpOnlyCookie(
         response,
-        accessTokenMaxAge,
+        accessTokenMaxAgeStatic,
         ACCESS_TOKEN_COOKIE_NAME,
         token
     );
   }
 
-  public void setRefreshTokenCookie(HttpServletResponse response, String token) {
+  public static void setRefreshTokenCookie(HttpServletResponse response, String token) {
     setHttpOnlyCookie(
         response,
-        refreshTokenMaxAge,
+        refreshTokenMaxAgeStatic,
         REFRESH_TOKEN_COOKIE_NAME,
         token
     );
   }
 
-  public void setDeviceIdCookie(HttpServletResponse response, String deviceId) {
+  public static void setDeviceIdCookie(HttpServletResponse response, String deviceId) {
     ResponseCookie cookie = ResponseCookie.from(DEVICE_ID_COOKIE_NAME, deviceId)
         .httpOnly(false)
         .secure(true)
         .sameSite(SAME_SITE)
-        .maxAge(deviceIdMaxAge)
+        .maxAge(deviceIdMaxAgeStatic)
         .build();
     response.addHeader("Set-Cookie", cookie.toString());
   }
 
-  public void setResponseTokenCookie(
+  public static void setResponseTokenCookie(
       HttpServletResponse response,
       UUID responseId,
       String token
@@ -95,7 +109,7 @@ public final class CookieUtil {
     String cookieName = RESPONSE_TOKEN_PREFIX + responseId;
     setHttpOnlyCookie(
         response,
-        responseTokenMaxAge,
+        responseTokenMaxAgeStatic,
         cookieName,
         token
     );

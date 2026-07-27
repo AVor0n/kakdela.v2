@@ -30,8 +30,6 @@ public class AuthController {
 
   private final AuthService authService;
   private final AccountService accountService;
-  private final CookieUtil cookieUtil;
-  private final DeviceUtil deviceUtil;
 
   @PostMapping("/auth/register")
   @ResponseStatus(HttpStatus.CREATED)
@@ -45,15 +43,20 @@ public class AuthController {
       @RequestBody LoginDto dto,
       HttpServletRequest request,
       HttpServletResponse response) {
+        
+    String deviceId = DeviceUtil.getDeviceId(request);
+    if (deviceId == null) {
+      deviceId = DeviceUtil.generateDeviceId();
+      CookieUtil.setDeviceIdCookie(response, deviceId);
+    }
 
-    String deviceId = deviceUtil.getOrCreateDeviceId(request, response);
     String userAgent = request.getHeader("User-Agent");
     String ipAddress = request.getRemoteAddr();
 
     AuthTokensDto tokens = authService.login(dto, deviceId, userAgent, ipAddress);
 
-    cookieUtil.setAccessTokenCookie(response, tokens.getAccessToken());
-    cookieUtil.setRefreshTokenCookie(response, tokens.getRefreshToken());
+    CookieUtil.setAccessTokenCookie(response, tokens.getAccessToken());
+    CookieUtil.setRefreshTokenCookie(response, tokens.getRefreshToken());
   }
 
   @PostMapping("/auth/refresh")
@@ -73,8 +76,8 @@ public class AuthController {
         userAgent,
         ipAddress);
 
-    cookieUtil.setAccessTokenCookie(response, tokens.getAccessToken());
-    cookieUtil.setRefreshTokenCookie(response, tokens.getRefreshToken());
+    CookieUtil.setAccessTokenCookie(response, tokens.getAccessToken());
+    CookieUtil.setRefreshTokenCookie(response, tokens.getRefreshToken());
   }
 
   @PostMapping("/auth/logout")
