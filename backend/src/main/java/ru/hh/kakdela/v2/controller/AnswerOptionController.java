@@ -16,9 +16,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import ru.hh.kakdela.v2.dto.answer_option.AnswerOptionCreateDto;
-import ru.hh.kakdela.v2.dto.answer_option.AnswerOptionResponseDto;
-import ru.hh.kakdela.v2.dto.answer_option.AnswerOptionUpdateDto;
+import ru.hh.kakdela.v2.dto.answer.option.AnswerOptionCreateDto;
+import ru.hh.kakdela.v2.dto.answer.option.AnswerOptionResponseDto;
+import ru.hh.kakdela.v2.dto.answer.option.AnswerOptionUpdateDto;
 import ru.hh.kakdela.v2.security.CustomUserDetails;
 import ru.hh.kakdela.v2.service.AnswerOptionService;
 

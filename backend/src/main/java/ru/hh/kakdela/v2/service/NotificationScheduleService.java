@@ -69,6 +69,7 @@ public class NotificationScheduleService {
     );
 
     NotificationSchedule notificationSchedule = NotificationSchedule.builder()
+        .id(UUID.randomUUID())
         .survey(survey)
         .name(dto.getName())
         .scheduleType(dto.getType())

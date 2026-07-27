@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.CopyObjectRequest;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
@@ -26,7 +27,7 @@ public class ObjectStorageService {
   private String bucketName;
 
   public void putObject(String key, byte[] fileAsByteArray, String contentType) {
-    log.debug("Загрузка объекта в хранилище key={} contentType={} size={}b",
+    log.debug("Загрузка объекта в хранилище key={} contentType={} size={}",
         key, contentType, fileAsByteArray.length);
     s3Client.putObject(
         PutObjectRequest.builder()
@@ -35,6 +36,18 @@ public class ObjectStorageService {
             .contentType(contentType)
             .build(),
         RequestBody.fromBytes(fileAsByteArray));
+  }
+
+  public void copyObject(String sourceKey, String destinationKey) {
+    log.debug("Копирование объекта в хранилище sourceKey={} destinationKey={}",
+        sourceKey, destinationKey);
+    s3Client.copyObject(
+        CopyObjectRequest.builder()
+            .sourceBucket(bucketName)
+            .sourceKey(sourceKey)
+            .destinationBucket(bucketName)
+            .destinationKey(destinationKey)
+            .build());
   }
 
   public URL generateObjectUrl(String key, long maxAgeSeconds) {

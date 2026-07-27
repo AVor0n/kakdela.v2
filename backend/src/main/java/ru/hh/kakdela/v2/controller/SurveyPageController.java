@@ -16,9 +16,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import ru.hh.kakdela.v2.dto.survey_page.SurveyPageCreateDto;
-import ru.hh.kakdela.v2.dto.survey_page.SurveyPageResponseDto;
-import ru.hh.kakdela.v2.dto.survey_page.SurveyPageUpdateDto;
+import ru.hh.kakdela.v2.dto.survey.page.SurveyPageCreateDto;
+import ru.hh.kakdela.v2.dto.survey.page.SurveyPageResponseDto;
+import ru.hh.kakdela.v2.dto.survey.page.SurveyPageUpdateDto;
 import ru.hh.kakdela.v2.security.CustomUserDetails;
 import ru.hh.kakdela.v2.service.SurveyPageService;
 
