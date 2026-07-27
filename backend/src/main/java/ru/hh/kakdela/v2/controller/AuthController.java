@@ -43,7 +43,7 @@ public class AuthController {
       @RequestBody LoginDto dto,
       HttpServletRequest request,
       HttpServletResponse response) {
-        
+
     String deviceId = DeviceUtil.getDeviceId(request);
     if (deviceId == null) {
       deviceId = DeviceUtil.generateDeviceId();

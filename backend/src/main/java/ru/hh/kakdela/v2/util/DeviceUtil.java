@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public final class DeviceUtil {
 
-  public static  String getDeviceId(HttpServletRequest request) {
+  public static String getDeviceId(HttpServletRequest request) {
     return CookieUtil.getDeviceId(request);
   }
 

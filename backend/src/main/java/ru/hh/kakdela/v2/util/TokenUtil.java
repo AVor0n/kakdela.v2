@@ -7,7 +7,7 @@ import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.HexFormat;
 
-public final class TokenUtil{
+public final class TokenUtil {
 
   private static final String ALGORITHM = "SHA-256";
   private static final String TOKEN_PREFIX = "ref_";
@@ -15,7 +15,8 @@ public final class TokenUtil{
 
   private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
-  private TokenUtil() {}
+  private TokenUtil() {
+  }
 
   public static String generateRawToken() {
     byte[] bytes = new byte[TOKEN_BYTES_LENGTH];

@@ -27,7 +27,7 @@ public class RefreshTokenService {
   private final AccountDao accountDao;
   private final Clock clock;
 
-  @Value("${app.tokens.refresh.max-age}") 
+  @Value("${app.tokens.refresh.max-age}")
   private long refreshTokenMaxAge;
 
   @Transactional
