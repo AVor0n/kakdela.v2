@@ -20,6 +20,7 @@ import ru.hh.kakdela.v2.security.CustomUserDetails;
 import ru.hh.kakdela.v2.service.AccountService;
 import ru.hh.kakdela.v2.service.AuthService;
 import ru.hh.kakdela.v2.util.CookieUtil;
+import ru.hh.kakdela.v2.util.DeviceUtil;
 
 @RequiredArgsConstructor
 @RestController
@@ -30,6 +31,7 @@ public class AuthController {
   private final AuthService authService;
   private final AccountService accountService;
   private final CookieUtil cookieUtil;
+  private final DeviceUtil deviceUtil;
 
   @PostMapping("/auth/register")
   @ResponseStatus(HttpStatus.CREATED)
@@ -44,7 +46,11 @@ public class AuthController {
       HttpServletRequest request,
       HttpServletResponse response) {
 
-    AuthTokensDto tokens = authService.login(dto, request, response);
+    String deviceId = deviceUtil.getOrCreateDeviceId(request, response);
+    String userAgent = request.getHeader("User-Agent");
+    String ipAddress = request.getRemoteAddr();
+
+    AuthTokensDto tokens = authService.login(dto, deviceId, userAgent, ipAddress);
 
     cookieUtil.setAccessTokenCookie(response, tokens.getAccessToken());
     cookieUtil.setRefreshTokenCookie(response, tokens.getRefreshToken());
@@ -56,7 +62,16 @@ public class AuthController {
       HttpServletRequest request,
       HttpServletResponse response) {
 
-    AuthTokensDto tokens = authService.refreshTokens(request);
+    String refreshToken = CookieUtil.getRefreshToken(request);
+    String deviceId = CookieUtil.getDeviceId(request);
+    String userAgent = request.getHeader("User-Agent");
+    String ipAddress = request.getRemoteAddr();
+
+    AuthTokensDto tokens = authService.refreshTokens(
+        refreshToken,
+        deviceId,
+        userAgent,
+        ipAddress);
 
     cookieUtil.setAccessTokenCookie(response, tokens.getAccessToken());
     cookieUtil.setRefreshTokenCookie(response, tokens.getRefreshToken());
@@ -67,8 +82,9 @@ public class AuthController {
   public void logout(
       HttpServletRequest request,
       HttpServletResponse response) {
-    authService.logout(request);
 
+    String refreshToken = CookieUtil.getRefreshToken(request);
+    authService.logout(refreshToken);
     CookieUtil.clearAllAuthCookies(response);
   }
 

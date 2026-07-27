@@ -1,7 +1,5 @@
 package ru.hh.kakdela.v2.service;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,8 +17,6 @@ import ru.hh.kakdela.v2.dto.auth.AuthTokensDto;
 import ru.hh.kakdela.v2.dto.auth.LoginDto;
 import ru.hh.kakdela.v2.model.Account;
 import ru.hh.kakdela.v2.security.JwtService;
-import ru.hh.kakdela.v2.util.CookieUtil;
-import ru.hh.kakdela.v2.util.DeviceUtil;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -32,9 +28,8 @@ public class AuthService {
   private final AccountDao accountDao;
   private final JwtService jwtService;
   private final RefreshTokenService refreshTokenService;
-  private final DeviceUtil deviceUtil;
 
-  public Account authenticate(LoginDto loginDto) {
+  private Account authenticate(LoginDto loginDto) {
     Account account = accountDao.findByLogin(loginDto.getLogin()).orElseThrow(() ->
         new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Неверный логин или пароль"));
 
@@ -59,20 +54,15 @@ public class AuthService {
   @Transactional
   public AuthTokensDto login(
       LoginDto loginDto,
-      HttpServletRequest request,
-      HttpServletResponse response) {
+      String deviceId,
+      String userAgent,
+      String ipAddress) {
 
     Account account = authenticate(loginDto);
 
-    String deviceId = deviceUtil.getOrCreateDeviceId(request, response);
-    String userAgent = request.getHeader("User-Agent");
-    String ipAddress = request.getRemoteAddr();
-
     refreshTokenService.revokeAllByAccountIdAndDeviceId(account.getId(), deviceId);
 
-    String refreshToken = refreshTokenService
-        .createRefreshToken(account.getId(), deviceId, userAgent, ipAddress);
-
+    String refreshToken = refreshTokenService.createRefreshToken(account.getId(), deviceId, userAgent, ipAddress);
     String accessToken = jwtService.generateAccessToken(account);
 
     log.info("Успешный вход: accountId={}, deviceId={}", account.getId(), deviceId);
@@ -81,21 +71,21 @@ public class AuthService {
   }
 
   @Transactional
-  public AuthTokensDto refreshTokens(HttpServletRequest request) {
-    String refreshToken = CookieUtil.getRefreshToken(request);
-    if (refreshToken == null) {
+  public AuthTokensDto refreshTokens(
+      String refreshToken,
+      String deviceId,
+      String userAgent,
+      String ipAddress
+  ) {
+    if (refreshToken == null || refreshToken.isEmpty()) {
       throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Refresh токен не найден");
     }
 
-    String deviceId = CookieUtil.getDeviceId(request);
-    if (deviceId == null) {
+    if (deviceId == null || deviceId.isEmpty()) {
       throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "DeviceId не найден");
     }
 
     Account account = refreshTokenService.validateToken(refreshToken, deviceId).getAccount();
-
-    String userAgent = request.getHeader("User-Agent");
-    String ipAddress = request.getRemoteAddr();
 
     String newRefreshToken = refreshTokenService
         .rotateRefreshToken(refreshToken, deviceId, userAgent, ipAddress);
@@ -108,8 +98,7 @@ public class AuthService {
   }
 
   @Transactional
-  public void logout(HttpServletRequest request) {
-    String refreshToken = CookieUtil.getRefreshToken(request);
+  public void logout(String refreshToken) {
     if (refreshToken != null) {
       refreshTokenService.revokeByToken(refreshToken);
       log.info("Отозван refresh токен");
