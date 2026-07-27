@@ -24,7 +24,7 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import ru.hh.kakdela.v2.util.CookieUtil;
+import ru.hh.kakdela.v2.service.AuthCookieService;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -34,6 +34,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
   private final JwtService jwtService;
   private final CustomUserDetailsService customUserDetailsService;
   private final AuthenticationEntryPoint authenticationEntryPoint;
+  private final AuthCookieService authCookieService;
 
   @Override
   protected void doFilterInternal(
@@ -41,7 +42,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
       HttpServletResponse response,
       FilterChain chain) throws ServletException, IOException {
 
-    final String token = CookieUtil.getAccessToken(request);
+    final String token = authCookieService.getAccessToken(request);
 
     try {
       if (token != null && SecurityContextHolder.getContext().getAuthentication() == null) {

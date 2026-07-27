@@ -23,9 +23,9 @@ import ru.hh.kakdela.v2.dto.response.ResponseExportDto;
 import ru.hh.kakdela.v2.dto.response.ResponseResponseDto;
 import ru.hh.kakdela.v2.dto.response.ResponseWithTokenDto;
 import ru.hh.kakdela.v2.security.CustomUserDetails;
+import ru.hh.kakdela.v2.service.AuthCookieService;
 import ru.hh.kakdela.v2.service.ResponseExportService;
 import ru.hh.kakdela.v2.service.ResponseService;
-import ru.hh.kakdela.v2.util.CookieUtil;
 
 @RestController
 @RequestMapping("/api")
@@ -35,7 +35,8 @@ public class ResponseController {
 
   private final ResponseService responseService;
   private final ResponseExportService exportService;
-  private final CookieUtil cookieUtil;
+  private final AuthCookieService authCookieService;
+
 
   @Value("${app.tokens.response-access.max-age}")
   private long responseTokenMaxAge;
@@ -55,7 +56,7 @@ public class ResponseController {
 
     if (responseWithTokenDto.getResponseAccessToken() != null) {
 
-      cookieUtil.setResponseTokenCookie(
+      authCookieService.setResponseTokenCookie(
           response,
           responseWithTokenDto.getId(),
           responseWithTokenDto.getResponseAccessToken()
@@ -72,7 +73,7 @@ public class ResponseController {
       HttpServletRequest request,
       HttpServletResponse response
   ) {
-    String token = CookieUtil.getResponseToken(request, responseId);
+    String token = authCookieService.getResponseToken(request, responseId);
 
     ResponseResponseDto responseDto = responseService.complete(
         responseId,
@@ -81,7 +82,7 @@ public class ResponseController {
     );
 
     if (token != null) {
-      CookieUtil.clearResponseTokenCookie(response, responseId);
+      authCookieService.clearResponseTokenCookie(response, responseId);
     }
     return responseDto;
   }
@@ -92,7 +93,7 @@ public class ResponseController {
       @AuthenticationPrincipal CustomUserDetails currentUser,
       HttpServletRequest request
   ) {
-    String token = CookieUtil.getResponseToken(request, responseId);
+    String token = authCookieService.getResponseToken(request, responseId);
 
     return responseService.getById(
         responseId,

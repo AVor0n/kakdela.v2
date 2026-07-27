@@ -2,15 +2,14 @@ package ru.hh.kakdela.v2.util;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.UUID;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
 
-@Component
-@RequiredArgsConstructor
 public final class DeviceUtil {
 
+  private DeviceUtil() {
+  }
+
   public static String getDeviceId(HttpServletRequest request) {
-    return CookieUtil.getDeviceId(request);
+    return CookieUtil.getCookieValueByName(request, "deviceId");
   }
 
   public static String generateDeviceId() {

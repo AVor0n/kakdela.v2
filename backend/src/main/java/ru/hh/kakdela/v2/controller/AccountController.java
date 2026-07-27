@@ -20,7 +20,7 @@ import ru.hh.kakdela.v2.dto.account.AccountPutDto;
 import ru.hh.kakdela.v2.dto.account.AccountResponseDto;
 import ru.hh.kakdela.v2.security.CustomUserDetails;
 import ru.hh.kakdela.v2.service.AccountService;
-import ru.hh.kakdela.v2.util.CookieUtil;
+import ru.hh.kakdela.v2.service.AuthCookieService;
 
 @RestController
 @RequestMapping("/api")
@@ -29,6 +29,8 @@ import ru.hh.kakdela.v2.util.CookieUtil;
 public class AccountController {
 
   private final AccountService accountService;
+  private final AuthCookieService authCookieService;
+
 
   @GetMapping("/accounts/me")
   public AccountResponseDto getMyAccount(@AuthenticationPrincipal CustomUserDetails currentUser) {
@@ -57,6 +59,6 @@ public class AccountController {
       HttpServletResponse response) {
 
     accountService.softDelete(currentUser, accountDeleteDto);
-    CookieUtil.clearAllAuthCookies(response);
+    authCookieService.clearAllAuthCookies(response);
   }
 }

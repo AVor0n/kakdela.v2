@@ -78,26 +78,6 @@ public class JwtService {
     return claimsResolver.apply(claims);
   }
 
-  public String extractSubject(String token) {
-    return extractClaim(token, Claims::getSubject);
-  }
-
-  public UUID extractAccountId(String token) {
-    return extractClaim(token, claims -> {
-      String accountIdStr = claims.get("accountId", String.class);
-
-      return accountIdStr != null ? UUID.fromString(accountIdStr) : null;
-    });
-  }
-
-  public int extractTokenVersion(String token) {
-    return extractClaim(token, claims -> {
-      Integer version = claims.get("tokenVersion", Integer.class);
-
-      return version != null ? version : 1;
-    });
-  }
-
   public UUID extractResponseId(String token) {
     return extractClaim(token, claims -> {
       String responseIdStr = claims.get("responseId", String.class);

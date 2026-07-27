@@ -18,8 +18,8 @@ import ru.hh.kakdela.v2.dto.auth.AuthTokensDto;
 import ru.hh.kakdela.v2.dto.auth.LoginDto;
 import ru.hh.kakdela.v2.security.CustomUserDetails;
 import ru.hh.kakdela.v2.service.AccountService;
+import ru.hh.kakdela.v2.service.AuthCookieService;
 import ru.hh.kakdela.v2.service.AuthService;
-import ru.hh.kakdela.v2.util.CookieUtil;
 import ru.hh.kakdela.v2.util.DeviceUtil;
 
 @RequiredArgsConstructor
@@ -30,6 +30,8 @@ public class AuthController {
 
   private final AuthService authService;
   private final AccountService accountService;
+  private final AuthCookieService authCookieService;
+
 
   @PostMapping("/auth/register")
   @ResponseStatus(HttpStatus.CREATED)
@@ -47,7 +49,7 @@ public class AuthController {
     String deviceId = DeviceUtil.getDeviceId(request);
     if (deviceId == null) {
       deviceId = DeviceUtil.generateDeviceId();
-      CookieUtil.setDeviceIdCookie(response, deviceId);
+      authCookieService.setDeviceIdCookie(response, deviceId);
     }
 
     String userAgent = request.getHeader("User-Agent");
@@ -55,8 +57,8 @@ public class AuthController {
 
     AuthTokensDto tokens = authService.login(dto, deviceId, userAgent, ipAddress);
 
-    CookieUtil.setAccessTokenCookie(response, tokens.getAccessToken());
-    CookieUtil.setRefreshTokenCookie(response, tokens.getRefreshToken());
+    authCookieService.setAccessTokenCookie(response, tokens.getAccessToken());
+    authCookieService.setRefreshTokenCookie(response, tokens.getRefreshToken());
   }
 
   @PostMapping("/auth/refresh")
@@ -65,8 +67,8 @@ public class AuthController {
       HttpServletRequest request,
       HttpServletResponse response) {
 
-    String refreshToken = CookieUtil.getRefreshToken(request);
-    String deviceId = CookieUtil.getDeviceId(request);
+    String refreshToken = authCookieService.getRefreshToken(request);
+    String deviceId = authCookieService.getDeviceId(request);
     String userAgent = request.getHeader("User-Agent");
     String ipAddress = request.getRemoteAddr();
 
@@ -76,8 +78,8 @@ public class AuthController {
         userAgent,
         ipAddress);
 
-    CookieUtil.setAccessTokenCookie(response, tokens.getAccessToken());
-    CookieUtil.setRefreshTokenCookie(response, tokens.getRefreshToken());
+    authCookieService.setAccessTokenCookie(response, tokens.getAccessToken());
+    authCookieService.setRefreshTokenCookie(response, tokens.getRefreshToken());
   }
 
   @PostMapping("/auth/logout")
@@ -86,9 +88,9 @@ public class AuthController {
       HttpServletRequest request,
       HttpServletResponse response) {
 
-    String refreshToken = CookieUtil.getRefreshToken(request);
+    String refreshToken = authCookieService.getRefreshToken(request);
     authService.logout(refreshToken);
-    CookieUtil.clearAllAuthCookies(response);
+    authCookieService.clearAllAuthCookies(response);
   }
 
   @PostMapping("/auth/logout-everywhere")
@@ -99,6 +101,6 @@ public class AuthController {
 
     authService.logoutEverywhere(userDetails.getId());
 
-    CookieUtil.clearAllAuthCookies(response);
+    authCookieService.clearAllAuthCookies(response);
   }
 }
