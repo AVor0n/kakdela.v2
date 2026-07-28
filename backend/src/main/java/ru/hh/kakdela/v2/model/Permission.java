@@ -55,7 +55,8 @@ public class Permission {
   private SurveyRole role;
 
   @Column(name = "do_notify", nullable = false)
-  private boolean doNotify;
+  @Builder.Default
+  private boolean doNotify = true;
 
   @Embeddable
   @Data

@@ -67,8 +67,6 @@ public class SurveyService {
         .isAuthorizedOnly(dto.getIsAuthorizedOnly())
         .isLimitedToOneResponse(dto.getIsLimitedToOneResponse())
         .doNotify(dto.getDoNotify())
-        .isPublished(false)
-        .isTemplate(false)
         .expireAt(dto.getExpireAtAtTargetTimezone() != null
             ? dto.getExpireAtAtTargetTimezone()
               .atZone(ZoneId.of(dto.getTargetTimezone()))
@@ -168,8 +166,6 @@ public class SurveyService {
         .description(originalSurvey.getDescription())
         .isAuthorizedOnly(originalSurvey.isAuthorizedOnly())
         .isLimitedToOneResponse(originalSurvey.isLimitedToOneResponse())
-        .isPublished(false)
-        .isTemplate(false)
         .doNotify(originalSurvey.doNotify())
         .expireAt(originalSurvey.getExpireAt())
         .targetTimezone(originalSurvey.getTargetTimezone())

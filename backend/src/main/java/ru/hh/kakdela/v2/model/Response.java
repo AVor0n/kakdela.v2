@@ -55,7 +55,8 @@ public class Response {
   private Survey survey;
 
   @Column(name = "is_completed", nullable = false)
-  private boolean isCompleted;
+  @Builder.Default
+  private boolean isCompleted = false;
 
   @Column(name = "received_at")
   private Instant receivedAt;

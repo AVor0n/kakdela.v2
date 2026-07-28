@@ -33,9 +33,7 @@ public class QuestionMapper {
         question.getDescription(),
         attachmentUrl,
         question.getType().name(),
-        question.getAnswerOptionOrder() != null
-            ? question.getAnswerOptionOrder().name()
-            : null,
+        question.getAnswerOptionOrder().name(),
         question.hasOtherOption(),
         question.isMandatory(),
         question.isVisible(),
@@ -43,10 +41,7 @@ public class QuestionMapper {
         question.getAnswerOptions().stream()
             .map(answerOptionMapper::answerOptionToDto)
             .collect(Collectors.collectingAndThen(
-               Collectors.toList(),
-               question.getAnswerOptionOrder() != null
-                   ? question.getAnswerOptionOrder().function
-                   : aords -> aords
-               )));
+                Collectors.toList(),
+                question.getAnswerOptionOrder().function)));
   }
 }

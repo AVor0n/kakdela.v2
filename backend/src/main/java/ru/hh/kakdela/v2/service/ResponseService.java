@@ -113,7 +113,6 @@ public class ResponseService {
         .id(UUID.randomUUID())
         .account(account)
         .survey(survey)
-        .isCompleted(false)
         .build();
 
     responseDao.save(response);

@@ -55,20 +55,25 @@ public class Survey {
   private String description;
 
   @Column(name = "is_authorized_only", nullable = false)
-  private boolean isAuthorizedOnly;
+  @Builder.Default
+  private boolean isAuthorizedOnly = false;
 
   @Column(name = "is_limited_to_one_response", nullable = false)
-  private boolean isLimitedToOneResponse;
+  @Builder.Default
+  private boolean isLimitedToOneResponse = false;
 
   @Column(name = "is_published", nullable = false)
-  private boolean isPublished;
+  @Builder.Default
+  private boolean isPublished = false;
 
   @Column(name = "is_template", nullable = false)
-  private boolean isTemplate;
+  @Builder.Default
+  private boolean isTemplate = false;
 
   @Column(name = "do_notify", nullable = false)
   @Getter(AccessLevel.NONE)
-  private boolean doNotify;
+  @Builder.Default
+  private boolean doNotify = true;
 
   public boolean doNotify() {
     return this.doNotify;
@@ -78,7 +83,8 @@ public class Survey {
   private Instant expireAt;
 
   @Column(name = "target_timezone")
-  private String targetTimezone;
+  @Builder.Default
+  private String targetTimezone = "Europe/Moscow";
 
   @Column(name = "created_at", updatable = false, nullable = false)
   private Instant createdAt;

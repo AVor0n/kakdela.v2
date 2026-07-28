@@ -75,23 +75,27 @@ public class Question {
   @Enumerated(EnumType.STRING)
   private QuestionType type;
 
-  @Column(name = "answer_option_order")
+  @Column(name = "answer_option_order", nullable = false)
   @Enumerated(EnumType.STRING)
-  private AnswerOptionOrder answerOptionOrder;
+  @Builder.Default
+  private AnswerOptionOrder answerOptionOrder = AnswerOptionOrder.ORIGINAL;
 
   @Column(name = "has_other_option", nullable = false)
   @Getter(AccessLevel.NONE)
-  private boolean hasOtherOption;
+  @Builder.Default
+  private boolean hasOtherOption = false;
 
   public boolean hasOtherOption() {
     return this.hasOtherOption;
   }
 
   @Column(name = "is_mandatory", nullable = false)
-  private boolean isMandatory;
+  @Builder.Default
+  private boolean isMandatory = true;
 
   @Column(name = "is_visible", nullable = false)
-  private boolean isVisible;
+  @Builder.Default
+  private boolean isVisible = true;
 
   @Column(name = "condition", columnDefinition = "text")
   private String condition;

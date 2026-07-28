@@ -11,13 +11,13 @@ CREATE TABLE survey (
     author_id uuid REFERENCES account (id) ON DELETE CASCADE NOT NULL,
     title varchar(200) NOT NULL,
     description varchar(5000),
-    is_authorized_only bool NOT NULL,
-    is_limited_to_one_response bool NOT NULL,
-    is_published bool NOT NULL,
-    is_template bool NOT NULL,
-    do_notify bool NOT NULL,
+    is_authorized_only bool DEFAULT FALSE NOT NULL,
+    is_limited_to_one_response bool DEFAULT FALSE NOT NULL,
+    is_published bool DEFAULT FALSE NOT NULL,
+    is_template bool DEFAULT FALSE NOT NULL,
+    do_notify bool DEFAULT TRUE NOT NULL,
     expire_at timestamptz,
-    target_timezone varchar(255),
+    target_timezone varchar(255) DEFAULT 'Europe/Moscow' NOT NULL,
     created_at timestamptz NOT NULL
 );
 
@@ -28,7 +28,7 @@ CREATE TABLE permissions (
     account_id uuid REFERENCES account (id) ON DELETE CASCADE,
     survey_id uuid REFERENCES survey (id) ON DELETE CASCADE,
     role varchar(255) NOT NULL,
-    do_notify bool NOT NULL,
+    do_notify bool DEFAULT TRUE NOT NULL,
     PRIMARY KEY (account_id, survey_id)
 );
 
@@ -52,10 +52,10 @@ CREATE TABLE question (
     description varchar(5000),
     attachment_object_key varchar(1024),
     type varchar(255) NOT NULL,
-    answer_option_order varchar(255),
-    has_other_option bool NOT NULL,
-    is_mandatory bool NOT NULL,
-    is_visible bool NOT NULL,
+    answer_option_order varchar(255) DEFAULT 'ORIGINAL' NOT NULL,
+    has_other_option bool DEFAULT FALSE NOT NULL,
+    is_mandatory bool DEFAULT TRUE NOT NULL,
+    is_visible bool DEFAULT TRUE NOT NULL,
     condition text,
     CONSTRAINT uk_question_page_serial UNIQUE (survey_page_id, serial_number) DEFERRABLE INITIALLY IMMEDIATE
 );
@@ -85,7 +85,7 @@ CREATE TABLE response (
     id uuid PRIMARY KEY,
     account_id uuid REFERENCES account (id) ON DELETE SET NULL,
     survey_id uuid REFERENCES survey (id) ON DELETE CASCADE NOT NULL,
-    is_completed bool NOT NULL,
+    is_completed bool DEFAULT FALSE NOT NULL,
     received_at timestamptz
 );
 
@@ -146,8 +146,8 @@ CREATE TABLE notification_schedule (
     -- Для CUSTOM: cron выражение
     cron_expression varchar(100),
     execution_time time,
-    target_timezone varchar(50) DEFAULT 'Europe/Moscow',
-    is_active boolean DEFAULT TRUE,
+    target_timezone varchar(50) DEFAULT 'Europe/Moscow' NOT NULL,
+    is_active bool DEFAULT TRUE NOT NULL,
     next_execution timestamptz,
     last_execution timestamptz
 );
