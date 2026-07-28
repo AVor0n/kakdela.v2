@@ -12,8 +12,8 @@ import ru.hh.kakdela.v2.dto.answer.option.selected.SelectedAnswerOptionResponseD
 @AllArgsConstructor
 @Getter
 @Schema(
-    name = "AnswerResponse",
-    title = "DTO для получения данных ответа на вопрос")
+    name = "Answer.Response"
+)
 public class AnswerResponseDto {
 
   private final UUID responseId;

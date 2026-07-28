@@ -15,20 +15,24 @@ import ru.hh.kakdela.v2.validator.NullOrNotBlank;
 @Getter
 @Setter
 @Schema(
-    name = "AnswerCreate",
-    title = "DTO для создания и замены ответа на вопрос")
+    name = "Answer.Request"
+)
 public class AnswerRequestDto {
 
   @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED)
   @NullOrNotBlank(message = "Текст ответа не должен быть пустым")
   @Size(max = 5000, message = "Текст ответа не должен быть длиннее 5000 символов")
   private String textValue;
+
   @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED)
   private Boolean booleanValue;
+
   @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED)
   private LocalDate dateValue;
+
   @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED)
   private LocalTime timeValue;
+
   @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED)
   private Set<UUID> selectedAnswerOptionIds;
 }

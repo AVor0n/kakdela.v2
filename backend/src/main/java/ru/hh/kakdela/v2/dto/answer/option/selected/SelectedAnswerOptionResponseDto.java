@@ -8,8 +8,7 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 @Schema(
-    name = "AnswerOptionResponse",
-    title = "DTO для получения данных выбранного варианта ответа"
+    name = "SelectedAnswerOption.Response"
 )
 public class SelectedAnswerOptionResponseDto {
 

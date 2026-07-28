@@ -14,8 +14,7 @@ import ru.hh.kakdela.v2.dto.answer.option.AnswerOptionResponseDto;
 @EqualsAndHashCode
 @ToString
 @Schema(
-    name = "QuestionResponse",
-    title = "DTO для получения данных вопроса"
+    name = "Question.Response"
 )
 public class QuestionResponseDto {
 

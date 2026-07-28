@@ -14,8 +14,7 @@ import ru.hh.kakdela.v2.model.Question;
 @Getter
 @Setter
 @Schema(
-    name = "QuestionCreate",
-    title = "DTO для создания вопроса"
+    name = "Question.Create"
 )
 public class QuestionCreateDto {
 

@@ -12,8 +12,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Schema(
-    name = "AnswerOptionCreate",
-    title = "DTO для создания варианта ответа"
+    name = "AnswerOption.Create"
 )
 public class AnswerOptionCreateDto {
 

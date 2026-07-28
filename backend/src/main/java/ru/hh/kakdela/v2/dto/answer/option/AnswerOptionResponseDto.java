@@ -12,8 +12,7 @@ import lombok.ToString;
 @EqualsAndHashCode
 @ToString
 @Schema(
-    name = "AnswerOptionResponse",
-    title = "DTO для получения данных варианта ответа"
+    name = "AnswerOption.Response"
 )
 public class AnswerOptionResponseDto {
 

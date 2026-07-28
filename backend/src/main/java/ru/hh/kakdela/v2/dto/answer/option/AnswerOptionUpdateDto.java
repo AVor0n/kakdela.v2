@@ -12,8 +12,7 @@ import ru.hh.kakdela.v2.validator.NullOrNotBlank;
 @Getter
 @Setter
 @Schema(
-    name = "AnswerOptionUpdate",
-    title = "DTO для обновления варианта ответа"
+    name = "AnswerOption.Update"
 )
 public class AnswerOptionUpdateDto {
 
