@@ -4,6 +4,7 @@
     border-radius: 16px;
     display: flex;
     justify-content: space-between;
+    align-items: start;
 }
 
 .actions {
@@ -12,6 +13,7 @@
     justify-content: center;
     align-items: flex-end; /* чтобы одиночная кнопка прижималась к правому краю */
     gap: 10px;
+    align-self: center;
 }
 
 .details {
@@ -34,4 +36,11 @@
 .deleteButtons {
     display: flex;
     gap: 5px;
+}
+
+.role {
+    padding: 2px 6px;
+    background: var(--color-secondary);
+    width: fit-content;
+    border-radius: 6px;
 }

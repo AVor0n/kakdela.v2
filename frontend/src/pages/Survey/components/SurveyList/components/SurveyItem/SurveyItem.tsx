@@ -1,5 +1,5 @@
 import { Button, Text } from '@hh.ru/magritte-ui';
-import type { SurveyListItem } from '@/shared/types/Survey.type';
+import type { SurveyListItem, SurveyRole } from '@/shared/types/Survey.type';
 import style from './SuveyItem.module.css';
 import { cloneSurvey, deleteSurvey } from '@/api/survey';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
@@ -7,6 +7,21 @@ import { addSurvey, deleteSurvey as deleteSurveyState } from '@/entities/Survey/
 import { setErrorMessage } from '@/entities/Error/Error.slice';
 import { useState } from 'react';
 import { CheckOutlinedSize24, CrossOutlinedSize24 } from '@hh.ru/magritte-ui/icon';
+import { formatDate } from '@/shared/utils/date';
+
+function getRussianLetterForRole(role: SurveyRole) {
+    switch (role) {
+        case 'AUTHOR':
+            return 'Автор';
+        case 'ANALYST':
+            return 'Аналитик';
+        case 'EDITOR':
+            return 'Редактор';
+        default:
+            return '';
+    }
+}
+
 type SurveyItemProps = {
     survey: SurveyListItem;
     onClick: () => void;
@@ -49,9 +64,13 @@ export function SurveyItem({ survey, onClick }: SurveyItemProps) {
         <div className={style.container}>
             <button type='button' onClick={onClick} className={style.details}>
                 <div className={style.detail}>
+                    <p className={style.role}>{getRussianLetterForRole(survey.userRole)}</p>
                     <Text typography='title-4-semibold' style='primary'>
                         {survey.title}
                     </Text>
+                    <div>
+                        <p>Дата создания: {formatDate(survey.createdAt)}</p>
+                    </div>
                     {survey.description && <p className={style.description}>{survey.description}</p>}
                 </div>
             </button>
