@@ -66,6 +66,7 @@ public class AnswerOptionService {
     }
 
     AnswerOption answerOption = AnswerOption.builder()
+        .id(UUID.randomUUID())
         .question(question)
         .serialNumber(dto.getSerialNumber() != null
             ? dto.getSerialNumber()

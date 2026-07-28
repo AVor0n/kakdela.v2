@@ -1,5 +1,21 @@
 package ru.hh.kakdela.v2.service;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.time.Instant;
+import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,13 +35,6 @@ import ru.hh.kakdela.v2.model.Response;
 import ru.hh.kakdela.v2.model.Survey;
 import ru.hh.kakdela.v2.security.JwtService;
 
-import java.time.Instant;
-import java.util.Optional;
-import java.util.UUID;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
 @ExtendWith(MockitoExtension.class)
 class ResponseServiceTest {
   @Mock
@@ -43,9 +52,11 @@ class ResponseServiceTest {
   private ResponseService responseService;
 
   private static UUID responseId;
-  private static UUID accountId;
+  private static UUID authorAccountId;
+  private static UUID respondentAccountId;
   private static UUID surveyId;
-  private static Account testAccount;
+  private static Account testAuthorAccount;
+  private static Account testRespondentAccount;
   private static Survey testSurvey;
   private static Survey testLimitedSurvey;
   private static Survey testUnpublishedSurvey;
@@ -56,18 +67,26 @@ class ResponseServiceTest {
   @BeforeAll
   static void setupAll() {
     responseId = UUID.randomUUID();
-    accountId = UUID.randomUUID();
+    authorAccountId = UUID.randomUUID();
+    respondentAccountId = UUID.randomUUID();
     surveyId = UUID.randomUUID();
-    testAccount = Account.builder()
-        .id(accountId)
-        .login("test")
-        .email("test@gmail.com")
+    testAuthorAccount = Account.builder()
+        .id(authorAccountId)
+        .login("test1")
+        .email("test2@examle.com")
         .passwordHash("$2a$10$WeEHrW1OLHk3BMFmojk94uiaO3Y62xrb.wsXRkofYdKsSsrv.jC7m")
+        .registeredAt(Instant.now())
+        .build();
+    testRespondentAccount = Account.builder()
+        .id(respondentAccountId)
+        .login("test2")
+        .email("test2@example.com")
+        .passwordHash("$2a$10$zJJ6cDGCeBfzFxcXzOIl2untS9tw8GZP0HoPGf8XgIQKhgyg10PwC")
         .registeredAt(Instant.now())
         .build();
     testSurvey = Survey.builder()
         .id(surveyId)
-        .author(testAccount)
+        .author(testAuthorAccount)
         .title("test")
         .description("test")
         .isAuthorizedOnly(false)
@@ -81,7 +100,7 @@ class ResponseServiceTest {
         .build();
     testResponse = Response.builder()
         .id(responseId)
-        .account(testAccount)
+        .account(testRespondentAccount)
         .survey(testSurvey)
         .isCompleted(true)
         .receivedAt(Instant.now())
@@ -114,8 +133,8 @@ class ResponseServiceTest {
     when(jwtService.extractResponseId(testToken)).thenReturn(responseId);
 
     assertEquals(
-        responseService.getById(responseId, accountId, testToken),
-        ResponseMapper.responseToDto(testResponse)
+        ResponseMapper.responseToDto(testResponse),
+        responseService.getById(responseId, respondentAccountId, testToken)
     );
   }
 
@@ -125,7 +144,7 @@ class ResponseServiceTest {
 
     ResponseStatusException exception = assertThrows(
         ResponseStatusException.class,
-        () -> responseService.getById(responseId, accountId, testToken)
+        () -> responseService.getById(responseId, respondentAccountId, testToken)
     );
     assertEquals("Ответ не найден: " + responseId, exception.getReason());
   }
@@ -140,7 +159,8 @@ class ResponseServiceTest {
         ResponseStatusException.class,
         () -> responseService.getById(responseWithNullAccount.getId(), null, null)
     );
-    assertEquals("Не предоставлены учётные данные для доступа к прохождению", exception.getReason());
+    assertEquals("Не предоставлены учётные данные для доступа к прохождению",
+        exception.getReason());
   }
 
   @Test
@@ -161,7 +181,7 @@ class ResponseServiceTest {
 
     ResponseStatusException exception = assertThrows(
         ResponseStatusException.class,
-        () -> responseService.getById(responseId, accountId, "wrong_token")
+        () -> responseService.getById(responseId, respondentAccountId, "wrong_token")
     );
     assertEquals("Вы не являетесь автором ответа", exception.getReason());
   }
@@ -187,11 +207,11 @@ class ResponseServiceTest {
   void getCompletedBySurveyId_permissionDenied_ThrowsException() {
     doThrow(ResponseStatusException.class)
         .when(permissionService)
-        .checkCanReadResponses(surveyId, accountId);
+        .checkCanReadResponses(surveyId, respondentAccountId);
 
     assertThrows(
         ResponseStatusException.class,
-        () -> responseService.getCompletedBySurveyId(surveyId, accountId)
+        () -> responseService.getCompletedBySurveyId(surveyId, respondentAccountId)
     );
   }
 
@@ -200,10 +220,10 @@ class ResponseServiceTest {
   @Test
   void create_withAccount_success() {
     when(surveyDao.findById(surveyId)).thenReturn(Optional.of(testSurvey));
-    when(accountDao.findById(accountId)).thenReturn(Optional.of(testAccount));
+    when(accountDao.findById(respondentAccountId)).thenReturn(Optional.of(testRespondentAccount));
     mockResponseSave();
 
-    ResponseWithTokenDto result = responseService.create(surveyId, accountId);
+    ResponseWithTokenDto result = responseService.create(surveyId, respondentAccountId);
 
     assertNotNull(result);
     assertEquals(responseId, result.getId());
@@ -232,7 +252,7 @@ class ResponseServiceTest {
 
     ResponseStatusException exception = assertThrows(
         ResponseStatusException.class,
-        () -> responseService.create(surveyId, accountId)
+        () -> responseService.create(surveyId, respondentAccountId)
     );
     assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
     assertEquals("Опрос не найден: " + surveyId, exception.getReason());
@@ -244,7 +264,7 @@ class ResponseServiceTest {
 
     ResponseStatusException exception = assertThrows(
         ResponseStatusException.class,
-        () -> responseService.create(surveyId, accountId)
+        () -> responseService.create(surveyId, respondentAccountId)
     );
     assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
     assertEquals("Опрос ещё не опубликован", exception.getReason());
@@ -253,11 +273,11 @@ class ResponseServiceTest {
   @Test
   void create_limitedToOneResponseAndAlreadyExists_throwsException() {
     when(surveyDao.findById(surveyId)).thenReturn(Optional.of(testLimitedSurvey));
-    when(responseDao.existsBySurveyIdAndAccountId(surveyId, accountId)).thenReturn(true);
+    when(responseDao.existsBySurveyIdAndAccountId(surveyId, respondentAccountId)).thenReturn(true);
 
     ResponseStatusException exception = assertThrows(
         ResponseStatusException.class,
-        () -> responseService.create(surveyId, accountId)
+        () -> responseService.create(surveyId, respondentAccountId)
     );
     assertEquals(HttpStatus.CONFLICT, exception.getStatusCode());
     assertEquals("Вы уже проходили этот опрос", exception.getReason());
@@ -280,14 +300,14 @@ class ResponseServiceTest {
   @Test
   void create_accountNotFound_throwsException() {
     when(surveyDao.findById(surveyId)).thenReturn(Optional.of(testSurvey));
-    when(accountDao.findById(accountId)).thenReturn(Optional.empty());
+    when(accountDao.findById(respondentAccountId)).thenReturn(Optional.empty());
 
     ResponseStatusException exception = assertThrows(
         ResponseStatusException.class,
-        () -> responseService.create(surveyId, accountId)
+        () -> responseService.create(surveyId, respondentAccountId)
     );
     assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
-    assertEquals("Аккаунт не найден: " + accountId, exception.getReason());
+    assertEquals("Аккаунт не найден: " + respondentAccountId, exception.getReason());
   }
 
 
@@ -296,7 +316,7 @@ class ResponseServiceTest {
   void complete_normalInput_success() {
     Response incompletedResponse = Response.builder()
         .id(responseId)
-        .account(testAccount)
+        .account(testRespondentAccount)
         .survey(testSurvey)
         .isCompleted(false)
         .build();
@@ -306,7 +326,7 @@ class ResponseServiceTest {
     when(responseDao.areAllMandatoryQuestionsAnswered(responseId)).thenReturn(true);
     doNothing().when(responseDao).update(any(Response.class));
 
-    ResponseResponseDto result = responseService.complete(responseId, accountId, testToken);
+    ResponseResponseDto result = responseService.complete(responseId, respondentAccountId, testToken);
 
     assertNotNull(result);
     assertEquals(responseId, result.getId());
@@ -319,7 +339,7 @@ class ResponseServiceTest {
   void complete_notAllMandatoryQuestionsAnswered_throwsException() {
     Response incompleteResponse = Response.builder()
         .id(responseId)
-        .account(testAccount)
+        .account(testRespondentAccount)
         .survey(testSurvey)
         .isCompleted(false)
         .build();
@@ -330,7 +350,7 @@ class ResponseServiceTest {
 
     ResponseStatusException exception = assertThrows(
         ResponseStatusException.class,
-        () -> responseService.complete(responseId, accountId, testToken)
+        () -> responseService.complete(responseId, respondentAccountId, testToken)
     );
     assertEquals(HttpStatus.CONFLICT, exception.getStatusCode());
     assertEquals("Не все обязательные вопросы заполнены", exception.getReason());
@@ -345,7 +365,7 @@ class ResponseServiceTest {
 
     ResponseStatusException exception = assertThrows(
         ResponseStatusException.class,
-        () -> responseService.complete(responseId, accountId, testToken)
+        () -> responseService.complete(responseId, respondentAccountId, testToken)
     );
     assertEquals(HttpStatus.CONFLICT, exception.getStatusCode());
     assertEquals("Прохождение уже завершено", exception.getReason());

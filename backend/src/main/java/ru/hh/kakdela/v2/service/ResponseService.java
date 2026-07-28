@@ -110,6 +110,7 @@ public class ResponseService {
     }
 
     Response response = Response.builder()
+        .id(UUID.randomUUID())
         .account(account)
         .survey(survey)
         .isCompleted(false)

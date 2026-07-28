@@ -38,11 +38,6 @@ public class SurveyController {
     return surveyService.getMySurveys(currentUser.getId());
   }
 
-  @GetMapping("/accounts/{authorId}/surveys")
-  public List<SurveyShortResponseWithPermissionDto> getByAuthor(@PathVariable UUID authorId) {
-    return surveyService.getAllByAuthorId(authorId);
-  }
-
   @GetMapping("/surveys/{surveyId}")
   public SurveyResponseDto getById(
       @PathVariable UUID surveyId,

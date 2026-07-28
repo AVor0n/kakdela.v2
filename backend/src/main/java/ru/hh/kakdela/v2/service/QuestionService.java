@@ -73,6 +73,7 @@ public class QuestionService {
     }
 
     Question question = Question.builder()
+        .id(UUID.randomUUID())
         .surveyPage(page)
         .serialNumber(dto.getSerialNumber() != null
             ? dto.getSerialNumber()
