@@ -51,11 +51,11 @@ public class ClosingPage {
   @Column(name = "website_url", length = 2000)
   private String websiteUrl;
 
-  public String getTitleAsString() {
+  public String getTitleAsPlainString() {
     return Jsoup.parseBodyFragment(title).text();
   }
 
-  public String getDescriptionAsString() {
+  public String getDescriptionAsPlainString() {
     return Jsoup.parseBodyFragment(description).text();
   }
 }

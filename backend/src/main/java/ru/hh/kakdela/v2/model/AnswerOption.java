@@ -52,7 +52,7 @@ public class AnswerOption {
   @Column(name = "attachment_object_key", length = 1024)
   private String attachmentObjectKey;
 
-  public String getAnswerOptionTextAsString() {
+  public String getAnswerOptionTextAsPlainString() {
     return Jsoup.parseBodyFragment(answerOptionText).text();
   }
 }

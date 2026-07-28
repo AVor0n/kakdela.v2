@@ -94,11 +94,11 @@ public class Survey {
   @Builder.Default
   private List<Response> responses = new ArrayList<>();
 
-  public String getTitleAsString() {
+  public String getTitleAsPlainString() {
     return Jsoup.parseBodyFragment(title).text();
   }
 
-  public String getDescriptionAsString() {
+  public String getDescriptionAsPlainString() {
     return Jsoup.parseBodyFragment(description).text();
   }
 }

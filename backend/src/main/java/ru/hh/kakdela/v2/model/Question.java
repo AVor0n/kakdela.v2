@@ -104,11 +104,11 @@ public class Question {
     RANDOM
   }
 
-  public String getTitleAsString() {
+  public String getTitleAsPlainString() {
     return Jsoup.parseBodyFragment(title).text();
   }
 
-  public String getDescriptionAsString() {
+  public String getDescriptionAsPlainString() {
     return Jsoup.parseBodyFragment(description).text();
   }
 }

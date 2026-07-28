@@ -66,11 +66,11 @@ public class SurveyPage {
   @Builder.Default
   private List<Question> questions = new ArrayList<>();
 
-  public String getTitleAsString() {
+  public String getTitleAsPlainString() {
     return Jsoup.parseBodyFragment(title).text();
   }
 
-  public String getDescriptionAsString() {
+  public String getDescriptionAsPlainString() {
     return Jsoup.parseBodyFragment(description).text();
   }
 }

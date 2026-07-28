@@ -65,7 +65,7 @@ public class SurveyNotificationSubscriptionService {
         subscribedEmails.add(email);
 
         if (survey.isPublished()) {
-          emailService.sendSurveyPublishedEmail(email, survey.getTitleAsString(), surveyId);
+          emailService.sendSurveyPublishedEmail(email, survey.getTitleAsPlainString(), surveyId);
         }
 
         log.info("Пользователь {} подписан на опрос {}", email, surveyId);
