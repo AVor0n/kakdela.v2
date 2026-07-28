@@ -17,6 +17,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+import org.jsoup.Jsoup;
 
 @Data
 @Builder
@@ -49,4 +50,12 @@ public class ClosingPage {
 
   @Column(name = "website_url", length = 2000)
   private String websiteUrl;
+
+  public String getTitleAsString() {
+    return Jsoup.parseBodyFragment(title).text();
+  }
+
+  public String getDescriptionAsString() {
+    return Jsoup.parseBodyFragment(description).text();
+  }
 }

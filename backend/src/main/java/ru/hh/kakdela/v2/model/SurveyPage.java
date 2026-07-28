@@ -23,6 +23,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+import org.jsoup.Jsoup;
 
 @Data
 @Builder
@@ -64,4 +65,12 @@ public class SurveyPage {
   @OrderBy("serial_number ASC")
   @Builder.Default
   private List<Question> questions = new ArrayList<>();
+
+  public String getTitleAsString() {
+    return Jsoup.parseBodyFragment(title).text();
+  }
+
+  public String getDescriptionAsString() {
+    return Jsoup.parseBodyFragment(description).text();
+  }
 }

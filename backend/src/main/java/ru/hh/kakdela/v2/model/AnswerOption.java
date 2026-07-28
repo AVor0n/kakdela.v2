@@ -17,6 +17,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+import org.jsoup.Jsoup;
 
 @Data
 @Builder
@@ -50,4 +51,8 @@ public class AnswerOption {
 
   @Column(name = "attachment_object_key", length = 1024)
   private String attachmentObjectKey;
+
+  public String getAnswerOptionTextAsString() {
+    return Jsoup.parseBodyFragment(answerOptionText).text();
+  }
 }

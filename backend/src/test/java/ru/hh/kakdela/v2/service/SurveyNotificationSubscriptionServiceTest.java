@@ -176,7 +176,7 @@ class SurveyNotificationSubscriptionServiceTest {
     assertEquals(testAccount, captor.getValue().getAccount());
 
     verify(emailService).sendSurveyPublishedEmail(
-        testEmail, testPublishedSurvey.getTitle(), surveyId);
+        testEmail, testPublishedSurvey.getTitleAsString(), surveyId);
   }
 
   @Test
@@ -226,7 +226,7 @@ class SurveyNotificationSubscriptionServiceTest {
 
     verify(subscriptionDao, times(1)).addSubscription(any());
     verify(emailService, times(1)).sendSurveyPublishedEmail(
-        subscribedEmail, testPublishedSurvey.getTitle(), surveyId);
+        subscribedEmail, testPublishedSurvey.getTitleAsString(), surveyId);
   }
 
   // ----------------------- unsubscribeUser tests -----------------------

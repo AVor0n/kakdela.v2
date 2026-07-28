@@ -55,7 +55,7 @@ public class NotificationService {
     log.info("Отправка {} уведомлений новым подписчикам опроса {}",
         emails.size(), survey.getId());
     for (String email : emails) {
-      emailService.sendSurveyPublishedEmail(email, survey.getTitle(), survey.getId());
+      emailService.sendSurveyPublishedEmail(email, survey.getTitleAsString(), survey.getId());
     }
   }
 
@@ -70,7 +70,7 @@ public class NotificationService {
     for (Account account : users) {
       emailService.sendIncompletedResponseEmail(
           account.getEmail(),
-          survey.getTitle(),
+          survey.getTitleAsString(),
           surveyId
       );
     }
@@ -102,8 +102,8 @@ public class NotificationService {
 
     for (Account account : teamMembers) {
       String email = account.getEmail();
-      log.info("Опрос опубликован: {} - {}", survey.getTitle(), email);
-      emailService.sendSurveyPublishedEmail(email, survey.getTitle(), survey.getId());
+      log.info("Опрос опубликован: {} - {}", survey.getTitleAsString(), email);
+      emailService.sendSurveyPublishedEmail(email, survey.getTitleAsString(), survey.getId());
     }
   }
 
@@ -112,8 +112,8 @@ public class NotificationService {
 
     for (Account account : subscribers) {
       String email = account.getEmail();
-      log.info("Приглашаем Вас принять участие в опросе: {} - {}", survey.getTitle(), email);
-      emailService.sendSurveyPublishedEmail(email, survey.getTitle(), survey.getId());
+      log.info("Приглашаем Вас принять участие в опросе: {} - {}", survey.getTitleAsString(), email);
+      emailService.sendSurveyPublishedEmail(email, survey.getTitleAsString(), survey.getId());
     }
   }
 }
