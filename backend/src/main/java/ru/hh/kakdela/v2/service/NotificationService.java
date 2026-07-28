@@ -112,7 +112,8 @@ public class NotificationService {
 
     for (Account account : subscribers) {
       String email = account.getEmail();
-      log.info("Приглашаем Вас принять участие в опросе: {} - {}", survey.getTitleAsString(), email);
+      log.info("Приглашаем Вас принять участие в опросе: {} - {}",
+          survey.getTitleAsString(), email);
       emailService.sendSurveyPublishedEmail(email, survey.getTitleAsString(), survey.getId());
     }
   }
