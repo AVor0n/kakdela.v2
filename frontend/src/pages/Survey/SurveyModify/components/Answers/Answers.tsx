@@ -69,6 +69,11 @@ function getSelectValue(options: StaticDataFetcherItem[], value: string) {
     return options.find((option) => option.value === value);
 }
 
+function removeHTML(content: string) {
+    const doc = new DOMParser().parseFromString(content, 'text/html');
+    return doc.body.textContent || '';
+}
+
 export function Answers() {
     const { id } = useParams();
     const dispatch = useAppDispatch();
@@ -115,7 +120,7 @@ export function Answers() {
         () =>
             questions.map((question, index) => ({
                 value: String(index),
-                text: question.title,
+                text: removeHTML(question.title),
             })),
         [questions],
     );
@@ -220,7 +225,7 @@ export function Answers() {
 
                             return (
                                 <article className={style.questionBlock} key={question.id}>
-                                    <h2 className={style.questionTitle}>{question.title}</h2>
+                                    <h2 className={style.questionTitle}>{removeHTML(question.title)}</h2>
                                     {answers.length === 0 ? (
                                         <div className={style.empty}>Нет ответов на этот вопрос</div>
                                     ) : (
@@ -235,7 +240,7 @@ export function Answers() {
                                                         type='button'
                                                         onClick={() => openResponse(responseIndex)}
                                                     >
-                                                        {answer.answerText}
+                                                        {removeHTML(answer.answerText)}
                                                     </button>
                                                 </li>
                                             ))}
@@ -278,7 +283,7 @@ export function Answers() {
                         </div>
 
                         <article className={style.questionBlock}>
-                            <h2 className={style.questionTitle}>{currentQuestion.title}</h2>
+                            <h2 className={style.questionTitle}>{removeHTML(currentQuestion.title)}</h2>
                             {getQuestionAnswers(responses, currentQuestion.id).length === 0 ? (
                                 <div className={style.empty}>Нет ответов на этот вопрос</div>
                             ) : (
@@ -294,7 +299,7 @@ export function Answers() {
                                                     type='button'
                                                     onClick={() => openResponse(responseIndex)}
                                                 >
-                                                    {answer.answerText}
+                                                    {removeHTML(answer.answerText)}
                                                 </button>
                                             </li>
                                         ),
@@ -341,8 +346,10 @@ export function Answers() {
 
                                 return (
                                     <article className={style.questionBlock} key={question.id}>
-                                        <h2 className={style.questionTitle}>{question.title}</h2>
-                                        <div className={style.singleAnswer}>{answer?.answerText ?? 'Нет ответа'}</div>
+                                        <h2 className={style.questionTitle}>{removeHTML(question.title)}</h2>
+                                        <div className={style.singleAnswer}>
+                                            {answer?.answerText ? removeHTML(answer.answerText) : 'Нет ответа'}
+                                        </div>
                                     </article>
                                 );
                             })}
