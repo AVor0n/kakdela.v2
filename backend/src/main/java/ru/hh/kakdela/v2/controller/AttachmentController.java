@@ -18,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 import ru.hh.kakdela.v2.dto.object.ObjectUrlResponseDto;
 import ru.hh.kakdela.v2.security.CustomUserDetails;
 import ru.hh.kakdela.v2.service.AnswerOptionService;
+import ru.hh.kakdela.v2.service.ClosingPageService;
 import ru.hh.kakdela.v2.service.QuestionService;
 
 @RestController
@@ -28,6 +29,7 @@ public class AttachmentController {
 
   private final QuestionService questionService;
   private final AnswerOptionService answerOptionService;
+  private final ClosingPageService closingPageService;
 
   // Question attachment
 
@@ -122,5 +124,35 @@ public class AttachmentController {
         answerOptionId,
         currentUser.getId()
     );
+  }
+
+  // ClosingPage attachment
+
+  @PostMapping("/surveys/{surveyId}/closing-page/attachment")
+  @ResponseStatus(HttpStatus.CREATED)
+  public ObjectUrlResponseDto addAttachment(
+      @PathVariable UUID surveyId,
+      @RequestParam("file") MultipartFile file,
+      @AuthenticationPrincipal CustomUserDetails currentUser
+  ) {
+    return closingPageService.addAttachment(surveyId, currentUser.getId(), file);
+  }
+
+  @PutMapping("/surveys/{surveyId}/closing-page/attachment")
+  public ObjectUrlResponseDto updateAttachment(
+      @PathVariable UUID surveyId,
+      @RequestParam("file") MultipartFile file,
+      @AuthenticationPrincipal CustomUserDetails currentUser
+  ) {
+    return closingPageService.updateAttachment(surveyId, currentUser.getId(), file);
+  }
+
+  @DeleteMapping("/surveys/{surveyId}/closing-page/attachment")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void deleteAttachment(
+      @PathVariable UUID surveyId,
+      @AuthenticationPrincipal CustomUserDetails currentUser
+  ) {
+    closingPageService.deleteAttachment(surveyId, currentUser.getId());
   }
 }

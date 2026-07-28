@@ -10,15 +10,17 @@ import lombok.Setter;
 @Getter
 @Setter
 @Schema(
-    name = "ClosingPageUpsert",
-    title = "DTO для создания или обновления завершающей страницы"
+    name = "ClosingPageCreate",
+    title = "DTO для создания завершающей страницы"
 )
-public class ClosingPageUpsertDto {
+public class ClosingPageCreateDto {
 
   @Size(max = 200, message = "Заголовок завершающей страницы не должен быть длиннее 200 символов")
   private String title;
+
   @Size(max = 5000, message = "Текст завершающей страницы не должен быть длиннее 5000 символов")
   private String description;
+
   @Size(max = 2000, message = "Ссылка на сайт не должна быть длиннее 2000 символов")
   private String websiteUrl;
 }
