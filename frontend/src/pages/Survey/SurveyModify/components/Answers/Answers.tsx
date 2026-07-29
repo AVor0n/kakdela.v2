@@ -4,12 +4,10 @@ import { useParams } from 'react-router-dom';
 
 import { getSurveyById } from '@/api/survey';
 import {
-    exportSurveyResponses,
-    getSurveyResponses,
+    type ResponseAccountDetail,
     type SurveyAnswerResponse,
     type SurveyCompletedResponse,
-} from '@/api/surveyResponses';
-import { setErrorMessage } from '@/entities/Error/Error.slice';
+} from '@/shared/types/SurveyResponse.type';
 import { setSelectedSurvey } from '@/entities/Survey/Survey.slice';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
@@ -17,6 +15,8 @@ import type { Question } from '@/shared/types/Question.type';
 import type { Survey } from '@/shared/types/Survey.type';
 
 import style from './Answers.module.css';
+import { exportSurveyResponses, getSurveyResponses } from '@/api/surveyResponses';
+import { setErrorMessage } from '@/entities/Error/Error.slice';
 
 type AnswersSection = 'summary' | 'question' | 'user';
 
@@ -60,8 +60,9 @@ function getQuestionAnswers(responses: SurveyCompletedResponse[], questionId: st
         .filter((item): item is { answer: SurveyAnswerResponse; responseIndex: number } => Boolean(item.answer));
 }
 
-function getRespondentLabel(index: number) {
-    return `Пользователь ${index + 1}`;
+function getRespondentLabel(account: ResponseAccountDetail | null) {
+    if (account == null) return 'Анонимный пользователь';
+    return `${account.login}: ${account.email}`;
 }
 
 function getSelectValue(options: StaticDataFetcherItem[], value: string) {
@@ -121,9 +122,9 @@ export function Answers() {
 
     const responseOptions = useMemo<StaticDataFetcherItem[]>(
         () =>
-            responses.map((_, index) => ({
+            responses.map((response, index) => ({
                 value: String(index),
-                text: getRespondentLabel(index),
+                text: getRespondentLabel(response.account),
             })),
         [responses],
     );

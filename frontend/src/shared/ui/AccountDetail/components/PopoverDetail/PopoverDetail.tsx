@@ -10,6 +10,7 @@ import { setErrorMessage } from '@/entities/Error/Error.slice';
 import { shortenUuid } from '@/shared/lib/uuid';
 import { useState } from 'react';
 import style from './PopoverDetail.module.css';
+import { clearAccount } from '@/entities/Account/Account.slice';
 
 interface Props {
     onMouseLeave: () => void;
@@ -22,6 +23,7 @@ export function PopoverDetail({ onMouseLeave }: Props) {
     const logoutHandler = () => {
         logout()
             .then(() => {
+                dispatch(clearAccount());
                 navigate(routes.root());
             })
             .catch(() => {
