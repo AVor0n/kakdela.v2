@@ -1,7 +1,6 @@
 import { Select } from '@hh.ru/magritte-ui';
 import { useStaticDataProvider, type StaticDataFetcherItem } from '@hh.ru/magritte-common-data-provider';
 import { Editor, useEditorState } from '@tiptap/react';
-
 interface HeadingOption extends StaticDataFetcherItem {
     level: 0 | 1 | 2 | 3; // 0 — обычный текст (paragraph)
 }
@@ -31,6 +30,8 @@ export function HeadingSelect({ editor }: { editor: Editor }) {
             type='radio'
             dataProvider={dataProvider}
             value={current}
+            widthEqualToActivator={false}
+            dropWidth={195}
             onChange={(value) => {
                 if (value.level === 0) {
                     editor.chain().focus().setParagraph().run();

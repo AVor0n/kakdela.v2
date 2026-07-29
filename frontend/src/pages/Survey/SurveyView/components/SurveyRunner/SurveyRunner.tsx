@@ -12,6 +12,7 @@ import optionStyle from '@/pages/Survey/SurveyModify/components/QuestionList/com
 import longTextStyle from '@/pages/Survey/SurveyModify/components/QuestionList/components/Question/components/LongText/LongText.module.css';
 import style from './SurveyRunner.module.css';
 import { useSurveyResponseSync } from './useSurveyResponseSync';
+import { HTMLRender } from '@/shared/ui/HTMLRender/HTMLRender';
 
 export type SurveyRunnerMode = 'preview' | 'respond';
 
@@ -214,7 +215,7 @@ export function SurveyRunner({ survey, mode }: Props) {
                                         onChange={() => updateAnswer(question, option.id)}
                                     />
                                     <Text typography='paragraph-2-regular' style='primary'>
-                                        <div dangerouslySetInnerHTML={{ __html: option.answerOptionText }}></div>
+                                        <HTMLRender html={option.answerOptionText} />
                                     </Text>
                                 </label>
                             </div>
@@ -236,7 +237,7 @@ export function SurveyRunner({ survey, mode }: Props) {
                                             onChange={() => toggleMultipleChoice(question, option.id)}
                                         />
                                         <Text typography='paragraph-2-regular' style='primary'>
-                                            <div dangerouslySetInnerHTML={{ __html: option.answerOptionText }}></div>
+                                            <HTMLRender html={option.answerOptionText} />
                                         </Text>
                                     </label>
                                 </div>
@@ -297,13 +298,8 @@ export function SurveyRunner({ survey, mode }: Props) {
                     </div>
                 )}
                 <header className={`${surveyDetailStyle.container} ${style.formHeader}`}>
-                    <div className={style.title} dangerouslySetInnerHTML={{ __html: survey.title }}></div>
-                    {survey.description && (
-                        <div
-                            className={style.description}
-                            dangerouslySetInnerHTML={{ __html: survey.description }}
-                        ></div>
-                    )}
+                    <HTMLRender className={style.title} html={survey.title} />
+                    {survey.description && <HTMLRender className={style.description} html={survey.description} />}
                 </header>
 
                 {isComplete ? (
@@ -324,16 +320,10 @@ export function SurveyRunner({ survey, mode }: Props) {
                                 {(currentPage.description || currentPage.title) && (
                                     <section className={`${surveyDetailStyle.container} ${style.formHeader}`}>
                                         {currentPage.title && (
-                                            <div
-                                                className={style.title}
-                                                dangerouslySetInnerHTML={{ __html: currentPage.title }}
-                                            ></div>
+                                            <HTMLRender className={style.title} html={currentPage.title} />
                                         )}
                                         {currentPage.description && (
-                                            <div
-                                                className={style.description}
-                                                dangerouslySetInnerHTML={{ __html: currentPage.description }}
-                                            ></div>
+                                            <HTMLRender className={style.title} html={currentPage.description} />
                                         )}
                                     </section>
                                 )}
@@ -348,18 +338,12 @@ export function SurveyRunner({ survey, mode }: Props) {
                                             />
                                         )}
                                         <div className={style.questionTitle}>
-                                            <div
-                                                className={style.title}
-                                                dangerouslySetInnerHTML={{ __html: question.title }}
-                                            ></div>
+                                            <HTMLRender className={style.title} html={question.title} />
                                             {question.isMandatory && <span className={style.mandatory}>*</span>}
                                         </div>
                                         {question.description && (
                                             <div className={style.questionDescription}>
-                                                <div
-                                                    className={style.description}
-                                                    dangerouslySetInnerHTML={{ __html: question.description }}
-                                                ></div>
+                                                <HTMLRender className={style.title} html={question.description} />
                                             </div>
                                         )}
                                         <section className={questionStyle.actions}>

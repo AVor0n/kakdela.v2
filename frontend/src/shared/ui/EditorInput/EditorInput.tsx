@@ -1,7 +1,7 @@
 import { useEditor, EditorContent, EditorContext } from '@tiptap/react';
 import { BubbleMenu } from '@tiptap/react/menus';
 import { useMemo } from 'react';
-import { Menu } from './components/Menu';
+import { Menu } from './components/Menu/Menu';
 import StarterKit from '@tiptap/starter-kit';
 import Highlight from '@tiptap/extension-highlight';
 import Placeholder from '@tiptap/extension-placeholder';

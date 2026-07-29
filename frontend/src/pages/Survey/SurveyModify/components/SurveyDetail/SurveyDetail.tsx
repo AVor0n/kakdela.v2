@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import { updateSurvey } from '@/api/survey';
 import { setErrorMessage } from '@/entities/Error/Error.slice';
 import style from './SurveyDetail.module.css';
-import { EditorInput } from '@/shared/ui/TipTap/EditorInput';
+import { EditorInput } from '@/shared/ui/EditorInput/EditorInput';
 
 interface Props {
     survey: Survey;
@@ -62,7 +62,7 @@ export function SurveyDetail({ survey }: Props) {
                 value={title}
                 onBlur={updateTitleHandler}
                 onChange={setTitle}
-                isTextColor={true}
+                isTextColor
             />
 
             <EditorInput
@@ -70,9 +70,9 @@ export function SurveyDetail({ survey }: Props) {
                 value={description}
                 onBlur={updateDescriptionHandler}
                 onChange={setDescription}
-                isTextColor={true}
-                isMarkColor={true}
-                isHeading={true}
+                isTextColor
+                isMarkColor
+                isHeading
             />
         </div>
     );
