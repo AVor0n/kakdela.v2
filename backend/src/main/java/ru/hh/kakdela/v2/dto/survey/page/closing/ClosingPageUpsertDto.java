@@ -1,4 +1,4 @@
-package ru.hh.kakdela.v2.dto.closing_page;
+package ru.hh.kakdela.v2.dto.survey.page.closing;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Size;

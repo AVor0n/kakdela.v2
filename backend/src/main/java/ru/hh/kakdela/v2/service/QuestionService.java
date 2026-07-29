@@ -38,14 +38,6 @@ public class QuestionService {
   private final ImageProcessingService imageProcessingService;
 
   @Transactional(readOnly = true)
-  public QuestionResponseDto getById(UUID id) {
-    Question question = questionDao.findById(id)
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Вопрос не найден: " + id));
-    return questionMapper.questionToDto(question);
-  }
-
-  @Transactional(readOnly = true)
   public List<QuestionResponseDto> getAllByPageId(UUID pageId) {
     return questionDao.findAllByPageId(pageId).stream()
         .map(questionMapper::questionToDto)
