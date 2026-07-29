@@ -7,7 +7,8 @@ import { SurveyRunner, type SurveyRunnerMode } from './components/SurveyRunner/S
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { setErrorMessage } from '@/entities/Error/Error.slice';
-
+import { AccountDetail } from '@/shared/ui/AccountDetail/AccountDetail';
+import style from './SurveyView.module.css';
 export function SurveyView() {
     const { id } = useParams();
     const [searchParams] = useSearchParams();
@@ -64,5 +65,12 @@ export function SurveyView() {
         );
     }
 
-    return <SurveyRunner survey={survey} mode={mode} />;
+    return (
+        <>
+            <div className={style.accountDetail}>
+                {account ? <AccountDetail /> : <p className={style.label}>Анонимное прохождение</p>}
+            </div>
+            <SurveyRunner survey={survey} mode={mode} />;
+        </>
+    );
 }

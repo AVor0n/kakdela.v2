@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
+import ru.hh.kakdela.v2.dto.account.AccountResponseDto;
 import ru.hh.kakdela.v2.dto.closing_page.ClosingPageResponseDto;
 import ru.hh.kakdela.v2.dto.survey.page.SurveyPageResponseDto;
 
@@ -23,7 +24,7 @@ import ru.hh.kakdela.v2.dto.survey.page.SurveyPageResponseDto;
 public class SurveyResponseDto {
 
   private final UUID id;
-  private final UUID authorId;
+  private final AccountResponseDto author;
   private final String title;
   private final String description;
   private final Boolean isAuthorizedOnly;
