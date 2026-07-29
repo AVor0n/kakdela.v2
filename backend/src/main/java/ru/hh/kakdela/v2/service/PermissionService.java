@@ -89,7 +89,7 @@ public class PermissionService {
 
     Permission permission = getPermissionOrThrow(surveyId, accountId);
 
-    if (!permission.getRole().isDeleteAccess()) {
+    if (!permission.getRole().isSurveyDeleteAccess()) {
       throw new ResponseStatusException(
           HttpStatus.FORBIDDEN, "У вас нет прав на удаление опроса");
     }
@@ -146,7 +146,9 @@ public class PermissionService {
       PermissionUpdateDto dto,
       UUID currentUserId
   ) {
-    checkCanManagePermissions(surveyId, currentUserId);
+    Survey survey = getSurveyOrThrow(surveyId);
+
+    checkCanManagePermissions(survey, currentUserId);
 
     Permission permission = permissionDao.findBySurveyIdAndAccountId(surveyId, accountId)
         .orElseThrow(() -> new ResponseStatusException(
@@ -163,7 +165,10 @@ public class PermissionService {
 
   @Transactional
   public void delete(UUID surveyId, UUID accountId, UUID currentUserId) {
-    checkCanManagePermissions(surveyId, currentUserId);
+    Survey survey = getSurveyOrThrow(surveyId);
+
+    checkCanManagePermissions(survey, currentUserId);
+
     permissionDao.deleteBySurveyIdAndAccountId(surveyId, accountId);
     log.info("Удалены права доступа: surveyId={}, accountId={}", surveyId, accountId);
   }
@@ -199,21 +204,6 @@ public class PermissionService {
     return permissionDao.findBySurveyIdAndAccountId(surveyId, accountId)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.FORBIDDEN, "У вас нет прав доступа к опросу"));
-  }
-
-  private void checkCanManagePermissions(UUID surveyId, UUID accountId) {
-    Survey survey = getSurveyOrThrow(surveyId);
-
-    if (survey.getAuthor().getId().equals(accountId)) {
-      return;
-    }
-
-    Permission permission = getPermissionOrThrow(surveyId, accountId);
-
-    if (!permission.getRole().isPermissionManagementAccess()) {
-      throw new ResponseStatusException(
-          HttpStatus.FORBIDDEN, "У вас нет прав на управление доступом к опросу");
-    }
   }
 
   private void checkCanManagePermissions(Survey survey, UUID accountId) {

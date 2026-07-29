@@ -81,6 +81,6 @@ public class Permission {
     private final boolean responseReadAccess;
     private final boolean editAccess;
     private final boolean permissionManagementAccess;
-    private final boolean deleteAccess;
+    private final boolean surveyDeleteAccess;
   }
 }
