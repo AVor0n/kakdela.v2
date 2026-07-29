@@ -3,7 +3,6 @@ package ru.hh.kakdela.v2.mapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-
 import ru.hh.kakdela.v2.dto.closing.ClosingPageResponseDto;
 import ru.hh.kakdela.v2.model.ClosingPage;
 import ru.hh.kakdela.v2.service.ObjectStorageService;
