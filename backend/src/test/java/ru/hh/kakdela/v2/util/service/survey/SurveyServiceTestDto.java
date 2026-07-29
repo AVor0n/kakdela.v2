@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import ru.hh.kakdela.v2.dto.account.AccountResponseDto;
 import ru.hh.kakdela.v2.dto.answer.option.AnswerOptionResponseDto;
 import ru.hh.kakdela.v2.dto.closing_page.ClosingPageResponseDto;
 import ru.hh.kakdela.v2.dto.question.QuestionResponseDto;
@@ -22,7 +23,11 @@ public class SurveyServiceTestDto {
   public static SurveyResponseDto getResponseDtoOfFullSurvey(boolean includeClosingPage, boolean isClone) {
     return new SurveyResponseDto(
         FullSurveyConstants.SURVEY.getId(isClone),
-        FullSurveyConstants.getAuthorId(isClone),
+        new AccountResponseDto(
+            FullSurveyConstants.getAuthorId(isClone),
+            FullSurveyConstants.getAuthorLogin(isClone),
+            FullSurveyConstants.getAuthorEmail(isClone)
+        ),
         FullSurveyConstants.getTitle(isClone),
         "description",
         false,
@@ -116,7 +121,11 @@ public class SurveyServiceTestDto {
   ) {
     return new SurveyResponseDto(
         SurveyServiceTestConstants.plainSurveyId,
-        SurveyServiceTestConstants.account1Id,
+        new AccountResponseDto(
+            SurveyServiceTestEntity.account1.getId(),
+            SurveyServiceTestEntity.account1.getLogin(),
+            SurveyServiceTestEntity.account1.getEmail()
+        ),
         PlainSurveyConstants.getTitle(otherValuesOfTitleAndDescription),
         PlainSurveyConstants.getDescription(otherValuesOfTitleAndDescription),
         allSurveyOptionValues,
