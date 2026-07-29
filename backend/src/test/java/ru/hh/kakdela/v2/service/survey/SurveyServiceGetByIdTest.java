@@ -12,6 +12,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.server.ResponseStatusException;
 import ru.hh.kakdela.v2.dto.survey.SurveyResponseDto;
+import ru.hh.kakdela.v2.util.service.survey.SurveyServiceTestConstants;
 import ru.hh.kakdela.v2.util.service.survey.SurveyServiceTestConstants.FullSurveyConstants;
 
 @ExtendWith(MockitoExtension.class)
@@ -24,7 +25,8 @@ public class SurveyServiceGetByIdTest extends SurveyServiceTestBase {
 
     Exception ex = assertThrows(
         ResponseStatusException.class,
-        () -> surveyService.getById(FullSurveyConstants.SURVEY.getId(IS_ORIGINAL))
+        () -> surveyService.getById(FullSurveyConstants.SURVEY.getId(IS_ORIGINAL),
+            SurveyServiceTestConstants.account1Id)
     );
     assertEquals(
         "404 NOT_FOUND \"Опрос не найден: " + FullSurveyConstants.SURVEY.getId(IS_ORIGINAL) + "\"",
@@ -33,13 +35,29 @@ public class SurveyServiceGetByIdTest extends SurveyServiceTestBase {
   }
 
   @Test
-  void getById_surveyFound_returnCorrectDto() throws MalformedURLException {
+  void getById_surveyNotPublished_checkPermissions() throws MalformedURLException {
+    Mockito.when(surveyDao.findById(FullSurveyConstants.SURVEY.getId(IS_CLONE)))
+        .thenReturn(Optional.of(fullSurveyClone));
+    Mockito.when(objectStorageService.generateObjectUrl(Mockito.any(), Mockito.anyLong()))
+        .thenReturn(URI.create("http://attachmentUrl/").toURL());
+
+    surveyService.getById(FullSurveyConstants.SURVEY.getId(IS_CLONE),
+            SurveyServiceTestConstants.account1Id);
+
+    Mockito.verify(permissionService).checkHasAnyPermission(
+        FullSurveyConstants.SURVEY.getId(IS_CLONE),
+        SurveyServiceTestConstants.account1Id);
+  }
+
+  @Test
+  void getById_surveyPublished_returnCorrectDto() throws MalformedURLException {
     Mockito.when(surveyDao.findById(FullSurveyConstants.SURVEY.getId(IS_ORIGINAL)))
         .thenReturn(Optional.of(fullSurvey));
     Mockito.when(objectStorageService.generateObjectUrl(Mockito.any(), Mockito.anyLong()))
         .thenReturn(URI.create("http://attachmentUrl/").toURL());
 
-    SurveyResponseDto result = surveyService.getById(FullSurveyConstants.SURVEY.getId(IS_ORIGINAL));
+    SurveyResponseDto result = surveyService.getById(FullSurveyConstants.SURVEY.getId(IS_ORIGINAL),
+        SurveyServiceTestConstants.account1Id);
     assertEquals(fullSurveyResponseDto, result);
   }
 }

@@ -8,8 +8,8 @@ import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.ToString;
-import ru.hh.kakdela.v2.dto.closing.ClosingPageResponseDto;
+import lombok.ToString
+import ru.hh.kakdela.v2.dto.account.AccountResponseDto;
 import ru.hh.kakdela.v2.dto.survey.page.SurveyPageResponseDto;
 
 @AllArgsConstructor
@@ -23,7 +23,7 @@ import ru.hh.kakdela.v2.dto.survey.page.SurveyPageResponseDto;
 public class SurveyResponseDto {
 
   private final UUID id;
-  private final UUID authorId;
+  private final AccountResponseDto author;
   private final String title;
   private final String description;
   private final Boolean isAuthorizedOnly;
