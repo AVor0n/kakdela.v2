@@ -13,6 +13,8 @@ public interface AccountDao {
 
   Optional<Account> findByEmail(String email);
 
+  Optional<Account> findByHhUserId(String hhUserId);
+
   List<Account> findUsersWithIncompletedResponseBySurveyId(UUID surveyId);
 
   List<Account> findAll();

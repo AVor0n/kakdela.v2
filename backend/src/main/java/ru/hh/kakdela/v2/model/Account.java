@@ -36,6 +36,10 @@ public class Account {
   @Column(name = "password_hash", columnDefinition = "text", nullable = false)
   private String passwordHash;
 
+  // Внешний id пользователя hh.ru. Null для аккаунтов, не связанных с hh.ru SSO.
+  @Column(name = "hh_user_id", length = 64, unique = true)
+  private String hhUserId;
+
   @Column(name = "registered_at", updatable = false, nullable = false)
   private Instant registeredAt;
 
