@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-
 import ru.hh.kakdela.v2.dto.closing.ClosingPageCreateDto;
 import ru.hh.kakdela.v2.dto.closing.ClosingPageResponseDto;
 import ru.hh.kakdela.v2.dto.closing.ClosingPageUpdateDto;
