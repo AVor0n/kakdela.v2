@@ -22,7 +22,7 @@ import ru.hh.kakdela.v2.util.service.survey.SurveyServiceTestConstants.PlainSurv
 
 public class SurveyServiceTestDto {
 
-  private static FileResponseDto fileInfo = FileResponseDto.builder()
+  private static final FileResponseDto fileInfo = FileResponseDto.builder()
       .fileName("test-file.pdf")
       .fileSize(102400L)
       .build();
@@ -62,8 +62,6 @@ public class SurveyServiceTestDto {
                     Question.AnswerOptionOrder.ORIGINAL.name(),
                     false,
                     true,
-                    true,
-                    "condition",
                     Collections.emptyList()),
                 new QuestionResponseDto(
                     FullSurveyConstants.QUESTION2.getId(isClone),
@@ -75,8 +73,6 @@ public class SurveyServiceTestDto {
                     Question.AnswerOptionOrder.ORIGINAL.name(),
                     false,
                     true,
-                    true,
-                    "condition",
                     List.of(
                         new AnswerOptionResponseDto(
                             FullSurveyConstants.ANSWER_OPTION1_OF_QUESTION2.getId(isClone),
@@ -98,8 +94,6 @@ public class SurveyServiceTestDto {
                     Question.AnswerOptionOrder.ORIGINAL.name(),
                     false,
                     true,
-                    true,
-                    "condition",
                     List.of(
                         new AnswerOptionResponseDto(
                             FullSurveyConstants.ANSWER_OPTION1_OF_QUESTION3.getId(isClone),
