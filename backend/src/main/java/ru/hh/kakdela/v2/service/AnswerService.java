@@ -149,7 +149,7 @@ public class AnswerService {
       AnswerRequestDto dto,
       List<AnswerOption> foundAnswerOptions
   ) {
-    answer.setQuestionTextSnapshot(Jsoup.parse(question.getText()).text());
+    answer.setQuestionTextSnapshot(Jsoup.parseBodyFragment(question.getText()).text());
     answer.setTextValue(dto.getTextValue());
     answer.setBooleanValue(dto.getBooleanValue());
     answer.setDateValue(dto.getDateValue());
@@ -162,7 +162,7 @@ public class AnswerService {
                 UUID.randomUUID(),
                 answer,
                 ao,
-                Jsoup.parse(ao.getText()).text()))
+                Jsoup.parseBodyFragment(ao.getText()).text()))
             .toList());
 
     answerDao.update(answer);
@@ -182,7 +182,7 @@ public class AnswerService {
         .id(UUID.randomUUID())
         .response(response)
         .question(question)
-        .questionTextSnapshot(Jsoup.parse(question.getText()).text())
+        .questionTextSnapshot(Jsoup.parseBodyFragment(question.getText()).text())
         .textValue(dto.getTextValue())
         .booleanValue(dto.getBooleanValue())
         .dateValue(dto.getDateValue())
@@ -195,7 +195,7 @@ public class AnswerService {
                 UUID.randomUUID(),
                 answer,
                 ao,
-                Jsoup.parse(ao.getText()).text()))
+                Jsoup.parseBodyFragment(ao.getText()).text()))
             .toList());
 
     answerDao.save(answer);
