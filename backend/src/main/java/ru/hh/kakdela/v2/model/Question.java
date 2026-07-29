@@ -25,6 +25,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+import org.jsoup.Jsoup;
 
 @Data
 @Builder
@@ -101,5 +102,13 @@ public class Question {
   public enum AnswerOptionOrder {
     ORIGINAL,
     RANDOM
+  }
+
+  public String getTitleAsPlainString() {
+    return Jsoup.parseBodyFragment(title).text();
+  }
+
+  public String getDescriptionAsPlainString() {
+    return Jsoup.parseBodyFragment(description).text();
   }
 }
