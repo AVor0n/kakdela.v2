@@ -52,7 +52,6 @@ public class AccountService {
     }
 
     Account account = Account.builder()
-        .id(UUID.randomUUID())
         .login(accountCreateDto.getLogin())
         .email(accountCreateDto.getEmail())
         .passwordHash(
@@ -63,6 +62,58 @@ public class AccountService {
     accountDao.save(account);
     log.info("Создан аккаунт id={} login={}", account.getId(), account.getLogin());
     return AccountMapper.accountToDto(account);
+  }
+
+  // Возвращает существующий аккаунт, привязанный к данному пользователю hh.ru,
+  // либо создает новый (с автосгенерированными login и паролем), если это первый вход
+  @Transactional
+  public Account findOrCreateByHhSso(String hhUserId, String email) {
+    return accountDao.findByHhUserId(hhUserId)
+        .orElseGet(() -> createFromHhSso(hhUserId, email));
+  }
+
+  private Account createFromHhSso(String hhUserId, String email) {
+    // Намеренно НЕ ищем и не привязываем по существующему email — если он занят,
+    // это конфликт, который нужно решать пользователю руками, а не молча сливать аккаунты
+    if (accountDao.existsByEmail(email)) {
+      throw new ResponseStatusException(HttpStatus.CONFLICT,
+          "Такой email уже зарегистрирован: " + email);
+    }
+
+    String login = generateUniqueLoginFromEmail(email);
+    String randomPassword = UUID.randomUUID().toString();
+
+    Account account = Account.builder()
+        .login(login)
+        .email(email)
+        .passwordHash(passwordEncoder.encode(randomPassword))
+        .hhUserId(hhUserId)
+        .registeredAt(Instant.now())
+        .build();
+
+    accountDao.save(account);
+    log.info("Создан аккаунт через hh.ru SSO id={} login={} hhUserId={}",
+        account.getId(), account.getLogin(), hhUserId);
+    return account;
+  }
+
+  // Генерация происходит от email
+  private String generateUniqueLoginFromEmail(String email) {
+    String base = email.substring(0, email.indexOf('@'))
+        .replaceAll("[^a-zA-Z0-9_.]", "")
+        .toLowerCase();
+    if (base.isBlank()) {
+      base = "user";
+    }
+    base = base.substring(0, Math.min(base.length(), 28));
+
+    String candidate = base;
+    int suffix = 1;
+    while (accountDao.existsByLogin(candidate)) {
+      String suffixStr = String.valueOf(suffix++);
+      candidate = base.substring(0, Math.min(base.length(), 32 - suffixStr.length())) + suffixStr;
+    }
+    return candidate;
   }
 
   @Transactional
