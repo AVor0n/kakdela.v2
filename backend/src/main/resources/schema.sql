@@ -25,11 +25,11 @@ CREATE TABLE survey (
 CREATE INDEX idx_survey_author_id
 ON survey (author_id);
 
-CREATE TABLE permissions (
-    account_id uuid REFERENCES account (id) ON DELETE CASCADE,
+CREATE TABLE permission (
     survey_id uuid REFERENCES survey (id) ON DELETE CASCADE,
+    account_id uuid REFERENCES account (id) ON DELETE CASCADE,
     role varchar(255) NOT NULL,
-    do_notify bool NOT NULL,
+    do_notify bool DEFAULT TRUE NOT NULL,
     PRIMARY KEY (account_id, survey_id)
 );
 

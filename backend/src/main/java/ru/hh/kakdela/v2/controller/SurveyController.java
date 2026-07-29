@@ -42,7 +42,7 @@ public class SurveyController {
   public SurveyResponseDto getById(
       @PathVariable UUID surveyId,
       @AuthenticationPrincipal CustomUserDetails currentUser) {
-    return surveyService.getById(surveyId);
+    return surveyService.getById(surveyId, currentUser.getId());
   }
 
   @PostMapping("/surveys")
