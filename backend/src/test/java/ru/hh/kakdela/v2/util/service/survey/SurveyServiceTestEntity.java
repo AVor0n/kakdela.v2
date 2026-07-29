@@ -104,8 +104,6 @@ public class SurveyServiceTestEntity {
         Question.QuestionType.SHORT_TEXT,
         null,
         true,
-        true,
-        "condition",
         Collections.emptyList(),
         new ArrayList<>());
     Question question2 = new Question(
@@ -118,8 +116,6 @@ public class SurveyServiceTestEntity {
         Question.QuestionType.SINGLE_CHOICE,
         Question.AnswerOptionOrder.RANDOM,
         true,
-        true,
-        "condition",
         null,
         new ArrayList<>());
     List<AnswerOption> question2AnswerOptionList = List.of(
@@ -146,8 +142,6 @@ public class SurveyServiceTestEntity {
         Question.QuestionType.MULTIPLE_CHOICE,
         Question.AnswerOptionOrder.ORIGINAL,
         true,
-        true,
-        "condition",
         null,
         new ArrayList<>());
     List<AnswerOption> question3AnswerOptionList = List.of(

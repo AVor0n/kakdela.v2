@@ -55,8 +55,6 @@ public class SurveyServiceTestDto {
                     Question.QuestionType.SHORT_TEXT.name(),
                     null,
                     true,
-                    true,
-                    "condition",
                     Collections.emptyList()),
                 new QuestionResponseDto(
                     FullSurveyConstants.QUESTION2.getId(isClone),
@@ -67,8 +65,6 @@ public class SurveyServiceTestDto {
                     Question.QuestionType.SINGLE_CHOICE.name(),
                     Question.AnswerOptionOrder.RANDOM.name(),
                     true,
-                    true,
-                    "condition",
                     List.of(
                         new AnswerOptionResponseDto(
                             FullSurveyConstants.ANSWER_OPTION1_OF_QUESTION2.getId(isClone),
@@ -89,8 +85,6 @@ public class SurveyServiceTestDto {
                     Question.QuestionType.MULTIPLE_CHOICE.name(),
                     Question.AnswerOptionOrder.ORIGINAL.name(),
                     true,
-                    true,
-                    "condition",
                     List.of(
                         new AnswerOptionResponseDto(
                             FullSurveyConstants.ANSWER_OPTION1_OF_QUESTION3.getId(isClone),
@@ -104,10 +98,10 @@ public class SurveyServiceTestDto {
                             SurveyServiceTestConstants.attachmentUrl)))))),
         includeClosingPage
             ? new ClosingPageResponseDto(
-                "closingPage",
-                "description",
-                SurveyServiceTestConstants.attachmentUrl,
-                "websiteUrl")
+            "closingPage",
+            "description",
+            SurveyServiceTestConstants.attachmentUrl,
+            "websiteUrl")
             : null);
   }
 
