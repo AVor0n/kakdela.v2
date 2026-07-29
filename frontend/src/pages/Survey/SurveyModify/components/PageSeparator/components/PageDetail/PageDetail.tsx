@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import style from './PageDetail.module.css';
 import { updateSurveyPage } from '@/api/surveyPages';
 import { setErrorMessage } from '@/entities/Error/Error.slice';
-import { EditorInput } from '@/shared/ui/TipTap/EditorInput';
+import { EditorInput } from '@/shared/ui/EditorInput/EditorInput';
 interface Props {
     page: Page;
 }

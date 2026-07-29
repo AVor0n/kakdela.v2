@@ -23,7 +23,7 @@ import { setErrorMessage } from '@/entities/Error/Error.slice';
 import { attachImageToQuestion, removeImageFromQuestion, updateAttachmentOfQuestion } from '@/api/attachments';
 import style from './Question.module.css';
 import { DragHandle } from './components/QuestionControls/DragHandle/DragHandle';
-import { EditorInput } from '@/shared/ui/TipTap/EditorInput';
+import { EditorInput } from '@/shared/ui/EditorInput/EditorInput';
 
 interface Props {
     question: Question;
@@ -229,7 +229,7 @@ export function Question({
                         value={title}
                         onChange={setTitle}
                         onBlur={updateQuestionTitleHandler}
-                        isTextColor={true}
+                        isTextColor
                     />
                 </div>
                 <div className={style.imageSettings}>
@@ -268,9 +268,9 @@ export function Question({
                     value={description}
                     onChange={setDescription}
                     onBlur={updateQuestionDescriptionHandler}
-                    isTextColor={true}
-                    isMarkColor={true}
-                    isHeading={true}
+                    isTextColor
+                    isMarkColor
+                    isHeading
                 />
             </section>
 

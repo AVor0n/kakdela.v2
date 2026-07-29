@@ -8,7 +8,7 @@ import { deleteOption, setOptionValue } from '@/entities/Survey/Survey.slice';
 import { Button } from '@hh.ru/magritte-ui';
 import { setErrorMessage } from '@/entities/Error/Error.slice';
 import style from './Option.module.css';
-import { EditorInput } from '@/shared/ui/TipTap/EditorInput';
+import { EditorInput } from '@/shared/ui/EditorInput/EditorInput';
 
 interface Props {
     option: AnswerOption;
@@ -80,21 +80,12 @@ export function Option({ option, children, isEdit, dragHandleAttributes, dragHan
                     )}
                     {children}
                     {option.answerOptionText !== 'Другое' ? (
-                        // <input
-                        //     className={style.input}
-                        //     value={optionAnswer}
-                        //     onChange={(e) => {
-                        //         setOptionAnswer(e.target.value);
-                        //     }}
-                        //     onBlur={updateQuestionOptionHandler}
-
-                        // />
                         <EditorInput
                             className={style.input}
                             value={optionAnswer}
                             onChange={setOptionAnswer}
                             onBlur={updateQuestionOptionHandler}
-                            isTextColor={true}
+                            isTextColor
                         />
                     ) : (
                         <div>
