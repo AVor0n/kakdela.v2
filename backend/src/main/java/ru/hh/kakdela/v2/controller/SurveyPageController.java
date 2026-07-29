@@ -2,7 +2,6 @@ package ru.hh.kakdela.v2.controller;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -14,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import ru.hh.kakdela.v2.dto.survey.page.SurveyPageCreateDto;
@@ -30,14 +30,17 @@ public class SurveyPageController {
 
   private final SurveyPageService surveyPageService;
 
-  @GetMapping("/surveys/{surveyId}/pages")
-  public List<SurveyPageResponseDto> getAllBySurveyId(@PathVariable UUID surveyId) {
-    return surveyPageService.getAllBySurveyId(surveyId);
-  }
+  //  @GetMapping("/surveys/{surveyId}/pages")
+  //  public List<SurveyPageResponseDto> getAllBySurveyId(@PathVariable UUID surveyId) {
+  //    return surveyPageService.getAllBySurveyId(surveyId);
+  //  }
 
   @GetMapping("/pages/{pageId}")
-  public SurveyPageResponseDto getById(@PathVariable UUID pageId) {
-    return surveyPageService.getById(pageId);
+  public SurveyPageResponseDto getById(
+      @PathVariable UUID pageId,
+      @RequestParam UUID responseId
+  ) {
+    return surveyPageService.getById(pageId, responseId);
   }
 
   @PostMapping("/surveys/{surveyId}/pages")
