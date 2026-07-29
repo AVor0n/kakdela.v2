@@ -38,12 +38,12 @@ public class AnswerOptionService {
   private final AnswerOptionMapper answerOptionMapper;
   private final ImageProcessingService imageProcessingService;
 
-  @Transactional(readOnly = true)
-  public List<AnswerOptionResponseDto> getAllByQuestionId(UUID questionId) {
-    return answerOptionDao.findAllByQuestionId(questionId).stream()
-        .map(answerOptionMapper::answerOptionToDto)
-        .toList();
-  }
+  //  @Transactional(readOnly = true)
+  //  public List<AnswerOptionResponseDto> getAllByQuestionId(UUID questionId) {
+  //    return answerOptionDao.findAllByQuestionId(questionId).stream()
+  //        .map(answerOptionMapper::answerOptionToDto)
+  //        .toList();
+  //  }
 
   @Transactional
   public AnswerOptionResponseDto create(UUID questionId,

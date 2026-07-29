@@ -58,8 +58,6 @@ CREATE TABLE question (
     answer_option_order varchar(255) DEFAULT 'ORIGINAL' NOT NULL,
     has_other_option bool DEFAULT FALSE NOT NULL,
     is_mandatory bool DEFAULT TRUE NOT NULL,
-    is_visible bool DEFAULT TRUE NOT NULL,
-    condition text,
     CONSTRAINT uk_question_page_serial UNIQUE (survey_page_id, serial_number) DEFERRABLE INITIALLY IMMEDIATE
 );
 

@@ -94,13 +94,6 @@ public class Question {
   @Builder.Default
   private boolean isMandatory = true;
 
-  @Column(name = "is_visible", nullable = false)
-  @Builder.Default
-  private boolean isVisible = true;
-
-  @Column(name = "condition", columnDefinition = "text")
-  private String condition;
-
   @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
   @OrderBy("serialNumber ASC")
   @Builder.Default
