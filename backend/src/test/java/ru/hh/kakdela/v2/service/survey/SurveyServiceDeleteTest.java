@@ -35,7 +35,7 @@ public class SurveyServiceDeleteTest extends SurveyServiceTestBase {
     surveyService.delete(FullSurveyConstants.SURVEY.getId(IS_ORIGINAL), SurveyServiceTestConstants.account1Id);
 
     Mockito.verify(permissionService)
-        .checkOwnership(FullSurveyConstants.SURVEY.getId(IS_ORIGINAL), SurveyServiceTestConstants.account1Id);
+        .checkCanDelete(FullSurveyConstants.SURVEY.getId(IS_ORIGINAL), SurveyServiceTestConstants.account1Id);
   }
 
   @Test
