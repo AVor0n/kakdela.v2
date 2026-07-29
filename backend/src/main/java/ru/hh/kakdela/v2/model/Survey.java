@@ -26,6 +26,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+import org.jsoup.Jsoup;
 
 @Data
 @Builder
@@ -108,5 +109,13 @@ public class Survey {
 
   public boolean isAuthor(UUID accountId) {
     return this.getAuthor().getId().equals(accountId);
+  }
+
+  public String getTitleAsPlainString() {
+    return Jsoup.parseBodyFragment(title).text();
+  }
+
+  public String getDescriptionAsPlainString() {
+    return Jsoup.parseBodyFragment(description).text();
   }
 }

@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -32,7 +31,6 @@ import ru.hh.kakdela.v2.dao.SurveyDao;
 import ru.hh.kakdela.v2.dao.SurveyNotificationSubscriptionDao;
 import ru.hh.kakdela.v2.dto.subscription.SubscriptionResponseDto;
 import ru.hh.kakdela.v2.model.Account;
-import ru.hh.kakdela.v2.model.Permission;
 import ru.hh.kakdela.v2.model.Survey;
 import ru.hh.kakdela.v2.model.SurveyNotificationSubscription;
 
@@ -176,7 +174,7 @@ class SurveyNotificationSubscriptionServiceTest {
     assertEquals(testAccount, captor.getValue().getAccount());
 
     verify(emailService).sendSurveyPublishedEmail(
-        testEmail, testPublishedSurvey.getTitle(), surveyId);
+        testEmail, testPublishedSurvey.getTitleAsPlainString(), surveyId);
   }
 
   @Test
@@ -226,7 +224,7 @@ class SurveyNotificationSubscriptionServiceTest {
 
     verify(subscriptionDao, times(1)).addSubscription(any());
     verify(emailService, times(1)).sendSurveyPublishedEmail(
-        subscribedEmail, testPublishedSurvey.getTitle(), surveyId);
+        subscribedEmail, testPublishedSurvey.getTitleAsPlainString(), surveyId);
   }
 
   // ----------------------- unsubscribeUser tests -----------------------

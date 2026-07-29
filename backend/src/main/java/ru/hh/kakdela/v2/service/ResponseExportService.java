@@ -77,7 +77,7 @@ public class ResponseExportService {
       Map<UUID, Integer> questionColumnMap = new LinkedHashMap<>();
       for (Question question : questions) {
         Cell cell = headerRow.createCell(colIndex);
-        cell.setCellValue(question.getText());
+        cell.setCellValue(question.getTextAsPlainString());
         cell.setCellStyle(headerStyle);
         questionColumnMap.put(question.getId(), colIndex);
         ++colIndex;
@@ -176,7 +176,7 @@ public class ResponseExportService {
             )
         );
 
-    String safeFileName = survey.getTitle()
+    String safeFileName = survey.getTitleAsPlainString()
         .replaceAll("[^a-zA-Zа-яА-Я0-9\\s]", "")
         .trim()
         .replace(" ", "_");

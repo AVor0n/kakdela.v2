@@ -30,6 +30,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+import org.jsoup.Jsoup;
 import ru.hh.kakdela.v2.dto.answer.option.AnswerOptionResponseDto;
 
 @Data
@@ -149,5 +150,13 @@ public class Question {
         });
 
     public final Function<List<AnswerOptionResponseDto>, List<AnswerOptionResponseDto>> function;
+  }
+
+  public String getTextAsPlainString() {
+    return Jsoup.parseBodyFragment(text).text();
+  }
+
+  public String getDescriptionAsPlainString() {
+    return Jsoup.parseBodyFragment(description).text();
   }
 }
