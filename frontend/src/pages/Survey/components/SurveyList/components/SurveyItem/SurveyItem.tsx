@@ -1,12 +1,12 @@
 import { Button, Text } from '@hh.ru/magritte-ui';
 import type { SurveyListItem, SurveyRole } from '@/shared/types/Survey.type';
-import style from './SuveyItem.module.css';
+import style from './SurveyItem.module.css';
 import { cloneSurvey, deleteSurvey } from '@/api/survey';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { addSurvey, deleteSurvey as deleteSurveyState } from '@/entities/Survey/Survey.slice';
 import { setErrorMessage } from '@/entities/Error/Error.slice';
 import { useState } from 'react';
-import { CheckOutlinedSize24, CrossOutlinedSize24 } from '@hh.ru/magritte-ui/icon';
+import { CheckOutlinedSize24, CrossOutlinedSize24, DotFilledSize16 } from '@hh.ru/magritte-ui/icon';
 import { formatDate } from '@/shared/utils/date';
 
 function getRussianLetterForRole(role: SurveyRole) {
@@ -64,48 +64,53 @@ export function SurveyItem({ survey, onClick }: SurveyItemProps) {
         <div className={style.container}>
             <button type='button' onClick={onClick} className={style.details}>
                 <div className={style.detail}>
-                    <p className={style.role}>{getRussianLetterForRole(survey.userRole)}</p>
                     <Text typography='title-4-semibold' style='primary'>
                         {survey.title}
                     </Text>
-                    <div>
+                    <div className={style.info}>
+                        <p>{getRussianLetterForRole(survey.userRole)}</p>
+                        <DotFilledSize16 fill='#777777' color='#777777' />
+                        {survey.isPublished ? <p>Опубликован</p> : <p>Не опубликован</p>}
+                        <DotFilledSize16 fill='#777777' color='#777777' />
                         <p>Дата создания: {formatDate(survey.createdAt)}</p>
                     </div>
                     {survey.description && <p className={style.description}>{survey.description}</p>}
                 </div>
             </button>
-            <div className={style.actions}>
-                <Button
-                    mode='secondary'
-                    type='button'
-                    icon={<img src='/copy.svg' alt='Дублировать' />}
-                    onClick={duplicateSurvey}
-                />
-                {isDeleteSurvey ? (
-                    <div className={style.deleteButtons}>
-                        <Button
-                            mode='secondary'
-                            style='neutral'
-                            icon={<CrossOutlinedSize24 />}
-                            onClick={() => setIsDeleteSurvey(false)}
-                        />
-                        <Button
-                            mode='secondary'
-                            style='accent'
-                            icon={<CheckOutlinedSize24 />}
-                            onClick={deleteSurveyHandler}
-                        />
-                    </div>
-                ) : (
+            {survey.userRole === 'AUTHOR' && (
+                <div className={style.actions}>
                     <Button
                         mode='secondary'
-                        style='negative'
                         type='button'
-                        icon={<img src='/trash.svg' alt='Удалить' />}
-                        onClick={() => setIsDeleteSurvey(true)}
+                        icon={<img src='/copy.svg' alt='Дублировать' />}
+                        onClick={duplicateSurvey}
                     />
-                )}
-            </div>
+                    {isDeleteSurvey ? (
+                        <div className={style.deleteButtons}>
+                            <Button
+                                mode='secondary'
+                                style='neutral'
+                                icon={<CrossOutlinedSize24 />}
+                                onClick={() => setIsDeleteSurvey(false)}
+                            />
+                            <Button
+                                mode='secondary'
+                                style='accent'
+                                icon={<CheckOutlinedSize24 />}
+                                onClick={deleteSurveyHandler}
+                            />
+                        </div>
+                    ) : (
+                        <Button
+                            mode='secondary'
+                            style='negative'
+                            type='button'
+                            icon={<img src='/trash.svg' alt='Удалить' />}
+                            onClick={() => setIsDeleteSurvey(true)}
+                        />
+                    )}
+                </div>
+            )}
         </div>
     );
 }
