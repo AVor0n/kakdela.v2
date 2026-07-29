@@ -114,8 +114,6 @@ public class SurveyServiceTestEntity {
         Question.AnswerOptionOrder.ORIGINAL,
         false,
         true,
-        true,
-        "condition",
         Collections.emptyList(),
         new ArrayList<>());
     Question question2 = new Question(
@@ -129,8 +127,6 @@ public class SurveyServiceTestEntity {
         Question.AnswerOptionOrder.ORIGINAL,
         false,
         true,
-        true,
-        "condition",
         null,
         new ArrayList<>());
     List<AnswerOption> question2AnswerOptionList = List.of(
@@ -158,8 +154,6 @@ public class SurveyServiceTestEntity {
         Question.AnswerOptionOrder.ORIGINAL,
         false,
         true,
-        true,
-        "condition",
         null,
         new ArrayList<>());
     List<AnswerOption> question3AnswerOptionList = List.of(
