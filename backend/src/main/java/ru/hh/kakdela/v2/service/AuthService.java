@@ -86,7 +86,7 @@ public class AuthService {
       throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "DeviceId не найден");
     }
 
-    Account account = refreshTokenService.validateToken(refreshToken, deviceId).getAccount();
+    Account account = refreshTokenService.getAccountByToken(refreshToken);
 
     String newRefreshToken = refreshTokenService
         .rotateRefreshToken(refreshToken, deviceId, userAgent, ipAddress);

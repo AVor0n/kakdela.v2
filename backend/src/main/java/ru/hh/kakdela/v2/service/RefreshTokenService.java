@@ -59,6 +59,22 @@ public class RefreshTokenService {
     return rawToken;
   }
 
+  @Transactional(readOnly = true)
+  public Account getAccountByToken(String rawToken) {
+    String tokenHash = TokenUtil.hash(rawToken);
+    RefreshToken refreshToken = refreshTokenDao.findByTokenHash(tokenHash)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.UNAUTHORIZED, "Невалидный refresh токен"));
+
+    Instant now = Instant.now(clock);
+    if (now.isAfter(refreshToken.getExpiresAt())) {
+      throw new ResponseStatusException(
+          HttpStatus.UNAUTHORIZED, "Refresh токен истёк");
+    }
+
+    return refreshToken.getAccount();
+  }
+
   @Transactional
   public RefreshToken validateToken(String rawToken, String deviceId) {
     String tokenHash = TokenUtil.hash(rawToken);
