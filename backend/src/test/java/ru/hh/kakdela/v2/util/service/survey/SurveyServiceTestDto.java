@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import ru.hh.kakdela.v2.dto.answer.option.AnswerOptionResponseDto;
-import ru.hh.kakdela.v2.dto.closing_page.ClosingPageResponseDto;
+import ru.hh.kakdela.v2.dto.closing.ClosingPageResponseDto;
 import ru.hh.kakdela.v2.dto.question.QuestionResponseDto;
 import ru.hh.kakdela.v2.dto.survey.SurveyCreateDto;
 import ru.hh.kakdela.v2.dto.survey.SurveyResponseDto;

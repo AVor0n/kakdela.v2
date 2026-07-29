@@ -9,7 +9,7 @@ import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
-import ru.hh.kakdela.v2.dto.closing_page.ClosingPageResponseDto;
+import ru.hh.kakdela.v2.dto.closing.ClosingPageResponseDto;
 import ru.hh.kakdela.v2.dto.survey.page.SurveyPageResponseDto;
 
 @AllArgsConstructor
