@@ -37,12 +37,12 @@ public class QuestionService {
   private final QuestionMapper questionMapper;
   private final ImageProcessingService imageProcessingService;
 
-  @Transactional(readOnly = true)
-  public List<QuestionResponseDto> getAllByPageId(UUID pageId) {
-    return questionDao.findAllByPageId(pageId).stream()
-        .map(questionMapper::questionToDto)
-        .toList();
-  }
+  //  @Transactional(readOnly = true)
+  //  public List<QuestionResponseDto> getAllByPageId(UUID pageId) {
+  //    return questionDao.findAllByPageId(pageId).stream()
+  //        .map(questionMapper::questionToDto)
+  //        .toList();
+  //  }
 
   @Transactional
   public QuestionResponseDto create(UUID pageId, QuestionCreateDto dto, UUID accountId) {
@@ -75,8 +75,6 @@ public class QuestionService {
         .type(dto.getType())
         .answerOptionOrder(dto.getAnswerOptionOrder())
         .isMandatory(dto.getIsMandatory())
-        .isVisible(dto.getIsVisible())
-        .condition(dto.getCondition())
         .build();
 
     questionDao.save(question);
@@ -106,8 +104,6 @@ public class QuestionService {
         .type(originalQuestion.getType())
         .answerOptionOrder(originalQuestion.getAnswerOptionOrder())
         .isMandatory(originalQuestion.isMandatory())
-        .isVisible(originalQuestion.isVisible())
-        .condition(originalQuestion.getCondition())
         .answers(List.of())
         .build();
 
@@ -171,12 +167,6 @@ public class QuestionService {
     }
     if (dto.getIsMandatory() != null) {
       question.setMandatory(dto.getIsMandatory());
-    }
-    if (dto.getIsVisible() != null) {
-      question.setVisible(dto.getIsVisible());
-    }
-    if (dto.getCondition() != null) {
-      question.setCondition(dto.getCondition());
     }
 
     questionDao.update(question);

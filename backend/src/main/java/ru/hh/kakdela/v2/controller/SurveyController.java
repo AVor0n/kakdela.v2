@@ -47,10 +47,10 @@ public class SurveyController {
   }
 
   @GetMapping("/surveys/{surveyId}/edit")
-  public SurveyPublicResponseDto getById(
+  public SurveyResponseDto getById(
       @PathVariable UUID surveyId,
       @AuthenticationPrincipal CustomUserDetails currentUser) {
-    return surveyService.getPublicById(surveyId, currentUser.getId());
+    return surveyService.getById(surveyId, currentUser.getId());
   }
 
   @PostMapping("/surveys")

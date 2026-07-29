@@ -14,10 +14,7 @@ import ru.hh.kakdela.v2.validator.NullOrNotBlank;
 @NoArgsConstructor
 @Getter
 @Setter
-@Schema(
-    name = "SurveyCreate",
-    title = "DTO для создания опроса"
-)
+@Schema(name = "Survey.Create")
 public class SurveyCreateDto {
   @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
   @NotBlank(message = "Заголовок не должен быть пустым")

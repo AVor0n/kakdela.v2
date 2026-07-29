@@ -54,8 +54,6 @@ CREATE TABLE question (
     type varchar(255) NOT NULL,
     answer_option_order varchar(255),
     is_mandatory bool NOT NULL,
-    is_visible bool NOT NULL,
-    condition text,
     CONSTRAINT uq_question_page_serial UNIQUE (survey_page_id, serial_number) DEFERRABLE INITIALLY IMMEDIATE
 );
 

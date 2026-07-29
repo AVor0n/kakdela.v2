@@ -11,7 +11,6 @@ import lombok.Getter;
 import lombok.ToString;
 import ru.hh.kakdela.v2.dto.account.AccountResponseDto;
 import ru.hh.kakdela.v2.dto.survey.page.SurveyPageResponseDto;
-import ru.hh.kakdela.v2.dto.survey.page.SurveyPageShortResponseDto;
 import ru.hh.kakdela.v2.dto.survey.page.closing.ClosingPageResponseDto;
 
 @AllArgsConstructor

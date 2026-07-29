@@ -38,8 +38,6 @@ public class QuestionMapper {
             ? question.getAnswerOptionOrder().name()
             : null,
         question.isMandatory(),
-        question.isVisible(),
-        question.getCondition(),
         question.getAnswerOptions().stream()
             .sorted(Comparator.comparingInt(AnswerOption::getSerialNumber))
             .map(answerOptionMapper::answerOptionToDto)

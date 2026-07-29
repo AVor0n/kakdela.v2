@@ -27,7 +27,5 @@ public class QuestionResponseDto {
   private final String type;
   private final String answerOptionOrder;
   private final Boolean isMandatory;
-  private final Boolean isVisible;
-  private final String condition;
   private final List<AnswerOptionResponseDto> answerOptions;
 }

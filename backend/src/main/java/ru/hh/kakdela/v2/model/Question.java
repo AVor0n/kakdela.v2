@@ -77,12 +77,6 @@ public class Question {
   @Column(name = "is_mandatory", nullable = false)
   private boolean isMandatory;
 
-  @Column(name = "is_visible", nullable = false)
-  private boolean isVisible;
-
-  @Column(name = "condition", columnDefinition = "text")
-  private String condition;
-
   @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
   @OrderBy("serial_number ASC")
   @Builder.Default
