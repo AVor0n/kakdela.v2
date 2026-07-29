@@ -1,0 +1,1 @@
+ALTER TABLE account ADD COLUMN hh_user_id varchar(64) UNIQUE;
