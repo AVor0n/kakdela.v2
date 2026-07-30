@@ -42,7 +42,8 @@ public class SurveyController {
   public SurveyResponseDto getById(
       @PathVariable UUID surveyId,
       @AuthenticationPrincipal CustomUserDetails currentUser) {
-    return surveyService.getById(surveyId, currentUser.getId());
+    return surveyService.getById(
+        surveyId, currentUser != null ? currentUser.getId() : null);
   }
 
   @PostMapping("/surveys")
