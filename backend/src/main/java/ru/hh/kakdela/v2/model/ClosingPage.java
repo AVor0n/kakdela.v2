@@ -48,6 +48,18 @@ public class ClosingPage {
   @Column(name = "attachment_object_key", length = 1024)
   private String attachmentObjectKey;
 
+  @Column(name = "file_object_key", length = 1024)
+  private String fileObjectKey;
+
+  @Column(name = "file_name", length = 255)
+  private String fileName;
+
+  @Column(name = "file_content_type", length = 100)
+  private String fileContentType;
+
+  @Column(name = "file_size")
+  private Long fileSize;
+
   @Column(name = "website_url", length = 2000)
   private String websiteUrl;
 

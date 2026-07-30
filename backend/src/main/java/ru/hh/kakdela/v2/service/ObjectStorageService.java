@@ -1,16 +1,21 @@
 package ru.hh.kakdela.v2.service;
 
+import java.io.IOException;
 import java.net.URL;
 import java.time.Duration;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.CopyObjectRequest;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
@@ -64,6 +69,24 @@ public class ObjectStorageService {
             .build();
 
     return s3Presigner.presignGetObject(getObjectPresignRequest).url();
+  }
+
+  public byte[] getObject(String key) {
+    log.debug("Получение объекта из хранилища key={}", key);
+
+    try {
+      GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+          .bucket(bucketName)
+          .key(key)
+          .build();
+
+      ResponseInputStream<GetObjectResponse> response = s3Client.getObject(getObjectRequest);
+      return response.readAllBytes();
+
+    } catch (IOException e) {
+      log.error("Ошибка при чтении объекта {}: {}", key, e.getMessage());
+      throw new RuntimeException("Ошибка при чтении объекта из хранилища: " + key, e);
+    }
   }
 
   public void deleteObject(String key) {

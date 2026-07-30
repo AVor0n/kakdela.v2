@@ -77,6 +77,10 @@ CREATE TABLE closing_page (
     title varchar(200),
     description varchar(5000),
     attachment_object_key varchar(1024),
+    file_object_key varchar(1024),
+    file_name varchar(255),
+    file_content_type varchar(100),
+    file_size bigint,
     website_url varchar(2000)
 );
 
