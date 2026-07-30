@@ -40,7 +40,6 @@ public class ClosingPageService {
   private final ImageProcessingService imageProcessingService;
   private final ClosingPageMapper closingPageMapper;
 
-
   @Transactional(readOnly = true)
   public ClosingPageResponseDto getBySurveyId(UUID surveyId, UUID accountId) {
     Survey survey = surveyDao.findById(surveyId)
@@ -334,10 +333,10 @@ public class ClosingPageService {
     String contentType = file.getContentType();
     if (contentType != null) {
       String lower = contentType.toLowerCase();
-      if (lower.contains("executable") ||
-          lower.contains("x-msdownload") ||
-          lower.contains("x-javascript") ||
-          lower.contains("x-sh")) {
+      if (lower.contains("executable")
+          || lower.contains("x-msdownload")
+          || lower.contains("x-javascript")
+          || lower.contains("x-sh")) {
         throw new ResponseStatusException(
             HttpStatus.BAD_REQUEST, "Исполняемые файлы запрещены");
       }

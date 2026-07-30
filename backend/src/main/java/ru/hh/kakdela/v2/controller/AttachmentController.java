@@ -158,7 +158,9 @@ public class AttachmentController {
     closingPageService.deleteAttachment(surveyId, currentUser.getId());
   }
 
-  @PostMapping(value = "/surveys/{surveyId}/closing-page/attachment", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @PostMapping(
+      value = "/surveys/{surveyId}/closing-page/attachment",
+      consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseStatus(HttpStatus.CREATED)
   public FileUploadResponseDto uploadFile(
       @PathVariable UUID surveyId,
@@ -168,7 +170,9 @@ public class AttachmentController {
     return closingPageService.addFile(surveyId, currentUser.getId(), file);
   }
 
-  @PutMapping(value = "/surveys/{surveyId}/closing-page/attachment", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @PutMapping(
+      value = "/surveys/{surveyId}/closing-page/attachment",
+      consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public FileUploadResponseDto updateFile(
       @PathVariable UUID surveyId,
       @RequestParam("file") MultipartFile file,
