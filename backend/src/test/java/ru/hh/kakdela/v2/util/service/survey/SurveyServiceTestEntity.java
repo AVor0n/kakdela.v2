@@ -20,7 +20,7 @@ public class SurveyServiceTestEntity {
 
   private static final boolean IS_ORIGINAL = false;
 
-  private static final String TEST_FILE_OBJECT_KEY = "closing-pages/file/test-file-key";
+  private static final String TEST_FILE_OBJECT_KEY = "closing-pages/test-file-key";
 
   public static final Account account1 = new Account(
       SurveyServiceTestConstants.account1Id,

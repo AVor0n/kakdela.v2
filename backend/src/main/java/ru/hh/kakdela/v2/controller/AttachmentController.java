@@ -190,7 +190,7 @@ public class AttachmentController {
     closingPageService.deleteFile(surveyId, currentUser.getId());
   }
 
-  @GetMapping("/surveys/{surveyId}/closing-page/attachment/url")
+  @GetMapping("/surveys/{surveyId}/closing-page/attachment")
   public ObjectUrlResponseDto getFileUrl(
       @PathVariable UUID surveyId,
       @AuthenticationPrincipal CustomUserDetails currentUser

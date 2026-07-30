@@ -162,7 +162,7 @@ public class SurveyServiceCloneTest extends SurveyServiceTestBase {
 
       assertNotNull(closingPage.getFileObjectKey());
       assertTrue(closingPage.getFileObjectKey()
-          .matches("^closing-pages/file/[0-9a-fA-F-]+/[0-9a-fA-F-]+$"));
+          .matches("^closing-pages/[0-9a-fA-F-]+/[^/]+$"));
 
       closingPage.setFileObjectKey(SurveyServiceTestConstants.fileObjectKey);
       closingPage.setAttachmentObjectKey("attachmentObjectKey");
