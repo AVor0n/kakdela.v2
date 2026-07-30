@@ -248,7 +248,7 @@ public class SurveyService {
 
       if (originalSurvey.getClosingPage().getAttachmentObjectKey() != null) {
         String closingAttachmentObjectKey =
-            "closings/%s/%s".formatted(closingPageId, UUID.randomUUID());
+            "closing-pages/%s/%s".formatted(closingPageId, UUID.randomUUID());
         objectStorageService.copyObject(
             originalSurvey.getClosingPage().getAttachmentObjectKey(),
             closingAttachmentObjectKey
