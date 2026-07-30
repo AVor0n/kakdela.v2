@@ -1,5 +1,6 @@
 package ru.hh.kakdela.v2.service;
 
+import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +31,7 @@ public class SurveyPageService {
   private final SurveyPageMapper surveyPageMapper;
 
   @Transactional(readOnly = true)
-  public SurveyPageResponseDto getById(UUID id, UUID responseId) {
+  public SurveyPageResponseDto getPublicById(UUID id, UUID responseId) {
     SurveyPage surveyPage = surveyPageDao.findById(id)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Страница не найдена: " + id));
@@ -48,12 +49,30 @@ public class SurveyPageService {
     return surveyPageMapper.surveyPageToDto(surveyPage);
   }
 
-  //  @Transactional(readOnly = true)
-  //  public List<SurveyPageResponseDto> getAllBySurveyId(UUID surveyId) {
-  //    return surveyPageDao.findAllBySurveyId(surveyId).stream()
-  //        .map(surveyPageMapper::surveyPageToDto)
-  //        .toList();
-  //  }
+  @Transactional(readOnly = true)
+  public SurveyPageResponseDto getById(UUID id, UUID currentUserId) {
+    SurveyPage surveyPage = surveyPageDao.findById(id)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Страница не найдена: id=" + id));
+
+    permissionService.checkHasAnyPermission(surveyPage.getSurvey().getId(), currentUserId);
+
+    return surveyPageMapper.surveyPageToDto(surveyPage);
+  }
+
+  @Transactional(readOnly = true)
+  public List<SurveyPageResponseDto> getAllBySurveyId(UUID surveyId, UUID currentUserId) {
+    if (!surveyDao.existsById(surveyId)) {
+      throw new ResponseStatusException(
+          HttpStatus.NOT_FOUND, "Опрос не найден: id=" + surveyId);
+    }
+
+    permissionService.checkHasAnyPermission(surveyId, currentUserId);
+
+    return surveyPageDao.findAllBySurveyId(surveyId).stream()
+        .map(surveyPageMapper::surveyPageToDto)
+        .toList();
+  }
 
   @Transactional
   public SurveyPageResponseDto create(UUID surveyId, SurveyPageCreateDto dto, UUID accountId) {

@@ -22,6 +22,20 @@ public class SurveyDaoImpl implements SurveyDao {
   }
 
   @Override
+  public boolean existsById(UUID id) {
+    return entityManager
+        .createQuery(
+        """
+        SELECT COUNT(s)
+        FROM Survey s
+        WHERE s.id = :id
+        """, Long.class)
+        .setParameter("id", id)
+        .getSingleResult()
+        .equals(1L);
+  }
+
+  @Override
   public List<Survey> findAllByAuthorId(UUID authorId) {
     return entityManager
             .createQuery("FROM Survey s WHERE s.author.id = :authorId", Survey.class)
