@@ -1,0 +1,52 @@
+.container {
+    padding: 20px;
+    border: solid 1px var(--color-border);
+    border-radius: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+}
+
+.actions {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-end; /* чтобы одиночная кнопка прижималась к правому краю */
+    gap: 10px;
+    align-self: center;
+}
+
+.details {
+    text-align: start;
+    width: 100%;
+    flex: 1 1 0;
+    min-width: 0;
+}
+.description {
+    max-width: 80%;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    line-clamp: 3;
+    -webkit-line-clamp: 3;
+
+    color: rgba(0, 0, 0, 0.5);
+}
+
+.deleteButtons {
+    display: flex;
+    gap: 5px;
+}
+
+.role {
+    padding: 2px 6px;
+    background: var(--color-secondary);
+    width: fit-content;
+    border-radius: 6px;
+}
+
+.info {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+}
