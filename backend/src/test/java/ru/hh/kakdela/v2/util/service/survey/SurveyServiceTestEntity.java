@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
 import ru.hh.kakdela.v2.model.Account;
 import ru.hh.kakdela.v2.model.Answer;
 import ru.hh.kakdela.v2.model.AnswerOption;
@@ -19,6 +20,11 @@ import ru.hh.kakdela.v2.util.service.survey.SurveyServiceTestConstants.PlainSurv
 public class SurveyServiceTestEntity {
 
   private static final boolean IS_ORIGINAL = false;
+
+  private static final String TEST_FILE_NAME = "test-file.pdf";
+  private static final String TEST_FILE_CONTENT_TYPE = "application/pdf";
+  private static final Long TEST_FILE_SIZE = 102400L;
+  private static final String TEST_FILE_OBJECT_KEY = "closing/file/test-file-key";
 
   public static final Account account1 = new Account(
       SurveyServiceTestConstants.account1Id,
@@ -82,7 +88,12 @@ public class SurveyServiceTestEntity {
           "closingPage",
           "description",
           SurveyServiceTestConstants.attachmentObjectKey,
-          "websiteUrl"));
+          TEST_FILE_OBJECT_KEY,
+          TEST_FILE_NAME,
+          TEST_FILE_CONTENT_TYPE,
+          TEST_FILE_SIZE,
+          "websiteUrl"
+      ));
     }
 
     // Заполнение страниц и вопросов для Survey1

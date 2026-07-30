@@ -24,11 +24,22 @@ public class ClosingPageMapper {
     ).toString()
         : null;
 
+    String fileUrl = closingPage.getFileObjectKey() != null
+        ? objectStorageService.generateObjectUrl(
+        closingPage.getFileObjectKey(),
+        attachmentUrlMaxAge
+    ).toString()
+        : null;
+
     return new ClosingPageResponseDto(
         closingPage.getTitle(),
         closingPage.getDescription(),
         attachmentUrl,
-        closingPage.getWebsiteUrl()
+        closingPage.getWebsiteUrl(),
+        closingPage.getFileName(),
+        closingPage.getFileContentType(),
+        closingPage.getFileSize(),
+        fileUrl
     );
   }
 }

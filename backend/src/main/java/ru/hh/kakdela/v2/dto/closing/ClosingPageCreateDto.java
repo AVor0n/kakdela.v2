@@ -10,8 +10,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Schema(
-    name = "ClosingPageCreate",
-    title = "DTO для создания завершающей страницы"
+    name = "ClosingPage.Create"
 )
 public class ClosingPageCreateDto {
 
@@ -23,4 +22,8 @@ public class ClosingPageCreateDto {
 
   @Size(max = 2000, message = "Ссылка на сайт не должна быть длиннее 2000 символов")
   private String websiteUrl;
+
+  private String fileName;
+  private String fileContentType;
+  private Long fileSize;
 }
