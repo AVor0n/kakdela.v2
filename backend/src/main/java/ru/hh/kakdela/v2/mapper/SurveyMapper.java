@@ -6,6 +6,7 @@ import java.util.Comparator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import ru.hh.kakdela.v2.dto.survey.SurveyResponseDto;
+import ru.hh.kakdela.v2.dto.survey.SurveyShortResponseDto;
 import ru.hh.kakdela.v2.dto.survey.SurveyShortResponseWithPermissionDto;
 import ru.hh.kakdela.v2.dto.survey.SurveyWithUserRoleDto;
 import ru.hh.kakdela.v2.model.Permission;
@@ -47,7 +48,7 @@ public class SurveyMapper {
     );
   }
 
-  public SurveyShortResponseWithPermissionDto surveyToShortDto(
+  public SurveyShortResponseWithPermissionDto surveyToShortDtoWithPermission(
       Survey survey,
       Permission.SurveyRole role
   ) {
@@ -58,6 +59,16 @@ public class SurveyMapper {
         survey.isPublished(),
         survey.getCreatedAt(),
         role
+    );
+  }
+
+  public SurveyShortResponseDto surveyToShortDto(Survey survey) {
+    return new SurveyShortResponseDto(
+        survey.getId(),
+        survey.getTitle(),
+        survey.getDescription(),
+        survey.getCreatedAt(),
+        survey.getExpireAt()
     );
   }
 
