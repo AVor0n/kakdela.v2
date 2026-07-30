@@ -25,6 +25,7 @@ export function Settings() {
     const { account } = useAppSelector((state) => state.account);
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
+    const isAuthor = account?.id === selectedSurvey?.author.id;
 
     const [isAuthorizedOnly, setIsAuthorizedOnly] = useState<boolean>(selectedSurvey?.isAuthorizedOnly ?? false);
     const [isLimitedToOneResponse, setIsLimitedToOneResponse] = useState<boolean>(
@@ -271,13 +272,13 @@ export function Settings() {
 
                 <SubscribersInput />
 
-                {account?.id === selectedSurvey.authorId && <Permissions surveyId={selectedSurvey.id} />}
+                {isAuthor && <Permissions surveyId={selectedSurvey.id} />}
 
                 <div className={style.buttons}>
                     <Button mode='secondary' style='neutral' onClick={resetSettings}>
                         Сбросить настройки
                     </Button>
-                    {account?.id === selectedSurvey.authorId && (
+                    {isAuthor && (
                         <Button mode='secondary' style='negative' onClick={deleteSurveyHandler}>
                             Удалить опрос
                         </Button>

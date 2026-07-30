@@ -1,10 +1,11 @@
 import type { Question } from './Question.type';
+import type { Account } from './Account.type';
 
 export type SurveyRole = 'AUTHOR' | 'EDITOR' | 'ANALYST';
 
 export type Survey = {
     id: string;
-    authorId: string;
+    author: Pick<Account, 'id' | 'login' | 'email'>;
     isAuthorizedOnly: boolean;
     closingPage: string | null;
     createdAt: string;
