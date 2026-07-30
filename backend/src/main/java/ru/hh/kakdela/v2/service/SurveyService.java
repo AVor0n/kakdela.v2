@@ -256,12 +256,22 @@ public class SurveyService {
 
       if (originalSurvey.getClosingPage().getAttachmentObjectKey() != null) {
         String closingAttachmentObjectKey =
-            "closing/%s/%s".formatted(closingPageId, UUID.randomUUID());
+            "closing-pages/%s/%s".formatted(closingPageId, UUID.randomUUID());
         objectStorageService.copyObject(
             originalSurvey.getClosingPage().getAttachmentObjectKey(),
             closingAttachmentObjectKey
         );
         closingPageCopy.setAttachmentObjectKey(closingAttachmentObjectKey);
+      }
+
+      if (originalSurvey.getClosingPage().getFileObjectKey() != null) {
+        String closingFileObjectKey =
+            "closing-pages/file/%s/%s".formatted(closingPageId, UUID.randomUUID());
+        objectStorageService.copyObject(
+            originalSurvey.getClosingPage().getFileObjectKey(),
+            closingFileObjectKey
+        );
+        closingPageCopy.setFileObjectKey(closingFileObjectKey);
       }
       surveyCopy.setClosingPage(closingPageCopy);
     }

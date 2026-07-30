@@ -19,8 +19,4 @@ public class ClosingPageResponseDto {
   private final String description;
   private final String attachmentUrl;
   private final String websiteUrl;
-  private final String fileName;
-  private final String fileContentType;
-  private final Long fileSize;
-  private final String fileUrl;
 }

@@ -25,8 +25,4 @@ public class ClosingPageUpdateDto {
   @NullOrNotBlank(message = "Ссылка на сайт не должна быть пустой")
   @Size(max = 2000, message = "Ссылка на сайт не должна быть длиннее 2000 символов")
   private String websiteUrl;
-
-  private String fileName;
-  private String fileContentType;
-  private Long fileSize;
 }

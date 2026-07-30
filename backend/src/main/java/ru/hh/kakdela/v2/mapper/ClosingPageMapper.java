@@ -35,11 +35,7 @@ public class ClosingPageMapper {
         closingPage.getTitle(),
         closingPage.getDescription(),
         attachmentUrl,
-        closingPage.getWebsiteUrl(),
-        closingPage.getFileName(),
-        closingPage.getFileContentType(),
-        closingPage.getFileSize(),
-        fileUrl
+        closingPage.getWebsiteUrl()
     );
   }
 }
