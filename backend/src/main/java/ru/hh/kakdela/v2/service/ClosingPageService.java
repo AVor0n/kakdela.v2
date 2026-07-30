@@ -227,7 +227,7 @@ public class ClosingPageService {
 
     String clearFileName = getClearFileName(file);
 
-    String objectKey = "closing-pages/file/%s/%s".formatted(surveyId, clearFileName);
+    String objectKey = "closing-pages/%s/%s".formatted(surveyId, clearFileName);
     objectStorageService.putObject(objectKey, fileBytes, file.getContentType());
 
     closingPage.setFileObjectKey(objectKey);
@@ -262,7 +262,7 @@ public class ClosingPageService {
 
     String clearFileName = getClearFileName(file);
 
-    String objectKey = "closing-pages/file/%s/%s".formatted(surveyId, clearFileName);
+    String objectKey = "closing-pages/%s/%s".formatted(surveyId, clearFileName);
     objectStorageService.putObject(objectKey, fileBytes, file.getContentType());
 
     closingPage.setFileObjectKey(objectKey);
@@ -357,7 +357,7 @@ public class ClosingPageService {
 
   private String getClearFileName(MultipartFile file) {
     return file.getOriginalFilename()
-        .replaceAll("[^a-zA-Zа-яА-Я0-9\\s]", "")
+        .replaceAll("[^a-zA-Zа-яА-Я0-9\\s._-]", "")
         .trim()
         .replace(" ", "_");
   }
