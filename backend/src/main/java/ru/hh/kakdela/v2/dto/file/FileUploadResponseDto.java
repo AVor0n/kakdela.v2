@@ -13,15 +13,6 @@ import lombok.Getter;
 )
 public class FileUploadResponseDto {
 
-    @Schema(description = "URL для доступа к файлу")
-    private final String url;
-
-    @Schema(description = "Имя файла")
-    private final String fileName;
-
-    @Schema(description = "Тип файла")
-    private final String contentType;
-
-    @Schema(description = "Размер файла в байтах")
-    private final Long fileSize;
+  private final String url;
+  private final String fileName;
 }

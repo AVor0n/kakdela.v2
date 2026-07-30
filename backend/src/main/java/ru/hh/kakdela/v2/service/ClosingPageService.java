@@ -2,7 +2,6 @@ package ru.hh.kakdela.v2.service;
 
 import java.io.IOException;
 import java.util.UUID;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,7 +15,6 @@ import ru.hh.kakdela.v2.dao.SurveyDao;
 import ru.hh.kakdela.v2.dto.closing.ClosingPageCreateDto;
 import ru.hh.kakdela.v2.dto.closing.ClosingPageResponseDto;
 import ru.hh.kakdela.v2.dto.closing.ClosingPageUpdateDto;
-import ru.hh.kakdela.v2.dto.file.FileDownloadDto;
 import ru.hh.kakdela.v2.dto.file.FileUploadResponseDto;
 import ru.hh.kakdela.v2.dto.image.ProcessedImage;
 import ru.hh.kakdela.v2.dto.object.ObjectUrlResponseDto;
@@ -151,7 +149,7 @@ public class ClosingPageService {
 
     ProcessedImage image = imageProcessingService.process(file);
 
-    String objectKey = "closing/%s/%s".formatted(surveyId, UUID.randomUUID());
+    String objectKey = "closing-pages/%s/%s".formatted(surveyId, UUID.randomUUID());
     objectStorageService.putObject(
         objectKey,
         image.getContent(),
@@ -180,7 +178,7 @@ public class ClosingPageService {
           closingPage.getAttachmentObjectKey());
     }
 
-    String objectKey = "closing/%s/%s".formatted(surveyId, UUID.randomUUID());
+    String objectKey = "closing-pages/%s/%s".formatted(surveyId, UUID.randomUUID());
     objectStorageService.putObject(
         objectKey,
         image.getContent(),
@@ -228,13 +226,12 @@ public class ClosingPageService {
 
     byte[] fileBytes = getFileBytes(file);
 
-    String objectKey = "closing/file/%s/%s".formatted(surveyId, UUID.randomUUID());
+    String clearFileName = getClearFileName(file);
+
+    String objectKey = "closing-pages/file/%s/%s".formatted(surveyId, clearFileName);
     objectStorageService.putObject(objectKey, fileBytes, file.getContentType());
 
     closingPage.setFileObjectKey(objectKey);
-    closingPage.setFileName(file.getOriginalFilename());
-    closingPage.setFileContentType(file.getContentType());
-    closingPage.setFileSize(file.getSize());
     closingPageDao.update(closingPage);
 
     log.info("Добавлен файл к завершающей странице surveyId={} fileName={} size={}",
@@ -244,9 +241,7 @@ public class ClosingPageService {
 
     return FileUploadResponseDto.builder()
         .url(url)
-        .fileName(file.getOriginalFilename())
-        .contentType(file.getContentType())
-        .fileSize(file.getSize())
+        .fileName(clearFileName)
         .build();
   }
 
@@ -266,13 +261,12 @@ public class ClosingPageService {
 
     byte[] fileBytes = getFileBytes(file);
 
-    String objectKey = "closing/file/%s/%s".formatted(surveyId, UUID.randomUUID());
+    String clearFileName = getClearFileName(file);
+
+    String objectKey = "closing-pages/file/%s/%s".formatted(surveyId, clearFileName);
     objectStorageService.putObject(objectKey, fileBytes, file.getContentType());
 
     closingPage.setFileObjectKey(objectKey);
-    closingPage.setFileName(file.getOriginalFilename());
-    closingPage.setFileContentType(file.getContentType());
-    closingPage.setFileSize(file.getSize());
     closingPageDao.update(closingPage);
 
     log.info("Обновлен файл завершающей страницы surveyId={} fileName={} size={}",
@@ -282,9 +276,7 @@ public class ClosingPageService {
 
     return FileUploadResponseDto.builder()
         .url(url)
-        .fileName(file.getOriginalFilename())
-        .contentType(file.getContentType())
-        .fileSize(file.getSize())
+        .fileName(clearFileName)
         .build();
   }
 
@@ -304,9 +296,6 @@ public class ClosingPageService {
     objectStorageService.deleteObject(closingPage.getFileObjectKey());
 
     closingPage.setFileObjectKey(null);
-    closingPage.setFileName(null);
-    closingPage.setFileContentType(null);
-    closingPage.setFileSize(null);
     closingPageDao.update(closingPage);
     log.info("Удален файл завершающей страницы surveyId={}", surveyId);
   }
@@ -328,27 +317,6 @@ public class ClosingPageService {
             attachmentUrlMaxAge
         ).toString()
     );
-  }
-
-  @Transactional(readOnly = true)
-  public FileDownloadDto getFileForDownload(UUID surveyId, UUID accountId) {
-    ClosingPage closingPage = closingPageDao.findBySurveyId(surveyId)
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Завершающая страница не найдена для опроса: " + surveyId));
-
-    if (closingPage.getFileObjectKey() == null) {
-      throw new ResponseStatusException(
-          HttpStatus.NOT_FOUND, "Файл не найден");
-    }
-
-    byte[] content = objectStorageService.getObject(closingPage.getFileObjectKey());
-
-    return FileDownloadDto.builder()
-        .content(content)
-        .fileName(closingPage.getFileName())
-        .contentType(closingPage.getFileContentType())
-        .fileSize(closingPage.getFileSize())
-        .build();
   }
 
   private void validateFile(MultipartFile file) {
@@ -388,4 +356,10 @@ public class ClosingPageService {
     }
   }
 
+  private String getClearFileName(MultipartFile file) {
+    return file.getOriginalFilename()
+        .replaceAll("[^a-zA-Zа-яА-Я0-9\\s]", "")
+        .trim()
+        .replace(" ", "_");
+  }
 }
