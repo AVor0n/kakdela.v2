@@ -1,0 +1,50 @@
+package ru.hh.kakdela.v2.model.condition;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+import ru.hh.kakdela.v2.model.SurveyPage;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Entity
+@Table(
+    name = "condition",
+    indexes = {
+        @Index(name = "idx_condition_survey_page_id", columnList = "survey_page_id")})
+public class Condition {
+
+  @Id
+  @Column(name = "id", updatable = false, nullable = false)
+  private UUID id;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "survey_page_id", nullable = false)
+  @OnDelete(action = OnDeleteAction.CASCADE)
+  private SurveyPage surveyPage;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "next_page_id", nullable = false)
+  @OnDelete(action = OnDeleteAction.CASCADE)
+  private SurveyPage nextPage;
+
+  @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+  @JoinColumn(name = "root_node_id", unique = true)
+  private ConditionNode root;
+}
