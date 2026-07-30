@@ -12,9 +12,12 @@ import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+import org.jsoup.Jsoup;
 
 @Data
 @Builder
@@ -32,6 +35,8 @@ public class ClosingPage {
   @MapsId
   @JoinColumn(name = "survey_id", nullable = false)
   @OnDelete(action = OnDeleteAction.CASCADE)
+  @EqualsAndHashCode.Exclude
+  @ToString.Exclude
   private Survey survey;
 
   @Column(name = "title", length = 200)
@@ -45,4 +50,12 @@ public class ClosingPage {
 
   @Column(name = "website_url", length = 2000)
   private String websiteUrl;
+
+  public String getTitleAsPlainString() {
+    return Jsoup.parseBodyFragment(title).text();
+  }
+
+  public String getDescriptionAsPlainString() {
+    return Jsoup.parseBodyFragment(description).text();
+  }
 }

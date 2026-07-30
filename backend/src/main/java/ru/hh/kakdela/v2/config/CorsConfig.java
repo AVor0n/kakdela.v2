@@ -42,7 +42,8 @@ public class CorsConfig {
             "When allowCredentials=true, allowedOrigins cannot contain '*'");
       }
       if (List.of(allowedHeaders).contains("*")) {
-        log.warn("Использование '*' с параметромallowCredentials=true может вызвать проблемы CORS");
+        log.warn("Использование '*' с параметром allowCredentials=true "
+            + "может вызвать проблемы CORS");
       }
     }
   }

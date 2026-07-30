@@ -2,7 +2,6 @@ package ru.hh.kakdela.v2.service;
 
 import java.util.List;
 import java.util.UUID;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,14 +12,13 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import ru.hh.kakdela.v2.dao.AnswerOptionDao;
 import ru.hh.kakdela.v2.dao.QuestionDao;
-import ru.hh.kakdela.v2.dto.answer_option.AnswerOptionCreateDto;
-import ru.hh.kakdela.v2.dto.answer_option.AnswerOptionResponseDto;
-import ru.hh.kakdela.v2.dto.answer_option.AnswerOptionUpdateDto;
+import ru.hh.kakdela.v2.dto.answer.option.AnswerOptionCreateDto;
+import ru.hh.kakdela.v2.dto.answer.option.AnswerOptionResponseDto;
+import ru.hh.kakdela.v2.dto.answer.option.AnswerOptionUpdateDto;
 import ru.hh.kakdela.v2.dto.image.ProcessedImage;
 import ru.hh.kakdela.v2.dto.object.ObjectUrlResponseDto;
 import ru.hh.kakdela.v2.mapper.AnswerOptionMapper;
 import ru.hh.kakdela.v2.model.AnswerOption;
-import ru.hh.kakdela.v2.model.Permission.SurveyRole;
 import ru.hh.kakdela.v2.model.Question;
 
 @Slf4j
@@ -68,6 +66,7 @@ public class AnswerOptionService {
     }
 
     AnswerOption answerOption = AnswerOption.builder()
+        .id(UUID.randomUUID())
         .question(question)
         .serialNumber(dto.getSerialNumber() != null
             ? dto.getSerialNumber()

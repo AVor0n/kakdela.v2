@@ -17,6 +17,12 @@
     gap: 12px;
 }
 
+.respondentsRow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
 .respondents {
     width: fit-content;
     border: 1px solid var(--color-border);
@@ -120,6 +126,11 @@
 
     .content {
         width: 100%;
+    }
+
+    .respondentsRow {
+        align-items: stretch;
+        flex-direction: column;
     }
 
     .switcherSelect {

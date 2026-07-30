@@ -2,7 +2,6 @@ package ru.hh.kakdela.v2.service;
 
 import java.util.List;
 import java.util.UUID;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -11,9 +10,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import ru.hh.kakdela.v2.dao.SurveyDao;
 import ru.hh.kakdela.v2.dao.SurveyPageDao;
-import ru.hh.kakdela.v2.dto.survey_page.SurveyPageCreateDto;
-import ru.hh.kakdela.v2.dto.survey_page.SurveyPageResponseDto;
-import ru.hh.kakdela.v2.dto.survey_page.SurveyPageUpdateDto;
+import ru.hh.kakdela.v2.dto.survey.page.SurveyPageCreateDto;
+import ru.hh.kakdela.v2.dto.survey.page.SurveyPageResponseDto;
+import ru.hh.kakdela.v2.dto.survey.page.SurveyPageUpdateDto;
 import ru.hh.kakdela.v2.mapper.SurveyPageMapper;
 import ru.hh.kakdela.v2.model.Survey;
 import ru.hh.kakdela.v2.model.SurveyPage;
@@ -64,6 +63,7 @@ public class SurveyPageService {
     }
 
     SurveyPage surveyPage = SurveyPage.builder()
+        .id(UUID.randomUUID())
         .survey(survey)
         .serialNumber(dto.getSerialNumber() != null
             ? dto.getSerialNumber()

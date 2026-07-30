@@ -1,0 +1,83 @@
+.content {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.formRow,
+.permissionRow {
+    display: grid;
+    grid-template-columns: minmax(160px, 0.35fr) minmax(240px, 1fr) auto;
+    align-items: center;
+    gap: 8px;
+}
+
+.list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.permissionRow {
+    padding: 8px;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+}
+
+.accountId {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    color: #000000a3;
+    font-variant-numeric: tabular-nums;
+}
+
+.copyButton {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    padding: 4px;
+    border-radius: 6px;
+    transition: background-color 100ms ease-in;
+}
+
+.copyButton:hover {
+    background-color: #0000000f;
+}
+
+.copyButton:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 1px;
+}
+
+.copyIcon {
+    width: 14px;
+    height: 14px;
+}
+
+.loader {
+    display: flex;
+    min-height: 48px;
+    align-items: center;
+    justify-content: center;
+}
+
+.empty {
+    color: #0000006d;
+    font-size: 14px;
+}
+
+@media (max-width: 760px) {
+    .formRow,
+    .permissionRow {
+        grid-template-columns: 1fr;
+    }
+
+    .accountId {
+        min-height: 40px;
+    }
+}

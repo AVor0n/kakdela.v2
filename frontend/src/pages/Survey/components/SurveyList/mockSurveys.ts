@@ -7,6 +7,7 @@ export const mockSurveys: SurveyListItem[] = [
         description: 'Опрос для новых сотрудников',
         isPublished: false,
         createdAt: '2026-06-01T10:00:00Z',
+        userRole: 'AUTHOR',
     },
     {
         id: 'survey-2',
@@ -14,6 +15,7 @@ export const mockSurveys: SurveyListItem[] = [
         description: 'Еженедельный опрос настроения команды',
         isPublished: true,
         createdAt: '2026-06-03T12:00:00Z',
+        userRole: 'AUTHOR',
     },
     {
         id: 'survey-3',
@@ -21,6 +23,7 @@ export const mockSurveys: SurveyListItem[] = [
         description: null,
         isPublished: false,
         createdAt: '2026-06-08T09:30:00Z',
+        userRole: 'AUTHOR',
     },
     {
         id: 'survey-4',
@@ -28,6 +31,7 @@ export const mockSurveys: SurveyListItem[] = [
         description: 'Внутренний опрос по рабочим процессам',
         isPublished: true,
         createdAt: '2026-06-09T11:15:00Z',
+        userRole: 'AUTHOR',
     },
     {
         id: 'survey-5',
@@ -35,6 +39,7 @@ export const mockSurveys: SurveyListItem[] = [
         description: 'Сбор обратной связи по итогам квартала',
         isPublished: false,
         createdAt: '2026-06-10T08:45:00Z',
+        userRole: 'AUTHOR',
     },
     {
         id: 'survey-6',
@@ -42,6 +47,7 @@ export const mockSurveys: SurveyListItem[] = [
         description: 'Фидбек по образовательной программе',
         isPublished: true,
         createdAt: '2026-06-10T14:20:00Z',
+        userRole: 'AUTHOR',
     },
     {
         id: 'survey-7',
@@ -49,6 +55,7 @@ export const mockSurveys: SurveyListItem[] = [
         description: null,
         isPublished: false,
         createdAt: '2026-06-11T09:00:00Z',
+        userRole: 'AUTHOR',
     },
     {
         id: 'survey-8',
@@ -56,6 +63,7 @@ export const mockSurveys: SurveyListItem[] = [
         description: 'Короткий опрос для лидов команд',
         isPublished: true,
         createdAt: '2026-06-11T16:30:00Z',
+        userRole: 'AUTHOR',
     },
     {
         id: 'survey-9',
@@ -63,6 +71,7 @@ export const mockSurveys: SurveyListItem[] = [
         description: 'Опрос о взаимодействии между командами',
         isPublished: false,
         createdAt: '2026-06-12T10:10:00Z',
+        userRole: 'AUTHOR',
     },
     {
         id: 'survey-10',
@@ -70,6 +79,7 @@ export const mockSurveys: SurveyListItem[] = [
         description: 'Сбор мнений о текущем наборе инструментов',
         isPublished: true,
         createdAt: '2026-06-12T13:40:00Z',
+        userRole: 'AUTHOR',
     },
     {
         id: 'survey-11',
@@ -77,6 +87,7 @@ export const mockSurveys: SurveyListItem[] = [
         description: null,
         isPublished: false,
         createdAt: '2026-06-13T07:50:00Z',
+        userRole: 'AUTHOR',
     },
     {
         id: 'survey-12',
@@ -84,6 +95,7 @@ export const mockSurveys: SurveyListItem[] = [
         description: 'Опрос о взаимодействии между командами',
         isPublished: false,
         createdAt: '2026-06-12T10:10:00Z',
+        userRole: 'AUTHOR',
     },
     {
         id: 'survey-13',
@@ -91,6 +103,7 @@ export const mockSurveys: SurveyListItem[] = [
         description: 'Сбор мнений о текущем наборе инструментов',
         isPublished: true,
         createdAt: '2026-06-12T13:40:00Z',
+        userRole: 'AUTHOR',
     },
     {
         id: 'survey-14',
@@ -98,5 +111,6 @@ export const mockSurveys: SurveyListItem[] = [
         description: null,
         isPublished: false,
         createdAt: '2026-06-13T07:50:00Z',
+        userRole: 'AUTHOR',
     },
 ];

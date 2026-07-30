@@ -1,19 +1,20 @@
 package ru.hh.kakdela.v2.dto.response;
 
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import ru.hh.kakdela.v2.dto.answer.AnswerResponseDto;
-
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
-
-import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
+import ru.hh.kakdela.v2.dto.account.AccountResponseDto;
+import ru.hh.kakdela.v2.dto.answer.AnswerResponseDto;
 
 @AllArgsConstructor
 @Getter
 @EqualsAndHashCode
+@ToString
 @Schema(
     name = " ResponseResponse",
     title = "DTO для получения данных ответа на опрос"
@@ -21,7 +22,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 public class ResponseResponseDto {
 
   private final UUID id;
-  private final UUID accountId;   // может быть null — анонимное прохождение
+  private final AccountResponseDto account;   // может быть null — анонимное прохождение
   private final UUID surveyId;
   private final Boolean isCompleted;
   private final Instant receivedAt;

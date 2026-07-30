@@ -1,5 +1,17 @@
 package ru.hh.kakdela.v2.schedule;
 
+import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -8,15 +20,6 @@ import ru.hh.kakdela.v2.model.NotificationSchedule;
 import ru.hh.kakdela.v2.service.NotificationScheduleService;
 import ru.hh.kakdela.v2.service.NotificationService;
 import ru.hh.kakdela.v2.service.ScheduleCalculationService;
-
-import java.time.Duration;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.*;
 
 @Component
 @Slf4j
@@ -99,7 +102,8 @@ public class DynamicNotificationScheduler {
 
       notificationScheduleService.updateByEntity(schedule);
 
-      notificationService.sendNotificationForUsersWithUncompletedResponse(schedule.getSurvey().getId());
+      notificationService.sendNotificationForUsersWithUncompletedResponse(
+          schedule.getSurvey().getId());
       log.info("Отправлены уведомления для задачи '{}'", schedule.getName());
 
     } catch (Exception e) {

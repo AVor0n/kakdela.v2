@@ -15,7 +15,9 @@ import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -38,12 +40,16 @@ public class Answer {
   @MapsId("responseId")
   @JoinColumn(name = "response_id", nullable = false)
   @OnDelete(action = OnDeleteAction.CASCADE)
+  @EqualsAndHashCode.Exclude
+  @ToString.Exclude
   private Response response;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @MapsId("questionId")
   @JoinColumn(name = "question_id", nullable = false)
   @OnDelete(action = OnDeleteAction.CASCADE)
+  @EqualsAndHashCode.Exclude
+  @ToString.Exclude
   private Question question;
 
   @Column(name = "answer_text", length = 5000, nullable = false)
