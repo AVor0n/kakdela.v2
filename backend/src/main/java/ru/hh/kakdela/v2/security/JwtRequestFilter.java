@@ -53,8 +53,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         UUID accountId = UUID.fromString(claims.get("accountId", String.class));
         Integer tokenVersionFromToken = claims.get("tokenVersion", Integer.class);
 
-        CustomUserDetails userDetails =
-            (CustomUserDetails) customUserDetailsService.loadUserByUsername(login);
+        CustomUserDetails userDetails = customUserDetailsService.loadUserByUsername(login);
 
         if (!userDetails.getId().equals(accountId)) {
           throw new BadCredentialsException("ID пользователя не совпадает");

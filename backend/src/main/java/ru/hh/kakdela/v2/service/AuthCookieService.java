@@ -16,6 +16,10 @@ public class AuthCookieService {
   public static final String DEVICE_ID_COOKIE_NAME = "deviceId";
   public static final String RESPONSE_TOKEN_PREFIX = "responseAccessToken_";
 
+  public static final String MAIN_PATH = "/api";
+  public static final String REFRESH_PATH = "/api/auth/refresh";
+  public static final String RESPONSES_PATH = "/api/responses";
+
   @Value("${app.tokens.access.max-age}")
   private long accessTokenMaxAge;
 
@@ -47,46 +51,50 @@ public class AuthCookieService {
 
   public void setAccessTokenCookie(HttpServletResponse response, String token) {
     ResponseCookie cookie = CookieUtil.buildHttpOnlyCookie(
-        ACCESS_TOKEN_COOKIE_NAME, token, accessTokenMaxAge
+        ACCESS_TOKEN_COOKIE_NAME, token, MAIN_PATH, accessTokenMaxAge
     );
     CookieUtil.addCookie(response, cookie);
   }
 
   public void setRefreshTokenCookie(HttpServletResponse response, String token) {
     ResponseCookie cookie = CookieUtil.buildHttpOnlyCookie(
-        REFRESH_TOKEN_COOKIE_NAME, token, refreshTokenMaxAge
+        REFRESH_TOKEN_COOKIE_NAME, token, REFRESH_PATH, refreshTokenMaxAge
     );
     CookieUtil.addCookie(response, cookie);
   }
 
   public void setDeviceIdCookie(HttpServletResponse response, String deviceId) {
-    ResponseCookie cookie = CookieUtil.buildDeviceIdCookie(deviceId, deviceIdMaxAge);
+    ResponseCookie cookie = CookieUtil.buildCookie(
+        DEVICE_ID_COOKIE_NAME, deviceId, REFRESH_PATH, deviceIdMaxAge);
     CookieUtil.addCookie(response, cookie);
   }
 
   public void setResponseTokenCookie(HttpServletResponse response, UUID responseId, String token) {
     String cookieName = RESPONSE_TOKEN_PREFIX + responseId;
     ResponseCookie cookie = CookieUtil.buildHttpOnlyCookie(
-        cookieName, token, responseTokenMaxAge
-    );
+        cookieName, token, RESPONSES_PATH, responseTokenMaxAge);
     CookieUtil.addCookie(response, cookie);
   }
 
   public void clearAccessTokenCookie(HttpServletResponse response) {
-    CookieUtil.addCookie(response, CookieUtil.buildExpiredCookie(ACCESS_TOKEN_COOKIE_NAME));
+    CookieUtil.addCookie(response,
+        CookieUtil.buildExpiredCookie(ACCESS_TOKEN_COOKIE_NAME, MAIN_PATH));
   }
 
   public void clearRefreshTokenCookie(HttpServletResponse response) {
-    CookieUtil.addCookie(response, CookieUtil.buildExpiredCookie(REFRESH_TOKEN_COOKIE_NAME));
+    CookieUtil.addCookie(response,
+        CookieUtil.buildExpiredCookie(REFRESH_TOKEN_COOKIE_NAME, REFRESH_PATH));
   }
 
   public void clearDeviceIdCookie(HttpServletResponse response) {
-    CookieUtil.addCookie(response, CookieUtil.buildExpiredCookie(DEVICE_ID_COOKIE_NAME));
+    CookieUtil.addCookie(response,
+        CookieUtil.buildExpiredCookie(DEVICE_ID_COOKIE_NAME, REFRESH_PATH));
   }
 
   public void clearResponseTokenCookie(HttpServletResponse response, UUID responseId) {
     String cookieName = RESPONSE_TOKEN_PREFIX + responseId;
-    CookieUtil.addCookie(response, CookieUtil.buildExpiredCookie(cookieName));
+    CookieUtil.addCookie(response,
+        CookieUtil.buildExpiredCookie(cookieName, RESPONSES_PATH));
   }
 
   public void clearAllAuthCookies(HttpServletResponse response) {

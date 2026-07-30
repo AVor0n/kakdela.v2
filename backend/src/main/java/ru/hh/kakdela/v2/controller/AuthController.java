@@ -20,7 +20,6 @@ import ru.hh.kakdela.v2.security.CustomUserDetails;
 import ru.hh.kakdela.v2.service.AccountService;
 import ru.hh.kakdela.v2.service.AuthCookieService;
 import ru.hh.kakdela.v2.service.AuthService;
-import ru.hh.kakdela.v2.util.DeviceUtil;
 
 @RequiredArgsConstructor
 @RestController
@@ -31,7 +30,6 @@ public class AuthController {
   private final AuthService authService;
   private final AccountService accountService;
   private final AuthCookieService authCookieService;
-
 
   @PostMapping("/auth/register")
   @ResponseStatus(HttpStatus.CREATED)
@@ -46,11 +44,7 @@ public class AuthController {
       HttpServletRequest request,
       HttpServletResponse response) {
 
-    String deviceId = DeviceUtil.getDeviceId(request);
-    if (deviceId == null) {
-      deviceId = DeviceUtil.generateDeviceId();
-      authCookieService.setDeviceIdCookie(response, deviceId);
-    }
+    String deviceId = authCookieService.getOrCreateDeviceId(request, response);
 
     String userAgent = request.getHeader("User-Agent");
     String ipAddress = request.getRemoteAddr();
