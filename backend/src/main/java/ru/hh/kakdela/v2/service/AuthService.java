@@ -6,7 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -29,28 +28,6 @@ public class AuthService {
   private final JwtService jwtService;
   private final RefreshTokenService refreshTokenService;
 
-  private Account authenticate(LoginDto loginDto) {
-    Account account = accountDao.findByLogin(loginDto.getLogin()).orElseThrow(() ->
-        new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Неверный логин или пароль"));
-
-    if (account.getIsDeleted() != null && account.getIsDeleted()) {
-      throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Аккаунт удалён");
-    }
-
-    try {
-      authenticationManager
-          .authenticate(
-              new UsernamePasswordAuthenticationToken(
-                  loginDto.getLogin(),
-                  loginDto.getPassword()));
-    } catch (AuthenticationException e) {
-      throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Неверный логин или пароль");
-    }
-
-    log.info("Успешная аутентификация: login={}", loginDto.getLogin());
-    return account;
-  }
-
   @Transactional
   public AuthTokensDto login(
       LoginDto loginDto,
@@ -58,7 +35,16 @@ public class AuthService {
       String userAgent,
       String ipAddress) {
 
-    Account account = authenticate(loginDto);
+    Account account = accountDao.findByLogin(loginDto.getLogin()).orElseThrow(() ->
+        new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Неверный логин или пароль"));
+
+    authenticationManager
+        .authenticate(
+            new UsernamePasswordAuthenticationToken(
+                loginDto.getLogin(),
+                loginDto.getPassword()));
+
+    log.info("Успешная аутентификация: login={}", loginDto.getLogin());
 
     refreshTokenService.revokeAllByAccountIdAndDeviceId(account.getId(), deviceId);
 
