@@ -15,7 +15,7 @@ import ru.hh.kakdela.v2.dao.SurveyDao;
 import ru.hh.kakdela.v2.dto.closing.ClosingPageCreateDto;
 import ru.hh.kakdela.v2.dto.closing.ClosingPageResponseDto;
 import ru.hh.kakdela.v2.dto.closing.ClosingPageUpdateDto;
-import ru.hh.kakdela.v2.dto.file.FileUploadResponseDto;
+import ru.hh.kakdela.v2.dto.file.FileResponseDto;
 import ru.hh.kakdela.v2.dto.image.ProcessedImage;
 import ru.hh.kakdela.v2.dto.object.ObjectUrlResponseDto;
 import ru.hh.kakdela.v2.mapper.ClosingPageMapper;
@@ -128,7 +128,9 @@ public class ClosingPageService {
       objectStorageService.deleteObject(closingPage.getFileObjectKey());
     }
 
-    closingPageDao.delete(closingPage);
+    closingPageDao.deleteBySurveyId(surveyId);
+
+    log.info("Удалена завершающая страница для опроса id={}", surveyId);
   }
 
   // Attachment management
@@ -209,7 +211,7 @@ public class ClosingPageService {
   }
 
   @Transactional
-  public FileUploadResponseDto addFile(UUID surveyId, UUID accountId, MultipartFile file) {
+  public FileResponseDto addFile(UUID surveyId, UUID accountId, MultipartFile file) {
     validateFile(file);
 
     ClosingPage closingPage = closingPageDao.findBySurveyId(surveyId)
@@ -236,16 +238,14 @@ public class ClosingPageService {
     log.info("Добавлен файл к завершающей странице surveyId={} fileName={} size={}",
         surveyId, file.getOriginalFilename(), file.getSize());
 
-    String url = objectStorageService.generateObjectUrl(objectKey, attachmentUrlMaxAge).toString();
-
-    return FileUploadResponseDto.builder()
-        .url(url)
-        .fileName(clearFileName)
+    return FileResponseDto.builder()
+        .fileName(file.getOriginalFilename())
+        .fileSize(file.getSize())
         .build();
   }
 
   @Transactional
-  public FileUploadResponseDto updateFile(UUID surveyId, UUID accountId, MultipartFile file) {
+  public FileResponseDto updateFile(UUID surveyId, UUID accountId, MultipartFile file) {
     validateFile(file);
 
     ClosingPage closingPage = closingPageDao.findBySurveyId(surveyId)
@@ -271,11 +271,9 @@ public class ClosingPageService {
     log.info("Обновлен файл завершающей страницы surveyId={} fileName={} size={}",
         surveyId, file.getOriginalFilename(), file.getSize());
 
-    String url = objectStorageService.generateObjectUrl(objectKey, attachmentUrlMaxAge).toString();
-
-    return FileUploadResponseDto.builder()
-        .url(url)
-        .fileName(clearFileName)
+    return FileResponseDto.builder()
+        .fileName(file.getOriginalFilename())
+        .fileSize(file.getSize())
         .build();
   }
 
