@@ -22,10 +22,6 @@
     align-self: flex-start;
 }
 
-.settings > div:nth-child(2) {
-    align-self: flex-start;
-}
-
 .settings {
     display: grid;
     grid-template-columns: 1fr 0.5fr 1fr;
@@ -119,4 +115,8 @@
     flex-direction: column;
     gap: 10px;
     width: 100%;
+}
+
+.questionDescription {
+    margin: 15px 0;
 }

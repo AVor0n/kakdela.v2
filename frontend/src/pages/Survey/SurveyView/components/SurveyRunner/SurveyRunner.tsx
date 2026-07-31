@@ -12,6 +12,7 @@ import optionStyle from '@/pages/Survey/SurveyModify/components/QuestionList/com
 import longTextStyle from '@/pages/Survey/SurveyModify/components/QuestionList/components/Question/components/LongText/LongText.module.css';
 import style from './SurveyRunner.module.css';
 import { useSurveyResponseSync } from './useSurveyResponseSync';
+import { HTMLRender } from '@/shared/ui/HTMLRender/HTMLRender';
 
 export type SurveyRunnerMode = 'preview' | 'respond';
 
@@ -214,7 +215,7 @@ export function SurveyRunner({ survey, mode }: Props) {
                                         onChange={() => updateAnswer(question, option.id)}
                                     />
                                     <Text typography='paragraph-2-regular' style='primary'>
-                                        {option.answerOptionText}
+                                        <HTMLRender html={option.answerOptionText} />
                                     </Text>
                                 </label>
                             </div>
@@ -236,7 +237,7 @@ export function SurveyRunner({ survey, mode }: Props) {
                                             onChange={() => toggleMultipleChoice(question, option.id)}
                                         />
                                         <Text typography='paragraph-2-regular' style='primary'>
-                                            {option.answerOptionText}
+                                            <HTMLRender html={option.answerOptionText} />
                                         </Text>
                                     </label>
                                 </div>
@@ -297,14 +298,8 @@ export function SurveyRunner({ survey, mode }: Props) {
                     </div>
                 )}
                 <header className={`${surveyDetailStyle.container} ${style.formHeader}`}>
-                    <Text typography='subtitle-1-semibold' style='primary'>
-                        {survey.title}
-                    </Text>
-                    {survey.description && (
-                        <Text typography='paragraph-2-regular' style='primary'>
-                            {survey.description}
-                        </Text>
-                    )}
+                    <HTMLRender className={style.title} html={survey.title} />
+                    {survey.description && <HTMLRender className={style.description} html={survey.description} />}
                 </header>
 
                 {isComplete ? (
@@ -324,13 +319,11 @@ export function SurveyRunner({ survey, mode }: Props) {
                             <section className={choiceStyle.container}>
                                 {(currentPage.description || currentPage.title) && (
                                     <section className={`${surveyDetailStyle.container} ${style.formHeader}`}>
-                                        <Text typography='subtitle-1-semibold' style='primary'>
-                                            {currentPage.title}
-                                        </Text>
+                                        {currentPage.title && (
+                                            <HTMLRender className={style.title} html={currentPage.title} />
+                                        )}
                                         {currentPage.description && (
-                                            <Text typography='paragraph-2-regular' style='primary'>
-                                                {currentPage.description}
-                                            </Text>
+                                            <HTMLRender className={style.title} html={currentPage.description} />
                                         )}
                                     </section>
                                 )}
@@ -345,16 +338,12 @@ export function SurveyRunner({ survey, mode }: Props) {
                                             />
                                         )}
                                         <div className={style.questionTitle}>
-                                            <Text typography='paragraph-2-regular' style='primary'>
-                                                {question.title}
-                                            </Text>
+                                            <HTMLRender className={style.title} html={question.title} />
                                             {question.isMandatory && <span className={style.mandatory}>*</span>}
                                         </div>
                                         {question.description && (
                                             <div className={style.questionDescription}>
-                                                <Text typography='paragraph-3-regular' style='primary'>
-                                                    {question.description}
-                                                </Text>
+                                                <HTMLRender className={style.title} html={question.description} />
                                             </div>
                                         )}
                                         <section className={questionStyle.actions}>

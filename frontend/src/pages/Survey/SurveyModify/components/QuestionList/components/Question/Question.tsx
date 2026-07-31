@@ -1,14 +1,6 @@
 import type { Question, QuestionType } from '@/shared/types/Question.type';
 import type { DraggableAttributes, DraggableSyntheticListeners } from '@dnd-kit/core';
-import {
-    Button,
-    Checkbox,
-    createStaticDataProvider,
-    Input,
-    Select,
-    TextArea,
-    type StaticDataFetcherItem,
-} from '@hh.ru/magritte-ui';
+import { Button, Checkbox, createStaticDataProvider, Select, type StaticDataFetcherItem } from '@hh.ru/magritte-ui';
 import { useCallback, useEffect, useMemo, useState, type ChangeEvent, type Ref } from 'react';
 import { ShortText } from './components/ShortText/ShortText';
 import { LongText } from './components/LongText/LongText';
@@ -31,6 +23,7 @@ import { setErrorMessage } from '@/entities/Error/Error.slice';
 import { attachImageToQuestion, removeImageFromQuestion, updateAttachmentOfQuestion } from '@/api/attachments';
 import style from './Question.module.css';
 import { DragHandle } from './components/QuestionControls/DragHandle/DragHandle';
+import { EditorInput } from '@/shared/ui/EditorInput/EditorInput';
 
 interface Props {
     question: Question;
@@ -231,19 +224,12 @@ export function Question({
             {questionImage && <img src={questionImage} alt='img' className={style.attachmentUrl} />}
             <section className={style.settings}>
                 <div className={style.questionDetail}>
-                    <Input
+                    <EditorInput
                         placeholder='Вопрос'
                         value={title}
-                        onChange={(e) => {
-                            setTitle(e);
-                        }}
+                        onChange={setTitle}
                         onBlur={updateQuestionTitleHandler}
-                    />
-                    <TextArea
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        placeholder='Описание вопроса'
-                        onBlur={updateQuestionDescriptionHandler}
+                        isTextColor
                     />
                 </div>
                 <div className={style.imageSettings}>
@@ -274,6 +260,17 @@ export function Question({
                         setTypeQuestion(e.value as QuestionType);
                     }}
                     onBlur={updateQuestionTypeHandler}
+                />
+            </section>
+            <section className={style.questionDescription}>
+                <EditorInput
+                    placeholder='Описание вопроса'
+                    value={description}
+                    onChange={setDescription}
+                    onBlur={updateQuestionDescriptionHandler}
+                    isTextColor
+                    isMarkColor
+                    isHeading
                 />
             </section>
 
