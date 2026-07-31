@@ -1,7 +1,9 @@
 package ru.hh.kakdela.v2.service;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -41,6 +43,40 @@ public class AnswerOptionService {
     return answerOptionDao.findAllByQuestionId(questionId).stream()
         .map(answerOptionMapper::answerOptionToDto)
         .toList();
+  }
+
+  @Transactional(readOnly = true)
+  public List<AnswerOption> getByIdsAndVerifyByQuestionId(
+      Set<UUID> answerOptionIds,
+      UUID questionsId
+  ) {
+    List<AnswerOption> foundAnswerOptions = answerOptionDao.findByIds(answerOptionIds);
+
+    if (foundAnswerOptions.size() != answerOptionIds.size()) {
+      Set<UUID> foundIds = foundAnswerOptions.stream()
+          .map(AnswerOption::getId)
+          .collect(Collectors.toSet());
+
+      Set<UUID> missingIds = answerOptionIds.stream()
+          .filter(id -> !foundIds.contains(id))
+          .collect(Collectors.toSet());
+
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+          "Варианты ответа не найдены: ids=" + missingIds);
+    }
+
+    List<UUID> answerOptionsOfAnotherQuestionIds = foundAnswerOptions.stream()
+        .filter(ao -> !ao.getQuestion().getId().equals(questionsId))
+        .map(AnswerOption::getId)
+        .toList();
+
+    if (!answerOptionsOfAnotherQuestionIds.isEmpty()) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+          "Варианты ответа принадлежат другому вопросу: ids="
+              + answerOptionsOfAnotherQuestionIds);
+    }
+
+    return foundAnswerOptions;
   }
 
   @Transactional
