@@ -10,7 +10,7 @@ CREATE TABLE survey (
     id uuid PRIMARY KEY,
     author_id uuid REFERENCES account (id) ON DELETE CASCADE NOT NULL,
     title varchar(200) NOT NULL,
-    description varchar(5000),
+    description text,
     is_authorized_only bool NOT NULL,
     is_limited_to_one_response bool NOT NULL,
     is_published bool NOT NULL,
@@ -37,7 +37,7 @@ CREATE TABLE survey_page (
     survey_id uuid REFERENCES survey (id) ON DELETE CASCADE NOT NULL,
     serial_number int NOT NULL,
     title varchar(200),
-    description varchar(5000),
+    description text,
     CONSTRAINT uq_page_survey_serial UNIQUE (survey_id, serial_number) DEFERRABLE INITIALLY IMMEDIATE
 );
 
@@ -49,7 +49,7 @@ CREATE TABLE question (
     survey_page_id uuid REFERENCES survey_page (id) ON DELETE CASCADE NOT NULL,
     serial_number int NOT NULL,
     title varchar(200) NOT NULL,
-    description varchar(5000),
+    description text,
     attachment_object_key varchar(1024),
     type varchar(255) NOT NULL,
     answer_option_order varchar(255),
@@ -64,7 +64,7 @@ CREATE TABLE answer_option (
     id uuid PRIMARY KEY,
     question_id uuid REFERENCES question (id) ON DELETE CASCADE NOT NULL,
     serial_number int NOT NULL,
-    answer_option_text varchar(1000) NOT NULL,
+    answer_option_text text NOT NULL,
     attachment_object_key varchar(1024),
     CONSTRAINT uq_answer_option_question_serial UNIQUE (question_id, serial_number) DEFERRABLE INITIALLY IMMEDIATE
 
@@ -73,7 +73,7 @@ CREATE TABLE answer_option (
 CREATE TABLE closing_page (
     survey_id uuid PRIMARY KEY REFERENCES survey (id) ON DELETE CASCADE,
     title varchar(200),
-    description varchar(5000),
+    description text,
     attachment_object_key varchar(1024),
     website_url varchar(2000)
 );
@@ -95,7 +95,7 @@ ON response (account_id);
 CREATE TABLE answer (
     response_id uuid REFERENCES response (id) ON DELETE CASCADE,
     question_id uuid REFERENCES question (id) ON DELETE CASCADE,
-    answer_text varchar(5000) NOT NULL,
+    answer_text text NOT NULL,
     PRIMARY KEY (response_id, question_id)
 );
 

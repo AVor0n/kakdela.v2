@@ -5,17 +5,19 @@ import { useNavigate } from 'react-router-dom';
 import { createSurvey, getMySurveys } from '@/api/survey';
 import { routes } from '@/app/routes';
 import { SurveyCreateCard } from '@/pages/Survey/components/SurveyList/SurveyCreateCard';
-import { SurveyItem } from '@/pages/Survey/components/SurveyList/SurveyItem';
+import { SurveyItem } from '@/pages/Survey/components/SurveyList/components/SurveyItem/SurveyItem';
 import type { SurveyListItem } from '@/shared/types/Survey.type';
 import styles from './SurveyList.module.css';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { clearErrorMessage, setErrorMessage } from '@/entities/Error/Error.slice';
 import { AccountDetail } from '@/shared/ui/AccountDetail/AccountDetail';
+import { useAppSelector } from '@/hooks/useAppSelector';
+import { setSurveys } from '@/entities/Survey/Survey.slice';
 
 export function SurveyList() {
     const navigate = useNavigate();
-    const [surveys, setSurveys] = useState<SurveyListItem[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const { surveys } = useAppSelector((state) => state.survey);
     const dispatch = useAppDispatch();
 
     useEffect(() => {
@@ -27,7 +29,7 @@ export function SurveyList() {
                 const mySurveys = await getMySurveys();
 
                 if (isMounted) {
-                    setSurveys(mySurveys);
+                    dispatch(setSurveys({ surveys: mySurveys }));
                 }
             } catch (requestError) {
                 const status = axios.isAxiosError(requestError) ? requestError.response?.status : undefined;
@@ -84,7 +86,9 @@ export function SurveyList() {
                         </div>
                     ) : (
                         <div className={styles.grid}>
-                            <SurveyCreateCard onClick={handleCreateClick} />
+                            <div className={styles.createButtonWrapper}>
+                                <SurveyCreateCard onClick={handleCreateClick} />
+                            </div>
                             {surveys.map((survey) => (
                                 <SurveyItem key={survey.id} survey={survey} onClick={() => handleSurveyClick(survey)} />
                             ))}

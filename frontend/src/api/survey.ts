@@ -25,6 +25,12 @@ export async function createSurvey(): Promise<SurveyResponse> {
     return data;
 }
 
+export async function cloneSurvey(surveyId: string): Promise<SurveyResponse> {
+    const { data } = await apiClient.post<SurveyResponse>(`/api/surveys/${surveyId}/clone`);
+
+    return data;
+}
+
 export async function getSurveyById(surveyId: string): Promise<SurveyResponse> {
     const { data } = await apiClient.get<SurveyResponse>(`/api/surveys/${surveyId}`);
 

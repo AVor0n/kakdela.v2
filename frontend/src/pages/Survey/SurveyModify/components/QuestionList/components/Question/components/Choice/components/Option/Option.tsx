@@ -8,6 +8,8 @@ import { deleteOption, setOptionValue } from '@/entities/Survey/Survey.slice';
 import { Button } from '@hh.ru/magritte-ui';
 import { setErrorMessage } from '@/entities/Error/Error.slice';
 import style from './Option.module.css';
+import { EditorInput } from '@/shared/ui/EditorInput/EditorInput';
+
 interface Props {
     option: AnswerOption;
     children: ReactNode;
@@ -57,7 +59,7 @@ export function Option({ option, children, isEdit, dragHandleAttributes, dragHan
     return (
         <>
             <div className={style.optionContent}>
-                <label className={style.option}>
+                <div className={style.option}>
                     {isEdit && (
                         <div
                             ref={dragHandleRef}
@@ -78,13 +80,12 @@ export function Option({ option, children, isEdit, dragHandleAttributes, dragHan
                     )}
                     {children}
                     {option.answerOptionText !== 'Другое' ? (
-                        <input
+                        <EditorInput
                             className={style.input}
                             value={optionAnswer}
-                            onChange={(e) => {
-                                setOptionAnswer(e.target.value);
-                            }}
+                            onChange={setOptionAnswer}
                             onBlur={updateQuestionOptionHandler}
+                            isTextColor
                         />
                     ) : (
                         <div>
@@ -92,7 +93,7 @@ export function Option({ option, children, isEdit, dragHandleAttributes, dragHan
                             <input className={style.another} disabled />
                         </div>
                     )}
-                </label>
+                </div>
 
                 {isEdit && (
                     <Button
