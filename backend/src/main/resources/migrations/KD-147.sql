@@ -11,9 +11,6 @@ ALTER TABLE survey
     ALTER COLUMN target_timezone SET DEFAULT 'Europe/Moscow',
     ALTER COLUMN target_timezone SET NOT NULL;
 
-ALTER TABLE permissions
-    ALTER COLUMN do_notify SET DEFAULT TRUE;
-
 ALTER TABLE survey_page
     RENAME CONSTRAINT uq_page_survey_serial TO uk_page_survey_serial;
 
