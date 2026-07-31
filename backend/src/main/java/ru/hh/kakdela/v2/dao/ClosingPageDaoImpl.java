@@ -41,9 +41,16 @@ public class ClosingPageDaoImpl implements ClosingPageDao {
   }
 
   @Override
-  public void delete(ClosingPage closingPage) {
-    log.debug("Удалена страница завершения для опроса id={}", closingPage.getSurvey().getId());
-    entityManager.remove(closingPage);
+  public void deleteBySurveyId(UUID surveyId) {
+    log.debug("Удаление страницы завершения по surveyId={}", surveyId);
+
+    entityManager.createQuery(
+            """
+            DELETE FROM ClosingPage cp 
+            WHERE cp.survey.id = :surveyId
+            """)
+        .setParameter("surveyId", surveyId)
+        .executeUpdate();
   }
 
   @Override

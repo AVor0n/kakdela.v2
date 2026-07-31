@@ -84,6 +84,8 @@ public class SurveyServiceCloneTest extends SurveyServiceTestBase {
         .thenReturn(Optional.of(SurveyServiceTestEntity.account2));
     Mockito.when(objectStorageService.generateObjectUrl(Mockito.any(), Mockito.anyLong()))
         .thenReturn(URI.create("http://attachmentUrl/").toURL());
+    Mockito.when(objectStorageService.getFileSize(Mockito.anyString()))
+        .thenReturn(102400L);
 
     Mockito.doAnswer(invocation -> {
       Survey survey = invocation.getArgument(0);

@@ -84,7 +84,7 @@ public class SurveyServiceTestEntity {
           "closingPage",
           "description",
           SurveyServiceTestConstants.attachmentObjectKey,
-          TEST_FILE_OBJECT_KEY,
+          SurveyServiceTestConstants.fileObjectKey,
           "websiteUrl"
       ));
     }

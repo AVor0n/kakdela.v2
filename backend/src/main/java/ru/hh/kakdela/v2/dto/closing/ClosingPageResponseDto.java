@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
+import ru.hh.kakdela.v2.dto.file.FileResponseDto;
 
 @AllArgsConstructor
 @Getter
@@ -19,4 +20,5 @@ public class ClosingPageResponseDto {
   private final String description;
   private final String attachmentUrl;
   private final String websiteUrl;
+  private final FileResponseDto file;
 }

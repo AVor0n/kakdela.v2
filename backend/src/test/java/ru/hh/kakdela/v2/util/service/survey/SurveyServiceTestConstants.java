@@ -12,7 +12,7 @@ import ru.hh.kakdela.v2.model.Account;
 
 public class SurveyServiceTestConstants {
 
-  public static final String fileObjectKey = "closing-pages/test-file-key";
+  public static final String fileObjectKey = "closing-pages/test-file.pdf";
 
   public static final UUID account1Id = UUID.randomUUID();
   public static final UUID account2Id = UUID.randomUUID();

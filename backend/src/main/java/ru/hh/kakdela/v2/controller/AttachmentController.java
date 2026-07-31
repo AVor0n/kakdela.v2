@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import ru.hh.kakdela.v2.dto.file.FileUploadResponseDto;
+import ru.hh.kakdela.v2.dto.file.FileResponseDto;
 import ru.hh.kakdela.v2.dto.object.ObjectUrlResponseDto;
 import ru.hh.kakdela.v2.security.CustomUserDetails;
 import ru.hh.kakdela.v2.service.AnswerOptionService;
@@ -162,7 +162,7 @@ public class AttachmentController {
       value = "/surveys/{surveyId}/closing-page/attachment",
       consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseStatus(HttpStatus.CREATED)
-  public FileUploadResponseDto uploadFile(
+  public FileResponseDto uploadFile(
       @PathVariable UUID surveyId,
       @RequestParam("file") MultipartFile file,
       @AuthenticationPrincipal CustomUserDetails currentUser
@@ -173,7 +173,7 @@ public class AttachmentController {
   @PutMapping(
       value = "/surveys/{surveyId}/closing-page/attachment",
       consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  public FileUploadResponseDto updateFile(
+  public FileResponseDto updateFile(
       @PathVariable UUID surveyId,
       @RequestParam("file") MultipartFile file,
       @AuthenticationPrincipal CustomUserDetails currentUser

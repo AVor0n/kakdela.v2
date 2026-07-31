@@ -12,7 +12,7 @@ public interface ClosingPageDao {
 
   void update(ClosingPage closingPage);
 
-  void delete(ClosingPage closingPage);
+  void deleteBySurveyId(UUID surveyId);
 
   boolean existsBySurveyId(UUID surveyId);
 }
