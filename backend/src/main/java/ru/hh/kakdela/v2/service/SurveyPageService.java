@@ -34,7 +34,7 @@ public class SurveyPageService {
   public SurveyPageResponseDto getPublicById(UUID id, UUID responseId) {
     SurveyPage surveyPage = surveyPageDao.findById(id)
         .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Страница не найдена: " + id));
+            HttpStatus.NOT_FOUND, "Страница не найдена: id=" + id));
 
     Response response = responseDao.findById(responseId)
         .orElseThrow(() -> new ResponseStatusException(
