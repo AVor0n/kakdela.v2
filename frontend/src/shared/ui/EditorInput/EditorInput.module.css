@@ -1,0 +1,32 @@
+.tiptap {
+    border: solid 1px var(--color-border);
+    padding: 15px;
+    border-radius: 14px;
+    z-index: 100;
+
+    h1 {
+        font-size: 1.3rem;
+    }
+
+    h2 {
+        font-size: 1.2rem;
+    }
+
+    h3 {
+        font-size: 1.1rem;
+    }
+
+    cursor: text;
+}
+
+.tiptap p:global(.is-editor-empty):first-child::before {
+    color: #adb5bd;
+    content: attr(data-placeholder);
+    float: left;
+    height: 0;
+    pointer-events: none;
+}
+
+.tiptap:focus {
+    box-shadow: rgb(0, 112, 255) 0px 0px 0px 2px inset;
+}
