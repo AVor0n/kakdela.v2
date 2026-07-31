@@ -8,7 +8,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.jsoup.Jsoup;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -149,7 +148,7 @@ public class AnswerService {
       AnswerRequestDto dto,
       List<AnswerOption> foundAnswerOptions
   ) {
-    answer.setQuestionTextSnapshot(Jsoup.parseBodyFragment(question.getText()).text());
+    answer.setQuestionTextSnapshot(question.getTextAsPlainString());
     answer.setTextValue(dto.getTextValue());
     answer.setBooleanValue(dto.getBooleanValue());
     answer.setDateValue(dto.getDateValue());
@@ -162,7 +161,7 @@ public class AnswerService {
                 UUID.randomUUID(),
                 answer,
                 ao,
-                Jsoup.parseBodyFragment(ao.getText()).text()))
+                ao.getAnswerOptionTextAsPlainString()))
             .toList());
 
     answerDao.update(answer);
@@ -182,7 +181,7 @@ public class AnswerService {
         .id(UUID.randomUUID())
         .response(response)
         .question(question)
-        .questionTextSnapshot(Jsoup.parseBodyFragment(question.getText()).text())
+        .questionTextSnapshot(question.getTextAsPlainString())
         .textValue(dto.getTextValue())
         .booleanValue(dto.getBooleanValue())
         .dateValue(dto.getDateValue())
@@ -195,7 +194,7 @@ public class AnswerService {
                 UUID.randomUUID(),
                 answer,
                 ao,
-                Jsoup.parseBodyFragment(ao.getText()).text()))
+                ao.getAnswerOptionTextAsPlainString()))
             .toList());
 
     answerDao.save(answer);
