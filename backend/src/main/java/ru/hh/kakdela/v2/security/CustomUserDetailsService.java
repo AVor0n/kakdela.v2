@@ -2,11 +2,10 @@ package ru.hh.kakdela.v2.security;
 
 import java.util.HashSet;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 import ru.hh.kakdela.v2.dao.AccountDao;
 import ru.hh.kakdela.v2.model.Account;
 
@@ -19,11 +18,10 @@ public class CustomUserDetailsService implements UserDetailsService {
   @Override
   public CustomUserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
     Account account = accountDao.findByLogin(username)
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.UNAUTHORIZED, "Неверный логин или пароль"));
+        .orElseThrow(() -> new UsernameNotFoundException("Аккаунт не найден: login=" + username));
 
     if (account.getIsDeleted() != null && account.getIsDeleted()) {
-      throw new ResponseStatusException(HttpStatus.CONFLICT, "Аккаунт удален");
+      throw new DisabledException("Аккаунт удалён: login=" + username);
     }
 
     return new CustomUserDetails(
