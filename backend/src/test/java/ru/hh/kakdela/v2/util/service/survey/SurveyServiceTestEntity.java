@@ -26,7 +26,6 @@ public class SurveyServiceTestEntity {
         "account1@example.com",
             null,
             null,
-            null,
             1,
             false,
             null,
@@ -36,8 +35,7 @@ public class SurveyServiceTestEntity {
   public static final Account account2 = new Account(
       SurveyServiceTestConstants.account2Id,
         "account2",
-        "account1@example.com",
-            null,
+        "account2@example.com",
             null,
             null,
             1,
