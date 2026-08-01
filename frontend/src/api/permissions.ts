@@ -2,17 +2,22 @@ import { apiClient } from './client';
 
 export type SurveyPermissionRole = 'ANALYST' | 'EDITOR';
 
+export type PermissionAccount = {
+    id: string;
+    login: string;
+    email: string;
+};
+
 export type SurveyPermission = {
-    accountId: string;
     surveyId: string;
+    account: PermissionAccount;
     role: SurveyPermissionRole;
     doNotify: boolean;
 };
 
 type CreateSurveyPermissionRequest = {
-    accountId: string;
+    email: string;
     role: SurveyPermissionRole;
-    doNotify: boolean;
 };
 
 export async function getSurveyPermissions(surveyId: string): Promise<SurveyPermission[]> {
@@ -35,13 +40,17 @@ export async function updateSurveyPermissionRole(
     accountId: string,
     role: SurveyPermissionRole,
 ): Promise<SurveyPermission> {
-    const { data } = await apiClient.patch<SurveyPermission>(`/api/surveys/${surveyId}/permissions/${accountId}`, {
-        role,
-    });
+    const { data } = await apiClient.put<SurveyPermission>(
+        `/api/surveys/${surveyId}/permissions`,
+        { role },
+        { params: { accountId } },
+    );
 
     return data;
 }
 
 export async function deleteSurveyPermission(surveyId: string, accountId: string): Promise<void> {
-    await apiClient.delete(`/api/surveys/${surveyId}/permissions/${accountId}`);
+    await apiClient.delete(`/api/surveys/${surveyId}/permissions`, {
+        params: { accountId },
+    });
 }
