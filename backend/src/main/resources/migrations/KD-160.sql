@@ -1,1 +1,2 @@
-ALTER TABLE account ADD COLUMN hh_user_id varchar(64) UNIQUE;
+ALTER TABLE account DROP COLUMN IF EXISTS hh_user_id;
+ALTER TABLE account ADD COLUMN is_hh_sso boolean NOT NULL DEFAULT false;
