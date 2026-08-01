@@ -37,7 +37,7 @@ public class ResponseService {
 
   @Transactional(readOnly = true)
   public ResponseResponseDto getById(UUID id, UUID accountId, String token) {
-    Response response = checkAccessAndGetResponse(id, accountId, token);
+    Response response = loadResponseAndCheckAccess(id, accountId, token);
 
     if (response.getAccount() == null && response.isCompleted()
         && !response.getSurvey().isAuthor(accountId)) {
@@ -128,7 +128,7 @@ public class ResponseService {
 
   @Transactional
   public ResponseResponseDto complete(UUID id, UUID accountId, String token) {
-    Response response = checkAccessAndGetResponse(id, accountId, token);
+    Response response = loadResponseAndCheckAccess(id, accountId, token);
 
     if (!responseDao.areAllMandatoryQuestionsAnswered(id)) {
       throw new ResponseStatusException(
@@ -173,7 +173,7 @@ public class ResponseService {
 
   // Вспомогательные методы
 
-  private Response checkAccessAndGetResponse(UUID responseId, UUID accountId, String token) {
+  private Response loadResponseAndCheckAccess(UUID responseId, UUID accountId, String token) {
     Response response = responseDao.findByIdWithSurvey(responseId)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Ответ не найден: " + responseId));

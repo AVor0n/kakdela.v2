@@ -48,7 +48,7 @@ public class AnswerOptionService {
   @Transactional(readOnly = true)
   public List<AnswerOption> getByIdsAndVerifyByQuestionId(
       Set<UUID> answerOptionIds,
-      UUID questionsId
+      UUID questionId
   ) {
     List<AnswerOption> foundAnswerOptions = answerOptionDao.findByIds(answerOptionIds);
 
@@ -66,7 +66,7 @@ public class AnswerOptionService {
     }
 
     List<UUID> answerOptionsOfAnotherQuestionIds = foundAnswerOptions.stream()
-        .filter(ao -> !ao.getQuestion().getId().equals(questionsId))
+        .filter(ao -> !ao.getQuestion().getId().equals(questionId))
         .map(AnswerOption::getId)
         .toList();
 
