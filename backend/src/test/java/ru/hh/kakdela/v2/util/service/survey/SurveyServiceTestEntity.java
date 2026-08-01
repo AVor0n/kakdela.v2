@@ -23,6 +23,7 @@ public class SurveyServiceTestEntity {
   public static final Account account1 = new Account(
       SurveyServiceTestConstants.account1Id,
         "account1",
+        "account1@example.com",
             null,
             null,
             null,
@@ -35,6 +36,7 @@ public class SurveyServiceTestEntity {
   public static final Account account2 = new Account(
       SurveyServiceTestConstants.account2Id,
         "account2",
+        "account1@example.com",
             null,
             null,
             null,
@@ -44,7 +46,7 @@ public class SurveyServiceTestEntity {
             null,
             null,
             null);
-
+  
   private static Account getAuthorFor(boolean isClone) {
     return isClone
         ? account2
@@ -75,8 +77,8 @@ public class SurveyServiceTestEntity {
           new Permission.PermissionId(
               SurveyServiceTestConstants.account2Id, FullSurveyConstants.SURVEY.getId(
               IS_ORIGINAL)),
-          account2,
           survey,
+          account2,
           Permission.SurveyRole.EDITOR,
           false));
     }

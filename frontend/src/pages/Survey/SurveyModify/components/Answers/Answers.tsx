@@ -4,12 +4,10 @@ import { useParams } from 'react-router-dom';
 
 import { getSurveyById } from '@/api/survey';
 import {
-    exportSurveyResponses,
-    getSurveyResponses,
+    type ResponseAccountDetail,
     type SurveyAnswerResponse,
     type SurveyCompletedResponse,
-} from '@/api/surveyResponses';
-import { setErrorMessage } from '@/entities/Error/Error.slice';
+} from '@/shared/types/SurveyResponse.type';
 import { setSelectedSurvey } from '@/entities/Survey/Survey.slice';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { useAppSelector } from '@/hooks/useAppSelector';
@@ -17,6 +15,8 @@ import type { Question } from '@/shared/types/Question.type';
 import type { Survey } from '@/shared/types/Survey.type';
 
 import style from './Answers.module.css';
+import { exportSurveyResponses, getSurveyResponses } from '@/api/surveyResponses';
+import { setErrorMessage } from '@/entities/Error/Error.slice';
 
 type AnswersSection = 'summary' | 'question' | 'user';
 
@@ -60,12 +60,18 @@ function getQuestionAnswers(responses: SurveyCompletedResponse[], questionId: st
         .filter((item): item is { answer: SurveyAnswerResponse; responseIndex: number } => Boolean(item.answer));
 }
 
-function getRespondentLabel(index: number) {
-    return `Пользователь ${index + 1}`;
+function getRespondentLabel(account: ResponseAccountDetail | null) {
+    if (account == null) return 'Анонимный пользователь';
+    return `${account.login}: ${account.email}`;
 }
 
 function getSelectValue(options: StaticDataFetcherItem[], value: string) {
     return options.find((option) => option.value === value);
+}
+
+function removeHTML(content: string) {
+    const doc = new DOMParser().parseFromString(content, 'text/html');
+    return doc.body.textContent || '';
 }
 
 export function Answers() {
@@ -114,16 +120,16 @@ export function Answers() {
         () =>
             questions.map((question, index) => ({
                 value: String(index),
-                text: question.title,
+                text: removeHTML(question.title),
             })),
         [questions],
     );
 
     const responseOptions = useMemo<StaticDataFetcherItem[]>(
         () =>
-            responses.map((_, index) => ({
+            responses.map((response, index) => ({
                 value: String(index),
-                text: getRespondentLabel(index),
+                text: getRespondentLabel(response.account),
             })),
         [responses],
     );
@@ -219,7 +225,7 @@ export function Answers() {
 
                             return (
                                 <article className={style.questionBlock} key={question.id}>
-                                    <h2 className={style.questionTitle}>{question.title}</h2>
+                                    <h2 className={style.questionTitle}>{removeHTML(question.title)}</h2>
                                     {answers.length === 0 ? (
                                         <div className={style.empty}>Нет ответов на этот вопрос</div>
                                     ) : (
@@ -234,7 +240,7 @@ export function Answers() {
                                                         type='button'
                                                         onClick={() => openResponse(responseIndex)}
                                                     >
-                                                        {answer.answerText}
+                                                        {removeHTML(answer.answerText)}
                                                     </button>
                                                 </li>
                                             ))}
@@ -277,7 +283,7 @@ export function Answers() {
                         </div>
 
                         <article className={style.questionBlock}>
-                            <h2 className={style.questionTitle}>{currentQuestion.title}</h2>
+                            <h2 className={style.questionTitle}>{removeHTML(currentQuestion.title)}</h2>
                             {getQuestionAnswers(responses, currentQuestion.id).length === 0 ? (
                                 <div className={style.empty}>Нет ответов на этот вопрос</div>
                             ) : (
@@ -293,7 +299,7 @@ export function Answers() {
                                                     type='button'
                                                     onClick={() => openResponse(responseIndex)}
                                                 >
-                                                    {answer.answerText}
+                                                    {removeHTML(answer.answerText)}
                                                 </button>
                                             </li>
                                         ),
@@ -340,8 +346,10 @@ export function Answers() {
 
                                 return (
                                     <article className={style.questionBlock} key={question.id}>
-                                        <h2 className={style.questionTitle}>{question.title}</h2>
-                                        <div className={style.singleAnswer}>{answer?.answerText ?? 'Нет ответа'}</div>
+                                        <h2 className={style.questionTitle}>{removeHTML(question.title)}</h2>
+                                        <div className={style.singleAnswer}>
+                                            {answer?.answerText ? removeHTML(answer.answerText) : 'Нет ответа'}
+                                        </div>
                                     </article>
                                 );
                             })}

@@ -1,0 +1,32 @@
+.textPurple {
+    color: #958df1;
+}
+
+.textRed {
+    color: #f98181;
+}
+
+.textOrange {
+    color: #fbbc88;
+}
+
+.textYellow {
+    color: #faf594;
+}
+
+.textBlue {
+    color: #70cff8;
+}
+
+.textTeal {
+    color: #94fadb;
+}
+
+.textGreen {
+    color: #b9f18d;
+}
+
+.colorInput {
+    width: 100%;
+    margin-bottom: 6px;
+}

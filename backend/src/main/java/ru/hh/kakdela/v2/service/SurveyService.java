@@ -38,10 +38,15 @@ public class SurveyService {
   private final SurveyMapper surveyMapper;
 
   @Transactional(readOnly = true)
-  public SurveyResponseDto getById(UUID id) {
-    Survey survey = surveyDao.findById(id)
+  public SurveyResponseDto getById(UUID surveyId, UUID accountId) {
+    Survey survey = surveyDao.findById(surveyId)
         .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Опрос не найден: " + id));
+            HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
+
+    if (!survey.isPublished()) {
+      permissionService.checkHasAnyPermission(surveyId, accountId);
+    }
+
     return surveyMapper.surveyToDto(survey);
   }
 
@@ -70,9 +75,9 @@ public class SurveyService {
         .isTemplate(false)
         .expireAt(dto.getExpireAtAtTargetTimezone() != null
             ? dto.getExpireAtAtTargetTimezone()
-              .atZone(ZoneId.of(dto.getTargetTimezone()))
-              .toInstant()
-              .truncatedTo(ChronoUnit.SECONDS)
+            .atZone(ZoneId.of(dto.getTargetTimezone()))
+            .toInstant()
+            .truncatedTo(ChronoUnit.SECONDS)
             : null)
         .targetTimezone(dto.getTargetTimezone())
         .createdAt(Instant.now().truncatedTo(ChronoUnit.SECONDS))
@@ -82,6 +87,7 @@ public class SurveyService {
 
     surveyDao.save(survey);
     log.info("Создан опрос id={} authorId={}", survey.getId(), authorId);
+
     return surveyMapper.surveyToDto(survey);
   }
 
@@ -143,6 +149,7 @@ public class SurveyService {
     if (survey.isPublished() && !wasPublished) {
       notificationService.sendSurveyPublishedNotifications(surveyId);
     }
+
     return surveyMapper.surveyToDto(survey);
   }
 
@@ -198,11 +205,15 @@ public class SurveyService {
             .condition(originalQuestion.getCondition())
             .build();
 
-        String questionAttachmentObjectKey =
-            "questions/%s/%s".formatted(questionId, UUID.randomUUID());
-        objectStorageService.copyObject(
-            originalQuestion.getAttachmentObjectKey(), questionAttachmentObjectKey);
-        questionCopy.setAttachmentObjectKey(questionAttachmentObjectKey);
+        if (originalQuestion.getAttachmentObjectKey() != null) {
+          String questionAttachmentObjectKey =
+              "questions/%s/%s".formatted(questionId, UUID.randomUUID());
+          objectStorageService.copyObject(
+              originalQuestion.getAttachmentObjectKey(),
+              questionAttachmentObjectKey
+          );
+          questionCopy.setAttachmentObjectKey(questionAttachmentObjectKey);
+        }
 
         for (AnswerOption originalOption : originalQuestion.getAnswerOptions()) {
           UUID optionId = UUID.randomUUID();
@@ -212,15 +223,18 @@ public class SurveyService {
               .question(questionCopy)
               .serialNumber(originalOption.getSerialNumber())
               .answerOptionText(originalOption.getAnswerOptionText())
-              .attachmentObjectKey(originalOption.getAttachmentObjectKey())
               .build();
-          questionCopy.getAnswerOptions().add(optionCopy);
 
-          String optionAttachmentObjectKey =
-              "answer-options/%s/%s".formatted(optionId, UUID.randomUUID());
-          objectStorageService.copyObject(
-              originalOption.getAttachmentObjectKey(), optionAttachmentObjectKey);
-          optionCopy.setAttachmentObjectKey(optionAttachmentObjectKey);
+          if (originalOption.getAttachmentObjectKey() != null) {
+            String optionAttachmentObjectKey =
+                "answer-options/%s/%s".formatted(optionId, UUID.randomUUID());
+            objectStorageService.copyObject(
+                originalOption.getAttachmentObjectKey(),
+                optionAttachmentObjectKey
+            );
+            optionCopy.setAttachmentObjectKey(optionAttachmentObjectKey);
+          }
+          questionCopy.getAnswerOptions().add(optionCopy);
         }
 
         pageCopy.getQuestions().add(questionCopy);
@@ -230,25 +244,38 @@ public class SurveyService {
     }
 
     if (originalSurvey.getClosingPage() != null) {
+      UUID closingPageId = UUID.randomUUID();
+
       ClosingPage closingPageCopy = ClosingPage.builder()
-          .id(UUID.randomUUID())
+          .id(closingPageId)
           .survey(surveyCopy)
           .title(originalSurvey.getClosingPage().getTitle())
           .description(originalSurvey.getClosingPage().getDescription())
           .websiteUrl(originalSurvey.getClosingPage().getWebsiteUrl())
           .build();
+
+      if (originalSurvey.getClosingPage().getAttachmentObjectKey() != null) {
+        String closingAttachmentObjectKey =
+            "closing/%s/%s".formatted(closingPageId, UUID.randomUUID());
+        objectStorageService.copyObject(
+            originalSurvey.getClosingPage().getAttachmentObjectKey(),
+            closingAttachmentObjectKey
+        );
+        closingPageCopy.setAttachmentObjectKey(closingAttachmentObjectKey);
+      }
       surveyCopy.setClosingPage(closingPageCopy);
     }
 
     surveyDao.save(surveyCopy);
     log.info("Клонирован опрос originalId={} copyId={} accountId={}",
         surveyId, surveyCopy.getId(), accountId);
+
     return surveyMapper.surveyToDto(surveyCopy);
   }
 
   @Transactional
   public void delete(UUID id, UUID accountId) {
-    permissionService.checkOwnership(id, accountId);
+    permissionService.checkCanDelete(id, accountId);
     Survey survey = surveyDao.findById(id)
         .orElseThrow(
             () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Опрос не найден: " + id));

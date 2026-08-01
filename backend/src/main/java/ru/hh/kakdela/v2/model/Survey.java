@@ -24,6 +24,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+import org.jsoup.Jsoup;
 
 @Data
 @Builder
@@ -49,7 +50,7 @@ public class Survey {
   @Column(name = "title", length = 200, nullable = false)
   private String title;
 
-  @Column(name = "description", length = 5000)
+  @Column(name = "description", columnDefinition = "text")
   private String description;
 
   @Column(name = "is_authorized_only", nullable = false)
@@ -92,4 +93,12 @@ public class Survey {
   @OneToMany(mappedBy = "survey", cascade = CascadeType.ALL, orphanRemoval = true)
   @Builder.Default
   private List<Response> responses = new ArrayList<>();
+
+  public String getTitleAsPlainString() {
+    return Jsoup.parseBodyFragment(title).text();
+  }
+
+  public String getDescriptionAsPlainString() {
+    return Jsoup.parseBodyFragment(description).text();
+  }
 }
