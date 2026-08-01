@@ -1,19 +1,15 @@
 package ru.hh.kakdela.v2.model;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 @Data
 @Builder
@@ -24,6 +20,7 @@ import lombok.NoArgsConstructor;
 public class Account {
 
   @Id
+  @GeneratedValue(strategy = GenerationType.UUID)
   @Column(name = "id", updatable = false, nullable = false)
   private UUID id;
 
@@ -36,9 +33,9 @@ public class Account {
   @Column(name = "password_hash", columnDefinition = "text", nullable = false)
   private String passwordHash;
 
-  // Внешний id пользователя hh.ru. Null для аккаунтов, не связанных с hh.ru SSO.
-  @Column(name = "hh_user_id", length = 64, unique = true)
-  private String hhUserId;
+  // true - аккаунт создан и логинится через hh.ru SSO, пароль сгенерирован случайно
+  @Column(name = "is_hh_sso", nullable = false)
+  private boolean isHhSso;
 
   @Column(name = "registered_at", updatable = false, nullable = false)
   private Instant registeredAt;
