@@ -1,10 +1,11 @@
-CREATE TABLE account
-(
-    id            uuid PRIMARY KEY,
-    login         varchar(32)  NOT NULL UNIQUE,
-    email         varchar(254) NOT NULL UNIQUE,
-    password_hash text         NOT NULL,
-    registered_at timestamptz  NOT NULL
+CREATE TABLE account (
+    id uuid PRIMARY KEY,
+    login varchar(32) NOT NULL UNIQUE,
+    email varchar(254) NOT NULL UNIQUE,
+    password_hash text NOT NULL,
+    registered_at timestamptz NOT NULL,
+    token_version int NOT NULL,
+    is_deleted bool NOT NULL
 );
 
 CREATE TABLE survey
@@ -48,13 +49,12 @@ CREATE TABLE survey_page
 CREATE INDEX idx_survey_page_survey_id
     ON survey_page (survey_id);
 
-CREATE TABLE question
-(
-    id                    uuid PRIMARY KEY,
-    survey_page_id        uuid REFERENCES survey_page (id) ON DELETE CASCADE NOT NULL,
-    serial_number         int                                                NOT NULL,
-    title                 varchar(200)                                       NOT NULL,
-    description           text,
+CREATE TABLE question (
+    id uuid PRIMARY KEY,
+    survey_page_id uuid REFERENCES survey_page (id) ON DELETE CASCADE NOT NULL,
+    serial_number int NOT NULL,
+    title varchar(200) NOT NULL,
+    description varchar(5000),
     attachment_object_key varchar(1024),
     type                  varchar(255)                                       NOT NULL,
     answer_option_order   varchar(255),
@@ -141,3 +141,19 @@ CREATE TABLE notification_schedule
     next_execution  timestamptz,
     last_execution  timestamptz
 );
+
+CREATE TABLE refresh_token (
+    id uuid PRIMARY KEY,
+    token_hash varchar(64) UNIQUE NOT NULL,
+    account_id uuid REFERENCES account(id) ON DELETE CASCADE NOT NULL,
+    device_id varchar(255) NOT NULL,
+    user_agent text,
+    ip_address varchar(45),
+    created_at timestamptz NOT NULL,
+    expires_at timestamptz NOT NULL,
+    last_used_at timestamptz
+);
+
+CREATE INDEX idx_refresh_token_account_id ON refresh_token(account_id);
+CREATE INDEX idx_refresh_token_account_device ON refresh_token(account_id, device_id);
+CREATE INDEX idx_refresh_token_expires_at ON refresh_token(expires_at);
