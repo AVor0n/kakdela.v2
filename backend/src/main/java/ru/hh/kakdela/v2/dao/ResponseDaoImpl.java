@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.stereotype.Repository;
 import ru.hh.kakdela.v2.model.Response;
 
@@ -23,15 +22,14 @@ public class ResponseDaoImpl implements ResponseDao {
   }
 
   @Override
-  @EntityGraph(attributePaths = {
-      "account",
-      "answers",
-      "answers.selectedAnswerOptions"})
   public List<Response> findCompletedBySurveyId(UUID surveyId) {
     return entityManager
         .createQuery(
             """
             FROM Response r
+            LEFT JOIN FETCH r.account
+            LEFT JOIN FETCH r.answers a
+            LEFT JOIN FETCH a.selectedAnswerOptions
             WHERE r.survey.id = :surveyId AND r.isCompleted = true
             """, Response.class)
         .setParameter("surveyId", surveyId)
@@ -39,12 +37,15 @@ public class ResponseDaoImpl implements ResponseDao {
   }
 
   @Override
-  @EntityGraph(attributePaths = {
-      "answers",
-      "answers.selectedAnswerOptions"})
   public List<Response> findAllByAccountId(UUID accountId) {
     return entityManager
-        .createQuery("FROM Response r WHERE r.account.id = :accountId", Response.class)
+        .createQuery(
+        """
+        FROM Response r
+        LEFT JOIN FETCH r.answers a
+        LEFT JOIN FETCH a.selectedAnswerOptions
+        WHERE r.account.id = :accountId
+        """, Response.class)
         .setParameter("accountId", accountId)
         .getResultList();
   }
