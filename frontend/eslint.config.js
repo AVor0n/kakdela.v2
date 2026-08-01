@@ -19,7 +19,7 @@ export default tseslint.config(
             // Запрещает использование неинициализированных переменных
             'no-use-before-define': 'error',
             // Запрещает использование неиспользуемых переменных
-            'no-unused-vars': 'warn',
+            'no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
             // Выдаём предупреждение если есть console.log в коде
             'no-console': 'warn',
             // Запрещает использование return внутри функции, которая передаётся в конструктор Promise

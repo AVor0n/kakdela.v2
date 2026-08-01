@@ -22,42 +22,6 @@
     text-overflow: ellipsis;
 }
 
-.accountId {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    margin-top: 4px;
-    color: #0000006d;
-    font-size: 12px;
-    font-variant-numeric: tabular-nums;
-}
-
-.copyButton {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 22px;
-    height: 22px;
-    padding: 4px;
-    border-radius: 6px;
-    transition: background-color 100ms ease-in;
-}
-
-.copyButton:hover {
-    background-color: #dadada;
-}
-
-.copyButton:focus-visible {
-    outline: 2px solid currentColor;
-    outline-offset: 1px;
-}
-
-.copyIcon {
-    width: 14px;
-    height: 14px;
-}
-
 .menu {
     display: flex;
     flex-direction: column;

@@ -7,6 +7,11 @@ type SurveyItemProps = {
     onClick: () => void;
 };
 
+function removeHTML(content: string) {
+    const doc = new DOMParser().parseFromString(content, 'text/html');
+    return doc.body.textContent || '';
+}
+
 export function SurveyItem({ survey, onClick }: SurveyItemProps) {
     return (
         <button type='button' onClick={onClick} className={`${styles.itemButton} ${styles.itemButtonCentered}`}>
@@ -15,7 +20,7 @@ export function SurveyItem({ survey, onClick }: SurveyItemProps) {
             </svg>
 
             <Text typography='subtitle-3-semibold' style='primary'>
-                {survey.title}
+                {removeHTML(survey.title)}
             </Text>
         </button>
     );
