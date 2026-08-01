@@ -1,9 +1,9 @@
 import type { AnswerOption, Question, QuestionType } from '@/shared/types/Question.type';
-import type { Page, Survey } from '@/shared/types/Survey.type';
+import type { Page, Survey, SurveyListItem } from '@/shared/types/Survey.type';
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 export interface ISurveyState {
-    surveys: Survey[];
+    surveys: SurveyListItem[];
     currentQuestionPageIndex: number;
     selectedQuestion: Question | null;
     selectedSurvey: Survey | null;
@@ -30,7 +30,7 @@ const surveySlice = createSlice({
     name: 'survey',
     initialState,
     reducers: {
-        setSurveys: (state, action: PayloadAction<{ surveys: Survey[] }>) => {
+        setSurveys: (state, action: PayloadAction<{ surveys: SurveyListItem[] }>) => {
             const { surveys } = action.payload;
             state.surveys = surveys;
         },
@@ -405,6 +405,27 @@ const surveySlice = createSlice({
                 state.selectedQuestion = question;
             }
         },
+        deleteSurvey: (state, action: PayloadAction<{ surveyId: string }>) => {
+            const { surveyId } = action.payload;
+            state.surveys = state.surveys.filter((survey) => survey.id !== surveyId);
+            if (state.selectedSurvey?.id === surveyId) {
+                state.selectedSurvey = null;
+                state.selectedQuestion = null;
+                state.currentQuestionPageIndex = 0;
+            }
+        },
+        addSurvey: (state, action: PayloadAction<{ survey: Survey }>) => {
+            const { survey } = action.payload;
+            const newSurveyListItem: SurveyListItem = {
+                id: survey.id,
+                title: survey.title,
+                description: survey.description,
+                createdAt: survey.createdAt,
+                isPublished: survey.isPublished,
+                userRole: 'AUTHOR', // Assuming the user creating the survey is the author
+            };
+            state.surveys.push(newSurveyListItem);
+        },
     },
 });
 
@@ -432,5 +453,7 @@ export const {
     setPageQuestions,
     reorderAnswerOptions,
     setQuestionAnswerOptions,
+    deleteSurvey,
+    addSurvey,
 } = surveySlice.actions;
 export default surveySlice.reducer;

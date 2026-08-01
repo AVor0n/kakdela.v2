@@ -28,19 +28,11 @@ import org.hibernate.annotations.OnDeleteAction;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "permissions")
+@Table(name = "permission")
 public class Permission {
 
   @EmbeddedId
   private PermissionId id;
-
-  @ManyToOne(fetch = FetchType.LAZY)
-  @MapsId("accountId")
-  @JoinColumn(name = "account_id", nullable = false)
-  @OnDelete(action = OnDeleteAction.CASCADE)
-  @EqualsAndHashCode.Exclude
-  @ToString.Exclude
-  private Account account;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @MapsId("surveyId")
@@ -50,12 +42,21 @@ public class Permission {
   @ToString.Exclude
   private Survey survey;
 
+  @ManyToOne(fetch = FetchType.LAZY)
+  @MapsId("accountId")
+  @JoinColumn(name = "account_id", nullable = false)
+  @OnDelete(action = OnDeleteAction.CASCADE)
+  @EqualsAndHashCode.Exclude
+  @ToString.Exclude
+  private Account account;
+
   @Column(name = "role", nullable = false)
   @Enumerated(EnumType.STRING)
   private SurveyRole role;
 
   @Column(name = "do_notify", nullable = false)
-  private boolean doNotify;
+  @Builder.Default
+  private boolean doNotify = true;
 
   @Embeddable
   @Data
@@ -73,11 +74,13 @@ public class Permission {
   @AllArgsConstructor
   @Getter
   public enum SurveyRole {
-    AUTHOR(true, true),
-    EDITOR(true, true),
-    ANALYST(true, false);
+    AUTHOR(true, true, true, true),
+    EDITOR(true, true, false, false),
+    ANALYST(true, false, false, false);
 
     private final boolean responseReadAccess;
     private final boolean editAccess;
+    private final boolean permissionManagementAccess;
+    private final boolean surveyDeleteAccess;
   }
 }

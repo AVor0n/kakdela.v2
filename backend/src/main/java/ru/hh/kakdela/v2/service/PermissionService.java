@@ -14,7 +14,7 @@ import org.springframework.web.server.ResponseStatusException;
 import ru.hh.kakdela.v2.dao.AccountDao;
 import ru.hh.kakdela.v2.dao.PermissionDao;
 import ru.hh.kakdela.v2.dao.SurveyDao;
-import ru.hh.kakdela.v2.dto.permission.PermissionRequestDto;
+import ru.hh.kakdela.v2.dto.permission.PermissionCreateDto;
 import ru.hh.kakdela.v2.dto.permission.PermissionResponseDto;
 import ru.hh.kakdela.v2.dto.permission.PermissionUpdateDto;
 import ru.hh.kakdela.v2.dto.survey.SurveyWithUserRoleDto;
@@ -35,6 +35,17 @@ public class PermissionService {
   private final SurveyDao surveyDao;
   private final AccountDao accountDao;
   private final SurveyMapper surveyMapper;
+
+  @Transactional(readOnly = true)
+  public void checkHasAnyPermission(UUID surveyId, UUID accountId) {
+    Survey survey = getSurveyOrThrow(surveyId);
+
+    if (survey.getAuthor().getId().equals(accountId)) {
+      return;
+    }
+
+    getPermissionOrThrow(surveyId, accountId);
+  }
 
   @Transactional(readOnly = true)
   public void checkCanReadResponses(UUID surveyId, UUID accountId) {
@@ -69,12 +80,18 @@ public class PermissionService {
   }
 
   @Transactional(readOnly = true)
-  public void checkOwnership(UUID surveyId, UUID accountId) {
+  public void checkCanDelete(UUID surveyId, UUID accountId) {
     Survey survey = getSurveyOrThrow(surveyId);
 
-    if (!survey.getAuthor().getId().equals(accountId)) {
+    if (survey.getAuthor().getId().equals(accountId)) {
+      return;
+    }
+
+    Permission permission = getPermissionOrThrow(surveyId, accountId);
+
+    if (!permission.getRole().isSurveyDeleteAccess()) {
       throw new ResponseStatusException(
-          HttpStatus.FORBIDDEN, "Вы не являетесь автором опроса");
+          HttpStatus.FORBIDDEN, "У вас нет прав на удаление опроса");
     }
   }
 
@@ -85,46 +102,40 @@ public class PermissionService {
         .toList();
   }
 
-  @Transactional(readOnly = true)
-  public List<PermissionResponseDto> getAllByAccountId(UUID accountId) {
-    return permissionDao.findAllByAccountId(accountId).stream()
-        .map(PermissionMapper::permissionToDto)
-        .toList();
-  }
-
   @Transactional
-  public PermissionResponseDto create(UUID surveyId, UUID currentUserId, PermissionRequestDto dto) {
-    checkOwnership(surveyId, currentUserId);
+  public PermissionResponseDto create(
+      UUID surveyId,
+      PermissionCreateDto dto,
+      UUID currentUserId
+  ) {
+    Survey survey = getSurveyOrThrow(surveyId);
 
-    if (permissionDao.existsBySurveyIdAndAccountId(surveyId, dto.getAccountId())) {
+    checkCanManagePermissions(survey, currentUserId);
+
+    Account account = accountDao.findByEmail(dto.getEmail())
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Аккаунт не найден: email=" + dto.getEmail()));
+
+    if (permissionDao.existsBySurveyIdAndAccountId(surveyId, account.getId())) {
       throw new ResponseStatusException(
-          HttpStatus.CONFLICT, "Пользователь уже имеет доступ к этому опросу");
+          HttpStatus.CONFLICT, "Пользователь уже имеет права доступа к этому опросу");
     }
 
-    Account account = accountDao.findById(dto.getAccountId())
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Аккаунт не найден: " + dto.getAccountId()));
-
-    Survey survey = surveyDao.findById(surveyId)
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
-
     PermissionId permissionId = PermissionId.builder()
-        .accountId(dto.getAccountId())
         .surveyId(surveyId)
+        .accountId(account.getId())
         .build();
 
     Permission permission = Permission.builder()
         .id(permissionId)
-        .account(account)
         .survey(survey)
+        .account(account)
         .role(dto.getRole())
-        .doNotify(dto.getDoNotify())
         .build();
 
     permissionDao.save(permission);
-    log.info("Созданы права доступа surveyId={} accountId={} role={}",
-        surveyId, dto.getAccountId(), dto.getRole());
+    log.info("Созданы права доступа: surveyId={}, accountId={}, role={}",
+        surveyId, account.getId(), dto.getRole());
     return PermissionMapper.permissionToDto(permission);
   }
 
@@ -132,55 +143,34 @@ public class PermissionService {
   public PermissionResponseDto updateFull(
       UUID surveyId,
       UUID accountId,
-      UUID currentUserId,
-      PermissionRequestDto dto
+      PermissionUpdateDto dto,
+      UUID currentUserId
   ) {
-    checkOwnership(surveyId, currentUserId);
+    Survey survey = getSurveyOrThrow(surveyId);
+
+    checkCanManagePermissions(survey, currentUserId);
 
     Permission permission = permissionDao.findBySurveyIdAndAccountId(surveyId, accountId)
         .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Доступ не найден"));
+            HttpStatus.NOT_FOUND, "Права доступа не найдены: surveyId=%s, accountId=%s"
+                .formatted(surveyId, accountId)));
 
     permission.setRole(dto.getRole());
-    permission.setDoNotify(dto.getDoNotify());
 
     permissionDao.update(permission);
-    log.info("Изменены права доступа (full update) surveyId={} accountId={}", surveyId, accountId);
+    log.info("Заменены права доступа: surveyId={}, accountId={}", surveyId, accountId);
 
-    return PermissionMapper.permissionToDto(permission);
-  }
-
-  @Transactional
-  public PermissionResponseDto updatePartial(
-      UUID surveyId,
-      UUID accountId,
-      UUID currentUserId,
-      PermissionUpdateDto dto
-  ) {
-    checkOwnership(surveyId, currentUserId);
-
-    Permission permission = permissionDao.findBySurveyIdAndAccountId(surveyId, accountId)
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Доступ не найден"));
-
-    if (dto.getRole() != null) {
-      permission.setRole(dto.getRole());
-    }
-    if (dto.getDoNotify() != null) {
-      permission.setDoNotify(dto.getDoNotify());
-    }
-
-    permissionDao.update(permission);
-    log.info("Изменены права доступа (partial update) surveyId={} accountId={}",
-        surveyId, accountId);
     return PermissionMapper.permissionToDto(permission);
   }
 
   @Transactional
   public void delete(UUID surveyId, UUID accountId, UUID currentUserId) {
-    checkOwnership(surveyId, currentUserId);
+    Survey survey = getSurveyOrThrow(surveyId);
+
+    checkCanManagePermissions(survey, currentUserId);
+
     permissionDao.deleteBySurveyIdAndAccountId(surveyId, accountId);
-    log.info("Удалены права доступа surveyId={} accountId={}", surveyId, accountId);
+    log.info("Удалены права доступа: surveyId={}, accountId={}", surveyId, accountId);
   }
 
   @Transactional(readOnly = true)
@@ -202,15 +192,30 @@ public class PermissionService {
         .collect(toList());
   }
 
+  // Вспомогательные методы
+
   private Survey getSurveyOrThrow(UUID surveyId) {
     return surveyDao.findById(surveyId)
         .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
+            HttpStatus.NOT_FOUND, "Опрос не найден: id=" + surveyId));
   }
 
   private Permission getPermissionOrThrow(UUID surveyId, UUID accountId) {
     return permissionDao.findBySurveyIdAndAccountId(surveyId, accountId)
         .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.FORBIDDEN, "Нет доступа к опросу"));
+            HttpStatus.FORBIDDEN, "У вас нет прав доступа к опросу"));
+  }
+
+  private void checkCanManagePermissions(Survey survey, UUID accountId) {
+    if (survey.getAuthor().getId().equals(accountId)) {
+      return;
+    }
+
+    Permission permission = getPermissionOrThrow(survey.getId(), accountId);
+
+    if (!permission.getRole().isPermissionManagementAccess()) {
+      throw new ResponseStatusException(
+          HttpStatus.FORBIDDEN, "У вас нет прав на управление доступом к опросу");
+    }
   }
 }

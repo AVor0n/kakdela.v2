@@ -25,6 +25,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+import org.jsoup.Jsoup;
 
 @Data
 @Builder
@@ -59,7 +60,7 @@ public class Question {
   @Column(name = "title", length = 200, nullable = false)
   private String title;
 
-  @Column(name = "description", length = 5000)
+  @Column(name = "description", columnDefinition = "text")
   private String description;
 
   @Column(name = "attachment_object_key", length = 1024)
@@ -101,5 +102,13 @@ public class Question {
   public enum AnswerOptionOrder {
     ORIGINAL,
     RANDOM
+  }
+
+  public String getTitleAsPlainString() {
+    return Jsoup.parseBodyFragment(title).text();
+  }
+
+  public String getDescriptionAsPlainString() {
+    return Jsoup.parseBodyFragment(description).text();
   }
 }

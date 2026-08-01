@@ -171,7 +171,7 @@ public class SurveyServiceCloneTest extends SurveyServiceTestBase {
     assertEquals(fullSurveyCloneResponseDto, result);
 
     Mockito.verify(
-        objectStorageService, times(7)).copyObject(Mockito.anyString(), Mockito.anyString());
+        objectStorageService, times(8)).copyObject(Mockito.anyString(), Mockito.anyString());
   }
 
   @Test
