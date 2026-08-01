@@ -15,9 +15,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import ru.hh.kakdela.v2.dto.notification_schedule.NotificationScheduleCreateDto;
-import ru.hh.kakdela.v2.dto.notification_schedule.NotificationScheduleResponseDto;
-import ru.hh.kakdela.v2.dto.notification_schedule.NotificationScheduleUpdateDto;
+import ru.hh.kakdela.v2.dto.notification.schedule.NotificationScheduleCreateDto;
+import ru.hh.kakdela.v2.dto.notification.schedule.NotificationScheduleResponseDto;
+import ru.hh.kakdela.v2.dto.notification.schedule.NotificationScheduleUpdateDto;
 import ru.hh.kakdela.v2.security.CustomUserDetails;
 import ru.hh.kakdela.v2.service.NotificationScheduleService;
 

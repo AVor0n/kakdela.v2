@@ -196,6 +196,7 @@ public class SurveyService {
             .description(originalQuestion.getDescription())
             .type(originalQuestion.getType())
             .answerOptionOrder(originalQuestion.getAnswerOptionOrder())
+            .hasOtherOption(originalQuestion.hasOtherOption())
             .isMandatory(originalQuestion.isMandatory())
             .isVisible(originalQuestion.isVisible())
             .condition(originalQuestion.getCondition())

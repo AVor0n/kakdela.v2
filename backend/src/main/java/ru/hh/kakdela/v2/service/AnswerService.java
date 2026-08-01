@@ -39,7 +39,7 @@ public class AnswerService {
 
   @Transactional(readOnly = true)
   public List<AnswerResponseDto> getAllByResponseId(UUID responseId, UUID accountId, String token) {
-    Response response = checkAccessAndGetResponse(responseId, accountId, token);
+    Response response = loadResponseAndCheckAccess(responseId, accountId, token);
 
     if (response.getAccount() == null && response.isCompleted()
         && !response.getSurvey().isAuthor(accountId)) {
@@ -60,7 +60,7 @@ public class AnswerService {
       UUID accountId,
       String token
   ) {
-    Response response = checkAccessAndGetResponse(responseId, accountId, token);
+    Response response = loadResponseAndCheckAccess(responseId, accountId, token);
 
     if (response.isCompleted()) {
       throw new ResponseStatusException(
@@ -98,7 +98,7 @@ public class AnswerService {
 
   @Transactional
   public void delete(UUID responseId, UUID questionId, UUID accountId, String token) {
-    Response response = checkAccessAndGetResponse(responseId, accountId, token);
+    Response response = loadResponseAndCheckAccess(responseId, accountId, token);
 
     if (response.isCompleted()) {
       throw new ResponseStatusException(
@@ -296,7 +296,7 @@ public class AnswerService {
     }
   }
 
-  private Response checkAccessAndGetResponse(UUID responseId, UUID accountId, String token) {
+  private Response loadResponseAndCheckAccess(UUID responseId, UUID accountId, String token) {
     Response response = responseDao.findByIdWithSurvey(responseId)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Прохождение не найдено: " + responseId));
