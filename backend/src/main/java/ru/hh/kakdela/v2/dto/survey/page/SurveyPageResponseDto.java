@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
+import ru.hh.kakdela.v2.dto.condition.ConditionResponseDto;
 import ru.hh.kakdela.v2.dto.question.QuestionResponseDto;
 
 @AllArgsConstructor
@@ -24,4 +25,5 @@ public class SurveyPageResponseDto {
   private final String title;
   private final String description;
   private final List<QuestionResponseDto> questions;
+  private final List<ConditionResponseDto> conditions;
 }
