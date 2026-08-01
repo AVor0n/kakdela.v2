@@ -39,6 +39,12 @@ public class Account {
   @Column(name = "registered_at", updatable = false, nullable = false)
   private Instant registeredAt;
 
+  @Column(name = "token_version", nullable = false)
+  private Integer tokenVersion;
+
+  @Column(name = "is_deleted", nullable = false)
+  private Boolean isDeleted;
+
   @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
   @Builder.Default
   private List<Survey> authoredSurveys = new ArrayList<>();
@@ -50,4 +56,8 @@ public class Account {
   @OneToMany(mappedBy = "account")
   @Builder.Default
   private List<Response> responses = new ArrayList<>();
+
+  @OneToMany(mappedBy = "account", cascade = CascadeType.ALL, orphanRemoval = true)
+  @Builder.Default
+  private List<RefreshToken> refreshTokens = new ArrayList<>();
 }
