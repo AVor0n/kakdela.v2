@@ -24,6 +24,9 @@ public class SurveyPageMapper {
         surveyPage.getQuestions().stream()
             .sorted(Comparator.comparingInt(Question::getSerialNumber))
             .map(questionMapper::questionToDto)
+            .toList(),
+        surveyPage.getConditions().stream()
+            .map(ConditionMapper::conditionToDto)
             .toList());
   }
 
