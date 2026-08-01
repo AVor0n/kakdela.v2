@@ -1,7 +1,7 @@
 package ru.hh.kakdela.v2.mapper;
 
-import lombok.RequiredArgsConstructor;
 import java.nio.file.Paths;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import ru.hh.kakdela.v2.dto.closing.ClosingPageResponseDto;
