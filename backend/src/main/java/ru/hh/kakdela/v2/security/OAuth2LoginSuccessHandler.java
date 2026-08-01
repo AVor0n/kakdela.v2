@@ -26,7 +26,6 @@ import ru.hh.kakdela.v2.util.CookieUtil;
 @Component
 public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
-  private static final String ATTR_ID = "id";
   private static final String ATTR_EMAIL = "email";
 
   private final AccountService accountService;
@@ -45,9 +44,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
       Authentication authentication) throws IOException, ServletException {
 
     OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
-    String hhUserId = String.valueOf(
-        Objects.requireNonNull(Objects.requireNonNull(oAuth2User).getAttribute(ATTR_ID)));
-    String email = oAuth2User.getAttribute(ATTR_EMAIL);
+    String email = Objects.requireNonNull(oAuth2User).getAttribute(ATTR_EMAIL);
 
     try {
       if (email == null || email.isBlank()) {
@@ -55,7 +52,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
             "hh.ru не передал email в ответе");
       }
 
-      Account account = accountService.findOrCreateByHhSso(hhUserId, email);
+      Account account = accountService.findOrCreateByHhSso(email);
 
       String accessToken = jwtService.generateAccessToken(account.getLogin());
       CookieUtil.setHttpOnlySameSiteStrictCookie(

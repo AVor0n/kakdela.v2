@@ -67,19 +67,21 @@ public class AccountService {
   // Возвращает существующий аккаунт, привязанный к данному пользователю hh.ru,
   // либо создает новый (с автосгенерированными login и паролем), если это первый вход
   @Transactional
-  public Account findOrCreateByHhSso(String hhUserId, String email) {
-    return accountDao.findByHhUserId(hhUserId)
-        .orElseGet(() -> createFromHhSso(hhUserId, email));
+  public Account findOrCreateByHhSso(String email) {
+    return accountDao.findByEmail(email)
+        .map(this::requireHhSsoAccount)
+        .orElseGet(() -> createFromHhSso(email));
   }
 
-  private Account createFromHhSso(String hhUserId, String email) {
-    // Намеренно НЕ ищем и не привязываем по существующему email — если он занят,
-    // это конфликт, который нужно решать пользователю руками, а не молча сливать аккаунты
-    if (accountDao.existsByEmail(email)) {
+  private Account requireHhSsoAccount(Account account) {
+    if (!account.isHhSso()) {
       throw new ResponseStatusException(HttpStatus.CONFLICT,
-          "Такой email уже зарегистрирован: " + email);
+          "Такой email уже зарегистрирован: " + account.getEmail());
     }
+    return account;
+  }
 
+  private Account createFromHhSso(String email) {
     String login = generateUniqueLoginFromEmail(email);
     String randomPassword = UUID.randomUUID().toString();
 
@@ -87,17 +89,15 @@ public class AccountService {
         .login(login)
         .email(email)
         .passwordHash(passwordEncoder.encode(randomPassword))
-        .hhUserId(hhUserId)
+        .isHhSso(true)
         .registeredAt(Instant.now())
         .build();
 
     accountDao.save(account);
-    log.info("Создан аккаунт через hh.ru SSO id={} login={} hhUserId={}",
-        account.getId(), account.getLogin(), hhUserId);
+    log.info("Создан аккаунт через hh.ru SSO id={} login={}", account.getId(), account.getLogin());
     return account;
   }
 
-  // Генерация происходит от email
   private String generateUniqueLoginFromEmail(String email) {
     String base = email.substring(0, email.indexOf('@'))
         .replaceAll("[^a-zA-Z0-9_.]", "")
