@@ -79,13 +79,13 @@ CREATE TABLE answer_option
 
 );
 
-CREATE TABLE closing_page
-(
-    survey_id             uuid PRIMARY KEY REFERENCES survey (id) ON DELETE CASCADE,
-    title                 varchar(200),
-    description           text,
+CREATE TABLE closing_page (
+    survey_id uuid PRIMARY KEY REFERENCES survey (id) ON DELETE CASCADE,
+    title varchar(200),
+    description varchar(5000),
     attachment_object_key varchar(1024),
-    website_url           varchar(2000)
+    file_object_key varchar(1024),
+    website_url varchar(2000)
 );
 
 CREATE TABLE response

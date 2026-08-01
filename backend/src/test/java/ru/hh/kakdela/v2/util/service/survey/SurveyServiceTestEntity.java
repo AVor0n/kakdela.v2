@@ -20,6 +20,8 @@ public class SurveyServiceTestEntity {
 
   private static final boolean IS_ORIGINAL = false;
 
+  private static final String TEST_FILE_OBJECT_KEY = "closing-pages/test-file-key";
+
   public static final Account account1 = new Account(
       SurveyServiceTestConstants.account1Id,
         "account1",
@@ -88,7 +90,9 @@ public class SurveyServiceTestEntity {
           "closingPage",
           "description",
           SurveyServiceTestConstants.attachmentObjectKey,
-          "websiteUrl"));
+          SurveyServiceTestConstants.fileObjectKey,
+          "websiteUrl"
+      ));
     }
 
     // Заполнение страниц и вопросов для Survey1
