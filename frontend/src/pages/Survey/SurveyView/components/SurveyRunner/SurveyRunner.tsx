@@ -13,7 +13,6 @@ import longTextStyle from '@/pages/Survey/SurveyModify/components/QuestionList/c
 import style from './SurveyRunner.module.css';
 import { useSurveyResponseSync } from './useSurveyResponseSync';
 import { HTMLRender } from '@/shared/ui/HTMLRender/HTMLRender';
-import type { AnswerPayload } from './types';
 
 const OTHER_OPTION_VALUE = '__other__';
 
@@ -43,27 +42,26 @@ function isQuestionAnswered(question: Question, value: AnswerValue | undefined) 
 function isQuestionVisible(question: Question) {
     return question.visible ?? question.isVisible ?? true;
 }
+function buildMultipleChoicePayload(selectedIds: string[], otherText: string) {
+    const normalIds = selectedIds.filter((id) => id !== OTHER_OPTION_VALUE);
+    const otherSelected = selectedIds.includes(OTHER_OPTION_VALUE);
+    const trimmedOtherText = otherText.trim();
 
-function getAnswerText(question: Question, value: AnswerValue | undefined): AnswerPayload {
-    if (value === undefined) {
-        return { textValue: '' };
+    if (!otherSelected) {
+        return { selectedAnswerOptionIds: normalIds };
     }
+    return { selectedAnswerOptionIds: normalIds, textValue: trimmedOtherText };
+}
 
+function buildAnswerPayload(question: Question, value: AnswerValue | undefined, otherText: string) {
     if (question.type === 'SINGLE_CHOICE') {
-        return { selectedAnswerOptionIds: [question.answerOptions.find((option) => option.id === value)?.id ?? ''] };
+        if (value === OTHER_OPTION_VALUE) return { textValue: otherText.trim() };
+        return { selectedAnswerOptionIds: value ? [value as string] : [] };
     }
-
     if (question.type === 'MULTIPLE_CHOICE') {
-        const selectedOptionIds = Array.isArray(value) ? value : [];
-
-        return {
-            selectedAnswerOptionIds: question.answerOptions
-                .filter((option) => selectedOptionIds.includes(option.id))
-                .map((option) => option.id),
-        };
+        return buildMultipleChoicePayload(Array.isArray(value) ? value : [], otherText);
     }
-
-    return typeof value === 'string' ? { textValue: value.trim() } : { textValue: '' };
+    return { textValue: typeof value === 'string' ? value.trim() : '' };
 }
 
 export function SurveyRunner({ survey, mode }: Props) {
@@ -88,6 +86,7 @@ export function SurveyRunner({ survey, mode }: Props) {
     useEffect(() => {
         setCurrentPageIndex(0);
         setAnswers({});
+        setOtherTexts({});
         setErrors({});
         setIsComplete(false);
         setSubmitError(null);
@@ -104,7 +103,7 @@ export function SurveyRunner({ survey, mode }: Props) {
             delete nextErrors[question.id];
             return nextErrors;
         });
-        scheduleAnswerSave(question.id, getAnswerText(question, value), {
+        scheduleAnswerSave(question.id, buildAnswerPayload(question, value, otherTexts[question.id] ?? ''), {
             debounce: question.type === 'SHORT_TEXT' || question.type === 'LONG_TEXT',
         });
     };
@@ -232,7 +231,7 @@ export function SurveyRunner({ survey, mode }: Props) {
                                 <Radio
                                     name={question.id}
                                     disabled={isSubmitting}
-                                    checked={value == OTHER_OPTION_VALUE}
+                                    checked={value === OTHER_OPTION_VALUE}
                                     onChange={() => updateAnswer(question, OTHER_OPTION_VALUE)}
                                 />
                                 <p>Другое: </p>
@@ -243,7 +242,9 @@ export function SurveyRunner({ survey, mode }: Props) {
                                     onChange={(e) => {
                                         const text = e.target.value;
                                         setOtherTexts((prev) => ({ ...prev, [question.id]: text }));
-                                        scheduleAnswerSave(question.id, { textValue: text }, { debounce: true });
+                                        scheduleAnswerSave(question.id, buildAnswerPayload(question, value, text), {
+                                            debounce: true,
+                                        });
                                     }}
                                 />
                             </div>
@@ -272,9 +273,24 @@ export function SurveyRunner({ survey, mode }: Props) {
                         })}
                         {question.hasOtherOption && (
                             <div className={style.anotherOption}>
-                                <Checkbox disabled={isSubmitting} checked={false} onChange={() => {}} />
+                                <Checkbox
+                                    disabled={isSubmitting}
+                                    checked={Array.isArray(value) && value.includes(OTHER_OPTION_VALUE)}
+                                    onChange={() => toggleMultipleChoice(question, OTHER_OPTION_VALUE)}
+                                />
                                 <p>Другое: </p>
-                                <input className={style.another} />
+                                <input
+                                    className={style.another}
+                                    disabled={!Array.isArray(value) || !value.includes(OTHER_OPTION_VALUE)}
+                                    value={otherTexts[question.id] ?? ''}
+                                    onChange={(e) => {
+                                        const text = e.target.value;
+                                        setOtherTexts((prev) => ({ ...prev, [question.id]: text }));
+                                        scheduleAnswerSave(question.id, buildAnswerPayload(question, value, text), {
+                                            debounce: true,
+                                        });
+                                    }}
+                                />
                             </div>
                         )}
                     </div>
