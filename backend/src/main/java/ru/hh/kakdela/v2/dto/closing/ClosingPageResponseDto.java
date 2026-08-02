@@ -1,18 +1,18 @@
-package ru.hh.kakdela.v2.dto.closing_page;
+package ru.hh.kakdela.v2.dto.closing;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
+import ru.hh.kakdela.v2.dto.file.FileResponseDto;
 
 @AllArgsConstructor
 @Getter
 @EqualsAndHashCode
 @ToString
 @Schema(
-    name = "ClosingPageResponse",
-    title = "DTO для получения данных завершающей страницы"
+    name = "ClosingPage.Response"
 )
 public class ClosingPageResponseDto {
 
@@ -20,4 +20,5 @@ public class ClosingPageResponseDto {
   private final String description;
   private final String attachmentUrl;
   private final String websiteUrl;
+  private final FileResponseDto file;
 }

@@ -80,6 +80,7 @@ CREATE TABLE closing_page (
     title varchar(200),
     description text,
     attachment_object_key varchar(1024),
+    file_object_key varchar(1024),
     website_url varchar(2000)
 );
 
