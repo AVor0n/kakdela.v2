@@ -1,0 +1,40 @@
+.metadata {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 0;
+}
+
+.metadataRow {
+    display: grid;
+    grid-template-columns: minmax(120px, 0.35fr) 1fr;
+    gap: 12px;
+}
+
+.metadataRow dt {
+    color: #777;
+}
+
+.metadataRow dd {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.startAction {
+    display: flex;
+    justify-content: flex-start;
+}
+
+@media (max-width: 480px) {
+    .metadataRow {
+        grid-template-columns: 1fr;
+        gap: 2px;
+    }
+}
+
+@media (max-width: 640px) {
+    .startAction > * {
+        width: 100%;
+    }
+}
