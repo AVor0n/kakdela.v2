@@ -1,16 +1,12 @@
 import { Text } from '@hh.ru/magritte-ui';
 import type { SurveyListItem } from '@/shared/types/Survey.type';
+import { htmlToText } from '@/shared/utils/html';
 import styles from './SurveyList.module.css';
 
 type SurveyItemProps = {
     survey: SurveyListItem;
     onClick: () => void;
 };
-
-function removeHTML(content: string) {
-    const doc = new DOMParser().parseFromString(content, 'text/html');
-    return doc.body.textContent || '';
-}
 
 export function SurveyItem({ survey, onClick }: SurveyItemProps) {
     return (
@@ -20,7 +16,7 @@ export function SurveyItem({ survey, onClick }: SurveyItemProps) {
             </svg>
 
             <Text typography='subtitle-3-semibold' style='primary'>
-                {removeHTML(survey.title)}
+                {htmlToText(survey.title)}
             </Text>
         </button>
     );
