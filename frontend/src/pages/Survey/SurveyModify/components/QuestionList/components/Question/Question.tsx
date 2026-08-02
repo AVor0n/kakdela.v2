@@ -10,6 +10,7 @@ import {
     duplicateQuestion,
     setMandatory as setMandatoryState,
     setQuestion,
+    updateAnswerOptionOrder,
     updateQuestionDescription,
     updateQuestionTitle,
     updateQuestionType,
@@ -127,9 +128,9 @@ export function Question({
             updateQuestion(question.id, { answerOptionOrder: answerOptionOrder })
                 .then((data) => {
                     dispatch(
-                        updateQuestionType({
+                        updateAnswerOptionOrder({
                             id: question.id,
-                            type: data.type,
+                            answerOptionOrder: data.answerOptionOrder ?? answerOptionOrder,
                         }),
                     );
                 })
@@ -137,7 +138,7 @@ export function Question({
                     if (err.response) {
                         dispatch(setErrorMessage({ message: 'Не удалось изменить способ вывода вариантов ответов' }));
                     }
-                    setTypeQuestion(question.type);
+                    setAnswerOptionOrder(question.answerOptionOrder ?? 'ORIGINAL');
                 });
         }
     };
