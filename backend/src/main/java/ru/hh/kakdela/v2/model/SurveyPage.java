@@ -62,7 +62,7 @@ public class SurveyPage {
   private String description;
 
   @OneToMany(mappedBy = "surveyPage", cascade = CascadeType.ALL, orphanRemoval = true)
-  @OrderBy("serial_number ASC")
+  @OrderBy("serialNumber ASC")
   @Builder.Default
   private List<Question> questions = new ArrayList<>();
 

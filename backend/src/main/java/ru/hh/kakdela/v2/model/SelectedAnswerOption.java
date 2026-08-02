@@ -42,6 +42,9 @@ public class SelectedAnswerOption {
   @OnDelete(action = OnDeleteAction.SET_NULL)
   private AnswerOption answerOption;
 
+  @Column(name = "serial_number", nullable = false)
+  private Integer serialNumber;
+
   @Column(name = "answer_option_text_snapshot",
       length = 1000,
       nullable = false)

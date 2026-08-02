@@ -21,6 +21,7 @@ public class AnswerDaoImpl implements AnswerDao {
     return Optional.ofNullable(entityManager
         .createQuery(
             """
+            SELECT DISTINCT a
             FROM Answer a
             LEFT JOIN FETCH a.selectedAnswerOptions
             WHERE a.response.id = :responseId
@@ -36,9 +37,10 @@ public class AnswerDaoImpl implements AnswerDao {
     return entityManager
         .createQuery(
             """
+            SELECT DISTINCT a
             FROM Answer a
             LEFT JOIN FETCH a.selectedAnswerOptions
-            WHERE a.id.responseId = :responseId
+            WHERE a.response.id = :responseId
             """, Answer.class)
         .setParameter("responseId", responseId)
         .getResultList();

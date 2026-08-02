@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
+import ru.hh.kakdela.v2.model.Answer;
 import ru.hh.kakdela.v2.model.Response;
 
 @Slf4j
@@ -23,31 +24,65 @@ public class ResponseDaoImpl implements ResponseDao {
 
   @Override
   public List<Response> findCompletedBySurveyId(UUID surveyId) {
-    return entityManager
-        .createQuery(
-            """
-            FROM Response r
-            LEFT JOIN FETCH r.account
-            LEFT JOIN FETCH r.answers a
-            LEFT JOIN FETCH a.selectedAnswerOptions
-            WHERE r.survey.id = :surveyId AND r.isCompleted = true
-            """, Response.class)
+    List<Response> result = entityManager.createQuery(
+        """
+        SELECT DISTINCT r
+        FROM Response r
+        LEFT JOIN FETCH r.account
+        LEFT JOIN FETCH r.answers
+        WHERE r.survey.id = :surveyId
+        AND r.isCompleted = true
+        """, Response.class)
         .setParameter("surveyId", surveyId)
         .getResultList();
+
+    List<UUID> answerIds = result.stream()
+        .flatMap(r -> r.getAnswers().stream())
+        .map(Answer::getId)
+        .toList();
+
+    entityManager.createQuery(
+        """
+        SELECT DISTINCT a
+        FROM Answer a
+        LEFT JOIN FETCH a.selectedAnswerOptions
+        WHERE a.id IN :ids
+        """, Answer.class)
+        .setParameter("ids", answerIds)
+        .getResultList();
+
+    return result;
   }
 
   @Override
   public List<Response> findAllByAccountId(UUID accountId) {
-    return entityManager
-        .createQuery(
+    List<Response> result = entityManager.createQuery(
         """
+        SELECT DISTINCT r
         FROM Response r
+        LEFT JOIN FETCH r.account
         LEFT JOIN FETCH r.answers a
-        LEFT JOIN FETCH a.selectedAnswerOptions
         WHERE r.account.id = :accountId
         """, Response.class)
         .setParameter("accountId", accountId)
         .getResultList();
+
+    List<UUID> answerIds = result.stream()
+        .flatMap(r -> r.getAnswers().stream())
+        .map(Answer::getId)
+        .toList();
+
+    entityManager.createQuery(
+        """
+        SELECT DISTINCT a
+        FROM Answer a
+        LEFT JOIN FETCH a.selectedAnswerOptions
+        WHERE a.id IN :ids
+        """, Answer.class)
+        .setParameter("ids", answerIds)
+        .getResultList();
+
+    return result;
   }
 
   @Override
@@ -70,7 +105,8 @@ public class ResponseDaoImpl implements ResponseDao {
             """
             SELECT COUNT(r)
             FROM Response r
-            WHERE r.survey.id = :surveyId AND r.isCompleted = false
+            WHERE r.survey.id = :surveyId
+            AND r.isCompleted = false
             """, Long.class)
         .setParameter("surveyId", surveyId)
         .getSingleResultOrNull();
@@ -82,7 +118,9 @@ public class ResponseDaoImpl implements ResponseDao {
         .createQuery(
             """
             FROM Response r
-            WHERE r.account.id = :accountId AND r.survey.id = :surveyId AND r.isCompleted = false
+            WHERE r.account.id = :accountId
+            AND r.survey.id = :surveyId
+            AND r.isCompleted = false
             """, Response.class)
         .setParameter("accountId", accountId)
         .setParameter("surveyId", surveyId)
@@ -95,7 +133,8 @@ public class ResponseDaoImpl implements ResponseDao {
         .createQuery(
             """
             SELECT COUNT(r) FROM Response r
-            WHERE r.account.id = :accountId AND r.survey.id = :surveyId
+            WHERE r.account.id = :accountId
+            AND r.survey.id = :surveyId
             """, Long.class)
         .setParameter("accountId", accountId)
         .setParameter("surveyId", surveyId)

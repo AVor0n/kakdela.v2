@@ -9,6 +9,7 @@ import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -56,9 +57,10 @@ public class Answer {
   @ToString.Exclude
   private Question question;
 
-  @Column(name = "question_text_snapshot",
-      length = 200,
-      nullable = false)
+  @Column(name = "serial_number", nullable = false)
+  private Integer serialNumber;
+
+  @Column(name = "question_text_snapshot", length = 200, nullable = false)
   private String questionTextSnapshot;
 
   @Column(name = "text_value", length = 5000)
@@ -74,6 +76,7 @@ public class Answer {
   private LocalTime timeValue;
 
   @OneToMany(mappedBy = "answer", cascade = CascadeType.ALL, orphanRemoval = true)
+  @OrderBy("serialNumber ASC")
   @Builder.Default
   private List<SelectedAnswerOption> selectedAnswerOptions = new ArrayList<>();
 

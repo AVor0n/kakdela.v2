@@ -102,7 +102,7 @@ public class Question {
   private String condition;
 
   @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
-  @OrderBy("serial_number ASC")
+  @OrderBy("serialNumber ASC")
   @Builder.Default
   private List<AnswerOption> answerOptions = new ArrayList<>();
 
