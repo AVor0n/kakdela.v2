@@ -186,7 +186,7 @@ public class AnswerService {
 
     final Question.QuestionType questionType = question.getType();
     final boolean isOtherOptionAllowedForThisQuestion =
-        questionType.isOtherOptionAllowed && !question.hasOtherOption();
+        questionType.isOtherOptionAllowed && question.hasOtherOption();
 
     if (questionType.isTextAllowed) {
       if (questionType.isOtherOptionAllowed) {
