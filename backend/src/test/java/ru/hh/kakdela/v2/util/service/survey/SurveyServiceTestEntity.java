@@ -89,7 +89,9 @@ public class SurveyServiceTestEntity {
           "closingPage",
           "description",
           SurveyServiceTestConstants.attachmentObjectKey,
-          "websiteUrl"));
+          SurveyServiceTestConstants.fileObjectKey,
+          "websiteUrl"
+      ));
     }
 
     // Заполнение страниц и вопросов для Survey1

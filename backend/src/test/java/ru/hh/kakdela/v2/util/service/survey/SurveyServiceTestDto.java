@@ -6,7 +6,8 @@ import java.util.Collections;
 import java.util.List;
 import ru.hh.kakdela.v2.dto.account.AccountResponseDto;
 import ru.hh.kakdela.v2.dto.answer.option.AnswerOptionResponseDto;
-import ru.hh.kakdela.v2.dto.closing_page.ClosingPageResponseDto;
+import ru.hh.kakdela.v2.dto.closing.ClosingPageResponseDto;
+import ru.hh.kakdela.v2.dto.file.FileResponseDto;
 import ru.hh.kakdela.v2.dto.question.QuestionResponseDto;
 import ru.hh.kakdela.v2.dto.survey.SurveyCreateDto;
 import ru.hh.kakdela.v2.dto.survey.SurveyResponseDto;
@@ -19,6 +20,11 @@ import ru.hh.kakdela.v2.util.service.survey.SurveyServiceTestConstants.FullSurve
 import ru.hh.kakdela.v2.util.service.survey.SurveyServiceTestConstants.PlainSurveyConstants;
 
 public class SurveyServiceTestDto {
+
+  private static final FileResponseDto fileInfo = FileResponseDto.builder()
+      .fileName("test-file.pdf")
+      .fileSize(102400L)
+      .build();
 
   public static SurveyResponseDto getResponseDtoOfFullSurvey(boolean includeClosingPage, boolean isClone) {
     return new SurveyResponseDto(
@@ -107,10 +113,11 @@ public class SurveyServiceTestDto {
                             SurveyServiceTestConstants.attachmentUrl)))))),
         includeClosingPage
             ? new ClosingPageResponseDto(
-                "closingPage",
-                "description",
-                SurveyServiceTestConstants.attachmentUrl,
-                "websiteUrl")
+            "closingPage",
+            "description",
+            SurveyServiceTestConstants.attachmentUrl,
+            "websiteUrl",
+            fileInfo)
             : null);
   }
 

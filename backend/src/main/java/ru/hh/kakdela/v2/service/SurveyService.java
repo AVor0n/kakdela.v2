@@ -1,5 +1,6 @@
 package ru.hh.kakdela.v2.service;
 
+import java.nio.file.Paths;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
@@ -259,6 +260,19 @@ public class SurveyService {
             closingAttachmentObjectKey
         );
         closingPageCopy.setAttachmentObjectKey(closingAttachmentObjectKey);
+      }
+
+      if (originalSurvey.getClosingPage().getFileObjectKey() != null) {
+        String originalFileKey = originalSurvey.getClosingPage().getFileObjectKey();
+        String fileName =  Paths.get(originalFileKey).getFileName().toString();
+
+        String closingFileObjectKey =
+            "closing-pages/%s/%s".formatted(closingPageId, fileName);
+        objectStorageService.copyObject(
+            originalSurvey.getClosingPage().getFileObjectKey(),
+            closingFileObjectKey
+        );
+        closingPageCopy.setFileObjectKey(closingFileObjectKey);
       }
       surveyCopy.setClosingPage(closingPageCopy);
     }

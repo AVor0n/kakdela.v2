@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
-
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.time.Duration;
@@ -18,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.web.server.ResponseStatusException;
 import ru.hh.kakdela.v2.dto.survey.SurveyResponseDto;
+import ru.hh.kakdela.v2.model.ClosingPage;
 import ru.hh.kakdela.v2.model.Question;
 import ru.hh.kakdela.v2.model.Survey;
 import ru.hh.kakdela.v2.model.SurveyPage;
@@ -28,7 +28,7 @@ import ru.hh.kakdela.v2.util.service.survey.SurveyServiceTestConstants;
 public class SurveyServiceCloneTest extends SurveyServiceTestBase {
 
   private final String attachmentObjectKeyRegexEnd = "/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$";
-  
+
   @Test
   void clone_surveyNotFound_throwException() {
     Mockito.when(surveyDao.findById(FullSurveyConstants.SURVEY.getId(IS_ORIGINAL)))
@@ -84,6 +84,8 @@ public class SurveyServiceCloneTest extends SurveyServiceTestBase {
         .thenReturn(Optional.of(SurveyServiceTestEntity.account2));
     Mockito.when(objectStorageService.generateObjectUrl(Mockito.any(), Mockito.anyLong()))
         .thenReturn(URI.create("http://attachmentUrl/").toURL());
+    Mockito.when(objectStorageService.getFileSize(Mockito.anyString()))
+        .thenReturn(102400L);
 
     Mockito.doAnswer(invocation -> {
       Survey survey = invocation.getArgument(0);
@@ -94,7 +96,7 @@ public class SurveyServiceCloneTest extends SurveyServiceTestBase {
       survey.setId(FullSurveyConstants.SURVEY.getId(IS_CLONE));
 
       assertTrue(!survey.getCreatedAt().isBefore(Instant.now().minus(Duration.ofMinutes(1)))
-          && !survey.getCreatedAt().isAfter(Instant.now()),
+              && !survey.getCreatedAt().isAfter(Instant.now()),
           "Установленное время создания оказалось в будущем или было слишком давно");
       assertEquals(0, survey.getCreatedAt().toEpochMilli() % 1000,
           "Время создания должно иметь обрезанные миллисекунды и наносекунды");
@@ -123,7 +125,7 @@ public class SurveyServiceCloneTest extends SurveyServiceTestBase {
       assertNotNull(page.getQuestions().getFirst().getAttachmentObjectKey(),
           "Ключ картинки, прикреплённой к вопросу, не был заполнен");
       assertTrue(page.getQuestions().getFirst().getAttachmentObjectKey()
-          .matches("^questions/" + page.getQuestions().getFirst().getId() + attachmentObjectKeyRegexEnd),
+              .matches("^questions/" + page.getQuestions().getFirst().getId() + attachmentObjectKeyRegexEnd),
           "Ключ картинки, прикреплённой к вопросу, не соответствует требуемому формату");
 
       page.getQuestions().getFirst().setAttachmentObjectKey("attachmentObjectKey");
@@ -139,7 +141,7 @@ public class SurveyServiceCloneTest extends SurveyServiceTestBase {
       assertNotNull(question2.getAnswerOptions().getFirst().getAttachmentObjectKey(),
           "Ключ картинки, прикреплённой к варианту ответа, не был заполнен");
       assertTrue(question2.getAnswerOptions().getFirst().getAttachmentObjectKey()
-          .matches("^answer-options/" + question2.getAnswerOptions().getFirst().getId() + attachmentObjectKeyRegexEnd),
+              .matches("^answer-options/" + question2.getAnswerOptions().getFirst().getId() + attachmentObjectKeyRegexEnd),
           "Ключ картинки, прикреплённой к варианту ответа, не соответствует требуемому формату");
 
       question2.getAnswerOptions().get(0).setAttachmentObjectKey("attachmentObjectKey");
@@ -155,11 +157,18 @@ public class SurveyServiceCloneTest extends SurveyServiceTestBase {
       question3.getAnswerOptions().get(1).setAttachmentObjectKey("attachmentObjectKey");
       question3.getAnswerOptions().get(1).setId(FullSurveyConstants.ANSWER_OPTION2_OF_QUESTION3.getId(IS_CLONE));
 
-      assertNotNull(survey.getClosingPage().getId(), "ID завершающей страницы не был заполнен");
-      assertTrue(survey.getClosingPage().getId().toString().matches(uuidRegex), "ID не является UUID");
+      ClosingPage closingPage = survey.getClosingPage();
+      assertNotNull(closingPage);
+      assertNotNull(closingPage.getId());
+      assertTrue(closingPage.getId().toString().matches(uuidRegex));
 
-      survey.getClosingPage().setAttachmentObjectKey("attachmentObjectKey");
-      survey.getClosingPage().setId(FullSurveyConstants.CLOSING_PAGE.getId(IS_CLONE));
+      assertNotNull(closingPage.getFileObjectKey());
+      assertTrue(closingPage.getFileObjectKey()
+          .matches("^closing-pages/[0-9a-fA-F-]+/[^/]+$"));
+
+      closingPage.setFileObjectKey(SurveyServiceTestConstants.fileObjectKey);
+      closingPage.setAttachmentObjectKey("attachmentObjectKey");
+      closingPage.setId(FullSurveyConstants.CLOSING_PAGE.getId(IS_CLONE));
 
       assertEquals(fullSurveyClone, survey);
 
@@ -171,7 +180,7 @@ public class SurveyServiceCloneTest extends SurveyServiceTestBase {
     assertEquals(fullSurveyCloneResponseDto, result);
 
     Mockito.verify(
-        objectStorageService, times(8)).copyObject(Mockito.anyString(), Mockito.anyString());
+        objectStorageService, times(9)).copyObject(Mockito.anyString(), Mockito.anyString());
   }
 
   @Test
@@ -192,7 +201,7 @@ public class SurveyServiceCloneTest extends SurveyServiceTestBase {
       survey.setId(FullSurveyConstants.SURVEY.getId(IS_CLONE));
 
       assertTrue(!survey.getCreatedAt().isBefore(Instant.now().minus(Duration.ofMinutes(1)))
-          && !survey.getCreatedAt().isAfter(Instant.now()),
+              && !survey.getCreatedAt().isAfter(Instant.now()),
           "Установленное время создания оказалось в будущем или было слишком давно");
       assertEquals(0, survey.getCreatedAt().toEpochMilli() % 1000,
           "Время создания должно иметь обрезанные миллисекунды и наносекунды");
@@ -222,7 +231,7 @@ public class SurveyServiceCloneTest extends SurveyServiceTestBase {
       assertNotNull(page.getQuestions().getFirst().getAttachmentObjectKey(),
           "Ключ картинки, прикреплённой к вопросу, не был заполнен");
       assertTrue(page.getQuestions().getFirst().getAttachmentObjectKey()
-          .matches("^questions/" + page.getQuestions().getFirst().getId() + attachmentObjectKeyRegexEnd),
+              .matches("^questions/" + page.getQuestions().getFirst().getId() + attachmentObjectKeyRegexEnd),
           "Ключ картинки, прикреплённой к вопросу, не соответствует требуемому формату");
 
       page.getQuestions().getFirst().setAttachmentObjectKey("attachmentObjectKey");
@@ -238,7 +247,7 @@ public class SurveyServiceCloneTest extends SurveyServiceTestBase {
       assertNotNull(question2.getAnswerOptions().getFirst().getAttachmentObjectKey(),
           "Ключ картинки, прикреплённой к варианту ответа, не был заполнен");
       assertTrue(question2.getAnswerOptions().getFirst().getAttachmentObjectKey()
-          .matches("^answer-options/" + question2.getAnswerOptions().getFirst().getId() + attachmentObjectKeyRegexEnd),
+              .matches("^answer-options/" + question2.getAnswerOptions().getFirst().getId() + attachmentObjectKeyRegexEnd),
           "Ключ картинки, прикреплённой к варианту ответа, не соответствует требуемому формату");
 
       question2.getAnswerOptions().get(0).setAttachmentObjectKey("attachmentObjectKey");
@@ -259,7 +268,7 @@ public class SurveyServiceCloneTest extends SurveyServiceTestBase {
       return null;
     }).when(surveyDao).save(Mockito.any(Survey.class));
 
-    SurveyResponseDto result = 
+    SurveyResponseDto result =
         surveyService.clone(FullSurveyConstants.SURVEY.getId(IS_ORIGINAL), SurveyServiceTestConstants.account2Id);
     assertEquals(fullSurveyCloneWithoutClosingPageResponseDto, result);
 
