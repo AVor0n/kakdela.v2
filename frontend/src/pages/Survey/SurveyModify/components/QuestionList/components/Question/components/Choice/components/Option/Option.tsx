@@ -20,7 +20,7 @@ interface Props {
 }
 
 export function Option({ option, children, isEdit, dragHandleAttributes, dragHandleListeners, dragHandleRef }: Props) {
-    const [optionAnswer, setOptionAnswer] = useState<string>(option.answerOptionText);
+    const [optionAnswer, setOptionAnswer] = useState<string>(option.text);
 
     const dispatch = useAppDispatch();
     const stopClickPropagation: MouseEventHandler<HTMLDivElement> = (event) => {
@@ -40,8 +40,8 @@ export function Option({ option, children, isEdit, dragHandleAttributes, dragHan
     };
 
     const updateQuestionOptionHandler = () => {
-        if (optionAnswer !== option.answerOptionText) {
-            updateAnswerOption(option.id, { serialNumber: option.serialNumber, answerOptionText: optionAnswer })
+        if (optionAnswer !== option.text) {
+            updateAnswerOption(option.id, { serialNumber: option.serialNumber, text: optionAnswer })
                 .then((data) => dispatch(setOptionValue({ answerOption: data })))
                 .catch((err) => {
                     if (err.response) {
@@ -50,7 +50,7 @@ export function Option({ option, children, isEdit, dragHandleAttributes, dragHan
 
                     dispatch(
                         setOptionValue({
-                            answerOption: { ...option, answerOptionText: option.answerOptionText },
+                            answerOption: { ...option, text: option.text },
                         }),
                     );
                 });
@@ -79,20 +79,13 @@ export function Option({ option, children, isEdit, dragHandleAttributes, dragHan
                         </div>
                     )}
                     {children}
-                    {option.answerOptionText !== 'Другое' ? (
-                        <EditorInput
-                            className={style.input}
-                            value={optionAnswer}
-                            onChange={setOptionAnswer}
-                            onBlur={updateQuestionOptionHandler}
-                            isTextColor
-                        />
-                    ) : (
-                        <div>
-                            <span>Другое: </span>
-                            <input className={style.another} disabled />
-                        </div>
-                    )}
+                    <EditorInput
+                        className={style.input}
+                        value={optionAnswer}
+                        onChange={setOptionAnswer}
+                        onBlur={updateQuestionOptionHandler}
+                        isTextColor
+                    />
                 </div>
 
                 {isEdit && (

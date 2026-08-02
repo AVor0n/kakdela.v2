@@ -120,7 +120,7 @@ export function Answers() {
         () =>
             questions.map((question, index) => ({
                 value: String(index),
-                text: removeHTML(question.title),
+                text: removeHTML(question.text),
             })),
         [questions],
     );
@@ -225,7 +225,7 @@ export function Answers() {
 
                             return (
                                 <article className={style.questionBlock} key={question.id}>
-                                    <h2 className={style.questionTitle}>{removeHTML(question.title)}</h2>
+                                    <h2 className={style.questionTitle}>{removeHTML(question.text)}</h2>
                                     {answers.length === 0 ? (
                                         <div className={style.empty}>Нет ответов на этот вопрос</div>
                                     ) : (
@@ -283,7 +283,7 @@ export function Answers() {
                         </div>
 
                         <article className={style.questionBlock}>
-                            <h2 className={style.questionTitle}>{removeHTML(currentQuestion.title)}</h2>
+                            <h2 className={style.questionTitle}>{removeHTML(currentQuestion.text)}</h2>
                             {getQuestionAnswers(responses, currentQuestion.id).length === 0 ? (
                                 <div className={style.empty}>Нет ответов на этот вопрос</div>
                             ) : (
@@ -346,7 +346,7 @@ export function Answers() {
 
                                 return (
                                     <article className={style.questionBlock} key={question.id}>
-                                        <h2 className={style.questionTitle}>{removeHTML(question.title)}</h2>
+                                        <h2 className={style.questionTitle}>{removeHTML(question.text)}</h2>
                                         <div className={style.singleAnswer}>
                                             {answer?.answerText ? removeHTML(answer.answerText) : 'Нет ответа'}
                                         </div>

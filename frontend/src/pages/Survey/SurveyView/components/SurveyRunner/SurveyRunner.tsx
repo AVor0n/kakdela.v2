@@ -13,6 +13,9 @@ import longTextStyle from '@/pages/Survey/SurveyModify/components/QuestionList/c
 import style from './SurveyRunner.module.css';
 import { useSurveyResponseSync } from './useSurveyResponseSync';
 import { HTMLRender } from '@/shared/ui/HTMLRender/HTMLRender';
+import type { AnswerPayload } from './types';
+
+const OTHER_OPTION_VALUE = '__other__';
 
 export type SurveyRunnerMode = 'preview' | 'respond';
 
@@ -41,25 +44,26 @@ function isQuestionVisible(question: Question) {
     return question.visible ?? question.isVisible ?? true;
 }
 
-function getAnswerText(question: Question, value: AnswerValue | undefined) {
+function getAnswerText(question: Question, value: AnswerValue | undefined): AnswerPayload {
     if (value === undefined) {
-        return '';
+        return { textValue: '' };
     }
 
     if (question.type === 'SINGLE_CHOICE') {
-        return question.answerOptions.find((option) => option.id === value)?.answerOptionText ?? '';
+        return { selectedAnswerOptionIds: [question.answerOptions.find((option) => option.id === value)?.id ?? ''] };
     }
 
     if (question.type === 'MULTIPLE_CHOICE') {
         const selectedOptionIds = Array.isArray(value) ? value : [];
 
-        return question.answerOptions
-            .filter((option) => selectedOptionIds.includes(option.id))
-            .map((option) => option.answerOptionText)
-            .join(', ');
+        return {
+            selectedAnswerOptionIds: question.answerOptions
+                .filter((option) => selectedOptionIds.includes(option.id))
+                .map((option) => option.id),
+        };
     }
 
-    return typeof value === 'string' ? value.trim() : '';
+    return typeof value === 'string' ? { textValue: value.trim() } : { textValue: '' };
 }
 
 export function SurveyRunner({ survey, mode }: Props) {
@@ -68,6 +72,7 @@ export function SurveyRunner({ survey, mode }: Props) {
     const [errors, setErrors] = useState<Errors>({});
     const [isComplete, setIsComplete] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [otherTexts, setOtherTexts] = useState<Record<string, string>>({});
     const [submitError, setSubmitError] = useState<string | null>(null);
     const isPreview = mode === 'preview';
     const {
@@ -205,21 +210,44 @@ export function SurveyRunner({ survey, mode }: Props) {
             case 'SINGLE_CHOICE':
                 return (
                     <div className={choiceStyle.container}>
-                        {question.answerOptions.map((option) => (
-                            <div className={optionStyle.optionContent} key={option.id}>
-                                <label className={optionStyle.option}>
-                                    <Radio
-                                        name={question.id}
-                                        disabled={isSubmitting}
-                                        checked={value === option.id}
-                                        onChange={() => updateAnswer(question, option.id)}
-                                    />
-                                    <Text typography='paragraph-2-regular' style='primary'>
-                                        <HTMLRender html={option.answerOptionText} />
-                                    </Text>
-                                </label>
+                        {question.answerOptions.map((option) => {
+                            return (
+                                <div className={optionStyle.optionContent} key={option.id}>
+                                    <label className={optionStyle.option}>
+                                        <Radio
+                                            name={question.id}
+                                            disabled={isSubmitting}
+                                            checked={value === option.id}
+                                            onChange={() => updateAnswer(question, option.id)}
+                                        />
+                                        <Text typography='paragraph-2-regular' style='primary'>
+                                            <HTMLRender html={option.text} />
+                                        </Text>
+                                    </label>
+                                </div>
+                            );
+                        })}
+                        {question.hasOtherOption && (
+                            <div className={style.anotherOption}>
+                                <Radio
+                                    name={question.id}
+                                    disabled={isSubmitting}
+                                    checked={value == OTHER_OPTION_VALUE}
+                                    onChange={() => updateAnswer(question, OTHER_OPTION_VALUE)}
+                                />
+                                <p>Другое: </p>
+                                <input
+                                    className={style.another}
+                                    disabled={value !== OTHER_OPTION_VALUE}
+                                    value={otherTexts[question.id] ?? ''}
+                                    onChange={(e) => {
+                                        const text = e.target.value;
+                                        setOtherTexts((prev) => ({ ...prev, [question.id]: text }));
+                                        scheduleAnswerSave(question.id, { textValue: text }, { debounce: true });
+                                    }}
+                                />
                             </div>
-                        ))}
+                        )}
                     </div>
                 );
             case 'MULTIPLE_CHOICE':
@@ -227,7 +255,6 @@ export function SurveyRunner({ survey, mode }: Props) {
                     <div className={choiceStyle.container}>
                         {question.answerOptions.map((option) => {
                             const selectedOptions = Array.isArray(value) ? value : [];
-
                             return (
                                 <div className={optionStyle.optionContent} key={option.id}>
                                     <label className={optionStyle.option}>
@@ -237,12 +264,19 @@ export function SurveyRunner({ survey, mode }: Props) {
                                             onChange={() => toggleMultipleChoice(question, option.id)}
                                         />
                                         <Text typography='paragraph-2-regular' style='primary'>
-                                            <HTMLRender html={option.answerOptionText} />
+                                            <HTMLRender html={option.text} />
                                         </Text>
                                     </label>
                                 </div>
                             );
                         })}
+                        {question.hasOtherOption && (
+                            <div className={style.anotherOption}>
+                                <Checkbox disabled={isSubmitting} checked={false} onChange={() => {}} />
+                                <p>Другое: </p>
+                                <input className={style.another} />
+                            </div>
+                        )}
                     </div>
                 );
             default:
@@ -338,7 +372,7 @@ export function SurveyRunner({ survey, mode }: Props) {
                                             />
                                         )}
                                         <div className={style.questionTitle}>
-                                            <HTMLRender className={style.title} html={question.title} />
+                                            <HTMLRender className={style.title} html={question.text} />
                                             {question.isMandatory && <span className={style.mandatory}>*</span>}
                                         </div>
                                         {question.description && (

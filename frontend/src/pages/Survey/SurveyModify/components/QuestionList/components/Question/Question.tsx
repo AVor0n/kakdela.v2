@@ -12,7 +12,7 @@ import {
     setQuestion,
     updateAnswerOptionOrder,
     updateQuestionDescription,
-    updateQuestionTitle,
+    updateQuestionText,
     updateQuestionType,
 } from '@/entities/Survey/Survey.slice';
 import { Choice } from './components/Choice/Choice';
@@ -60,7 +60,7 @@ export function Question({
     isDragOverlay = false,
 }: Props) {
     const { selectedSurvey } = useAppSelector((state) => state.survey);
-    const [title, setTitle] = useState<string>(question.title);
+    const [text, setText] = useState<string>(question.text);
     const [typeQuestion, setTypeQuestion] = useState<QuestionType>(question.type);
     const [mandatory, setMandatory] = useState<boolean>(question.isMandatory);
     const [answerOptionOrder, setAnswerOptionOrder] = useState<AnswerOptionOrder>(
@@ -73,17 +73,17 @@ export function Question({
 
     const dispatch = useAppDispatch();
 
-    const updateQuestionTitleHandler = () => {
-        if (title !== question.title) {
-            updateQuestion(question.id, { title })
+    const updateQuestionTextHandler = () => {
+        if (text !== question.text) {
+            updateQuestion(question.id, { text })
                 .then((data) => {
-                    dispatch(updateQuestionTitle({ id: question.id, title: data.title }));
+                    dispatch(updateQuestionText({ id: question.id, text: data.text }));
                 })
                 .catch((err) => {
                     if (err.response) {
                         dispatch(setErrorMessage({ message: 'Не удалось изменить название вопроса' }));
                     }
-                    setTitle(question.title);
+                    setText(question.text);
                 });
         }
     };
@@ -236,9 +236,13 @@ export function Question({
             case 'LONG_TEXT':
                 return <LongText />;
             case 'SINGLE_CHOICE':
-                return <Choice options={question.answerOptions!} isEdit={isEditMode} type='radio' />;
+                return (
+                    <Choice options={question.answerOptions!} isEdit={isEditMode} type='radio' question={question} />
+                );
             case 'MULTIPLE_CHOICE':
-                return <Choice options={question.answerOptions!} isEdit={isEditMode} type='checkbox' />;
+                return (
+                    <Choice options={question.answerOptions!} isEdit={isEditMode} type='checkbox' question={question} />
+                );
             default:
                 return null;
         }
@@ -259,9 +263,9 @@ export function Question({
                 <div className={style.questionDetail}>
                     <EditorInput
                         placeholder='Вопрос'
-                        value={title}
-                        onChange={setTitle}
-                        onBlur={updateQuestionTitleHandler}
+                        value={text}
+                        onChange={setText}
+                        onBlur={updateQuestionTextHandler}
                         isTextColor
                     />
                 </div>
