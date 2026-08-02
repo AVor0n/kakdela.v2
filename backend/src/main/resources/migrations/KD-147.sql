@@ -40,8 +40,9 @@ ALTER TABLE answer
     RENAME COLUMN answer_text TO text_value;
 
 ALTER TABLE answer
-    ADD COLUMN question_text_snapshot varchar(200) NOT NULL,
     ADD COLUMN id uuid,
+    ADD COLUMN serial_number int NOT NULL,
+    ADD COLUMN question_text_snapshot varchar(200) NOT NULL,
     ADD COLUMN boolean_value bool,
     ADD COLUMN date_value date,
     ADD COLUMN time_value time;
@@ -66,6 +67,7 @@ CREATE TABLE selected_answer_option (
     id uuid PRIMARY KEY,
     answer_id uuid REFERENCES answer (id) ON DELETE CASCADE,
     answer_option_id uuid REFERENCES answer_option (id) ON DELETE SET NULL,
+    serial_number int NOT NULL,
     answer_option_text_snapshot varchar(1000) NOT NULL
 );
 

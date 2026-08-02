@@ -9,6 +9,7 @@ import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -62,6 +63,7 @@ public class Response {
   private Instant receivedAt;
 
   @OneToMany(mappedBy = "response", cascade = CascadeType.ALL, orphanRemoval = true)
+  @OrderBy("serialNumber ASC")
   @Builder.Default
   private List<Answer> answers = new ArrayList<>();
 }

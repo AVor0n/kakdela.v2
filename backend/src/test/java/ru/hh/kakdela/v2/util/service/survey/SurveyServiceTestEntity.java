@@ -195,6 +195,7 @@ public class SurveyServiceTestEntity {
           FullSurveyConstants.getQuestion1AnswerId(),
           response1,
           question1,
+          1,
           "question1",
           "answer1",
           null,
@@ -206,6 +207,7 @@ public class SurveyServiceTestEntity {
           FullSurveyConstants.getQuestion2AnswerId(),
           response1,
           question2,
+          2,
           "question2",
           null,
           null,
@@ -216,12 +218,14 @@ public class SurveyServiceTestEntity {
           FullSurveyConstants.getSelectedAnswerOption1OfQuestion2AnswerId(),
           answer2,
           question2.getAnswerOptions().get(0),
+          1,
           "answerOption1"
       );
       SelectedAnswerOption selectedAnswerOption2OfQuestion2Answer = new SelectedAnswerOption(
           FullSurveyConstants.getSelectedAnswerOption2OfQuestion2AnswerId(),
           answer2,
           question2.getAnswerOptions().get(1),
+          2,
           "answerOption2"
       );
       answer2.getSelectedAnswerOptions().add(selectedAnswerOption1OfQuestion2Answer);
@@ -231,6 +235,7 @@ public class SurveyServiceTestEntity {
           FullSurveyConstants.getQuestion3AnswerId(),
           response1,
           question3,
+          3,
           "question3",
           null,
           null,
@@ -241,12 +246,14 @@ public class SurveyServiceTestEntity {
           FullSurveyConstants.getSelectedAnswerOption1OfQuestion2AnswerId(),
           answer2,
           question2.getAnswerOptions().get(0),
+          1,
           "answerOption1"
       );
       SelectedAnswerOption selectedAnswerOption2OfQuestion3Answer = new SelectedAnswerOption(
           FullSurveyConstants.getSelectedAnswerOption2OfQuestion2AnswerId(),
           answer2,
           question2.getAnswerOptions().get(1),
+          2,
           "answerOption2"
       );
       answer2.getSelectedAnswerOptions().add(selectedAnswerOption1OfQuestion3Answer);

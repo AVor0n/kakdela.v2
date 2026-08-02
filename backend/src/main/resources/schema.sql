@@ -102,6 +102,7 @@ CREATE TABLE answer (
     id uuid PRIMARY KEY,
     response_id uuid REFERENCES response (id) ON DELETE CASCADE,
     question_id uuid REFERENCES question (id) ON DELETE SET NULL,
+    serial_number int NOT NULL,
     question_text_snapshot varchar(200) NOT NULL,
     text_value varchar(5000),
     boolean_value bool,
@@ -119,6 +120,7 @@ CREATE TABLE selected_answer_option (
     id uuid PRIMARY KEY,
     answer_id uuid REFERENCES answer (id) ON DELETE CASCADE,
     answer_option_id uuid REFERENCES answer_option (id) ON DELETE SET NULL,
+    serial_number int NOT NULL,
     answer_option_text_snapshot varchar(1000) NOT NULL
 );
 
