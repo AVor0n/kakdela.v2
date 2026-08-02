@@ -23,3 +23,4 @@ public class SurveyShortResponseDto {
   private final Instant createdAt;
   private Instant expireAt;
 }
+
