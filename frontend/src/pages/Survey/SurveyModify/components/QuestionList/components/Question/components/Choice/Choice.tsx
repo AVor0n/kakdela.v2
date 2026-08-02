@@ -25,6 +25,7 @@ import { useMemo } from 'react';
 import { SortableOption } from './components/SortableOption/SortableOption';
 import style from './Choice.module.css';
 import { updateQuestion } from '@/api/question';
+import classNames from 'classnames';
 interface Props {
     options: AnswerOption[];
     type: 'radio' | 'checkbox';
@@ -126,7 +127,7 @@ export function Choice({ options, type, isEdit, question }: Props) {
                         ))}
                         {question.hasOtherOption && (
                             <div className={style.anotherOption}>
-                                <div className={style.actions}>
+                                <div className={classNames(style.actions, isEdit && style.leftPadding)}>
                                     {renderChoiceControl()}
                                     <p>Другое: </p>
                                     <input className={style.another} disabled />
@@ -155,7 +156,7 @@ export function Choice({ options, type, isEdit, question }: Props) {
                         );
                     })}
                     {question.hasOtherOption && (
-                        <div className={style.actions}>
+                        <div className={classNames(style.actions, isEdit && style.leftPadding)}>
                             {renderChoiceControl()}
                             <p>Другое: </p>
                             <input className={style.another} disabled />

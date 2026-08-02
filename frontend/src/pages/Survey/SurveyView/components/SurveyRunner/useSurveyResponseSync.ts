@@ -1,7 +1,11 @@
 import axios from 'axios';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { createSurveyResponse, deleteSurveyAnswer, updateSurveyAnswer } from '@/api/surveyResponses';
-import type { AnswerPayload } from './types';
+import {
+    createSurveyResponse,
+    deleteSurveyAnswer,
+    updateSurveyAnswer,
+    type SurveyAnswerRequest,
+} from '@/api/surveyResponses';
 
 const TEXT_ANSWER_DEBOUNCE_MS = 600;
 const MAX_PARALLEL_REQUESTS = 3;
@@ -14,7 +18,7 @@ export function useSurveyResponseSync(surveyId: string, disabled: boolean) {
     const responseIdRef = useRef<string | null>(null);
     const responsePromiseRef = useRef<Promise<string> | null>(null);
     const persistedQuestionIdsRef = useRef(new Set<string>());
-    const pendingAnswersRef = useRef(new Map<string, AnswerPayload>());
+    const pendingAnswersRef = useRef(new Map<string, SurveyAnswerRequest>());
     const saveQueuesRef = useRef(new Map<string, Promise<void>>());
     const debounceTimersRef = useRef(new Map<string, ReturnType<typeof setTimeout>>());
     const failedQuestionIdsRef = useRef(new Set<string>());
@@ -97,8 +101,14 @@ export function useSurveyResponseSync(surveyId: string, disabled: boolean) {
         return responsePromiseRef.current;
     }, [surveyId]);
 
+    function isEmptyPayload(payload: SurveyAnswerRequest) {
+        const hasIds = payload.selectedAnswerOptionIds && payload.selectedAnswerOptionIds.length > 0;
+        const hasText = payload.textValue && payload.textValue.trim() !== '';
+        return !hasIds && !hasText;
+    }
+
     const persistAnswer = useCallback(
-        async (questionId: string, answerPayload: AnswerPayload, generation: number) => {
+        async (questionId: string, answerPayload: SurveyAnswerRequest, generation: number) => {
             await withRequestSlot(async () => {
                 if (generation !== generationRef.current) {
                     return;
@@ -106,7 +116,7 @@ export function useSurveyResponseSync(surveyId: string, disabled: boolean) {
 
                 const isPersisted = persistedQuestionIdsRef.current.has(questionId);
 
-                if (!answerPayload) {
+                if (isEmptyPayload(answerPayload)) {
                     if (isPersisted) {
                         const responseId = await ensureResponse();
                         try {
@@ -219,7 +229,7 @@ export function useSurveyResponseSync(surveyId: string, disabled: boolean) {
     );
 
     const scheduleAnswerSave = useCallback(
-        (questionId: string, payload: AnswerPayload, options: ScheduleOptions = {}) => {
+        (questionId: string, payload: SurveyAnswerRequest, options: ScheduleOptions = {}) => {
             if (disabled) {
                 return;
             }

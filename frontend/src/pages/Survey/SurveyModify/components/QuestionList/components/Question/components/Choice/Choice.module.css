@@ -26,3 +26,7 @@
     display: flex;
     justify-content: space-between;
 }
+
+.leftPadding {
+    margin-left: 23px;
+}
