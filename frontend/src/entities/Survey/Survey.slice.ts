@@ -68,12 +68,12 @@ const surveySlice = createSlice({
             state.selectedQuestion = question;
             state.currentQuestionPageIndex = pageIndex;
         },
-        updateQuestionTitle: (state, action: PayloadAction<{ id: string; title: string }>) => {
+        updateQuestionText: (state, action: PayloadAction<{ id: string; text: string }>) => {
             if (!state.selectedSurvey) return;
-            const { id, title } = action.payload;
+            const { id, text } = action.payload;
             state.selectedSurvey.pages[state.currentQuestionPageIndex].questions.map((question) => {
                 if (question.id === id) {
-                    question.title = title;
+                    question.text = text;
                 }
             });
         },
@@ -446,7 +446,7 @@ const surveySlice = createSlice({
 export const {
     setSurveys,
     setSelectedSurvey,
-    updateQuestionTitle,
+    updateQuestionText,
     updateQuestionType,
     updateAnswerOptionOrder,
     updateQuestionDescription,

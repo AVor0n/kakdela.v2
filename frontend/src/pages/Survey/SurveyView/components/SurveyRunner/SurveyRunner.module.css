@@ -130,3 +130,18 @@
         flex-wrap: wrap;
     }
 }
+
+.another {
+    border: 0;
+    border-bottom: solid 1px var(--color-border);
+    transition: border 200ms ease-in;
+}
+
+.another:focus {
+    border-bottom: solid 1px var(--color-primary);
+}
+
+.anotherOption {
+    display: flex;
+    gap: 5px;
+}

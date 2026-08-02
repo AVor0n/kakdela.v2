@@ -21,3 +21,8 @@
     display: flex;
     gap: 5px;
 }
+
+.anotherOption {
+    display: flex;
+    justify-content: space-between;
+}
