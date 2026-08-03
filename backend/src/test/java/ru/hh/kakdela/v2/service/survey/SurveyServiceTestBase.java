@@ -8,6 +8,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.hh.kakdela.v2.dao.AccountDao;
 import ru.hh.kakdela.v2.dao.SurveyDao;
+import ru.hh.kakdela.v2.dao.SurveyNotificationSubscriptionDao;
 import ru.hh.kakdela.v2.dto.survey.SurveyCreateDto;
 import ru.hh.kakdela.v2.dto.survey.SurveyResponseDto;
 import ru.hh.kakdela.v2.dto.survey.SurveyShortResponseWithPermissionDto;
@@ -34,6 +35,8 @@ class SurveyServiceTestBase {
   protected SurveyDao surveyDao;
   @Mock
   protected AccountDao accountDao;
+  @Mock
+  protected SurveyNotificationSubscriptionDao subscriptionDao;
   @Mock
   protected PermissionService permissionService;
   @Mock
@@ -264,6 +267,7 @@ class SurveyServiceTestBase {
     surveyService = new SurveyService(
         surveyDao,
         accountDao,
+        subscriptionDao,
         permissionService,
         notificationService,
         objectStorageService,

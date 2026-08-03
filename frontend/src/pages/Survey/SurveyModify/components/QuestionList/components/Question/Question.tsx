@@ -1,4 +1,4 @@
-import type { Question, QuestionType } from '@/shared/types/Question.type';
+import type { AnswerOptionOrder, Question, QuestionType } from '@/shared/types/Question.type';
 import type { DraggableAttributes, DraggableSyntheticListeners } from '@dnd-kit/core';
 import { Button, Checkbox, createStaticDataProvider, Select, type StaticDataFetcherItem } from '@hh.ru/magritte-ui';
 import { useCallback, useEffect, useMemo, useState, type ChangeEvent, type Ref } from 'react';
@@ -10,6 +10,7 @@ import {
     duplicateQuestion,
     setMandatory as setMandatoryState,
     setQuestion,
+    updateAnswerOptionOrder,
     updateQuestionDescription,
     updateQuestionTitle,
     updateQuestionType,
@@ -43,6 +44,11 @@ const OPTIONS: StaticDataFetcherItem[] = [
     { value: 'MULTIPLE_CHOICE', text: 'Несколько из списка' },
 ];
 
+const ANSWER_OPTION_ORDER: StaticDataFetcherItem[] = [
+    { value: 'ORIGINAL', text: 'Обычный' },
+    { value: 'RANDOM', text: 'Случайный' },
+];
+
 export function Question({
     question,
     onClick,
@@ -57,6 +63,9 @@ export function Question({
     const [title, setTitle] = useState<string>(question.title);
     const [typeQuestion, setTypeQuestion] = useState<QuestionType>(question.type);
     const [mandatory, setMandatory] = useState<boolean>(question.isMandatory);
+    const [answerOptionOrder, setAnswerOptionOrder] = useState<AnswerOptionOrder>(
+        question.answerOptionOrder ?? 'ORIGINAL',
+    );
     const [file, setFile] = useState<File | null>(null);
     const [questionImage, setQuestionImage] = useState<string | null>(null);
     const [description, setDescription] = useState<string>(question.description ?? '');
@@ -110,6 +119,26 @@ export function Question({
                         dispatch(setErrorMessage({ message: 'Не удалось изменить тип вопроса' }));
                     }
                     setTypeQuestion(question.type);
+                });
+        }
+    };
+
+    const updateAnswerOptionOrderHandler = () => {
+        if (answerOptionOrder !== question.answerOptionOrder) {
+            updateQuestion(question.id, { answerOptionOrder: answerOptionOrder })
+                .then((data) => {
+                    dispatch(
+                        updateAnswerOptionOrder({
+                            id: question.id,
+                            answerOptionOrder: data.answerOptionOrder ?? answerOptionOrder,
+                        }),
+                    );
+                })
+                .catch((err) => {
+                    if (err.response) {
+                        dispatch(setErrorMessage({ message: 'Не удалось изменить способ вывода вариантов ответов' }));
+                    }
+                    setAnswerOptionOrder(question.answerOptionOrder ?? 'ORIGINAL');
                 });
         }
     };
@@ -196,6 +225,10 @@ export function Question({
         return OPTIONS.find((option) => option.value === typeQuestion);
     }, [typeQuestion]);
 
+    const answerOptionOrderType = useMemo(() => {
+        return ANSWER_OPTION_ORDER.find((option) => option.value === answerOptionOrder);
+    }, [answerOptionOrder]);
+
     const questionContent = useCallback(() => {
         switch (typeQuestion) {
             case 'SHORT_TEXT':
@@ -250,17 +283,20 @@ export function Question({
                         </button>
                     )}
                 </div>
-
-                <Select
-                    type='label'
-                    value={questionType}
-                    dataProvider={createStaticDataProvider(OPTIONS, 'Тип вопроса')}
-                    name='area'
-                    onChange={(e) => {
-                        setTypeQuestion(e.value as QuestionType);
-                    }}
-                    onBlur={updateQuestionTypeHandler}
-                />
+                <div>
+                    <Select
+                        type='radio'
+                        value={questionType}
+                        dataProvider={createStaticDataProvider(OPTIONS, 'Тип вопроса')}
+                        name='area'
+                        widthEqualToActivator={false}
+                        dropWidth={270}
+                        onChange={(e) => {
+                            setTypeQuestion(e.value as QuestionType);
+                        }}
+                        onBlur={updateQuestionTypeHandler}
+                    />
+                </div>
             </section>
             <section className={style.questionDescription}>
                 <EditorInput
@@ -299,6 +335,23 @@ export function Question({
                         icon={<img src='/trash.svg' alt='Удалить' />}
                         onClick={deleteQuestionHandler}
                     />
+                    {((questionType && questionType.value == 'SINGLE_CHOICE') ||
+                        questionType?.value == 'MULTIPLE_CHOICE') && (
+                        <div className={style.select}>
+                            <Select
+                                type='radio'
+                                value={answerOptionOrderType}
+                                dataProvider={createStaticDataProvider(ANSWER_OPTION_ORDER, 'Порядок ответов')}
+                                widthEqualToActivator={false}
+                                dropWidth={220}
+                                name='area2'
+                                onChange={(e) => {
+                                    setAnswerOptionOrder(e.value as AnswerOptionOrder);
+                                }}
+                                onBlur={updateAnswerOptionOrderHandler}
+                            />
+                        </div>
+                    )}
                 </div>
             </section>
         </div>

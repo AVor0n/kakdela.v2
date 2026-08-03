@@ -1,4 +1,4 @@
-import type { AnswerOption, Question, QuestionType } from '@/shared/types/Question.type';
+import type { AnswerOption, AnswerOptionOrder, Question, QuestionType } from '@/shared/types/Question.type';
 import type { Page, Survey, SurveyListItem } from '@/shared/types/Survey.type';
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
@@ -95,6 +95,20 @@ const surveySlice = createSlice({
                     question.type = type;
                 }
             });
+        },
+        updateAnswerOptionOrder: (
+            state,
+            action: PayloadAction<{ id: string; answerOptionOrder: AnswerOptionOrder }>,
+        ) => {
+            if (state.selectedSurvey === null) return;
+            const { id, answerOptionOrder } = action.payload;
+            const question = state.selectedSurvey.pages
+                .flatMap((page) => page.questions)
+                .find((pageQuestion) => pageQuestion.id === id);
+
+            if (question?.type === 'SINGLE_CHOICE' || question?.type === 'MULTIPLE_CHOICE') {
+                question.answerOptionOrder = answerOptionOrder;
+            }
         },
         addQuestionOptions: (state, action: PayloadAction<{ answerOption: AnswerOption }>) => {
             if (!state.selectedSurvey) return;
@@ -434,6 +448,7 @@ export const {
     setSelectedSurvey,
     updateQuestionTitle,
     updateQuestionType,
+    updateAnswerOptionOrder,
     updateQuestionDescription,
     addQuestionOptions,
     setSelectedQuestion,

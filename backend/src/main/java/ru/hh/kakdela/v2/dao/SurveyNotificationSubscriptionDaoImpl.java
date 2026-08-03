@@ -8,6 +8,7 @@ import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 import ru.hh.kakdela.v2.model.Account;
+import ru.hh.kakdela.v2.model.Survey;
 import ru.hh.kakdela.v2.model.SurveyNotificationSubscription;
 
 @Slf4j
@@ -48,6 +49,17 @@ public class SurveyNotificationSubscriptionDaoImpl implements SurveyNotification
             Account.class
         )
         .setParameter("surveyId", surveyId)
+        .getResultList();
+  }
+
+  @Override
+  public List<Survey> findSurveysBySubscriberId(UUID subscriberId) {
+    return entityManager.createQuery(
+            "SELECT s.survey FROM SurveyNotificationSubscription s "
+                + "WHERE s.account.id = :subscriberId",
+            Survey.class
+        )
+        .setParameter("subscriberId", subscriberId)
         .getResultList();
   }
 

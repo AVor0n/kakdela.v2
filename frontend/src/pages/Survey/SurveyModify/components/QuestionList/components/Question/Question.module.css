@@ -120,3 +120,8 @@
 .questionDescription {
     margin: 15px 0;
 }
+
+.select {
+    width: 165px;
+    justify-self: end;
+}

@@ -14,8 +14,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import ru.hh.kakdela.v2.dao.AccountDao;
 import ru.hh.kakdela.v2.dao.SurveyDao;
+import ru.hh.kakdela.v2.dao.SurveyNotificationSubscriptionDao;
 import ru.hh.kakdela.v2.dto.survey.SurveyCreateDto;
 import ru.hh.kakdela.v2.dto.survey.SurveyResponseDto;
+import ru.hh.kakdela.v2.dto.survey.SurveyShortResponseDto;
 import ru.hh.kakdela.v2.dto.survey.SurveyShortResponseWithPermissionDto;
 import ru.hh.kakdela.v2.dto.survey.SurveyUpdateDto;
 import ru.hh.kakdela.v2.mapper.SurveyMapper;
@@ -33,6 +35,7 @@ public class SurveyService {
 
   private final SurveyDao surveyDao;
   private final AccountDao accountDao;
+  private final SurveyNotificationSubscriptionDao subscriptionDao;
   private final PermissionService permissionService;
   private final NotificationService notificationService;
   private final ObjectStorageService objectStorageService;
@@ -55,6 +58,13 @@ public class SurveyService {
   public List<SurveyShortResponseWithPermissionDto> getMySurveys(UUID accountId) {
     return permissionService.getAccessibleSurveys(accountId).stream()
         .map(surveyMapper::surveyWithRoleDtoToShortDto)
+        .toList();
+  }
+
+  @Transactional(readOnly = true)
+  public List<SurveyShortResponseDto> getMyAssignedSurveys(UUID accountId) {
+    return subscriptionDao.findSurveysBySubscriberId(accountId).stream()
+        .map(surveyMapper::surveyToShortDto)
         .toList();
   }
 
