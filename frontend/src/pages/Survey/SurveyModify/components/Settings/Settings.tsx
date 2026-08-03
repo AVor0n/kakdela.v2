@@ -222,7 +222,6 @@ export function Settings() {
                     />
                     <span>Прохождение только для авторизированных пользователей</span>
                 </div>
-
                 <div className={style.option}>
                     <Checkbox
                         checked={isLimitedToOneResponse}

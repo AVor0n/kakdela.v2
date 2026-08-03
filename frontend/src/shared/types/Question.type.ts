@@ -1,5 +1,5 @@
 export type QuestionType = 'SHORT_TEXT' | 'LONG_TEXT' | 'SINGLE_CHOICE' | 'MULTIPLE_CHOICE';
-
+export type AnswerOptionOrder = 'ORIGINAL' | 'RANDOM';
 export type AnswerOption = {
     id: string;
     answerOptionText: string;
@@ -25,7 +25,7 @@ type SimpleQuestion = BaseQuestion<'SHORT_TEXT' | 'LONG_TEXT'> & {
 
 type QuestionWithOptions = BaseQuestion<'SINGLE_CHOICE' | 'MULTIPLE_CHOICE'> & {
     answerOptions: AnswerOption[];
-    answerOptionOrder: null;
+    answerOptionOrder: AnswerOptionOrder | null;
 };
 
 export type Question = SimpleQuestion | QuestionWithOptions;
