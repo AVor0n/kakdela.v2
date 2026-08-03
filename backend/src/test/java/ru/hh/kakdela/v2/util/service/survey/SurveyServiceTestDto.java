@@ -104,7 +104,8 @@ public class SurveyServiceTestDto {
                             FullSurveyConstants.ANSWER_OPTION2_OF_QUESTION3.getId(isClone),
                             2,
                             "answerOption2",
-                            SurveyServiceTestConstants.attachmentUrl)))))),
+                            SurveyServiceTestConstants.attachmentUrl)))),
+            Collections.emptyList())),
         includeClosingPage
             ? new ClosingPageResponseDto(
             "closingPage",
