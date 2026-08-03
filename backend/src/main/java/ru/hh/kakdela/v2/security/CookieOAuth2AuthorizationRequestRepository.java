@@ -1,13 +1,15 @@
 package ru.hh.kakdela.v2.security;
 
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.Base64;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.oauth2.client.web.AuthorizationRequestRepository;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.util.SerializationUtils;
-import ru.hh.kakdela.v2.util.CookieUtil;
 
 @Component
 public class CookieOAuth2AuthorizationRequestRepository
@@ -18,8 +20,15 @@ public class CookieOAuth2AuthorizationRequestRepository
 
   @Override
   public OAuth2AuthorizationRequest loadAuthorizationRequest(HttpServletRequest request) {
-    String value = CookieUtil.getCookieValueByName(request, COOKIE_NAME);
-    return value == null ? null : deserialize(value);
+    if (request.getCookies() == null) {
+      return null;
+    }
+    for (Cookie cookie : request.getCookies()) {
+      if (COOKIE_NAME.equals(cookie.getName())) {
+        return deserialize(cookie.getValue());
+      }
+    }
+    return null;
   }
 
   @Override
@@ -29,19 +38,28 @@ public class CookieOAuth2AuthorizationRequestRepository
       HttpServletResponse response) {
 
     if (authorizationRequest == null) {
-      CookieUtil.setHttpOnlySameSiteStrictCookie(response, "/api", 0, COOKIE_NAME);
+      addCookie(response, "", 0);
       return;
     }
-    CookieUtil.setHttpOnlySameSiteStrictCookie(
-        response, "/api", COOKIE_MAX_AGE, COOKIE_NAME, serialize(authorizationRequest));
+    addCookie(response, serialize(authorizationRequest), COOKIE_MAX_AGE);
   }
 
   @Override
   public OAuth2AuthorizationRequest removeAuthorizationRequest(
       HttpServletRequest request, HttpServletResponse response) {
     OAuth2AuthorizationRequest authorizationRequest = loadAuthorizationRequest(request);
-    CookieUtil.setHttpOnlySameSiteStrictCookie(response, "/api", 0, COOKIE_NAME);
+    addCookie(response, "", 0);
     return authorizationRequest;
+  }
+
+  private void addCookie(HttpServletResponse response, String value, long maxAgeSeconds) {
+    ResponseCookie cookie = ResponseCookie.from(COOKIE_NAME, value)
+        .httpOnly(true)
+        .sameSite("Lax")
+        .path("/api")
+        .maxAge(maxAgeSeconds)
+        .build();
+    response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
   }
 
   private static String serialize(OAuth2AuthorizationRequest authorizationRequest) {
