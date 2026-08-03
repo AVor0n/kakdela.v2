@@ -70,7 +70,7 @@ public class RefreshTokenDaoImpl implements RefreshTokenDao {
     entityManager
         .createQuery(
             """
-            DELETE FROM RefreshToken rt 
+            DELETE FROM RefreshToken rt
             WHERE rt.tokenHash = :tokenHash
             """)
         .setParameter("tokenHash", tokenHash)
@@ -110,7 +110,7 @@ public class RefreshTokenDaoImpl implements RefreshTokenDao {
     entityManager
         .createQuery(
             """
-            DELETE FROM RefreshToken rt 
+            DELETE FROM RefreshToken rt
             WHERE rt.expiresAt < :now
             """)
         .setParameter("now", now)

@@ -31,7 +31,6 @@ public class AccountController {
   private final AccountService accountService;
   private final AuthCookieService authCookieService;
 
-
   @GetMapping("/accounts/me")
   public AccountResponseDto getMyAccount(@AuthenticationPrincipal CustomUserDetails currentUser) {
     return accountService.getById(currentUser.getId());

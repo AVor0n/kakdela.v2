@@ -37,7 +37,6 @@ public class ResponseController {
   private final ResponseExportService exportService;
   private final AuthCookieService authCookieService;
 
-
   @Value("${app.tokens.response-access.max-age}")
   private long responseTokenMaxAge;
 

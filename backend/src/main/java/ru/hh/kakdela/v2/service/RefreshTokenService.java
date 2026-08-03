@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import ru.hh.kakdela.v2.dao.AccountDao;
 import ru.hh.kakdela.v2.dao.RefreshTokenDao;
+import ru.hh.kakdela.v2.dto.auth.RefreshTokenDto;
 import ru.hh.kakdela.v2.model.Account;
 import ru.hh.kakdela.v2.model.RefreshToken;
 import ru.hh.kakdela.v2.util.TokenUtil;
@@ -40,23 +41,15 @@ public class RefreshTokenService {
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Аккаунт не найден"));
 
-    String rawToken = TokenUtil.generateRawToken();
-    String tokenHash = TokenUtil.hash(rawToken);
+    RefreshTokenDto dto = getNewRefreshToken(
+        account,
+        deviceId,
+        userAgent,
+        ipAddress);
 
-    Instant now = Instant.now(clock);
-    RefreshToken refreshToken = RefreshToken.builder()
-        .tokenHash(tokenHash)
-        .account(account)
-        .deviceId(deviceId)
-        .userAgent(userAgent)
-        .ipAddress(ipAddress)
-        .createdAt(now)
-        .expiresAt(now.plus(refreshTokenMaxAge, ChronoUnit.SECONDS))
-        .build();
+    refreshTokenDao.save(dto.refreshToken());
 
-    refreshTokenDao.save(refreshToken);
-
-    return rawToken;
+    return dto.rawRefreshToken();
   }
 
   @Transactional(readOnly = true)
@@ -76,33 +69,6 @@ public class RefreshTokenService {
   }
 
   @Transactional
-  public RefreshToken validateToken(String rawToken, String deviceId) {
-    String tokenHash = TokenUtil.hash(rawToken);
-    RefreshToken refreshToken = refreshTokenDao.findByTokenHash(tokenHash)
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.UNAUTHORIZED, "Невалидный refresh токен"));
-
-    Instant now = Instant.now(clock);
-    if (now.isAfter(refreshToken.getExpiresAt())) {
-      refreshTokenDao.delete(refreshToken);
-      throw new ResponseStatusException(
-          HttpStatus.UNAUTHORIZED, "Refresh токен истёк");
-    }
-
-    if (!refreshToken.getDeviceId().equals(deviceId)) {
-      log.warn("Несовпадение deviceId для токена: ожидался {}, получен {}",
-          refreshToken.getDeviceId(), deviceId);
-      throw new ResponseStatusException(
-          HttpStatus.UNAUTHORIZED, "Устройство не совпадает");
-    }
-
-    refreshToken.setLastUsedAt(now);
-    refreshTokenDao.update(refreshToken);
-
-    return refreshToken;
-  }
-
-  @Transactional
   public String rotateRefreshToken(
       String oldRawToken,
       String deviceId,
@@ -114,12 +80,12 @@ public class RefreshTokenService {
     refreshTokenDao.delete(oldRefreshToken);
     log.debug("Удалён старый refresh токен при ротации для accountId={}", account.getId());
 
-    String newRawToken = createRefreshToken(account.getId(), deviceId, userAgent, ipAddress);
-
+    RefreshTokenDto dto = getNewRefreshToken(account, deviceId, userAgent, ipAddress);
+    refreshTokenDao.save(dto.refreshToken());
     log.info("Произведена ротация refresh токена для accountId={}, deviceId={}",
         account.getId(), deviceId);
 
-    return newRawToken;
+    return dto.rawRefreshToken();
   }
 
   @Transactional
@@ -153,5 +119,56 @@ public class RefreshTokenService {
     Instant now = Instant.now(clock);
     refreshTokenDao.deleteAllExpired(now);
     log.info("Очищены истекшие refresh токены");
+  }
+
+  // Вспомогательные методы
+
+  private RefreshToken validateToken(String rawToken, String deviceId) {
+    String tokenHash = TokenUtil.hash(rawToken);
+    RefreshToken refreshToken = refreshTokenDao.findByTokenHash(tokenHash)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.UNAUTHORIZED, "Невалидный refresh токен"));
+
+    Instant now = Instant.now(clock);
+    if (now.isAfter(refreshToken.getExpiresAt())) {
+      refreshTokenDao.delete(refreshToken);
+      throw new ResponseStatusException(
+          HttpStatus.UNAUTHORIZED, "Refresh токен истёк");
+    }
+
+    if (!refreshToken.getDeviceId().equals(deviceId)) {
+      log.warn("Несовпадение deviceId для токена: ожидался {}, получен {}",
+          refreshToken.getDeviceId(), deviceId);
+      throw new ResponseStatusException(
+          HttpStatus.UNAUTHORIZED, "Устройство не совпадает");
+    }
+
+    refreshToken.setLastUsedAt(now);
+    refreshTokenDao.update(refreshToken);
+
+    return refreshToken;
+  }
+
+  private RefreshTokenDto getNewRefreshToken(
+      Account account,
+      String deviceId,
+      String userAgent,
+      String ipAddress
+  ) {
+    String rawToken = TokenUtil.generateRawToken();
+    String tokenHash = TokenUtil.hash(rawToken);
+
+    Instant now = Instant.now(clock);
+    RefreshToken refreshToken = RefreshToken.builder()
+        .tokenHash(tokenHash)
+        .account(account)
+        .deviceId(deviceId)
+        .userAgent(userAgent)
+        .ipAddress(ipAddress)
+        .createdAt(now)
+        .expiresAt(now.plus(refreshTokenMaxAge, ChronoUnit.SECONDS))
+        .build();
+
+    return new RefreshTokenDto(refreshToken, rawToken);
   }
 }

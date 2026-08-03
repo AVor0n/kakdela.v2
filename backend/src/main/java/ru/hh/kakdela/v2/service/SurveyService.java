@@ -39,14 +39,13 @@ public class SurveyService {
   private final PermissionService permissionService;
   private final NotificationService notificationService;
   private final ObjectStorageService objectStorageService;
-  private final ClosingPageService closingPageService;
   private final SurveyMapper surveyMapper;
 
   @Transactional(readOnly = true)
   public SurveyResponseDto getById(UUID surveyId, UUID accountId) {
     Survey survey = surveyDao.findById(surveyId)
         .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
+            HttpStatus.NOT_FOUND, "Опрос не найден: id=" + surveyId));
 
     if (!survey.isPublished()) {
       permissionService.checkHasAnyPermission(surveyId, accountId);
@@ -83,8 +82,6 @@ public class SurveyService {
         .isAuthorizedOnly(dto.getIsAuthorizedOnly())
         .isLimitedToOneResponse(dto.getIsLimitedToOneResponse())
         .doNotify(dto.getDoNotify())
-        .isPublished(false)
-        .isTemplate(false)
         .expireAt(dto.getExpireAtAtTargetTimezone() != null
             ? dto.getExpireAtAtTargetTimezone()
             .atZone(ZoneId.of(dto.getTargetTimezone()))
@@ -184,9 +181,7 @@ public class SurveyService {
         .description(originalSurvey.getDescription())
         .isAuthorizedOnly(originalSurvey.isAuthorizedOnly())
         .isLimitedToOneResponse(originalSurvey.isLimitedToOneResponse())
-        .isPublished(false)
-        .isTemplate(false)
-        .doNotify(originalSurvey.isDoNotify())
+        .doNotify(originalSurvey.doNotify())
         .expireAt(originalSurvey.getExpireAt())
         .targetTimezone(originalSurvey.getTargetTimezone())
         .createdAt(Instant.now().truncatedTo(ChronoUnit.SECONDS))
@@ -208,10 +203,11 @@ public class SurveyService {
             .id(questionId)
             .surveyPage(pageCopy)
             .serialNumber(originalQuestion.getSerialNumber())
-            .title(originalQuestion.getTitle())
+            .text(originalQuestion.getText())
             .description(originalQuestion.getDescription())
             .type(originalQuestion.getType())
             .answerOptionOrder(originalQuestion.getAnswerOptionOrder())
+            .hasOtherOption(originalQuestion.hasOtherOption())
             .isMandatory(originalQuestion.isMandatory())
             .isVisible(originalQuestion.isVisible())
             .condition(originalQuestion.getCondition())
@@ -234,7 +230,7 @@ public class SurveyService {
               .id(optionId)
               .question(questionCopy)
               .serialNumber(originalOption.getSerialNumber())
-              .answerOptionText(originalOption.getAnswerOptionText())
+              .text(originalOption.getText())
               .build();
 
           if (originalOption.getAttachmentObjectKey() != null) {

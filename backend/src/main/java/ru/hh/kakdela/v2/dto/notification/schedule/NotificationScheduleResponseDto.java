@@ -1,4 +1,4 @@
-package ru.hh.kakdela.v2.dto.notification_schedule;
+package ru.hh.kakdela.v2.dto.notification.schedule;
 
 import java.time.LocalTime;
 import java.util.UUID;

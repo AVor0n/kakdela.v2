@@ -45,7 +45,6 @@ public class Account {
   @Column(name = "is_deleted", nullable = false)
   private Boolean isDeleted;
 
-
   @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
   @Builder.Default
   private List<Survey> authoredSurveys = new ArrayList<>();

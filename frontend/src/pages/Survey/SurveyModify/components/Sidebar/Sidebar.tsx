@@ -18,7 +18,7 @@ export function Sidebar() {
                 .then((data) => {
                     dispatch(addPage({ page: data }));
 
-                    return createQuestion(data.id, { title: 'Новый вопрос', serialNumber: 1, type: 'SHORT_TEXT' });
+                    return createQuestion(data.id, { text: 'Новый вопрос', serialNumber: 1, type: 'SHORT_TEXT' });
                 })
                 .then((question) => {
                     dispatch(addQuestion({ question }));
@@ -31,7 +31,7 @@ export function Sidebar() {
         } else {
             const serialNumber = selectedSurvey.pages[currentQuestionPageIndex].questions.length + 1;
             createQuestion(selectedSurvey.pages[currentQuestionPageIndex].id, {
-                title: 'Новый вопрос',
+                text: 'Новый вопрос',
                 serialNumber: serialNumber,
                 type: 'SHORT_TEXT',
             })
@@ -57,8 +57,7 @@ export function Sidebar() {
         createSurveyPage(selectedSurvey.id, serialNumber)
             .then((data) => {
                 dispatch(addPage({ page: data }));
-
-                return createQuestion(data.id, { title: 'Новый вопрос', serialNumber: 1, type: 'SHORT_TEXT' });
+                return createQuestion(data.id, { text: 'Новый вопрос', serialNumber: 1, type: 'SHORT_TEXT' });
             })
             .then((question) => {
                 dispatch(addQuestion({ question, pageIndex: selectedSurvey.pages.length }));

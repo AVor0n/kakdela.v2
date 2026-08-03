@@ -1,9 +1,14 @@
-import { addQuestionOptions, reorderAnswerOptions, setQuestionAnswerOptions } from '@/entities/Survey/Survey.slice';
+import {
+    addQuestionOptions,
+    reorderAnswerOptions,
+    setQuestion,
+    setQuestionAnswerOptions,
+} from '@/entities/Survey/Survey.slice';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { Checkbox, Link, Radio } from '@hh.ru/magritte-ui';
+import { Button, Checkbox, Link, Radio } from '@hh.ru/magritte-ui';
 import { addAnswerOption, updateAnswerOption } from '@/api/answer-option';
 import { useAppSelector } from '@/hooks/useAppSelector';
-import type { AnswerOption } from '@/shared/types/Question.type';
+import type { AnswerOption, Question } from '@/shared/types/Question.type';
 import { Option } from './components/Option/Option';
 import { setErrorMessage } from '@/entities/Error/Error.slice';
 import {
@@ -19,14 +24,17 @@ import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrate
 import { useMemo } from 'react';
 import { SortableOption } from './components/SortableOption/SortableOption';
 import style from './Choice.module.css';
+import { updateQuestion } from '@/api/question';
+import classNames from 'classnames';
 interface Props {
     options: AnswerOption[];
     type: 'radio' | 'checkbox';
     isEdit: boolean;
+    question: Question;
 }
 
-export function Choice({ options, type, isEdit }: Props) {
-    const { selectedSurvey, selectedQuestion } = useAppSelector((state) => state.survey);
+export function Choice({ options, type, isEdit, question }: Props) {
+    const { selectedSurvey } = useAppSelector((state) => state.survey);
     const dispatch = useAppDispatch();
     const optionIds = useMemo(() => options.map((option) => option.id), [options]);
     const sensors = useSensors(
@@ -45,8 +53,6 @@ export function Choice({ options, type, isEdit }: Props) {
     };
 
     const handleOptionDragEnd = (event: DragEndEvent) => {
-        if (!selectedQuestion) return;
-
         const { active, over } = event;
         if (!over || active.id === over.id) return;
 
@@ -59,7 +65,7 @@ export function Choice({ options, type, isEdit }: Props) {
 
         dispatch(
             reorderAnswerOptions({
-                questionId: selectedQuestion.id,
+                questionId: question.id,
                 activeOptionId,
                 overOptionId,
             }),
@@ -67,20 +73,20 @@ export function Choice({ options, type, isEdit }: Props) {
 
         updateAnswerOption(activeOptionId, { serialNumber: overOption.serialNumber }).catch(() => {
             dispatch(setErrorMessage({ message: 'Не удалось изменить порядок вариантов ответа' }));
-            dispatch(setQuestionAnswerOptions({ questionId: selectedQuestion.id, answerOptions: previousOptions }));
+            dispatch(setQuestionAnswerOptions({ questionId: question.id, answerOptions: previousOptions }));
         });
     };
 
     const createAnswerOptionHandler = () => {
-        if (!selectedSurvey || !selectedQuestion) return;
+        if (!selectedSurvey) return;
         let serialNumber = 1;
         if (options.length !== 0) {
             const lastAnswerOptionSerialNumber = options[options.length - 1].serialNumber;
             serialNumber = lastAnswerOptionSerialNumber + 1;
         }
 
-        addAnswerOption(selectedQuestion.id, {
-            answerOptionText: `Вопрос ${serialNumber}`,
+        addAnswerOption(question.id, {
+            text: `Вопрос ${serialNumber}`,
             serialNumber: serialNumber,
         })
             .then((data) => {
@@ -93,25 +99,14 @@ export function Choice({ options, type, isEdit }: Props) {
             });
     };
 
-    const createAnotherOptionHandler = () => {
-        if (!selectedSurvey || !selectedQuestion) return;
-        let serialNumber = 1;
-        if (options.length === 0) {
-            const lastAnswerOptionSerialNumber = options[options.length - 1].serialNumber;
-            serialNumber = lastAnswerOptionSerialNumber + 1;
-        }
-
-        addAnswerOption(selectedQuestion.id, {
-            answerOptionText: 'Другое',
-            serialNumber: serialNumber,
-        })
+    const anotherOptionHandler = () => {
+        if (!selectedSurvey) return;
+        updateQuestion(question.id, { hasOtherOption: !question.hasOtherOption })
             .then((data) => {
-                dispatch(addQuestionOptions({ answerOption: data }));
+                dispatch(setQuestion({ question: data }));
             })
-            .catch((err) => {
-                if (err.response) {
-                    dispatch(setErrorMessage({ message: `Не удалось добавить новый ответ 'Другое'` }));
-                }
+            .catch(() => {
+                dispatch(setErrorMessage({ message: 'Не удалось добавить вариант ответа "Другое"' }));
             });
     };
 
@@ -130,14 +125,44 @@ export function Choice({ options, type, isEdit }: Props) {
                                 {renderChoiceControl()}
                             </SortableOption>
                         ))}
+                        {question.hasOtherOption && (
+                            <div className={style.anotherOption}>
+                                <div className={classNames(style.actions, isEdit && style.leftPadding)}>
+                                    {renderChoiceControl()}
+                                    <p>Другое: </p>
+                                    <input className={style.another} disabled />
+                                </div>
+                                {isEdit && (
+                                    <Button
+                                        onClick={anotherOptionHandler}
+                                        mode='secondary'
+                                        style='negative'
+                                        icon={<img src='/X.svg' alt='X' />}
+                                        size='small'
+                                        className=''
+                                    />
+                                )}
+                            </div>
+                        )}
                     </SortableContext>
                 </DndContext>
             ) : (
-                options.map((option) => (
-                    <Option option={option} isEdit={isEdit} key={option.id}>
-                        {renderChoiceControl()}
-                    </Option>
-                ))
+                <>
+                    {options.map((option) => {
+                        return (
+                            <Option option={option} isEdit={isEdit} key={option.id}>
+                                {renderChoiceControl()}
+                            </Option>
+                        );
+                    })}
+                    {question.hasOtherOption && (
+                        <div className={classNames(style.actions, isEdit && style.leftPadding)}>
+                            {renderChoiceControl()}
+                            <p>Другое: </p>
+                            <input className={style.another} disabled />
+                        </div>
+                    )}
+                </>
             )}
             {isEdit && (
                 <div className={style.add}>
@@ -146,8 +171,8 @@ export function Choice({ options, type, isEdit }: Props) {
                             Добавить ответ
                         </Link>
                         <span>или</span>
-                        <Link Element='button' mode='secondary' style='accent' onClick={createAnotherOptionHandler}>
-                            Добавить вариант "Другое"
+                        <Link Element='button' mode='secondary' style='accent' onClick={anotherOptionHandler}>
+                            {question.hasOtherOption ? 'Убрать вариант "Другое"' : 'Добавить вариант "Другое"'}
                         </Link>
                     </div>
                 </div>

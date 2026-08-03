@@ -21,3 +21,12 @@
     display: flex;
     gap: 5px;
 }
+
+.anotherOption {
+    display: flex;
+    justify-content: space-between;
+}
+
+.leftPadding {
+    margin-left: 23px;
+}

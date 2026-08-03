@@ -26,7 +26,7 @@ public class ClosingPageMapper {
     ).toString()
         : null;
 
-    FileResponseDto fileInfo = null;
+    FileResponseDto fileInfo;
     if (closingPage.getFileObjectKey() != null) {
       try {
         String fileKey = closingPage.getFileObjectKey();
@@ -40,6 +40,8 @@ public class ClosingPageMapper {
       } catch (Exception e) {
         fileInfo = null;
       }
+    } else {
+      fileInfo = null;
     }
 
     return new ClosingPageResponseDto(

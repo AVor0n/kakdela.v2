@@ -271,7 +271,6 @@ class SurveyServiceTestBase {
         permissionService,
         notificationService,
         objectStorageService,
-        closingPageService,
         surveyMapper
     );
   }

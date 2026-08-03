@@ -16,10 +16,12 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.hibernate.annotations.OnDelete;
@@ -54,25 +56,36 @@ public class Survey {
   private String description;
 
   @Column(name = "is_authorized_only", nullable = false)
-  private boolean isAuthorizedOnly;
+  @Builder.Default
+  private boolean isAuthorizedOnly = false;
 
   @Column(name = "is_limited_to_one_response", nullable = false)
-  private boolean isLimitedToOneResponse;
+  @Builder.Default
+  private boolean isLimitedToOneResponse = false;
 
   @Column(name = "is_published", nullable = false)
-  private boolean isPublished;
+  @Builder.Default
+  private boolean isPublished = false;
 
   @Column(name = "is_template", nullable = false)
-  private boolean isTemplate;
+  @Builder.Default
+  private boolean isTemplate = false;
 
   @Column(name = "do_notify", nullable = false)
-  private boolean doNotify;
+  @Getter(AccessLevel.NONE)
+  @Builder.Default
+  private boolean doNotify = true;
+
+  public boolean doNotify() {
+    return this.doNotify;
+  }
 
   @Column(name = "expire_at")
   private Instant expireAt;
 
   @Column(name = "target_timezone")
-  private String targetTimezone;
+  @Builder.Default
+  private String targetTimezone = "Europe/Moscow";
 
   @Column(name = "created_at", updatable = false, nullable = false)
   private Instant createdAt;
@@ -82,7 +95,7 @@ public class Survey {
   private List<Permission> permissions = new ArrayList<>();
 
   @OneToMany(mappedBy = "survey", cascade = CascadeType.ALL, orphanRemoval = true)
-  @OrderBy("serial_number ASC")
+  @OrderBy("serialNumber ASC")
   @Builder.Default
   private List<SurveyPage> pages = new ArrayList<>();
 
@@ -93,6 +106,10 @@ public class Survey {
   @OneToMany(mappedBy = "survey", cascade = CascadeType.ALL, orphanRemoval = true)
   @Builder.Default
   private List<Response> responses = new ArrayList<>();
+
+  public boolean isAuthor(UUID accountId) {
+    return this.getAuthor().getId().equals(accountId);
+  }
 
   public String getTitleAsPlainString() {
     return Jsoup.parseBodyFragment(title).text();

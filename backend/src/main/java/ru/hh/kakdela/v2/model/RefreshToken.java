@@ -43,10 +43,10 @@ public class RefreshToken {
   @JoinColumn(name = "account_id", nullable = false)
   private Account account;
 
-  @Column(name = "device_id", nullable = false, length = 255)
+  @Column(name = "device_id", nullable = false)
   private String deviceId;
 
-  @Column(name = "user_agent", length = 255)
+  @Column(name = "user_agent")
   private String userAgent;
 
   @Column(name = "ip_address", length = 45)

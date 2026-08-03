@@ -13,8 +13,7 @@ import ru.hh.kakdela.v2.validator.NullOrNotBlank;
 @Getter
 @Setter
 @Schema(
-    name = "QuestionUpdate",
-    title = "DTO для обновления вопроса"
+    name = "Question.Update"
 )
 public class QuestionUpdateDto {
 
@@ -22,10 +21,12 @@ public class QuestionUpdateDto {
   private Integer serialNumber;
   @NullOrNotBlank(message = "Заголовок не должен быть пустым")
   @Size(max = 200, message = "Заголовок не должен быть длиннее 200 символов")
-  private String title;
+  private String text;
+  @Size(max = 5000, message = "Описание не должно быть длиннее 5000 символов")
   private String description;
   private Question.QuestionType type;
   private Question.AnswerOptionOrder answerOptionOrder;
+  private Boolean hasOtherOption;
   private Boolean isMandatory;
   private Boolean isVisible;
   private String condition;

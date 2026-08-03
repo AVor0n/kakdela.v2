@@ -19,7 +19,7 @@ public class ClosingPageDaoImpl implements ClosingPageDao {
   public Optional<ClosingPage> findBySurveyId(UUID surveyId) {
     return entityManager.createQuery(
             """
-            FROM ClosingPage cp 
+            FROM ClosingPage cp
             WHERE cp.survey.id = :surveyId
             """, ClosingPage.class)
         .setParameter("surveyId", surveyId)
@@ -46,7 +46,7 @@ public class ClosingPageDaoImpl implements ClosingPageDao {
 
     entityManager.createQuery(
             """
-            DELETE FROM ClosingPage cp 
+            DELETE FROM ClosingPage cp
             WHERE cp.survey.id = :surveyId
             """)
         .setParameter("surveyId", surveyId)
@@ -57,8 +57,8 @@ public class ClosingPageDaoImpl implements ClosingPageDao {
   public boolean existsBySurveyId(UUID surveyId) {
     Long count = entityManager.createQuery(
             """
-            SELECT COUNT(cp) 
-            FROM ClosingPage cp 
+            SELECT COUNT(cp)
+            FROM ClosingPage cp
             WHERE cp.survey.id = :surveyId
             """, Long.class)
         .setParameter("surveyId", surveyId)

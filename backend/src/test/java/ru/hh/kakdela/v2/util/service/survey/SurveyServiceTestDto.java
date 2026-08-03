@@ -21,7 +21,7 @@ import ru.hh.kakdela.v2.util.service.survey.SurveyServiceTestConstants.PlainSurv
 
 public class SurveyServiceTestDto {
 
-  private static FileResponseDto fileInfo = FileResponseDto.builder()
+  private static final FileResponseDto fileInfo = FileResponseDto.builder()
       .fileName("test-file.pdf")
       .fileSize(102400L)
       .build();
@@ -59,7 +59,8 @@ public class SurveyServiceTestDto {
                     "description",
                     SurveyServiceTestConstants.attachmentUrl,
                     Question.QuestionType.SHORT_TEXT.name(),
-                    null,
+                    Question.AnswerOptionOrder.ORIGINAL.name(),
+                    false,
                     true,
                     true,
                     "condition",
@@ -71,7 +72,8 @@ public class SurveyServiceTestDto {
                     "description",
                     SurveyServiceTestConstants.attachmentUrl,
                     Question.QuestionType.SINGLE_CHOICE.name(),
-                    Question.AnswerOptionOrder.RANDOM.name(),
+                    Question.AnswerOptionOrder.ORIGINAL.name(),
+                    false,
                     true,
                     true,
                     "condition",
@@ -94,6 +96,7 @@ public class SurveyServiceTestDto {
                     SurveyServiceTestConstants.attachmentUrl,
                     Question.QuestionType.MULTIPLE_CHOICE.name(),
                     Question.AnswerOptionOrder.ORIGINAL.name(),
+                    false,
                     true,
                     true,
                     "condition",

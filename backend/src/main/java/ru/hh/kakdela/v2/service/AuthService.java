@@ -105,7 +105,6 @@ public class AuthService {
     }
   }
 
-  @Transactional
   public void incrementTokenVersion(UUID accountId) {
     Account account = accountDao.findById(accountId).orElseThrow(() ->
         new ResponseStatusException(HttpStatus.NOT_FOUND, "Аккаунт не найден: " + accountId));
