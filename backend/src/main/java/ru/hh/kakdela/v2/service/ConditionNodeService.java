@@ -289,9 +289,9 @@ public class ConditionNodeService {
     permissionService.checkCanEdit(
         node.getCondition().getSurveyPage().getSurvey().getId(), accountId);
 
-    if (node.getOperator().isLink && !node.getChildNodes().isEmpty()) {
+    if (node.getOperator().isLink && node.getChildNodes().size() > 1) {
       throw new ResponseStatusException(HttpStatus.CONFLICT,
-          "Сначала необходимо удалить дочерние вершины");
+          "Удаление вершины возможно, только если она имеет максимум одну дочернюю вершину");
     }
 
     conditionNodeDao.delete(node);
