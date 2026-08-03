@@ -79,17 +79,17 @@ public class AnswerService {
 
     verifyAnswerRequestDto(dto, question);
 
-    List<AnswerOption> foundAnswerOptions = new ArrayList<>();
+    List<AnswerOption> selectedAnswerOptions = new ArrayList<>();
     if (dto.getSelectedAnswerOptionIds() != null && !dto.getSelectedAnswerOptionIds().isEmpty()) {
-      foundAnswerOptions.addAll(
+      selectedAnswerOptions.addAll(
           answerOptionService.getByIdsAndVerifyByQuestionId(
               dto.getSelectedAnswerOptionIds(), questionId));
     }
 
     AnswerWithStatusDto answerWithStatusDto =
         answerDao.findByResponseIdAndQuestion(responseId, questionId)
-            .map(a -> update(a, response, question, dto, foundAnswerOptions))
-            .orElseGet(() -> create(response, question, dto, foundAnswerOptions));
+            .map(a -> update(a, response, question, dto, selectedAnswerOptions))
+            .orElseGet(() -> create(response, question, dto, selectedAnswerOptions));
 
     return new AnswerResponseDtoWithStatusDto(
         AnswerMapper.answerToDto(answerWithStatusDto.getAnswer()),
@@ -121,7 +121,7 @@ public class AnswerService {
       Response response,
       Question question,
       AnswerRequestDto dto,
-      List<AnswerOption> foundAnswerOptions
+      List<AnswerOption> selectedAnswerOptions
   ) {
     answer.setSerialNumber(question.getSerialNumber());
     answer.setQuestionTextSnapshot(question.getTextAsPlainString());
@@ -132,7 +132,7 @@ public class AnswerService {
 
     answer.getSelectedAnswerOptions().clear();
     answer.getSelectedAnswerOptions()
-        .addAll(foundAnswerOptions.stream()
+        .addAll(selectedAnswerOptions.stream()
             .map(ao -> new SelectedAnswerOption(
                 UUID.randomUUID(),
                 answer,
@@ -152,7 +152,7 @@ public class AnswerService {
       Response response,
       Question question,
       AnswerRequestDto dto,
-      List<AnswerOption> foundAnswerOptions
+      List<AnswerOption> selectedAnswerOptions
   ) {
     Answer answer = Answer.builder()
         .id(UUID.randomUUID())
@@ -167,7 +167,7 @@ public class AnswerService {
         .build();
 
     answer.getSelectedAnswerOptions()
-        .addAll(foundAnswerOptions.stream()
+        .addAll(selectedAnswerOptions.stream()
             .map(ao -> new SelectedAnswerOption(
                 UUID.randomUUID(),
                 answer,
