@@ -106,8 +106,9 @@
 }
 
 .switcherSelect {
-    min-width: 260px;
-    max-width: 420px;
+    display: flex;
+    justify-content: center;
+    width: 300px;
 }
 
 .empty,
