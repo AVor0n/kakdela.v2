@@ -98,7 +98,7 @@
     margin-bottom: 10px;
 }
 
-@media (max-width: 800px) {
+@media (max-width: 768px) {
     .container {
         padding: 20px;
     }
@@ -110,6 +110,24 @@
 
     .navigation {
         flex-wrap: wrap;
+    }
+
+    .previewActions {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .previewActions > * {
+        max-width: 100%;
+    }
+
+    .previewBadge {
+        overflow-wrap: anywhere;
+    }
+
+    .attachmentUrl {
+        height: auto;
+        max-height: 320px;
     }
 }
 

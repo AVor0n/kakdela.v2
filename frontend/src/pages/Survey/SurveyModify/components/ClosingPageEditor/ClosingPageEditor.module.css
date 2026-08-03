@@ -69,6 +69,17 @@
     overflow-wrap: anywhere;
 }
 
+@media (max-width: 768px) {
+    .titleSettings {
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 8px;
+    }
+
+    .titleSettings > :first-child {
+        min-width: 0;
+    }
+}
+
 @media (max-width: 640px) {
     .header,
     .fileInfo {

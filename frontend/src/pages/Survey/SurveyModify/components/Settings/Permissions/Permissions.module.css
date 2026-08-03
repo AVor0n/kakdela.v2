@@ -50,7 +50,7 @@
     font-size: 14px;
 }
 
-@media (max-width: 760px) {
+@media (max-width: 768px) {
     .formRow,
     .permissionRow {
         grid-template-columns: 1fr;
