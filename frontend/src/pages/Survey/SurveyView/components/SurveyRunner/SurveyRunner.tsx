@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { Question } from '@/shared/types/Question.type';
-import type { Survey } from '@/shared/types/Survey.type';
-import { Button, Checkbox, Input, Radio, Text, TextArea, TextAreaGrowLimiter, Title } from '@hh.ru/magritte-ui';
+import type { ClosingPage, Survey } from '@/shared/types/Survey.type';
+import { Button, Checkbox, Input, Radio, Text, TextArea, TextAreaGrowLimiter } from '@hh.ru/magritte-ui';
 import { Link } from 'react-router-dom';
 import { routes } from '@/app/routes';
 import { completeSurveyResponse } from '@/api/surveyResponses';
@@ -13,6 +13,9 @@ import longTextStyle from '@/pages/Survey/SurveyModify/components/QuestionList/c
 import style from './SurveyRunner.module.css';
 import { useSurveyResponseSync } from './useSurveyResponseSync';
 import { HTMLRender } from '@/shared/ui/HTMLRender/HTMLRender';
+import { ClosingPageView } from '../ClosingPageView/ClosingPageView';
+import { WelcomePageView } from '../WelcomePageView/WelcomePageView';
+import { getClosingPage } from '@/api/closingPage';
 
 const OTHER_OPTION_VALUE = '__other__';
 
@@ -21,6 +24,7 @@ export type SurveyRunnerMode = 'preview' | 'respond';
 type AnswerValue = string | string[];
 type Answers = Record<string, AnswerValue>;
 type Errors = Record<string, string>;
+type SurveyRunnerStage = 'welcome' | 'questions' | 'closing';
 
 type Props = {
     survey: Survey;
@@ -68,10 +72,11 @@ export function SurveyRunner({ survey, mode }: Props) {
     const [currentPageIndex, setCurrentPageIndex] = useState(0);
     const [answers, setAnswers] = useState<Answers>({});
     const [errors, setErrors] = useState<Errors>({});
-    const [isComplete, setIsComplete] = useState(false);
+    const [stage, setStage] = useState<SurveyRunnerStage>('welcome');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [otherTexts, setOtherTexts] = useState<Record<string, string>>({});
     const [submitError, setSubmitError] = useState<string | null>(null);
+    const [closingPage, setClosingPage] = useState<ClosingPage | null>(survey.closingPage);
     const isPreview = mode === 'preview';
     const {
         ensureResponse,
@@ -88,9 +93,23 @@ export function SurveyRunner({ survey, mode }: Props) {
         setAnswers({});
         setOtherTexts({});
         setErrors({});
-        setIsComplete(false);
+        setStage('welcome');
         setSubmitError(null);
+        setClosingPage(survey.closingPage);
     }, [survey.id]);
+
+    const refreshClosingPage = async () => {
+        try {
+            setClosingPage(await getClosingPage(survey.id));
+        } catch {
+            // The survey already contains enough data to show a fallback closing page.
+        }
+    };
+
+    const showClosingPagePreview = () => {
+        setStage('closing');
+        void refreshClosingPage();
+    };
 
     const updateAnswer = (question: Question, value: AnswerValue) => {
         setAnswers((currentAnswers) => ({
@@ -169,7 +188,8 @@ export function SurveyRunner({ survey, mode }: Props) {
             await flushPendingAnswers();
             const responseId = await ensureResponse();
             await completeSurveyResponse(responseId);
-            setIsComplete(true);
+            setStage('closing');
+            void refreshClosingPage();
         } catch {
             setSubmitError('Не удалось отправить ответы');
         } finally {
@@ -347,24 +367,27 @@ export function SurveyRunner({ survey, mode }: Props) {
                         <div className={style.previewBadge}>Предпросмотр</div>
                     </div>
                 )}
-                <header className={`${surveyDetailStyle.container} ${style.formHeader}`}>
-                    <HTMLRender className={style.title} html={survey.title} />
-                    {survey.description && <HTMLRender className={style.description} html={survey.description} />}
-                </header>
-
-                {isComplete ? (
-                    <section className={surveyDetailStyle.container}>
-                        <Title Element='h2' size='medium'>
-                            Спасибо за ответ
-                        </Title>
-                        <Text typography='paragraph-2-regular' style='primary'>
-                            {survey.closingPage ?? 'Ваши ответы приняты.'}
-                        </Text>
-                    </section>
+                {stage === 'welcome' ? (
+                    <WelcomePageView survey={survey} onStart={() => setStage('questions')} />
+                ) : stage === 'closing' ? (
+                    <ClosingPageView
+                        surveyId={survey.id}
+                        closingPage={closingPage}
+                        onBack={isPreview ? () => setStage('questions') : undefined}
+                    />
                 ) : (
                     <>
                         {visiblePages.length === 0 ? (
-                            <div className={surveyDetailStyle.container}>В этом опросе пока нет вопросов.</div>
+                            <div className={surveyDetailStyle.container}>
+                                <Text typography='paragraph-2-regular' style='primary'>
+                                    В этом опросе пока нет вопросов.
+                                </Text>
+                                {isPreview && (
+                                    <Button mode='primary' style='accent' onClick={showClosingPagePreview}>
+                                        Завершающая страница
+                                    </Button>
+                                )}
+                            </div>
                         ) : currentPage ? (
                             <section className={choiceStyle.container}>
                                 {(currentPage.description || currentPage.title) && (
@@ -428,11 +451,11 @@ export function SurveyRunner({ survey, mode }: Props) {
                                             type='button'
                                             mode='primary'
                                             style='accent'
-                                            disabled={isPreview || isSubmitting}
-                                            onClick={submitHandler}
+                                            disabled={isSubmitting}
+                                            onClick={isPreview ? showClosingPagePreview : submitHandler}
                                         >
                                             {isPreview
-                                                ? 'Отправка недоступна в предпросмотре'
+                                                ? 'Завершающая страница'
                                                 : isSubmitting
                                                   ? 'Отправляем...'
                                                   : 'Отправить'}
