@@ -10,8 +10,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.endpoint.OAuth2AccessTokenResponseClient;
 import org.springframework.security.oauth2.client.endpoint.OAuth2AuthorizationCodeGrantRequest;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
@@ -42,16 +40,13 @@ public class SecurityConfig {
   private final JwtRequestFilter jwtRequestFilter;
   private final CorsConfigurationSource corsConfigurationSource;
   private final AuthenticationEntryPoint authenticationEntryPoint;
-  private final AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository;
+  private final AuthorizationRequestRepository<OAuth2AuthorizationRequest>
+      authorizationRequestRepository;
   private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
   private final OAuth2LoginFailureHandler oAuth2LoginFailureHandler;
-  private final OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest> hhTokenResponseClient;
+  private final OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest>
+      hhTokenResponseClient;
   private final OAuth2UserService<OAuth2UserRequest, OAuth2User> hhUserService;
-
-  @Bean
-  public PasswordEncoder passwordEncoder() {
-    return new BCryptPasswordEncoder();
-  }
 
   @Bean
   public OAuth2AuthorizationRequestResolver authorizationRequestResolver(
