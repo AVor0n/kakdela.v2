@@ -120,7 +120,7 @@ export function Answers() {
         () =>
             questions.map((question, index) => ({
                 value: String(index),
-                text: removeHTML(question.title),
+                text: removeHTML(question.text),
             })),
         [questions],
     );
@@ -225,24 +225,42 @@ export function Answers() {
 
                             return (
                                 <article className={style.questionBlock} key={question.id}>
-                                    <h2 className={style.questionTitle}>{removeHTML(question.title)}</h2>
+                                    <h2 className={style.questionTitle}>{removeHTML(question.text)}</h2>
                                     {answers.length === 0 ? (
                                         <div className={style.empty}>Нет ответов на этот вопрос</div>
                                     ) : (
-                                        <ul className={style.answers}>
+                                        <ul className={style.answers} key={`${question.id}-${question.text}`}>
                                             {answers.map(({ answer, responseIndex }) => (
-                                                <li
-                                                    className={style.answer}
-                                                    key={`${answer.responseId}-${answer.questionId}`}
-                                                >
-                                                    <button
-                                                        className={style.answerButton}
-                                                        type='button'
-                                                        onClick={() => openResponse(responseIndex)}
-                                                    >
-                                                        {removeHTML(answer.answerText)}
-                                                    </button>
-                                                </li>
+                                                <>
+                                                    {answer.selectedAnswerOptions.map((answerText) => (
+                                                        <li
+                                                            className={style.answer}
+                                                            key={`${answer.responseId}-${answerText.id}`}
+                                                        >
+                                                            <button
+                                                                className={style.answerButton}
+                                                                type='button'
+                                                                onClick={() => openResponse(responseIndex)}
+                                                            >
+                                                                {removeHTML(answerText.answerOptionTextSnapshot)}
+                                                            </button>
+                                                        </li>
+                                                    ))}
+                                                    {answer.textValue && (
+                                                        <li
+                                                            className={style.answer}
+                                                            key={`${answer.responseId}-${answer.questionId}-${answer.textValue}`}
+                                                        >
+                                                            <button
+                                                                className={style.answerButton}
+                                                                type='button'
+                                                                onClick={() => openResponse(responseIndex)}
+                                                            >
+                                                                {removeHTML(answer.textValue)}
+                                                            </button>
+                                                        </li>
+                                                    )}
+                                                </>
                                             ))}
                                         </ul>
                                     )}
@@ -269,6 +287,8 @@ export function Answers() {
                                     value={getSelectValue(questionOptions, String(selectedQuestionIndex))}
                                     dataProvider={createStaticDataProvider(questionOptions, 'Вопрос')}
                                     name='question'
+                                    widthEqualToActivator={false}
+                                    dropWidth={300}
                                     onChange={(option) => setSelectedQuestionIndex(Number(option.value))}
                                 />
                             </div>
@@ -283,25 +303,43 @@ export function Answers() {
                         </div>
 
                         <article className={style.questionBlock}>
-                            <h2 className={style.questionTitle}>{removeHTML(currentQuestion.title)}</h2>
+                            <h2 className={style.questionTitle}>{removeHTML(currentQuestion.text)}</h2>
                             {getQuestionAnswers(responses, currentQuestion.id).length === 0 ? (
                                 <div className={style.empty}>Нет ответов на этот вопрос</div>
                             ) : (
                                 <ul className={style.answers}>
                                     {getQuestionAnswers(responses, currentQuestion.id).map(
                                         ({ answer, responseIndex }) => (
-                                            <li
-                                                className={style.answer}
-                                                key={`${answer.responseId}-${answer.questionId}`}
-                                            >
-                                                <button
-                                                    className={style.answerButton}
-                                                    type='button'
-                                                    onClick={() => openResponse(responseIndex)}
-                                                >
-                                                    {removeHTML(answer.answerText)}
-                                                </button>
-                                            </li>
+                                            <>
+                                                {answer.selectedAnswerOptions.map((answerText) => (
+                                                    <li
+                                                        className={style.answer}
+                                                        key={`${answer.responseId}-${answerText.id}`}
+                                                    >
+                                                        <button
+                                                            className={style.answerButton}
+                                                            type='button'
+                                                            onClick={() => openResponse(responseIndex)}
+                                                        >
+                                                            {removeHTML(answerText.answerOptionTextSnapshot)}
+                                                        </button>
+                                                    </li>
+                                                ))}
+                                                {answer.textValue && (
+                                                    <li
+                                                        className={style.answer}
+                                                        key={`${answer.responseId}-${answer.questionId}-${answer.textValue}`}
+                                                    >
+                                                        <button
+                                                            className={style.answerButton}
+                                                            type='button'
+                                                            onClick={() => openResponse(responseIndex)}
+                                                        >
+                                                            {removeHTML(answer.textValue)}
+                                                        </button>
+                                                    </li>
+                                                )}
+                                            </>
                                         ),
                                     )}
                                 </ul>
@@ -327,6 +365,8 @@ export function Answers() {
                                     value={getSelectValue(responseOptions, String(selectedResponseIndex))}
                                     dataProvider={createStaticDataProvider(responseOptions, 'Пользователь')}
                                     name='response'
+                                    widthEqualToActivator={false}
+                                    dropWidth={300}
                                     onChange={(option) => setSelectedResponseIndex(Number(option.value))}
                                 />
                             </div>
@@ -343,13 +383,21 @@ export function Answers() {
                         <div className={style.list}>
                             {questions.map((question) => {
                                 const answer = getAnswerByQuestion(currentResponse, question.id);
-
                                 return (
                                     <article className={style.questionBlock} key={question.id}>
-                                        <h2 className={style.questionTitle}>{removeHTML(question.title)}</h2>
-                                        <div className={style.singleAnswer}>
-                                            {answer?.answerText ? removeHTML(answer.answerText) : 'Нет ответа'}
-                                        </div>
+                                        <h2 className={style.questionTitle}>{removeHTML(question.text)}</h2>
+                                        {answer &&
+                                            (answer.selectedAnswerOptions.length !== 0
+                                                ? answer.selectedAnswerOptions.map((answerValue) => (
+                                                      <div className={style.singleAnswer}>
+                                                          {removeHTML(answerValue.answerOptionTextSnapshot)}
+                                                      </div>
+                                                  ))
+                                                : answer.textValue && (
+                                                      <div className={style.singleAnswer}>
+                                                          {removeHTML(answer.textValue)}
+                                                      </div>
+                                                  ))}
                                     </article>
                                 );
                             })}

@@ -30,7 +30,7 @@ public class SurveyMapper {
         survey.isLimitedToOneResponse(),
         survey.isPublished(),
         survey.isTemplate(),
-        survey.isDoNotify(),
+        survey.doNotify(),
         survey.getExpireAt(),
         survey.getExpireAt() != null
             ? LocalDateTime.ofInstant(survey.getExpireAt(), 

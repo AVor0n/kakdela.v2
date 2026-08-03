@@ -11,6 +11,7 @@ import ru.hh.kakdela.v2.model.ClosingPage;
 import ru.hh.kakdela.v2.model.Permission;
 import ru.hh.kakdela.v2.model.Question;
 import ru.hh.kakdela.v2.model.Response;
+import ru.hh.kakdela.v2.model.SelectedAnswerOption;
 import ru.hh.kakdela.v2.model.Survey;
 import ru.hh.kakdela.v2.model.SurveyPage;
 import ru.hh.kakdela.v2.util.service.survey.SurveyServiceTestConstants.FullSurveyConstants;
@@ -106,7 +107,8 @@ public class SurveyServiceTestEntity {
         "description",
         SurveyServiceTestConstants.attachmentObjectKey,
         Question.QuestionType.SHORT_TEXT,
-        null,
+        Question.AnswerOptionOrder.ORIGINAL,
+        false,
         true,
         true,
         "condition",
@@ -120,7 +122,8 @@ public class SurveyServiceTestEntity {
         "description",
         SurveyServiceTestConstants.attachmentObjectKey,
         Question.QuestionType.SINGLE_CHOICE,
-        Question.AnswerOptionOrder.RANDOM,
+        Question.AnswerOptionOrder.ORIGINAL,
+        false,
         true,
         true,
         "condition",
@@ -149,6 +152,7 @@ public class SurveyServiceTestEntity {
         SurveyServiceTestConstants.attachmentObjectKey,
         Question.QuestionType.MULTIPLE_CHOICE,
         Question.AnswerOptionOrder.ORIGINAL,
+        false,
         true,
         true,
         "condition",
@@ -184,22 +188,72 @@ public class SurveyServiceTestEntity {
           null,
           new ArrayList<>());
       Answer answer1 = new Answer(
-          new Answer.AnswerId(response1.getId(), question1.getId()),
+          FullSurveyConstants.getQuestion1AnswerId(),
           response1,
           question1,
-          "answer1");
+          1,
+          "question1",
+          "answer1",
+          null,
+          null,
+          null,
+          Collections.emptyList());
       question1.getAnswers().add(answer1);
       Answer answer2 = new Answer(
-          new Answer.AnswerId(response1.getId(), question2.getId()),
+          FullSurveyConstants.getQuestion2AnswerId(),
           response1,
           question2,
-          "answerOption1");
+          2,
+          "question2",
+          null,
+          null,
+          null,
+          null,
+          new ArrayList<>());
+      SelectedAnswerOption selectedAnswerOption1OfQuestion2Answer = new SelectedAnswerOption(
+          FullSurveyConstants.getSelectedAnswerOption1OfQuestion2AnswerId(),
+          answer2,
+          question2.getAnswerOptions().get(0),
+          1,
+          "answerOption1"
+      );
+      SelectedAnswerOption selectedAnswerOption2OfQuestion2Answer = new SelectedAnswerOption(
+          FullSurveyConstants.getSelectedAnswerOption2OfQuestion2AnswerId(),
+          answer2,
+          question2.getAnswerOptions().get(1),
+          2,
+          "answerOption2"
+      );
+      answer2.getSelectedAnswerOptions().add(selectedAnswerOption1OfQuestion2Answer);
+      answer2.getSelectedAnswerOptions().add(selectedAnswerOption2OfQuestion2Answer);
       question2.getAnswers().add(answer2);
       Answer answer3 = new Answer(
-          new Answer.AnswerId(response1.getId(), question3.getId()),
+          FullSurveyConstants.getQuestion3AnswerId(),
           response1,
           question3,
-          "answerOption2");
+          3,
+          "question3",
+          null,
+          null,
+          null,
+          null,
+          new ArrayList<>());
+      SelectedAnswerOption selectedAnswerOption1OfQuestion3Answer = new SelectedAnswerOption(
+          FullSurveyConstants.getSelectedAnswerOption1OfQuestion2AnswerId(),
+          answer2,
+          question2.getAnswerOptions().get(0),
+          1,
+          "answerOption1"
+      );
+      SelectedAnswerOption selectedAnswerOption2OfQuestion3Answer = new SelectedAnswerOption(
+          FullSurveyConstants.getSelectedAnswerOption2OfQuestion2AnswerId(),
+          answer2,
+          question2.getAnswerOptions().get(1),
+          2,
+          "answerOption2"
+      );
+      answer2.getSelectedAnswerOptions().add(selectedAnswerOption1OfQuestion3Answer);
+      answer2.getSelectedAnswerOptions().add(selectedAnswerOption2OfQuestion3Answer);
       question3.getAnswers().add(answer3);
       response1.getAnswers().add(answer1);
       response1.getAnswers().add(answer2);

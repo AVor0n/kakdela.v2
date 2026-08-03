@@ -4,6 +4,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
@@ -16,7 +17,7 @@ public class AnswerOptionDaoImpl implements AnswerOptionDao {
   @PersistenceContext
   private EntityManager entityManager;
 
-  private static final String CONSTRAINT_NAME = "uq_answer_option_question_serial";
+  private static final String CONSTRAINT_NAME = "uk_answer_option_question_serial";
 
   @Override
   public Optional<AnswerOption> findById(UUID id) {
@@ -24,12 +25,24 @@ public class AnswerOptionDaoImpl implements AnswerOptionDao {
   }
 
   @Override
+  public List<AnswerOption> findByIds(Set<UUID> ids) {
+    return entityManager
+        .createQuery(
+            """
+            FROM AnswerOption ao
+            WHERE ao.id IN :ids
+            """, AnswerOption.class)
+        .setParameter("ids", ids)
+        .getResultList();
+  }
+
+  @Override
   public List<AnswerOption> findAllByQuestionId(UUID questionId) {
     return entityManager.createQuery(
             """
-            FROM AnswerOption o
-            WHERE o.question.id = :questionId
-            ORDER BY o.serialNumber
+            FROM AnswerOption ao
+            WHERE ao.question.id = :questionId
+            ORDER BY ao.serialNumber
             """, AnswerOption.class)
         .setParameter("questionId", questionId)
         .getResultList();
@@ -59,10 +72,10 @@ public class AnswerOptionDaoImpl implements AnswerOptionDao {
 
     entityManager.createQuery(
             """
-            UPDATE AnswerOption a
-            SET a.serialNumber = a.serialNumber + 1
-            WHERE a.question.id = :questionId
-              AND a.serialNumber >= :startSerial
+            UPDATE AnswerOption ao
+            SET ao.serialNumber = ao.serialNumber + 1
+            WHERE ao.question.id = :questionId
+              AND ao.serialNumber >= :startSerial
             """)
         .setParameter("questionId", questionId)
         .setParameter("startSerial", startSerial)
@@ -92,10 +105,10 @@ public class AnswerOptionDaoImpl implements AnswerOptionDao {
 
     entityManager.createQuery(
             """
-            UPDATE AnswerOption a
-            SET a.serialNumber = a.serialNumber - 1
-            WHERE a.question.id = :questionId
-              AND a.serialNumber >= :startSerial
+            UPDATE AnswerOption ao
+            SET ao.serialNumber = ao.serialNumber - 1
+            WHERE ao.question.id = :questionId
+              AND ao.serialNumber >= :startSerial
             """)
         .setParameter("questionId", questionId)
         .setParameter("startSerial", startSerial)
@@ -108,10 +121,10 @@ public class AnswerOptionDaoImpl implements AnswerOptionDao {
 
     entityManager.createQuery(
             """
-            UPDATE AnswerOption a
-            SET a.serialNumber = a.serialNumber - 1
-            WHERE a.question.id = :questionId
-              AND a.serialNumber BETWEEN :startSerial AND :endSerial
+            UPDATE AnswerOption ao
+            SET ao.serialNumber = ao.serialNumber - 1
+            WHERE ao.question.id = :questionId
+              AND ao.serialNumber BETWEEN :startSerial AND :endSerial
             """)
         .setParameter("questionId", questionId)
         .setParameter("startSerial", startSerial)
@@ -123,9 +136,9 @@ public class AnswerOptionDaoImpl implements AnswerOptionDao {
   public int findMaxSerialNumber(UUID questionId) {
     Integer max = entityManager.createQuery(
             """
-            SELECT MAX(a.serialNumber)
-            FROM AnswerOption a
-            WHERE a.question.id = :questionId
+            SELECT MAX(ao.serialNumber)
+            FROM AnswerOption ao
+            WHERE ao.question.id = :questionId
             """, Integer.class)
         .setParameter("questionId", questionId)
         .getSingleResultOrNull();

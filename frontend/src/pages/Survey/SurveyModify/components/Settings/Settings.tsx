@@ -1,4 +1,3 @@
-import { Button, Checkbox, DateTimeInput } from '@hh.ru/magritte-ui';
 import { useEffect, useRef, useState } from 'react';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { deleteSurvey, updateSurvey } from '@/api/survey';
@@ -10,6 +9,7 @@ import { SubscribersInput } from './Subscribers/SubscribersInput';
 import { setErrorMessage } from '@/entities/Error/Error.slice';
 import { Permissions } from './Permissions/Permissions';
 import style from './Settings.module.css';
+import { Button, Checkbox, DateTimeInput } from '@hh.ru/magritte-ui';
 
 function convertDateFromISO(isoStr: string): string {
     if (!isoStr) return '';

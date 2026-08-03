@@ -78,10 +78,11 @@ public class QuestionService {
         .serialNumber(dto.getSerialNumber() != null
             ? dto.getSerialNumber()
             : maxAvailableSerial)
-        .title(dto.getTitle())
+        .text(dto.getText())
         .description(dto.getDescription())
         .type(dto.getType())
         .answerOptionOrder(dto.getAnswerOptionOrder())
+        .hasOtherOption(dto.getHasOtherOption())
         .isMandatory(dto.getIsMandatory())
         .isVisible(dto.getIsVisible())
         .condition(dto.getCondition())
@@ -108,11 +109,12 @@ public class QuestionService {
     Question questionCopy = Question.builder()
         .surveyPage(originalQuestion.getSurveyPage())
         .serialNumber(originalQuestion.getSerialNumber() + 1)
-        .title(originalQuestion.getTitle())
+        .text(originalQuestion.getText())
         .description(originalQuestion.getDescription())
         .attachmentObjectKey(originalQuestion.getAttachmentObjectKey())
         .type(originalQuestion.getType())
         .answerOptionOrder(originalQuestion.getAnswerOptionOrder())
+        .hasOtherOption(originalQuestion.hasOtherOption())
         .isMandatory(originalQuestion.isMandatory())
         .isVisible(originalQuestion.isVisible())
         .condition(originalQuestion.getCondition())
@@ -123,7 +125,7 @@ public class QuestionService {
       AnswerOption optionCopy = AnswerOption.builder()
           .question(questionCopy)
           .serialNumber(originalOption.getSerialNumber())
-          .answerOptionText(originalOption.getAnswerOptionText())
+          .text(originalOption.getText())
           .build();
       questionCopy.getAnswerOptions().add(optionCopy);
     }
@@ -165,8 +167,8 @@ public class QuestionService {
       question.setSerialNumber(newSerial);
     }
 
-    if (dto.getTitle() != null) {
-      question.setTitle(dto.getTitle());
+    if (dto.getText() != null) {
+      question.setText(dto.getText());
     }
     if (dto.getDescription() != null) {
       question.setDescription(dto.getDescription());
@@ -176,6 +178,9 @@ public class QuestionService {
     }
     if (dto.getAnswerOptionOrder() != null) {
       question.setAnswerOptionOrder(dto.getAnswerOptionOrder());
+    }
+    if (dto.getHasOtherOption() != null) {
+      question.setHasOtherOption(dto.getHasOtherOption());
     }
     if (dto.getIsMandatory() != null) {
       question.setMandatory(dto.getIsMandatory());

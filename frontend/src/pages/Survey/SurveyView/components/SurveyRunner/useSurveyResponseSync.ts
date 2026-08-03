@@ -1,10 +1,10 @@
 import axios from 'axios';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-    createSurveyAnswer,
     createSurveyResponse,
     deleteSurveyAnswer,
     updateSurveyAnswer,
+    type SurveyAnswerRequest,
 } from '@/api/surveyResponses';
 
 const TEXT_ANSWER_DEBOUNCE_MS = 600;
@@ -18,7 +18,7 @@ export function useSurveyResponseSync(surveyId: string, disabled: boolean) {
     const responseIdRef = useRef<string | null>(null);
     const responsePromiseRef = useRef<Promise<string> | null>(null);
     const persistedQuestionIdsRef = useRef(new Set<string>());
-    const pendingAnswersRef = useRef(new Map<string, string>());
+    const pendingAnswersRef = useRef(new Map<string, SurveyAnswerRequest>());
     const saveQueuesRef = useRef(new Map<string, Promise<void>>());
     const debounceTimersRef = useRef(new Map<string, ReturnType<typeof setTimeout>>());
     const failedQuestionIdsRef = useRef(new Set<string>());
@@ -101,8 +101,14 @@ export function useSurveyResponseSync(surveyId: string, disabled: boolean) {
         return responsePromiseRef.current;
     }, [surveyId]);
 
+    function isEmptyPayload(payload: SurveyAnswerRequest) {
+        const hasIds = payload.selectedAnswerOptionIds && payload.selectedAnswerOptionIds.length > 0;
+        const hasText = payload.textValue && payload.textValue.trim() !== '';
+        return !hasIds && !hasText;
+    }
+
     const persistAnswer = useCallback(
-        async (questionId: string, answerText: string, generation: number) => {
+        async (questionId: string, answerPayload: SurveyAnswerRequest, generation: number) => {
             await withRequestSlot(async () => {
                 if (generation !== generationRef.current) {
                     return;
@@ -110,7 +116,7 @@ export function useSurveyResponseSync(surveyId: string, disabled: boolean) {
 
                 const isPersisted = persistedQuestionIdsRef.current.has(questionId);
 
-                if (!answerText) {
+                if (isEmptyPayload(answerPayload)) {
                     if (isPersisted) {
                         const responseId = await ensureResponse();
                         try {
@@ -132,7 +138,7 @@ export function useSurveyResponseSync(surveyId: string, disabled: boolean) {
 
                 if (isPersisted) {
                     try {
-                        await updateSurveyAnswer(responseId, questionId, answerText);
+                        await updateSurveyAnswer(responseId, questionId, answerPayload);
                         return;
                     } catch (error) {
                         if (!axios.isAxiosError(error) || error.response?.status !== 404) {
@@ -147,13 +153,13 @@ export function useSurveyResponseSync(surveyId: string, disabled: boolean) {
                 }
 
                 try {
-                    await createSurveyAnswer(responseId, questionId, answerText);
+                    await updateSurveyAnswer(responseId, questionId, answerPayload);
                 } catch (error) {
                     if (!axios.isAxiosError(error) || error.response?.status !== 409) {
                         throw error;
                     }
 
-                    await updateSurveyAnswer(responseId, questionId, answerText);
+                    await updateSurveyAnswer(responseId, questionId, answerPayload);
                 }
 
                 if (generation === generationRef.current) {
@@ -175,12 +181,15 @@ export function useSurveyResponseSync(surveyId: string, disabled: boolean) {
                 return null;
             }
 
-            const answerText = pendingAnswersRef.current.get(questionId) ?? '';
+            const answerPayload = pendingAnswersRef.current.get(questionId);
             pendingAnswersRef.current.delete(questionId);
             setSavingQuestionCount((count) => count + 1);
             const generation = generationRef.current;
-
-            const queue = persistAnswer(questionId, answerText, generation)
+            if (answerPayload === undefined) {
+                setSavingQuestionCount((count) => Math.max(0, count - 1));
+                return null;
+            }
+            const queue = persistAnswer(questionId, answerPayload, generation)
                 .then(() => {
                     if (generation === generationRef.current) {
                         clearQuestionFailure(questionId);
@@ -189,7 +198,7 @@ export function useSurveyResponseSync(surveyId: string, disabled: boolean) {
                 .catch((error: unknown) => {
                     if (generation === generationRef.current) {
                         if (!pendingAnswersRef.current.has(questionId)) {
-                            pendingAnswersRef.current.set(questionId, answerText);
+                            pendingAnswersRef.current.set(questionId, answerPayload);
                         }
                         markQuestionFailed(questionId);
                     }
@@ -220,12 +229,12 @@ export function useSurveyResponseSync(surveyId: string, disabled: boolean) {
     );
 
     const scheduleAnswerSave = useCallback(
-        (questionId: string, answerText: string, options: ScheduleOptions = {}) => {
+        (questionId: string, payload: SurveyAnswerRequest, options: ScheduleOptions = {}) => {
             if (disabled) {
                 return;
             }
 
-            pendingAnswersRef.current.set(questionId, answerText);
+            pendingAnswersRef.current.set(questionId, payload);
             clearQuestionFailure(questionId);
 
             const currentTimer = debounceTimersRef.current.get(questionId);

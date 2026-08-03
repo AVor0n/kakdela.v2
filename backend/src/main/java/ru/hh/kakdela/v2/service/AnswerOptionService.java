@@ -1,7 +1,9 @@
 package ru.hh.kakdela.v2.service;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -71,7 +73,7 @@ public class AnswerOptionService {
         .serialNumber(dto.getSerialNumber() != null
             ? dto.getSerialNumber()
             : maxAvailableSerial)
-        .answerOptionText(dto.getAnswerOptionText())
+        .text(dto.getText())
         .build();
 
     answerOptionDao.save(answerOption);
@@ -108,8 +110,8 @@ public class AnswerOptionService {
       answerOption.setSerialNumber(newSerial);
     }
 
-    if (dto.getAnswerOptionText() != null) {
-      answerOption.setAnswerOptionText(dto.getAnswerOptionText());
+    if (dto.getText() != null) {
+      answerOption.setText(dto.getText());
     }
     answerOptionDao.update(answerOption);
     log.info("Изменен вариант ответа id={}", id);
@@ -219,5 +221,41 @@ public class AnswerOptionService {
     answerOption.setAttachmentObjectKey(null);
     answerOptionDao.update(answerOption);
     log.info("Удалено вложение варианта ответа id={}", answerOptionId);
+  }
+
+  // Вспомогательные методы
+
+  @Transactional(readOnly = true)
+  public List<AnswerOption> getByIdsAndVerifyByQuestionId(
+      Set<UUID> answerOptionIds,
+      UUID questionId
+  ) {
+    List<AnswerOption> result = answerOptionDao.findByIds(answerOptionIds);
+
+    if (result.size() != answerOptionIds.size()) {
+      Set<UUID> foundIds = result.stream()
+          .map(AnswerOption::getId)
+          .collect(Collectors.toSet());
+
+      Set<UUID> missingIds = answerOptionIds.stream()
+          .filter(id -> !foundIds.contains(id))
+          .collect(Collectors.toSet());
+
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+          "Варианты ответа не найдены: ids=" + missingIds);
+    }
+
+    List<UUID> answerOptionsOfAnotherQuestionIds = result.stream()
+        .filter(ao -> !ao.getQuestion().getId().equals(questionId))
+        .map(AnswerOption::getId)
+        .toList();
+
+    if (!answerOptionsOfAnotherQuestionIds.isEmpty()) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+          "Варианты ответа принадлежат другому вопросу: ids="
+              + answerOptionsOfAnotherQuestionIds);
+    }
+
+    return result;
   }
 }

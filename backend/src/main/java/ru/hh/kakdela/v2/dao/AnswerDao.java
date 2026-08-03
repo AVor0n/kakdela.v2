@@ -7,7 +7,7 @@ import ru.hh.kakdela.v2.model.Answer;
 
 public interface AnswerDao {
 
-  Optional<Answer> findById(Answer.AnswerId id);
+  Optional<Answer> findByResponseIdAndQuestion(UUID responseId, UUID questionId);
 
   List<Answer> findAllByResponseId(UUID responseId);
 

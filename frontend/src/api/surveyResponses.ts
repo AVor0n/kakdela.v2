@@ -6,6 +6,14 @@ export type CreateSurveyResponseResult = {
     id: string;
 };
 
+export type SurveyAnswerRequest = {
+    textValue?: string;
+    booleanValue?: boolean;
+    dateValue?: string;
+    timeValue?: string;
+    selectedAnswerOptionIds?: string[];
+};
+
 export type SurveyResponsesExport = {
     file: Blob;
     filename: string;
@@ -61,18 +69,12 @@ export async function exportSurveyResponses(surveyId: string): Promise<SurveyRes
 export async function createSurveyAnswer(
     responseId: string,
     questionId: string,
-    answerText: string,
+    body: SurveyAnswerRequest,
 ): Promise<SurveyAnswerResponse> {
-    const { data } = await apiClient.post<SurveyAnswerResponse>(
-        `/api/responses/${responseId}/answers`,
-        {
-            answerText,
-        },
-        {
-            params: { questionId },
-            timeout: SURVEY_RESPONSE_REQUEST_TIMEOUT_MS,
-        },
-    );
+    const { data } = await apiClient.post<SurveyAnswerResponse>(`/api/responses/${responseId}/answers`, body, {
+        params: { questionId },
+        timeout: SURVEY_RESPONSE_REQUEST_TIMEOUT_MS,
+    });
 
     return data;
 }
@@ -80,18 +82,12 @@ export async function createSurveyAnswer(
 export async function updateSurveyAnswer(
     responseId: string,
     questionId: string,
-    answerText: string,
+    body: SurveyAnswerRequest,
 ): Promise<SurveyAnswerResponse> {
-    const { data } = await apiClient.put<SurveyAnswerResponse>(
-        `/api/responses/${responseId}/answers`,
-        {
-            answerText,
-        },
-        {
-            params: { questionId },
-            timeout: SURVEY_RESPONSE_REQUEST_TIMEOUT_MS,
-        },
-    );
+    const { data } = await apiClient.put<SurveyAnswerResponse>(`/api/responses/${responseId}/answers`, body, {
+        params: { questionId },
+        timeout: SURVEY_RESPONSE_REQUEST_TIMEOUT_MS,
+    });
 
     return data;
 }

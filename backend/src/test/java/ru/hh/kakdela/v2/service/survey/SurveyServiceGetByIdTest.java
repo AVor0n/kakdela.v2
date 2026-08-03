@@ -28,7 +28,7 @@ public class SurveyServiceGetByIdTest extends SurveyServiceTestBase {
             SurveyServiceTestConstants.account1Id)
     );
     assertEquals(
-        "404 NOT_FOUND \"Опрос не найден: " + FullSurveyConstants.SURVEY.getId(IS_ORIGINAL) + "\"",
+        "404 NOT_FOUND \"Опрос не найден: id=" + FullSurveyConstants.SURVEY.getId(IS_ORIGINAL) + "\"",
         ex.getMessage()
     );
   }

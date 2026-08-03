@@ -16,7 +16,7 @@ public class QuestionDaoImpl implements QuestionDao {
   @PersistenceContext
   private EntityManager entityManager;
 
-  private static final String CONSTRAINT_NAME = "uq_question_page_serial";
+  private static final String CONSTRAINT_NAME = "uk_question_page_serial";
 
   @Override
   public Optional<Question> findById(UUID id) {

@@ -36,6 +36,20 @@ public class SurveyServiceTestConstants {
 
     @Getter
     private static final UUID response1Id = UUID.randomUUID();
+    @Getter
+    private static final UUID question1AnswerId = UUID.randomUUID();
+    @Getter
+    private static final UUID question2AnswerId = UUID.randomUUID();
+    @Getter
+    private static final UUID question3AnswerId = UUID.randomUUID();
+    @Getter
+    private static final UUID selectedAnswerOption1OfQuestion2AnswerId = UUID.randomUUID();
+    @Getter
+    private static final UUID selectedAnswerOption2OfQuestion2AnswerId = UUID.randomUUID();
+    @Getter
+    private static final UUID selectedAnswerOption1OfQuestion3AnswerId = UUID.randomUUID();
+    @Getter
+    private static final UUID selectedAnswerOption2OfQuestion3AnswerId = UUID.randomUUID();
 
     private static final Account originalAuthor = SurveyServiceTestEntity.account1;
     private static final Account cloneAuthor = SurveyServiceTestEntity.account2;
