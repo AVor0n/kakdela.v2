@@ -270,23 +270,27 @@ export function Question({
                         isTextColor
                     />
                 </div>
-                <ImageAttachmentControl
-                    inputId={`file-upload-${question.id}`}
-                    hasImage={Boolean(questionImage)}
-                    onChange={handleFileChange}
-                    onDelete={deleteAttachmentUrlHandler}
-                />
+                <div className={style.imageControl}>
+                    <ImageAttachmentControl
+                        inputId={`file-upload-${question.id}`}
+                        hasImage={Boolean(questionImage)}
+                        onChange={handleFileChange}
+                        onDelete={deleteAttachmentUrlHandler}
+                    />
+                </div>
 
-                <Select
-                    type='label'
-                    value={questionType}
-                    dataProvider={createStaticDataProvider(OPTIONS, 'Тип вопроса')}
-                    name='area'
-                    onChange={(e) => {
-                        setTypeQuestion(e.value as QuestionType);
-                    }}
-                    onBlur={updateQuestionTypeHandler}
-                />
+                <div className={style.questionType}>
+                    <Select
+                        type='label'
+                        value={questionType}
+                        dataProvider={createStaticDataProvider(OPTIONS, 'Тип вопроса')}
+                        name='area'
+                        onChange={(e) => {
+                            setTypeQuestion(e.value as QuestionType);
+                        }}
+                        onBlur={updateQuestionTypeHandler}
+                    />
+                </div>
             </section>
             <section className={style.questionDescription}>
                 <EditorInput

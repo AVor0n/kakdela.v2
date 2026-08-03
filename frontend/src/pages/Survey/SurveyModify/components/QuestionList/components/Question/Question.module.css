@@ -17,9 +17,15 @@
     cursor: grabbing;
 }
 
-.settings > div:nth-child(3) {
+.questionType {
+    width: 100%;
     justify-self: end;
     align-self: flex-start;
+}
+
+.imageControl {
+    align-self: center;
+    justify-self: center;
 }
 
 .settings {
@@ -102,4 +108,57 @@
 .select {
     width: 165px;
     justify-self: end;
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 24px 14px 16px;
+        border-radius: 16px;
+    }
+
+    .settings {
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        justify-items: stretch;
+        gap: 8px;
+    }
+
+    .questionDetail {
+        grid-column: 1 / -1;
+    }
+
+    .questionType {
+        grid-column: 1;
+        grid-row: 2;
+        min-width: 0;
+        justify-self: stretch;
+    }
+
+    .imageControl {
+        grid-column: 2;
+        grid-row: 2;
+        justify-self: end;
+    }
+
+    .actions {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 16px;
+    }
+
+    .actionsContent {
+        width: 100%;
+        flex-wrap: wrap;
+        gap: 12px;
+        justify-self: stretch;
+        justify-content: flex-end;
+    }
+
+    .mandatoryCheckbox {
+        margin-right: auto;
+    }
+
+    .attachmentUrl {
+        height: auto;
+        max-height: 320px;
+    }
 }

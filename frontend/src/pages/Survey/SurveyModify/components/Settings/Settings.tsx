@@ -242,7 +242,7 @@ export function Settings() {
                     <span>Присылать сообщение о прохождении опроса</span>
                 </div>
 
-                <div className={style.option}>
+                <div className={`${style.option} ${style.dateOption}`}>
                     <DateTimeInput
                         size='large'
                         value={expireAt ?? ''}

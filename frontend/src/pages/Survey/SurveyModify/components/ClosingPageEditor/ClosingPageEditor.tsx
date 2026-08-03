@@ -249,7 +249,7 @@ export function ClosingPageEditor({ surveyId, closingPage }: Props) {
 
             <div className={style.titleSettings}>
                 <EditorInput
-                    placeholder='Заголовок завершающей страницы'
+                    placeholder='Заголовок'
                     value={title}
                     onChange={setTitle}
                     onBlur={() => void saveTitle()}
@@ -264,7 +264,7 @@ export function ClosingPageEditor({ surveyId, closingPage }: Props) {
                 />
             </div>
             <EditorInput
-                placeholder='Описание завершающей страницы'
+                placeholder='Описание'
                 value={description}
                 onChange={setDescription}
                 onBlur={() => void saveDescription()}

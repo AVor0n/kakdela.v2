@@ -43,3 +43,46 @@
     position: absolute;
     right: 10px;
 }
+
+@media (max-width: 768px) {
+    .container {
+        width: 100%;
+        padding: 16px 12px 32px;
+    }
+
+    .content {
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+        padding: 16px;
+        border-radius: 12px;
+    }
+
+    .title {
+        max-width: 100%;
+        padding: 10px 12px;
+        margin-bottom: 12px;
+    }
+
+    .option {
+        align-items: flex-start;
+    }
+
+    .option span {
+        min-width: 0;
+        overflow-wrap: anywhere;
+    }
+
+    .dateOption > div {
+        width: 100%;
+    }
+
+    .buttons {
+        width: 100%;
+        flex-direction: column;
+    }
+
+    .buttons > * {
+        width: 100%;
+    }
+}

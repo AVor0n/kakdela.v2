@@ -1,12 +1,12 @@
 import { Link, Outlet, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { routePatterns, routes } from '@/app/routes';
-import { Link as LinkHH, Button } from '@hh.ru/magritte-ui';
+import { ActionList, Link as LinkHH, Button } from '@hh.ru/magritte-ui';
 import style from './SurveyLayout.module.css';
 import { getMySurveys, getSurveyById, updateSurvey } from '@/api/survey';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { setSelectedSurvey } from '@/entities/Survey/Survey.slice';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { setErrorMessage } from '@/entities/Error/Error.slice';
 import { LoadingContent } from '@/shared/ui/LoadingContent/LoadingContent';
 import { AccountDetail } from '@/shared/ui/AccountDetail/AccountDetail';
@@ -24,6 +24,8 @@ export function SurveyLayout() {
     const { selectedSurvey } = useAppSelector((state) => state.survey);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [surveyAccess, setSurveyAccess] = useState<SurveyAccess | null>(null);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const mobileMenuButtonRef = useRef<HTMLButtonElement>(null!);
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
     const userRole = id && surveyAccess?.surveyId === id ? surveyAccess.role : null;
@@ -95,12 +97,18 @@ export function SurveyLayout() {
             });
     };
 
+    const closeMobileMenu = () => {
+        setIsMobileMenuOpen(false);
+    };
+
     return (
         <>
             <header className={style.header}>
-                <LinkHH mode='primary' style='accent' href={routes.survey()}>
-                    Обратно в меню
-                </LinkHH>
+                <div className={style.backLink}>
+                    <LinkHH mode='primary' style='accent' href={routes.survey()}>
+                        Обратно в меню
+                    </LinkHH>
+                </div>
 
                 <nav className={style.navbar}>
                     <Button
@@ -154,6 +162,101 @@ export function SurveyLayout() {
                         </Button>
                     )}
                     <AccountDetail />
+                </div>
+
+                <div className={style.mobileHeader}>
+                    <Button
+                        ref={mobileMenuButtonRef}
+                        mode='secondary'
+                        style='accent'
+                        type='button'
+                        aria-expanded={isMobileMenuOpen}
+                        aria-controls='survey-mobile-menu'
+                        aria-haspopup='menu'
+                        onClick={() => setIsMobileMenuOpen((isOpen) => !isOpen)}
+                    >
+                        Меню
+                    </Button>
+                    <AccountDetail />
+
+                    <ActionList
+                        visible={isMobileMenuOpen}
+                        onClose={closeMobileMenu}
+                        dropProps={{
+                            activatorRef: mobileMenuButtonRef,
+                            placement: 'bottom-left',
+                            role: 'menu',
+                            maxWidth: 320,
+                            padding: 12,
+                        }}
+                    >
+                        <nav id='survey-mobile-menu' className={style.mobileMenuContent} aria-label='Меню опроса'>
+                            <Button
+                                mode='tertiary'
+                                style='accent'
+                                Element={Link}
+                                to={routes.survey()}
+                                onClick={closeMobileMenu}
+                            >
+                                Обратно в меню
+                            </Button>
+                            <Button
+                                mode={pathname.includes('/questions') ? 'primary' : 'tertiary'}
+                                style='accent'
+                                Element={Link}
+                                to={`${basePath}/questions`}
+                                disabled={!canEditSurvey}
+                                onClick={closeMobileMenu}
+                            >
+                                Вопросы
+                            </Button>
+                            <Button
+                                mode={pathname.includes('/answers') ? 'primary' : 'tertiary'}
+                                style='accent'
+                                Element={Link}
+                                to={`${basePath}/answers`}
+                                disabled={isAccessLoading}
+                                onClick={closeMobileMenu}
+                            >
+                                Ответы
+                            </Button>
+                            <Button
+                                mode={pathname.includes('/settings') ? 'primary' : 'tertiary'}
+                                style='accent'
+                                Element={Link}
+                                to={`${basePath}/settings`}
+                                disabled={!canEditSurvey}
+                                onClick={closeMobileMenu}
+                            >
+                                Настройки
+                            </Button>
+                            {id && (
+                                <Button
+                                    mode='tertiary'
+                                    style='neutral'
+                                    Element={Link}
+                                    to={routes.surveyPreview(id)}
+                                    disabled={!selectedSurvey || isAccessLoading}
+                                    onClick={closeMobileMenu}
+                                >
+                                    Предпросмотр
+                                </Button>
+                            )}
+                            {canEditSurvey && (
+                                <Button
+                                    mode='tertiary'
+                                    style='accent'
+                                    onClick={() => {
+                                        publishingHandler();
+                                        closeMobileMenu();
+                                    }}
+                                    disabled={!selectedSurvey}
+                                >
+                                    {selectedSurvey?.isPublished ? 'Снять с публикации' : 'Опубликовать'}
+                                </Button>
+                            )}
+                        </nav>
+                    </ActionList>
                 </div>
             </header>
 

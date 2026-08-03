@@ -54,7 +54,12 @@ function App() {
                         <AccountDetail />
                     ) : (
                         <>
-                            <Button mode='secondary' style='accent' onClick={() => navigate(routes.register())}>
+                            <Button
+                                className={style.registrationButton}
+                                mode='secondary'
+                                style='accent'
+                                onClick={() => navigate(routes.register())}
+                            >
                                 Регистрация
                             </Button>
                             <Button mode='primary' style='accent' onClick={() => navigate(routes.login())}>
