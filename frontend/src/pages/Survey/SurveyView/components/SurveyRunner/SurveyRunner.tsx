@@ -205,7 +205,7 @@ export function SurveyRunner({ survey, mode }: Props) {
             case 'SINGLE_CHOICE':
                 return (
                     <div className={choiceStyle.container}>
-                        {sortBySerialNumber(question.answerOptions).map((option) => (
+                        {question.answerOptions.map((option) => (
                             <div className={optionStyle.optionContent} key={option.id}>
                                 <label className={optionStyle.option}>
                                     <Radio
@@ -225,7 +225,7 @@ export function SurveyRunner({ survey, mode }: Props) {
             case 'MULTIPLE_CHOICE':
                 return (
                     <div className={choiceStyle.container}>
-                        {sortBySerialNumber(question.answerOptions).map((option) => {
+                        {question.answerOptions.map((option) => {
                             const selectedOptions = Array.isArray(value) ? value : [];
 
                             return (

@@ -18,12 +18,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import ru.hh.kakdela.v2.constants.CookieNames;
 import ru.hh.kakdela.v2.dto.answer.AnswerRequestDto;
 import ru.hh.kakdela.v2.dto.answer.AnswerResponseDto;
 import ru.hh.kakdela.v2.dto.answer.AnswerResponseDtoWithStatusDto;
 import ru.hh.kakdela.v2.security.CustomUserDetails;
 import ru.hh.kakdela.v2.service.AnswerService;
+import ru.hh.kakdela.v2.service.AuthCookieService;
 import ru.hh.kakdela.v2.util.CookieUtil;
 
 @RestController
@@ -33,6 +33,7 @@ import ru.hh.kakdela.v2.util.CookieUtil;
 public class AnswerController {
 
   private final AnswerService answerService;
+  private final AuthCookieService authCookieService;
 
   @GetMapping("/responses/{responseId}/answers")
   public List<AnswerResponseDto> getAllByResponseId(
@@ -45,7 +46,7 @@ public class AnswerController {
         responseId,
         currentUser != null ? currentUser.getId() : null,
         CookieUtil.getCookieValueByName(
-            request, CookieNames.responseAccessTokenPrefix + responseId));
+            request, authCookieService.getResponseToken(request, responseId)));
   }
 
   @PutMapping("/responses/{responseId}/answers")
@@ -63,7 +64,7 @@ public class AnswerController {
         dto,
         currentUser != null ? currentUser.getId() : null,
         CookieUtil.getCookieValueByName(
-            request, CookieNames.responseAccessTokenPrefix + responseId));
+            request, authCookieService.getResponseToken(request, responseId)));
 
     return ResponseEntity.status(result.getStatus().httpStatus)
         .body(result.getAnswer());
@@ -83,6 +84,6 @@ public class AnswerController {
         questionId,
         currentUser != null ? currentUser.getId() : null,
         CookieUtil.getCookieValueByName(
-            request, CookieNames.responseAccessTokenPrefix + responseId));
+            request, authCookieService.getResponseToken(request, responseId)));
   }
 }

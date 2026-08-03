@@ -2,7 +2,7 @@ import type { Question } from '@/shared/types/Question.type';
 import { apiClient } from './client';
 
 export type UpdateQuestionRequest = Partial<
-    Pick<Question, 'title' | 'isMandatory' | 'type' | 'description' | 'serialNumber'>
+    Pick<Question, 'title' | 'isMandatory' | 'type' | 'description' | 'serialNumber' | 'answerOptionOrder'>
 >;
 
 export type CreateQuestionRequest = Pick<Question, 'title' | 'serialNumber' | 'type'>;
