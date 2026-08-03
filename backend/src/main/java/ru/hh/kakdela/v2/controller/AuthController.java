@@ -6,14 +6,13 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import ru.hh.kakdela.v2.dto.account.AccountCreateDto;
 import ru.hh.kakdela.v2.dto.account.AccountResponseDto;
+import ru.hh.kakdela.v2.dto.auth.PasswordResetDto;
+import ru.hh.kakdela.v2.dto.auth.VerifyCodeRequestDto;
 import ru.hh.kakdela.v2.dto.auth.AuthTokensDto;
 import ru.hh.kakdela.v2.dto.auth.LoginDto;
 import ru.hh.kakdela.v2.security.CustomUserDetails;
@@ -96,5 +95,21 @@ public class AuthController {
     authService.logoutEverywhere(userDetails.getId());
 
     authCookieService.clearAllAuthCookies(response);
+  }
+
+  @PostMapping("/auth/forgot-password")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void sendPasswordResetEmail(String email) {
+    authService.sendPasswordResetEmail(email);
+  }
+
+  @GetMapping("/auth/verify-reset-code")
+  public ResponseEntity<Boolean> verifyResetCode(VerifyCodeRequestDto dto) {
+    return ResponseEntity.ok(authService.verifyResetCode(dto));
+  }
+
+  @PatchMapping("/auth/reset-password")
+  public void resetPassword(PasswordResetDto dto) {
+    authService.resetPassword(dto);
   }
 }

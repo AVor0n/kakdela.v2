@@ -61,6 +61,12 @@ services:
       timeout: 5s
       retries: 5
 
+  redis:
+    image: 'redis:alpine'
+    container_name: kd2-redis
+    ports:
+      - '6379:6379'
+
   pgadmin:
     image: dpage/pgadmin4:7
     container_name: kd2-pgadmin4

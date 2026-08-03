@@ -1,5 +1,6 @@
 package ru.hh.kakdela.v2.service;
 
+import java.security.SecureRandom;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,6 +13,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import ru.hh.kakdela.v2.dao.AccountDao;
+import ru.hh.kakdela.v2.dto.auth.PasswordResetDto;
+import ru.hh.kakdela.v2.dto.auth.VerifyCodeRequestDto;
 import ru.hh.kakdela.v2.dto.auth.AuthTokensDto;
 import ru.hh.kakdela.v2.dto.auth.LoginDto;
 import ru.hh.kakdela.v2.model.Account;
@@ -25,6 +28,8 @@ public class AuthService {
   private final AuthenticationManager authenticationManager;
   private final PasswordEncoder passwordEncoder;
   private final AccountDao accountDao;
+  private final NotificationService notificationService;
+  private final VerificationCodeService verificationCodeService;
   private final JwtService jwtService;
   private final RefreshTokenService refreshTokenService;
 
@@ -120,5 +125,68 @@ public class AuthService {
         accountId,
         account.getTokenVersion() - 1,
         newVersion);
+  }
+
+  @Transactional(readOnly = true)
+  public void sendPasswordResetEmail(String email) {
+    Account account = accountDao.findByEmail(email).orElseThrow(() ->
+        new ResponseStatusException(HttpStatus.NOT_FOUND, "Аккаунт не найден: " + email));
+    if (account.getIsDeleted()) {
+      throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST,
+          "Данный аккаунт удален"
+      );
+    }
+
+    String code = generateNumericCode(6);
+    // сохраняет в редис
+    verificationCodeService.saveVerificationCode(email, code);
+
+    notificationService.sendPasswordResetCodeEmail(email, code);
+  }
+
+  public boolean verifyResetCode(VerifyCodeRequestDto dto) {
+    return verificationCodeService
+        .verifyCode(dto.getEmail(), dto.getCode());
+  }
+
+  @Transactional
+  public void resetPassword(PasswordResetDto dto) {
+    if (!verificationCodeService
+        .verifyCode(dto.getEmail(), dto.getCode())) {
+      throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST, "Код подтверждения неверный или истек");
+    }
+    if (!dto.getNewPassword().equals(dto.getPasswordConfirmation())) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Пароли не совпадают");
+    }
+
+    Account account = accountDao.findByEmail(dto.getEmail()).orElseThrow(() ->
+        new ResponseStatusException(HttpStatus.NOT_FOUND, "Аккаунт не найден: " + dto.getEmail()));
+    if (account.getIsDeleted()) {
+      throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST,
+          "Данный аккаунт удален"
+      );
+    }
+
+    logoutEverywhere(account.getId());
+
+    account.setPasswordHash(passwordEncoder.encode(dto.getNewPassword()));
+    accountDao.update(account);
+
+    verificationCodeService.deleteVerificationCode(dto.getEmail());
+  }
+
+  private static String generateNumericCode(int codeLength) {
+    SecureRandom secureRandom = new SecureRandom();
+    String digits = "0123456789";
+
+    StringBuilder code = new StringBuilder(codeLength);
+    for (int i = 0; i < codeLength; i++) {
+      code.append(digits.charAt(secureRandom.nextInt(digits.length())));
+    }
+
+    return code.toString();
   }
 }

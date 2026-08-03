@@ -72,6 +72,25 @@ public class EmailService {
     }
   }
 
+  @Async
+  public void sendTextEmail(String email, String text) {
+    try {
+      log.info("Отправка письма для: {}", email);
+
+      SimpleMailMessage message = new SimpleMailMessage();
+      message.setFrom(fromEmail);
+      message.setTo(email);
+      message.setSubject("Сброс пароля");
+      message.setText(text);
+
+      mailSender.send(message);
+
+      log.info("Отправлено письмо на: {}", email);
+    } catch (Exception e) {
+      log.error("Ошибка при отправке письма для {}: {}", email, e.getMessage(), e);
+    }
+  }
+
   private void logEmailSending(String email, String surveyTitle, UUID surveyId) {
     log.info("Кому: {}", email);
     log.info("Опрос: {}", surveyTitle);

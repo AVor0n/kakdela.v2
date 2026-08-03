@@ -49,6 +49,12 @@ services:
       timeout: 5s
       retries: 5
 
+  redis:
+    image: 'redis:alpine'
+    container_name: kd2-redis
+    ports:
+      - '6379:6379'
+
   service-obs:
     image: chrislusf/seaweedfs:latest
     container_name: kd2-seaweedfs
