@@ -45,40 +45,6 @@ public class AnswerOptionService {
         .toList();
   }
 
-  @Transactional(readOnly = true)
-  public List<AnswerOption> getByIdsAndVerifyByQuestionId(
-      Set<UUID> answerOptionIds,
-      UUID questionId
-  ) {
-    List<AnswerOption> foundAnswerOptions = answerOptionDao.findByIds(answerOptionIds);
-
-    if (foundAnswerOptions.size() != answerOptionIds.size()) {
-      Set<UUID> foundIds = foundAnswerOptions.stream()
-          .map(AnswerOption::getId)
-          .collect(Collectors.toSet());
-
-      Set<UUID> missingIds = answerOptionIds.stream()
-          .filter(id -> !foundIds.contains(id))
-          .collect(Collectors.toSet());
-
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-          "Варианты ответа не найдены: ids=" + missingIds);
-    }
-
-    List<UUID> answerOptionsOfAnotherQuestionIds = foundAnswerOptions.stream()
-        .filter(ao -> !ao.getQuestion().getId().equals(questionId))
-        .map(AnswerOption::getId)
-        .toList();
-
-    if (!answerOptionsOfAnotherQuestionIds.isEmpty()) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-          "Варианты ответа принадлежат другому вопросу: ids="
-              + answerOptionsOfAnotherQuestionIds);
-    }
-
-    return foundAnswerOptions;
-  }
-
   @Transactional
   public AnswerOptionResponseDto create(UUID questionId,
                                         AnswerOptionCreateDto dto,
@@ -255,5 +221,41 @@ public class AnswerOptionService {
     answerOption.setAttachmentObjectKey(null);
     answerOptionDao.update(answerOption);
     log.info("Удалено вложение варианта ответа id={}", answerOptionId);
+  }
+
+  // Вспомогательные методы
+
+  @Transactional(readOnly = true)
+  public List<AnswerOption> getByIdsAndVerifyByQuestionId(
+      Set<UUID> answerOptionIds,
+      UUID questionId
+  ) {
+    List<AnswerOption> result = answerOptionDao.findByIds(answerOptionIds);
+
+    if (result.size() != answerOptionIds.size()) {
+      Set<UUID> foundIds = result.stream()
+          .map(AnswerOption::getId)
+          .collect(Collectors.toSet());
+
+      Set<UUID> missingIds = answerOptionIds.stream()
+          .filter(id -> !foundIds.contains(id))
+          .collect(Collectors.toSet());
+
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+          "Варианты ответа не найдены: ids=" + missingIds);
+    }
+
+    List<UUID> answerOptionsOfAnotherQuestionIds = result.stream()
+        .filter(ao -> !ao.getQuestion().getId().equals(questionId))
+        .map(AnswerOption::getId)
+        .toList();
+
+    if (!answerOptionsOfAnotherQuestionIds.isEmpty()) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+          "Варианты ответа принадлежат другому вопросу: ids="
+              + answerOptionsOfAnotherQuestionIds);
+    }
+
+    return result;
   }
 }
