@@ -73,6 +73,7 @@ export function SurveyDetail({ survey }: Props) {
                 isTextColor
                 isMarkColor
                 isHeading
+                disabled={true}
             />
         </div>
     );

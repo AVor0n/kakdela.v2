@@ -416,7 +416,7 @@ export function SurveyRunner({ survey, mode }: Props) {
                                         </div>
                                         {question.description && (
                                             <div className={style.questionDescription}>
-                                                <HTMLRender className={style.title} html={question.description} />
+                                                <HTMLRender className={style.description} html={question.description} />
                                             </div>
                                         )}
                                         <section className={questionStyle.actions}>
