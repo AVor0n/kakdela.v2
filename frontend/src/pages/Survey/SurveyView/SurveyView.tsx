@@ -67,10 +67,10 @@ export function SurveyView() {
 
     return (
         <>
-            <div className={style.accountDetail}>
+            <header className={style.accountDetail}>
                 {account ? <AccountDetail /> : <p className={style.label}>Анонимное прохождение</p>}
-            </div>
-            <SurveyRunner survey={survey} mode={mode} />;
+            </header>
+            <SurveyRunner survey={survey} mode={mode} />
         </>
     );
 }

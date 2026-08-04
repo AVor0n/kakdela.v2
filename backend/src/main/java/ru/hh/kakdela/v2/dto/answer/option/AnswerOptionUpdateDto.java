@@ -12,14 +12,16 @@ import ru.hh.kakdela.v2.validator.NullOrNotBlank;
 @Getter
 @Setter
 @Schema(
-    name = "AnswerOptionUpdate",
-    title = "DTO для обновления варианта ответа"
+    name = "AnswerOption.Update"
 )
 public class AnswerOptionUpdateDto {
 
+  @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED)
   @Min(value = 1, message = "Порядковый номер должен быть больше 0")
   private Integer serialNumber;
+
+  @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
   @NullOrNotBlank(message = "Текст варианта ответа не должен быть пустым")
   @Size(max = 1000, message = "Текст варианта ответа не должен быть длиннее 1000 символов")
-  private String answerOptionText;
+  private String text;
 }

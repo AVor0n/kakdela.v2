@@ -42,11 +42,14 @@ public class ClosingPage {
   @Column(name = "title", length = 200)
   private String title;
 
-  @Column(name = "description", length = 5000)
+  @Column(name = "description", columnDefinition = "text")
   private String description;
 
   @Column(name = "attachment_object_key", length = 1024)
   private String attachmentObjectKey;
+
+  @Column(name = "file_object_key", length = 1024)
+  private String fileObjectKey;
 
   @Column(name = "website_url", length = 2000)
   private String websiteUrl;

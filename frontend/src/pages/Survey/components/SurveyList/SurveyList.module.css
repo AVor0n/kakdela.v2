@@ -20,10 +20,14 @@
     background-color: #ffffff;
 }
 
+.createButtonWrapper {
+    align-self: flex-end; /* прижимает к правому краю и убирает stretch по ширине */
+}
+
 .grid {
-    display: grid;
+    display: flex;
     width: 100%;
-    grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
+    flex-direction: column;
     gap: 24px;
 }
 
@@ -50,12 +54,30 @@
     cursor: pointer;
 }
 
-.itemButtonCentered {
-    text-align: center;
-}
-
 .avatar {
     position: absolute;
     top: 20px;
     right: 20px;
+}
+
+@media (max-width: 768px) {
+    .page {
+        padding: 16px 12px 32px;
+    }
+
+    .avatar {
+        position: static;
+        display: flex;
+        margin-bottom: 16px;
+        justify-content: flex-end;
+    }
+
+    .card {
+        padding: 12px;
+        border-radius: 16px;
+    }
+
+    .grid {
+        gap: 16px;
+    }
 }

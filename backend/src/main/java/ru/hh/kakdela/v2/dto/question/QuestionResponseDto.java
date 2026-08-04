@@ -14,18 +14,18 @@ import ru.hh.kakdela.v2.dto.answer.option.AnswerOptionResponseDto;
 @EqualsAndHashCode
 @ToString
 @Schema(
-    name = "QuestionResponse",
-    title = "DTO для получения данных вопроса"
+    name = "Question.Response"
 )
 public class QuestionResponseDto {
 
   private final UUID id;
   private final int serialNumber;
-  private final String title;
+  private final String text;
   private final String description;
   private final String attachmentUrl;
   private final String type;
   private final String answerOptionOrder;
+  private final Boolean hasOtherOption;
   private final Boolean isMandatory;
   private final Boolean isVisible;
   private final String condition;

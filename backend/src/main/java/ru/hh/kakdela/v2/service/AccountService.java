@@ -1,5 +1,6 @@
 package ru.hh.kakdela.v2.service;
 
+import java.time.Clock;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
@@ -28,12 +29,18 @@ public class AccountService {
   private final AccountDao accountDao;
   private final AuthService authService;
   private final PasswordEncoder passwordEncoder;
+  private final RefreshTokenService refreshTokenService;
+  private final Clock clock;
 
   @Transactional(readOnly = true)
   public AccountResponseDto getById(UUID id) {
     Account account = accountDao.findById(id)
         .orElseThrow(
             () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Аккаунт не найден: " + id));
+    if (account.getIsDeleted() != null && account.getIsDeleted()) {
+      throw new ResponseStatusException(
+          HttpStatus.NOT_FOUND, "Аккаунт не найден: " + id);
+    }
     return AccountMapper.accountToDto(account);
   }
 
@@ -56,7 +63,9 @@ public class AccountService {
         .email(accountCreateDto.getEmail())
         .passwordHash(
             passwordEncoder.encode(accountCreateDto.getPassword()))
-        .registeredAt(Instant.now())
+        .registeredAt(Instant.now(clock))
+        .tokenVersion(1)
+        .isDeleted(false)
         .build();
 
     accountDao.save(account);
@@ -123,6 +132,12 @@ public class AccountService {
     Account account = accountDao.findById(currentUser.getId())
         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
             "Аккаунт не найден: " + currentUser.getId()));
+
+    if (account.getIsDeleted() != null && account.getIsDeleted()) {
+      throw new ResponseStatusException(
+          HttpStatus.FORBIDDEN, "Аккаунт удалён");
+    }
+
     if (!Objects.equals(accountPutDto.getLogin(), account.getLogin())) {
       if (accountDao.existsByLogin(accountPutDto.getLogin())) {
         throw new ResponseStatusException(HttpStatus.CONFLICT,
@@ -158,6 +173,11 @@ public class AccountService {
         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
             "Аккаунт не найден: " + currentUser.getId()));
 
+    if (account.getIsDeleted() != null && account.getIsDeleted()) {
+      throw new ResponseStatusException(
+          HttpStatus.FORBIDDEN, "Аккаунт удалён");
+    }
+
     if (accountPatchDto.getLogin() != null
         && !accountPatchDto.getLogin().equals(account.getLogin())) {
       if (accountDao.existsByLogin(accountPatchDto.getLogin())) {
@@ -186,14 +206,26 @@ public class AccountService {
   }
 
   @Transactional
-  public void delete(CustomUserDetails currentUser, AccountDeleteDto accountDeleteDto) {
+  public void softDelete(CustomUserDetails currentUser, AccountDeleteDto accountDeleteDto) {
     authService.checkPassword(currentUser, accountDeleteDto.getPassword());
 
     Account account = accountDao.findById(currentUser.getId())
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-            "Аккаунт не найден: " + currentUser.getId()));
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Аккаунт не найден: " + currentUser.getId()));
 
-    accountDao.delete(account);
-    log.info("Удален аккаунт id={}", currentUser.getId());
+    if (account.getIsDeleted() != null && account.getIsDeleted()) {
+      throw new ResponseStatusException(
+          HttpStatus.CONFLICT, "Аккаунт уже удалён");
+    }
+
+    account.setIsDeleted(true);
+
+    refreshTokenService.revokeAllByAccountId(account.getId());
+
+    authService.incrementTokenVersion(account.getId());
+
+    accountDao.update(account);
+
+    log.info("Аккаунт {} помечен как удалённый", currentUser.getId());
   }
 }

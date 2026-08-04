@@ -6,45 +6,66 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.util.Arrays;
 import org.springframework.http.ResponseCookie;
 
-public class CookieUtil {
+public final class CookieUtil {
 
-  public static String getCookieValueByName(
-      HttpServletRequest request, String name) {
+  private static final String SAME_SITE = "Strict";
 
-    return request.getCookies() == null
-        ? null
-        : Arrays.stream(request.getCookies())
-            .filter(c -> c.getName().equals(name))
-            .map(Cookie::getValue)
-            .findFirst()
-            .orElse(null);
+  private CookieUtil() {
   }
 
-  public static void setHttpOnlySameSiteStrictCookie(
-      HttpServletResponse response, String path,
-      long maxAgeSeconds, String name, String value) {
+  public static String getCookieValueByName(HttpServletRequest request, String name) {
+    Cookie[] cookies = request.getCookies();
+    if (cookies == null) {
+      return null;
+    }
+    return Arrays.stream(cookies)
+        .filter(cookie -> name.equals(cookie.getName()))
+        .map(Cookie::getValue)
+        .findFirst()
+        .orElse(null);
+  }
 
-    ResponseCookie cookie = ResponseCookie.from(name, value)
+  public static ResponseCookie buildHttpOnlyCookie(
+      String name,
+      String value,
+      String path,
+      long maxAgeSeconds
+  ) {
+    return ResponseCookie.from(name, value)
         .httpOnly(true)
-        .sameSite("Strict")
+        .secure(true)
+        .sameSite(SAME_SITE)
         .path(path)
         .maxAge(maxAgeSeconds)
         .build();
-
-    response.addHeader("Set-Cookie", cookie.toString());
   }
 
-  public static void setHttpOnlySameSiteStrictCookie(
-      HttpServletResponse response, String path,
-      long maxAgeSeconds, String name) {
-
-    ResponseCookie cookie = ResponseCookie.from(name)
-        .httpOnly(true)
-        .sameSite("Strict")
+  public static ResponseCookie buildCookie(
+      String name,
+      String value,
+      String path,
+      long maxAgeSeconds
+  ) {
+    return ResponseCookie.from(name, value)
+        .httpOnly(false)
+        .secure(true)
+        .sameSite(SAME_SITE)
         .path(path)
         .maxAge(maxAgeSeconds)
         .build();
+  }
 
+  public static ResponseCookie buildExpiredCookie(String name, String path) {
+    return ResponseCookie.from(name, "")
+        .httpOnly(true)
+        .secure(true)
+        .sameSite(SAME_SITE)
+        .path(path)
+        .maxAge(0)
+        .build();
+  }
+
+  public static void addCookie(HttpServletResponse response, ResponseCookie cookie) {
     response.addHeader("Set-Cookie", cookie.toString());
   }
 }

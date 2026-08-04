@@ -9,3 +9,22 @@
     border-radius: 12px;
     background: rgba(0, 0, 0, 0.1);
 }
+
+@media (max-width: 768px) {
+    .accountDetail {
+        position: static;
+        display: flex;
+        width: 100%;
+        min-height: 72px;
+        padding: 12px 16px;
+        align-items: center;
+        justify-content: flex-end;
+        border-bottom: 1px solid var(--color-border);
+        background: #ffffff;
+    }
+
+    .label {
+        max-width: 100%;
+        overflow-wrap: anywhere;
+    }
+}

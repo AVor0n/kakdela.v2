@@ -12,14 +12,16 @@ import lombok.Setter;
 @Getter
 @Setter
 @Schema(
-    name = "AnswerOptionCreate",
-    title = "DTO для создания варианта ответа"
+    name = "AnswerOption.Create"
 )
 public class AnswerOptionCreateDto {
 
+  @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED)
   @Min(value = 1, message = "Порядковый номер должен быть больше 0")
   private Integer serialNumber;
+
+  @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
   @NotBlank(message = "Текст варианта ответа не должен быть пустым")
   @Size(max = 1000, message = "Текст варианта ответа не должен быть длиннее 1000 символов")
-  private String answerOptionText;
+  private String text;
 }

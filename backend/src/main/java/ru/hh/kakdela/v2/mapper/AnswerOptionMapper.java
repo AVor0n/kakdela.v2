@@ -27,7 +27,7 @@ public class AnswerOptionMapper {
     return new AnswerOptionResponseDto(
         answerOption.getId(),
         answerOption.getSerialNumber(),
-        answerOption.getAnswerOptionText(),
+        answerOption.getText(),
         attachmentUrl
     );
   }

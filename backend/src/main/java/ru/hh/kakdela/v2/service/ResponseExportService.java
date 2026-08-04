@@ -30,7 +30,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import ru.hh.kakdela.v2.dao.AccountDao;
-import ru.hh.kakdela.v2.dao.QuestionDao;
 import ru.hh.kakdela.v2.dao.SurveyDao;
 import ru.hh.kakdela.v2.dto.answer.AnswerResponseDto;
 import ru.hh.kakdela.v2.dto.response.ResponseExportDto;
@@ -46,7 +45,6 @@ public class ResponseExportService {
 
   private final AccountDao accountDao;
   private final SurveyDao surveyDao;
-  private final QuestionDao questionDao;
 
   public byte[] exportResponses(
       List<ResponseResponseDto> responses,
@@ -79,7 +77,7 @@ public class ResponseExportService {
       Map<UUID, Integer> questionColumnMap = new LinkedHashMap<>();
       for (Question question : questions) {
         Cell cell = headerRow.createCell(colIndex);
-        cell.setCellValue(question.getTitleAsPlainString());
+        cell.setCellValue(question.getTextAsPlainString());
         cell.setCellStyle(headerStyle);
         questionColumnMap.put(question.getId(), colIndex);
         ++colIndex;
@@ -109,7 +107,7 @@ public class ResponseExportService {
           Map<UUID, String> answerMap = new HashMap<>();
           if (response.getAnswers() != null) {
             for (AnswerResponseDto answer : response.getAnswers()) {
-              answerMap.put(answer.getQuestionId(), answer.getAnswerText());
+              answerMap.put(answer.getQuestionId(), answer.getAnswerAsString());
             }
           }
 

@@ -2,7 +2,6 @@ package ru.hh.kakdela.v2.service.survey;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.Optional;
@@ -29,7 +28,7 @@ public class SurveyServiceGetByIdTest extends SurveyServiceTestBase {
             SurveyServiceTestConstants.account1Id)
     );
     assertEquals(
-        "404 NOT_FOUND \"Опрос не найден: " + FullSurveyConstants.SURVEY.getId(IS_ORIGINAL) + "\"",
+        "404 NOT_FOUND \"Опрос не найден: id=" + FullSurveyConstants.SURVEY.getId(IS_ORIGINAL) + "\"",
         ex.getMessage()
     );
   }
@@ -42,7 +41,7 @@ public class SurveyServiceGetByIdTest extends SurveyServiceTestBase {
         .thenReturn(URI.create("http://attachmentUrl/").toURL());
 
     surveyService.getById(FullSurveyConstants.SURVEY.getId(IS_CLONE),
-            SurveyServiceTestConstants.account1Id);
+        SurveyServiceTestConstants.account1Id);
 
     Mockito.verify(permissionService).checkHasAnyPermission(
         FullSurveyConstants.SURVEY.getId(IS_CLONE),
@@ -55,6 +54,8 @@ public class SurveyServiceGetByIdTest extends SurveyServiceTestBase {
         .thenReturn(Optional.of(fullSurvey));
     Mockito.when(objectStorageService.generateObjectUrl(Mockito.any(), Mockito.anyLong()))
         .thenReturn(URI.create("http://attachmentUrl/").toURL());
+    Mockito.when(objectStorageService.getFileSize(Mockito.anyString()))
+        .thenReturn(102400L);
 
     SurveyResponseDto result = surveyService.getById(FullSurveyConstants.SURVEY.getId(IS_ORIGINAL),
         SurveyServiceTestConstants.account1Id);

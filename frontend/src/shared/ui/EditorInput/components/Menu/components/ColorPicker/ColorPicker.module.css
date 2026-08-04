@@ -1,0 +1,51 @@
+.container {
+    position: relative;
+}
+.button {
+    padding: 4px;
+    border-radius: 8px;
+    height: 30px;
+    width: 30px;
+    display: grid;
+    place-items: center;
+}
+
+.button:hover {
+    background-color: rgba(0, 0, 0, 0.3);
+}
+
+.colorEditor {
+    position: absolute;
+    display: flex;
+    width: 150px;
+    flex-wrap: wrap;
+    padding: 10px;
+    top: 110%;
+    left: 80%;
+    border: solid 1px var(--color-border);
+    border-radius: 16px;
+    background: #fff;
+    z-index: 1000;
+}
+
+.colors {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.color {
+    width: 100%;
+    height: 100%;
+    border-radius: 999px;
+}
+
+.unset {
+    width: 1px;
+    height: 100%;
+    background: #000;
+    rotate: 45deg;
+}
+
+.unsetContainer {
+    border: solid 1px #000;
+}

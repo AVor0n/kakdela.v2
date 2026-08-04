@@ -12,13 +12,12 @@ import lombok.ToString;
 @EqualsAndHashCode
 @ToString
 @Schema(
-    name = "AnswerOptionResponse",
-    title = "DTO для получения данных варианта ответа"
+    name = "AnswerOption.Response"
 )
 public class AnswerOptionResponseDto {
 
   private final UUID id;
   private final int serialNumber;
-  private final String answerOptionText;
+  private final String text;
   private final String attachmentUrl;
 }

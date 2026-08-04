@@ -10,6 +10,8 @@ import {
 } from '@/shared/types/SurveyResponse.type';
 import { setSelectedSurvey } from '@/entities/Survey/Survey.slice';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { downloadBlob } from '@/shared/utils/download';
+import { htmlToText } from '@/shared/utils/html';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import type { Question } from '@/shared/types/Question.type';
 import type { Survey } from '@/shared/types/Survey.type';
@@ -115,7 +117,7 @@ export function Answers() {
         () =>
             questions.map((question, index) => ({
                 value: String(index),
-                text: question.title,
+                text: htmlToText(question.text),
             })),
         [questions],
     );
@@ -158,15 +160,7 @@ export function Answers() {
 
         try {
             const { file, filename } = await exportSurveyResponses(id);
-            const downloadUrl = URL.createObjectURL(file);
-            const downloadLink = document.createElement('a');
-
-            downloadLink.href = downloadUrl;
-            downloadLink.download = filename;
-            document.body.appendChild(downloadLink);
-            downloadLink.click();
-            downloadLink.remove();
-            URL.revokeObjectURL(downloadUrl);
+            downloadBlob(file, filename);
         } catch {
             dispatch(setErrorMessage({ message: 'Не удалось скачать ответы' }));
         } finally {
@@ -220,24 +214,42 @@ export function Answers() {
 
                             return (
                                 <article className={style.questionBlock} key={question.id}>
-                                    <h2 className={style.questionTitle}>{question.title}</h2>
+                                    <h2 className={style.questionTitle}>{htmlToText(question.text)}</h2>
                                     {answers.length === 0 ? (
                                         <div className={style.empty}>Нет ответов на этот вопрос</div>
                                     ) : (
-                                        <ul className={style.answers}>
+                                        <ul className={style.answers} key={`${question.id}-${question.text}`}>
                                             {answers.map(({ answer, responseIndex }) => (
-                                                <li
-                                                    className={style.answer}
-                                                    key={`${answer.responseId}-${answer.questionId}`}
-                                                >
-                                                    <button
-                                                        className={style.answerButton}
-                                                        type='button'
-                                                        onClick={() => openResponse(responseIndex)}
-                                                    >
-                                                        {answer.answerText}
-                                                    </button>
-                                                </li>
+                                                <>
+                                                    {answer.selectedAnswerOptions.map((answerText) => (
+                                                        <li
+                                                            className={style.answer}
+                                                            key={`${answer.responseId}-${answerText.id}`}
+                                                        >
+                                                            <button
+                                                                className={style.answerButton}
+                                                                type='button'
+                                                                onClick={() => openResponse(responseIndex)}
+                                                            >
+                                                                {htmlToText(answerText.answerOptionTextSnapshot)}
+                                                            </button>
+                                                        </li>
+                                                    ))}
+                                                    {answer.textValue && (
+                                                        <li
+                                                            className={style.answer}
+                                                            key={`${answer.responseId}-${answer.questionId}-${answer.textValue}`}
+                                                        >
+                                                            <button
+                                                                className={style.answerButton}
+                                                                type='button'
+                                                                onClick={() => openResponse(responseIndex)}
+                                                            >
+                                                                {htmlToText(answer.textValue)}
+                                                            </button>
+                                                        </li>
+                                                    )}
+                                                </>
                                             ))}
                                         </ul>
                                     )}
@@ -264,6 +276,8 @@ export function Answers() {
                                     value={getSelectValue(questionOptions, String(selectedQuestionIndex))}
                                     dataProvider={createStaticDataProvider(questionOptions, 'Вопрос')}
                                     name='question'
+                                    widthEqualToActivator={false}
+                                    dropWidth={300}
                                     onChange={(option) => setSelectedQuestionIndex(Number(option.value))}
                                 />
                             </div>
@@ -278,25 +292,43 @@ export function Answers() {
                         </div>
 
                         <article className={style.questionBlock}>
-                            <h2 className={style.questionTitle}>{currentQuestion.title}</h2>
+                            <h2 className={style.questionTitle}>{htmlToText(currentQuestion.text)}</h2>
                             {getQuestionAnswers(responses, currentQuestion.id).length === 0 ? (
                                 <div className={style.empty}>Нет ответов на этот вопрос</div>
                             ) : (
                                 <ul className={style.answers}>
                                     {getQuestionAnswers(responses, currentQuestion.id).map(
                                         ({ answer, responseIndex }) => (
-                                            <li
-                                                className={style.answer}
-                                                key={`${answer.responseId}-${answer.questionId}`}
-                                            >
-                                                <button
-                                                    className={style.answerButton}
-                                                    type='button'
-                                                    onClick={() => openResponse(responseIndex)}
-                                                >
-                                                    {answer.answerText}
-                                                </button>
-                                            </li>
+                                            <>
+                                                {answer.selectedAnswerOptions.map((answerText) => (
+                                                    <li
+                                                        className={style.answer}
+                                                        key={`${answer.responseId}-${answerText.id}`}
+                                                    >
+                                                        <button
+                                                            className={style.answerButton}
+                                                            type='button'
+                                                            onClick={() => openResponse(responseIndex)}
+                                                        >
+                                                            {htmlToText(answerText.answerOptionTextSnapshot)}
+                                                        </button>
+                                                    </li>
+                                                ))}
+                                                {answer.textValue && (
+                                                    <li
+                                                        className={style.answer}
+                                                        key={`${answer.responseId}-${answer.questionId}-${answer.textValue}`}
+                                                    >
+                                                        <button
+                                                            className={style.answerButton}
+                                                            type='button'
+                                                            onClick={() => openResponse(responseIndex)}
+                                                        >
+                                                            {htmlToText(answer.textValue)}
+                                                        </button>
+                                                    </li>
+                                                )}
+                                            </>
                                         ),
                                     )}
                                 </ul>
@@ -322,6 +354,8 @@ export function Answers() {
                                     value={getSelectValue(responseOptions, String(selectedResponseIndex))}
                                     dataProvider={createStaticDataProvider(responseOptions, 'Пользователь')}
                                     name='response'
+                                    widthEqualToActivator={false}
+                                    dropWidth={300}
                                     onChange={(option) => setSelectedResponseIndex(Number(option.value))}
                                 />
                             </div>
@@ -338,11 +372,21 @@ export function Answers() {
                         <div className={style.list}>
                             {questions.map((question) => {
                                 const answer = getAnswerByQuestion(currentResponse, question.id);
-
                                 return (
                                     <article className={style.questionBlock} key={question.id}>
-                                        <h2 className={style.questionTitle}>{question.title}</h2>
-                                        <div className={style.singleAnswer}>{answer?.answerText ?? 'Нет ответа'}</div>
+                                        <h2 className={style.questionTitle}>{htmlToText(question.text)}</h2>
+                                        {answer &&
+                                            (answer.selectedAnswerOptions.length !== 0
+                                                ? answer.selectedAnswerOptions.map((answerValue) => (
+                                                      <div className={style.singleAnswer}>
+                                                          {htmlToText(answerValue.answerOptionTextSnapshot)}
+                                                      </div>
+                                                  ))
+                                                : answer.textValue && (
+                                                      <div className={style.singleAnswer}>
+                                                          {htmlToText(answer.textValue)}
+                                                      </div>
+                                                  ))}
                                     </article>
                                 );
                             })}

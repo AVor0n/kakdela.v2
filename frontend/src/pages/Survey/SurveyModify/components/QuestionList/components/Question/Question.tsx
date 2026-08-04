@@ -1,14 +1,6 @@
-import type { Question, QuestionType } from '@/shared/types/Question.type';
+import type { AnswerOptionOrder, Question, QuestionType } from '@/shared/types/Question.type';
 import type { DraggableAttributes, DraggableSyntheticListeners } from '@dnd-kit/core';
-import {
-    Button,
-    Checkbox,
-    createStaticDataProvider,
-    Input,
-    Select,
-    TextArea,
-    type StaticDataFetcherItem,
-} from '@hh.ru/magritte-ui';
+import { Button, Checkbox, createStaticDataProvider, Select, type StaticDataFetcherItem } from '@hh.ru/magritte-ui';
 import { useCallback, useEffect, useMemo, useState, type ChangeEvent, type Ref } from 'react';
 import { ShortText } from './components/ShortText/ShortText';
 import { LongText } from './components/LongText/LongText';
@@ -18,8 +10,9 @@ import {
     duplicateQuestion,
     setMandatory as setMandatoryState,
     setQuestion,
+    updateAnswerOptionOrder,
     updateQuestionDescription,
-    updateQuestionTitle,
+    updateQuestionText,
     updateQuestionType,
 } from '@/entities/Survey/Survey.slice';
 import { Choice } from './components/Choice/Choice';
@@ -31,6 +24,8 @@ import { setErrorMessage } from '@/entities/Error/Error.slice';
 import { attachImageToQuestion, removeImageFromQuestion, updateAttachmentOfQuestion } from '@/api/attachments';
 import style from './Question.module.css';
 import { DragHandle } from './components/QuestionControls/DragHandle/DragHandle';
+import { EditorInput } from '@/shared/ui/EditorInput/EditorInput';
+import { ImageAttachmentControl } from '@/shared/ui/ImageAttachmentControl/ImageAttachmentControl';
 
 interface Props {
     question: Question;
@@ -50,6 +45,11 @@ const OPTIONS: StaticDataFetcherItem[] = [
     { value: 'MULTIPLE_CHOICE', text: 'Несколько из списка' },
 ];
 
+const ANSWER_OPTION_ORDER: StaticDataFetcherItem[] = [
+    { value: 'ORIGINAL', text: 'Обычный' },
+    { value: 'RANDOM', text: 'Случайный' },
+];
+
 export function Question({
     question,
     onClick,
@@ -61,9 +61,12 @@ export function Question({
     isDragOverlay = false,
 }: Props) {
     const { selectedSurvey } = useAppSelector((state) => state.survey);
-    const [title, setTitle] = useState<string>(question.title);
+    const [text, setText] = useState<string>(question.text);
     const [typeQuestion, setTypeQuestion] = useState<QuestionType>(question.type);
     const [mandatory, setMandatory] = useState<boolean>(question.isMandatory);
+    const [answerOptionOrder, setAnswerOptionOrder] = useState<AnswerOptionOrder>(
+        question.answerOptionOrder ?? 'ORIGINAL',
+    );
     const [file, setFile] = useState<File | null>(null);
     const [questionImage, setQuestionImage] = useState<string | null>(null);
     const [description, setDescription] = useState<string>(question.description ?? '');
@@ -71,17 +74,17 @@ export function Question({
 
     const dispatch = useAppDispatch();
 
-    const updateQuestionTitleHandler = () => {
-        if (title !== question.title) {
-            updateQuestion(question.id, { title })
+    const updateQuestionTextHandler = () => {
+        if (text !== question.text) {
+            updateQuestion(question.id, { text })
                 .then((data) => {
-                    dispatch(updateQuestionTitle({ id: question.id, title: data.title }));
+                    dispatch(updateQuestionText({ id: question.id, text: data.text }));
                 })
                 .catch((err) => {
                     if (err.response) {
                         dispatch(setErrorMessage({ message: 'Не удалось изменить название вопроса' }));
                     }
-                    setTitle(question.title);
+                    setText(question.text);
                 });
         }
     };
@@ -117,6 +120,26 @@ export function Question({
                         dispatch(setErrorMessage({ message: 'Не удалось изменить тип вопроса' }));
                     }
                     setTypeQuestion(question.type);
+                });
+        }
+    };
+
+    const updateAnswerOptionOrderHandler = () => {
+        if (answerOptionOrder !== question.answerOptionOrder) {
+            updateQuestion(question.id, { answerOptionOrder: answerOptionOrder })
+                .then((data) => {
+                    dispatch(
+                        updateAnswerOptionOrder({
+                            id: question.id,
+                            answerOptionOrder: data.answerOptionOrder ?? answerOptionOrder,
+                        }),
+                    );
+                })
+                .catch((err) => {
+                    if (err.response) {
+                        dispatch(setErrorMessage({ message: 'Не удалось изменить способ вывода вариантов ответов' }));
+                    }
+                    setAnswerOptionOrder(question.answerOptionOrder ?? 'ORIGINAL');
                 });
         }
     };
@@ -203,6 +226,10 @@ export function Question({
         return OPTIONS.find((option) => option.value === typeQuestion);
     }, [typeQuestion]);
 
+    const answerOptionOrderType = useMemo(() => {
+        return ANSWER_OPTION_ORDER.find((option) => option.value === answerOptionOrder);
+    }, [answerOptionOrder]);
+
     const questionContent = useCallback(() => {
         switch (typeQuestion) {
             case 'SHORT_TEXT':
@@ -210,9 +237,13 @@ export function Question({
             case 'LONG_TEXT':
                 return <LongText />;
             case 'SINGLE_CHOICE':
-                return <Choice options={question.answerOptions!} isEdit={isEditMode} type='radio' />;
+                return (
+                    <Choice options={question.answerOptions!} isEdit={isEditMode} type='radio' question={question} />
+                );
             case 'MULTIPLE_CHOICE':
-                return <Choice options={question.answerOptions!} isEdit={isEditMode} type='checkbox' />;
+                return (
+                    <Choice options={question.answerOptions!} isEdit={isEditMode} type='checkbox' question={question} />
+                );
             default:
                 return null;
         }
@@ -231,49 +262,45 @@ export function Question({
             {questionImage && <img src={questionImage} alt='img' className={style.attachmentUrl} />}
             <section className={style.settings}>
                 <div className={style.questionDetail}>
-                    <Input
+                    <EditorInput
                         placeholder='Вопрос'
-                        value={title}
-                        onChange={(e) => {
-                            setTitle(e);
-                        }}
-                        onBlur={updateQuestionTitleHandler}
-                    />
-                    <TextArea
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        placeholder='Описание вопроса'
-                        onBlur={updateQuestionDescriptionHandler}
+                        value={text}
+                        onChange={setText}
+                        onBlur={updateQuestionTextHandler}
+                        isTextColor
                     />
                 </div>
-                <div className={style.imageSettings}>
-                    <input
-                        type='file'
-                        id={`file-upload-${question.id}`}
+                <div className={style.imageControl}>
+                    <ImageAttachmentControl
+                        inputId={`file-upload-${question.id}`}
+                        hasImage={Boolean(questionImage)}
                         onChange={handleFileChange}
-                        style={{ display: 'none' }} // Полностью скрываем стандартный вид
+                        onDelete={deleteAttachmentUrlHandler}
                     />
-
-                    <label htmlFor={`file-upload-${question.id}`} className={style.button}>
-                        <img src='/img.svg' alt='Выбрать файл' />
-                    </label>
-
-                    {questionImage && (
-                        <button className={style.button} onClick={deleteAttachmentUrlHandler}>
-                            <img src='/trash.svg' />
-                        </button>
-                    )}
                 </div>
 
-                <Select
-                    type='label'
-                    value={questionType}
-                    dataProvider={createStaticDataProvider(OPTIONS, 'Тип вопроса')}
-                    name='area'
-                    onChange={(e) => {
-                        setTypeQuestion(e.value as QuestionType);
-                    }}
-                    onBlur={updateQuestionTypeHandler}
+                <div className={style.questionType}>
+                    <Select
+                        type='label'
+                        value={questionType}
+                        dataProvider={createStaticDataProvider(OPTIONS, 'Тип вопроса')}
+                        name='area'
+                        onChange={(e) => {
+                            setTypeQuestion(e.value as QuestionType);
+                        }}
+                        onBlur={updateQuestionTypeHandler}
+                    />
+                </div>
+            </section>
+            <section className={style.questionDescription}>
+                <EditorInput
+                    placeholder='Описание вопроса'
+                    value={description}
+                    onChange={setDescription}
+                    onBlur={updateQuestionDescriptionHandler}
+                    isTextColor
+                    isMarkColor
+                    isHeading
                 />
             </section>
 
@@ -302,6 +329,23 @@ export function Question({
                         icon={<img src='/trash.svg' alt='Удалить' />}
                         onClick={deleteQuestionHandler}
                     />
+                    {((questionType && questionType.value == 'SINGLE_CHOICE') ||
+                        questionType?.value == 'MULTIPLE_CHOICE') && (
+                        <div className={style.select}>
+                            <Select
+                                type='radio'
+                                value={answerOptionOrderType}
+                                dataProvider={createStaticDataProvider(ANSWER_OPTION_ORDER, 'Порядок ответов')}
+                                widthEqualToActivator={false}
+                                dropWidth={220}
+                                name='area2'
+                                onChange={(e) => {
+                                    setAnswerOptionOrder(e.value as AnswerOptionOrder);
+                                }}
+                                onBlur={updateAnswerOptionOrderHandler}
+                            />
+                        </div>
+                    )}
                 </div>
             </section>
         </div>

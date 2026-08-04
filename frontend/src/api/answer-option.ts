@@ -2,12 +2,12 @@ import { apiClient } from './client';
 
 export type AnswerOptionResponse = {
     id: string;
-    answerOptionText: string;
+    text: string;
     serialNumber: number;
 };
 
 export type CreateAnswerOptionRequest = {
-    answerOptionText: string;
+    text: string;
     serialNumber: number;
 };
 

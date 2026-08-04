@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { Question } from '@/shared/types/Question.type';
-import type { Survey } from '@/shared/types/Survey.type';
-import { Button, Checkbox, Input, Radio, Text, TextArea, TextAreaGrowLimiter, Title } from '@hh.ru/magritte-ui';
+import type { ClosingPage, Survey } from '@/shared/types/Survey.type';
+import { Button, Checkbox, Input, Radio, Text, TextArea, TextAreaGrowLimiter } from '@hh.ru/magritte-ui';
 import { Link } from 'react-router-dom';
 import { routes } from '@/app/routes';
 import { completeSurveyResponse } from '@/api/surveyResponses';
@@ -12,12 +12,19 @@ import optionStyle from '@/pages/Survey/SurveyModify/components/QuestionList/com
 import longTextStyle from '@/pages/Survey/SurveyModify/components/QuestionList/components/Question/components/LongText/LongText.module.css';
 import style from './SurveyRunner.module.css';
 import { useSurveyResponseSync } from './useSurveyResponseSync';
+import { HTMLRender } from '@/shared/ui/HTMLRender/HTMLRender';
+import { ClosingPageView } from '../ClosingPageView/ClosingPageView';
+import { WelcomePageView } from '../WelcomePageView/WelcomePageView';
+import { getClosingPage } from '@/api/closingPage';
+
+const OTHER_OPTION_VALUE = '__other__';
 
 export type SurveyRunnerMode = 'preview' | 'respond';
 
 type AnswerValue = string | string[];
 type Answers = Record<string, AnswerValue>;
 type Errors = Record<string, string>;
+type SurveyRunnerStage = 'welcome' | 'questions' | 'closing';
 
 type Props = {
     survey: Survey;
@@ -39,35 +46,37 @@ function isQuestionAnswered(question: Question, value: AnswerValue | undefined) 
 function isQuestionVisible(question: Question) {
     return question.visible ?? question.isVisible ?? true;
 }
+function buildMultipleChoicePayload(selectedIds: string[], otherText: string) {
+    const normalIds = selectedIds.filter((id) => id !== OTHER_OPTION_VALUE);
+    const otherSelected = selectedIds.includes(OTHER_OPTION_VALUE);
+    const trimmedOtherText = otherText.trim();
 
-function getAnswerText(question: Question, value: AnswerValue | undefined) {
-    if (value === undefined) {
-        return '';
+    if (!otherSelected) {
+        return { selectedAnswerOptionIds: normalIds };
     }
+    return { selectedAnswerOptionIds: normalIds, textValue: trimmedOtherText };
+}
 
+function buildAnswerPayload(question: Question, value: AnswerValue | undefined, otherText: string) {
     if (question.type === 'SINGLE_CHOICE') {
-        return question.answerOptions.find((option) => option.id === value)?.answerOptionText ?? '';
+        if (value === OTHER_OPTION_VALUE) return { textValue: otherText.trim() };
+        return { selectedAnswerOptionIds: value ? [value as string] : [] };
     }
-
     if (question.type === 'MULTIPLE_CHOICE') {
-        const selectedOptionIds = Array.isArray(value) ? value : [];
-
-        return question.answerOptions
-            .filter((option) => selectedOptionIds.includes(option.id))
-            .map((option) => option.answerOptionText)
-            .join(', ');
+        return buildMultipleChoicePayload(Array.isArray(value) ? value : [], otherText);
     }
-
-    return typeof value === 'string' ? value.trim() : '';
+    return { textValue: typeof value === 'string' ? value.trim() : '' };
 }
 
 export function SurveyRunner({ survey, mode }: Props) {
     const [currentPageIndex, setCurrentPageIndex] = useState(0);
     const [answers, setAnswers] = useState<Answers>({});
     const [errors, setErrors] = useState<Errors>({});
-    const [isComplete, setIsComplete] = useState(false);
+    const [stage, setStage] = useState<SurveyRunnerStage>('welcome');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [otherTexts, setOtherTexts] = useState<Record<string, string>>({});
     const [submitError, setSubmitError] = useState<string | null>(null);
+    const [closingPage, setClosingPage] = useState<ClosingPage | null>(survey.closingPage);
     const isPreview = mode === 'preview';
     const {
         ensureResponse,
@@ -82,10 +91,25 @@ export function SurveyRunner({ survey, mode }: Props) {
     useEffect(() => {
         setCurrentPageIndex(0);
         setAnswers({});
+        setOtherTexts({});
         setErrors({});
-        setIsComplete(false);
+        setStage('welcome');
         setSubmitError(null);
+        setClosingPage(survey.closingPage);
     }, [survey.id]);
+
+    const refreshClosingPage = async () => {
+        try {
+            setClosingPage(await getClosingPage(survey.id));
+        } catch {
+            // The survey already contains enough data to show a fallback closing page.
+        }
+    };
+
+    const showClosingPagePreview = () => {
+        setStage('closing');
+        void refreshClosingPage();
+    };
 
     const updateAnswer = (question: Question, value: AnswerValue) => {
         setAnswers((currentAnswers) => ({
@@ -98,7 +122,7 @@ export function SurveyRunner({ survey, mode }: Props) {
             delete nextErrors[question.id];
             return nextErrors;
         });
-        scheduleAnswerSave(question.id, getAnswerText(question, value), {
+        scheduleAnswerSave(question.id, buildAnswerPayload(question, value, otherTexts[question.id] ?? ''), {
             debounce: question.type === 'SHORT_TEXT' || question.type === 'LONG_TEXT',
         });
     };
@@ -164,7 +188,8 @@ export function SurveyRunner({ survey, mode }: Props) {
             await flushPendingAnswers();
             const responseId = await ensureResponse();
             await completeSurveyResponse(responseId);
-            setIsComplete(true);
+            setStage('closing');
+            void refreshClosingPage();
         } catch {
             setSubmitError('Не удалось отправить ответы');
         } finally {
@@ -204,29 +229,53 @@ export function SurveyRunner({ survey, mode }: Props) {
             case 'SINGLE_CHOICE':
                 return (
                     <div className={choiceStyle.container}>
-                        {sortBySerialNumber(question.answerOptions).map((option) => (
-                            <div className={optionStyle.optionContent} key={option.id}>
-                                <label className={optionStyle.option}>
-                                    <Radio
-                                        name={question.id}
-                                        disabled={isSubmitting}
-                                        checked={value === option.id}
-                                        onChange={() => updateAnswer(question, option.id)}
-                                    />
-                                    <Text typography='paragraph-2-regular' style='primary'>
-                                        {option.answerOptionText}
-                                    </Text>
-                                </label>
+                        {question.answerOptions.map((option) => {
+                            return (
+                                <div className={optionStyle.optionContent} key={option.id}>
+                                    <label className={optionStyle.option}>
+                                        <Radio
+                                            name={question.id}
+                                            disabled={isSubmitting}
+                                            checked={value === option.id}
+                                            onChange={() => updateAnswer(question, option.id)}
+                                        />
+                                        <Text typography='paragraph-2-regular' style='primary'>
+                                            <HTMLRender html={option.text} />
+                                        </Text>
+                                    </label>
+                                </div>
+                            );
+                        })}
+                        {question.hasOtherOption && (
+                            <div className={style.anotherOption}>
+                                <Radio
+                                    name={question.id}
+                                    disabled={isSubmitting}
+                                    checked={value === OTHER_OPTION_VALUE}
+                                    onChange={() => updateAnswer(question, OTHER_OPTION_VALUE)}
+                                />
+                                <p>Другое: </p>
+                                <input
+                                    className={style.another}
+                                    disabled={value !== OTHER_OPTION_VALUE}
+                                    value={otherTexts[question.id] ?? ''}
+                                    onChange={(e) => {
+                                        const text = e.target.value;
+                                        setOtherTexts((prev) => ({ ...prev, [question.id]: text }));
+                                        scheduleAnswerSave(question.id, buildAnswerPayload(question, value, text), {
+                                            debounce: true,
+                                        });
+                                    }}
+                                />
                             </div>
-                        ))}
+                        )}
                     </div>
                 );
             case 'MULTIPLE_CHOICE':
                 return (
                     <div className={choiceStyle.container}>
-                        {sortBySerialNumber(question.answerOptions).map((option) => {
+                        {question.answerOptions.map((option) => {
                             const selectedOptions = Array.isArray(value) ? value : [];
-
                             return (
                                 <div className={optionStyle.optionContent} key={option.id}>
                                     <label className={optionStyle.option}>
@@ -236,12 +285,34 @@ export function SurveyRunner({ survey, mode }: Props) {
                                             onChange={() => toggleMultipleChoice(question, option.id)}
                                         />
                                         <Text typography='paragraph-2-regular' style='primary'>
-                                            {option.answerOptionText}
+                                            <HTMLRender html={option.text} />
                                         </Text>
                                     </label>
                                 </div>
                             );
                         })}
+                        {question.hasOtherOption && (
+                            <div className={style.anotherOption}>
+                                <Checkbox
+                                    disabled={isSubmitting}
+                                    checked={Array.isArray(value) && value.includes(OTHER_OPTION_VALUE)}
+                                    onChange={() => toggleMultipleChoice(question, OTHER_OPTION_VALUE)}
+                                />
+                                <p>Другое: </p>
+                                <input
+                                    className={style.another}
+                                    disabled={!Array.isArray(value) || !value.includes(OTHER_OPTION_VALUE)}
+                                    value={otherTexts[question.id] ?? ''}
+                                    onChange={(e) => {
+                                        const text = e.target.value;
+                                        setOtherTexts((prev) => ({ ...prev, [question.id]: text }));
+                                        scheduleAnswerSave(question.id, buildAnswerPayload(question, value, text), {
+                                            debounce: true,
+                                        });
+                                    }}
+                                />
+                            </div>
+                        )}
                     </div>
                 );
             default:
@@ -296,41 +367,36 @@ export function SurveyRunner({ survey, mode }: Props) {
                         <div className={style.previewBadge}>Предпросмотр</div>
                     </div>
                 )}
-                <header className={`${surveyDetailStyle.container} ${style.formHeader}`}>
-                    <Text typography='subtitle-1-semibold' style='primary'>
-                        {survey.title}
-                    </Text>
-                    {survey.description && (
-                        <Text typography='paragraph-2-regular' style='primary'>
-                            {survey.description}
-                        </Text>
-                    )}
-                </header>
-
-                {isComplete ? (
-                    <section className={surveyDetailStyle.container}>
-                        <Title Element='h2' size='medium'>
-                            Спасибо за ответ
-                        </Title>
-                        <Text typography='paragraph-2-regular' style='primary'>
-                            {survey.closingPage ?? 'Ваши ответы приняты.'}
-                        </Text>
-                    </section>
+                {stage === 'welcome' ? (
+                    <WelcomePageView survey={survey} onStart={() => setStage('questions')} />
+                ) : stage === 'closing' ? (
+                    <ClosingPageView
+                        surveyId={survey.id}
+                        closingPage={closingPage}
+                        onBack={isPreview ? () => setStage('questions') : undefined}
+                    />
                 ) : (
                     <>
                         {visiblePages.length === 0 ? (
-                            <div className={surveyDetailStyle.container}>В этом опросе пока нет вопросов.</div>
+                            <div className={surveyDetailStyle.container}>
+                                <Text typography='paragraph-2-regular' style='primary'>
+                                    В этом опросе пока нет вопросов.
+                                </Text>
+                                {isPreview && (
+                                    <Button mode='primary' style='accent' onClick={showClosingPagePreview}>
+                                        Завершающая страница
+                                    </Button>
+                                )}
+                            </div>
                         ) : currentPage ? (
                             <section className={choiceStyle.container}>
                                 {(currentPage.description || currentPage.title) && (
                                     <section className={`${surveyDetailStyle.container} ${style.formHeader}`}>
-                                        <Text typography='subtitle-1-semibold' style='primary'>
-                                            {currentPage.title}
-                                        </Text>
+                                        {currentPage.title && (
+                                            <HTMLRender className={style.title} html={currentPage.title} />
+                                        )}
                                         {currentPage.description && (
-                                            <Text typography='paragraph-2-regular' style='primary'>
-                                                {currentPage.description}
-                                            </Text>
+                                            <HTMLRender className={style.title} html={currentPage.description} />
                                         )}
                                     </section>
                                 )}
@@ -345,16 +411,12 @@ export function SurveyRunner({ survey, mode }: Props) {
                                             />
                                         )}
                                         <div className={style.questionTitle}>
-                                            <Text typography='paragraph-2-regular' style='primary'>
-                                                {question.title}
-                                            </Text>
+                                            <HTMLRender className={style.title} html={question.text} />
                                             {question.isMandatory && <span className={style.mandatory}>*</span>}
                                         </div>
                                         {question.description && (
                                             <div className={style.questionDescription}>
-                                                <Text typography='paragraph-3-regular' style='primary'>
-                                                    {question.description}
-                                                </Text>
+                                                <HTMLRender className={style.title} html={question.description} />
                                             </div>
                                         )}
                                         <section className={questionStyle.actions}>
@@ -389,11 +451,11 @@ export function SurveyRunner({ survey, mode }: Props) {
                                             type='button'
                                             mode='primary'
                                             style='accent'
-                                            disabled={isPreview || isSubmitting}
-                                            onClick={submitHandler}
+                                            disabled={isSubmitting}
+                                            onClick={isPreview ? showClosingPagePreview : submitHandler}
                                         >
                                             {isPreview
-                                                ? 'Отправка недоступна в предпросмотре'
+                                                ? 'Завершающая страница'
                                                 : isSubmitting
                                                   ? 'Отправляем...'
                                                   : 'Отправить'}
