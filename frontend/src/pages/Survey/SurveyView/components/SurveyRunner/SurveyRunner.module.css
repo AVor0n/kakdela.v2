@@ -11,24 +11,6 @@
     font-size: 1.3rem;
 }
 
-.description {
-    h1 {
-        font-size: 1.2rem;
-    }
-
-    h2 {
-        font-size: 1.1rem;
-    }
-
-    h3 {
-        font-size: 1rem;
-    }
-
-    p {
-        font-size: 0.9rem;
-    }
-}
-
 .content {
     display: flex;
     flex-direction: column;
@@ -116,7 +98,7 @@
     margin-bottom: 10px;
 }
 
-@media (max-width: 800px) {
+@media (max-width: 768px) {
     .container {
         padding: 20px;
     }
@@ -128,6 +110,24 @@
 
     .navigation {
         flex-wrap: wrap;
+    }
+
+    .previewActions {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .previewActions > * {
+        max-width: 100%;
+    }
+
+    .previewBadge {
+        overflow-wrap: anywhere;
+    }
+
+    .attachmentUrl {
+        height: auto;
+        max-height: 320px;
     }
 }
 

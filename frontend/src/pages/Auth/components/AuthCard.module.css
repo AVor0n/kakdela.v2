@@ -1,0 +1,18 @@
+.card {
+    width: 500px;
+    max-width: 100%;
+    padding: 24px;
+    border: 1px solid #eeeeee;
+    border-radius: 24px;
+    background-color: #ffffff;
+}
+
+@media (max-width: 768px) {
+    .card {
+        width: 100%;
+        max-width: none;
+        padding: 16px;
+        border: 0;
+        border-radius: 0;
+    }
+}

@@ -17,9 +17,15 @@
     cursor: grabbing;
 }
 
-.settings > div:nth-child(3) {
+.questionType {
+    width: 100%;
     justify-self: end;
     align-self: flex-start;
+}
+
+.imageControl {
+    align-self: center;
+    justify-self: center;
 }
 
 .settings {
@@ -73,22 +79,6 @@
     opacity: 0;
 }
 
-.button {
-    width: 100%;
-    height: 100%;
-    padding: 10px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 16px;
-    transition: background 200ms ease-in;
-}
-
-.button:hover {
-    background: #c8c8c8;
-}
-
 .mandatory {
     position: absolute;
     left: 10px;
@@ -102,12 +92,6 @@
     object-fit: cover;
     border-radius: 16px;
     margin-bottom: 10px;
-}
-
-.imageSettings {
-    display: flex;
-    align-items: center;
-    gap: 10px;
 }
 
 .questionDetail {
@@ -124,4 +108,66 @@
 .select {
     width: 165px;
     justify-self: end;
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 24px 14px 16px;
+        border-radius: 16px;
+    }
+
+    .settings {
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        justify-items: stretch;
+        gap: 8px;
+    }
+
+    .questionDetail {
+        grid-column: 1 / -1;
+    }
+
+    .questionType {
+        grid-column: 1;
+        grid-row: 2;
+        min-width: 0;
+        justify-self: stretch;
+    }
+
+    .imageControl {
+        grid-column: 2;
+        grid-row: 2;
+        justify-self: end;
+    }
+
+    .actions {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 16px;
+    }
+
+    .actionsContent {
+        width: 100%;
+        flex-wrap: wrap;
+        gap: 12px;
+        justify-self: stretch;
+        justify-content: flex-end;
+    }
+
+    .select {
+        flex: 1 0 100%;
+        width: 100%;
+    }
+
+    .select > * {
+        width: 100%;
+    }
+
+    .mandatoryCheckbox {
+        margin-right: auto;
+    }
+
+    .attachmentUrl {
+        height: auto;
+        max-height: 320px;
+    }
 }
