@@ -22,11 +22,35 @@ import ru.hh.kakdela.v2.security.JwtService;
 @RequiredArgsConstructor
 @Service
 public class AuthService {
+
   private final ObjectProvider<AuthenticationManager> authenticationManagerProvider;
   private final PasswordEncoder passwordEncoder;
   private final AccountDao accountDao;
   private final JwtService jwtService;
   private final RefreshTokenService refreshTokenService;
+
+  @Transactional
+  public AuthTokensDto issueTokens(
+      Account account,
+      String deviceId,
+      String userAgent,
+      String ipAddress
+  ) {
+
+    refreshTokenService.revokeAllByAccountIdAndDeviceId(account.getId(), deviceId);
+
+    String refreshToken = refreshTokenService.createRefreshToken(
+        account.getId(),
+        deviceId,
+        userAgent,
+        ipAddress);
+
+    String accessToken = jwtService.generateAccessToken(account);
+
+    log.info("Успешный вход: accountId={}, deviceId={}", account.getId(), deviceId);
+
+    return new AuthTokensDto(accessToken, refreshToken);
+  }
 
   @Transactional
   public AuthTokensDto login(
@@ -43,15 +67,12 @@ public class AuthService {
 
     log.info("Успешная аутентификация: login={}", loginDto.getLogin());
 
-    refreshTokenService.revokeAllByAccountIdAndDeviceId(account.getId(), deviceId);
-
-    String refreshToken = refreshTokenService
-        .createRefreshToken(account.getId(), deviceId, userAgent, ipAddress);
-    String accessToken = jwtService.generateAccessToken(account);
-
-    log.info("Успешный вход: accountId={}, deviceId={}", account.getId(), deviceId);
-
-    return new AuthTokensDto(accessToken, refreshToken);
+    return issueTokens(
+        account,
+        deviceId,
+        userAgent,
+        ipAddress
+    );
   }
 
   @Transactional
@@ -94,6 +115,7 @@ public class AuthService {
     refreshTokenService.revokeAllByAccountId(accountId);
     incrementTokenVersion(accountId);
     log.info("Выход везде для accountId={}", accountId);
+  }
 
   public void checkPassword(UserDetails userDetails, String providedPassword) {
     if (!passwordEncoder.matches(providedPassword, userDetails.getPassword())) {

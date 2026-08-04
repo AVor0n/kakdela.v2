@@ -1,6 +1,5 @@
 package ru.hh.kakdela.v2.security;
 
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -16,10 +15,11 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.util.UriComponentsBuilder;
-import ru.hh.kakdela.v2.constants.CookieNames;
+import ru.hh.kakdela.v2.dto.auth.AuthTokensDto;
 import ru.hh.kakdela.v2.model.Account;
 import ru.hh.kakdela.v2.service.AccountService;
-import ru.hh.kakdela.v2.util.CookieUtil;
+import ru.hh.kakdela.v2.service.AuthCookieService;
+import ru.hh.kakdela.v2.service.AuthService;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -29,7 +29,8 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
   private static final String ATTR_EMAIL = "email";
 
   private final AccountService accountService;
-  private final JwtService jwtService;
+  private final AuthService authService;
+  private final AuthCookieService authCookieService;
 
   @Value("${app.tokens.access.max-age}")
   private long accessTokenMaxAge;
@@ -41,25 +42,45 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
   public void onAuthenticationSuccess(
       @NonNull HttpServletRequest request,
       @NonNull HttpServletResponse response,
-      Authentication authentication) throws IOException, ServletException {
+      Authentication authentication
+  ) throws IOException {
 
     OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
     String email = Objects.requireNonNull(oAuth2User).getAttribute(ATTR_EMAIL);
 
     try {
       if (email == null || email.isBlank()) {
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+        throw new ResponseStatusException(
+            HttpStatus.BAD_REQUEST,
             "hh.ru не передал email в ответе");
       }
 
       Account account = accountService.findOrCreateByHhSso(email);
 
-      String accessToken = jwtService.generateAccessToken(account.getLogin());
-      CookieUtil.setHttpOnlySameSiteStrictCookie(
-          response, "/api", accessTokenMaxAge, CookieNames.accessToken, accessToken);
+      String deviceId = authCookieService.getOrCreateDeviceId(request, response);
+
+      String userAgent = request.getHeader("User-Agent");
+      String ipAddress = request.getRemoteAddr();
+
+      AuthTokensDto tokens = authService.issueTokens(
+          account,
+          deviceId,
+          userAgent,
+          ipAddress
+      );
+
+      authCookieService.setAccessTokenCookie(
+          response,
+          tokens.getAccessToken());
+
+      authCookieService.setRefreshTokenCookie(
+          response,
+          tokens.getRefreshToken());
 
       log.info("Выполнен вход через hh.ru login={}", account.getLogin());
+
       response.sendRedirect(frontendRedirectUri);
+
     } catch (ResponseStatusException ex) {
       log.warn("Не удалось войти через hh.ru: {}", ex.getReason());
       response.sendRedirect(buildErrorRedirect());
