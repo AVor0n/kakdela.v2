@@ -4,8 +4,8 @@ CREATE TABLE account (
     email varchar(254) NOT NULL UNIQUE,
     password_hash text NOT NULL,
     registered_at timestamptz NOT NULL,
-    token_version int NOT NULL,
-    is_deleted bool NOT NULL
+    token_version int DEFAULT 1 NOT NULL,
+    is_deleted bool DEFAULT FALSE NOT NULL
 );
 
 CREATE TABLE survey (
@@ -57,8 +57,6 @@ CREATE TABLE question (
     answer_option_order varchar(255) DEFAULT 'ORIGINAL' NOT NULL,
     has_other_option bool DEFAULT FALSE NOT NULL,
     is_mandatory bool DEFAULT TRUE NOT NULL,
-    is_visible bool DEFAULT TRUE NOT NULL,
-    condition text,
     CONSTRAINT uk_question_page_serial UNIQUE (survey_page_id, serial_number) DEFERRABLE INITIALLY IMMEDIATE
 );
 
