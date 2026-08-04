@@ -8,6 +8,7 @@ import { setErrorMessage } from '@/entities/Error/Error.slice';
 import { useState } from 'react';
 import { CheckOutlinedSize24, CrossOutlinedSize24, DotFilledSize16 } from '@hh.ru/magritte-ui/icon';
 import { formatDate } from '@/shared/utils/date';
+import { htmlToText } from '@/shared/utils/html';
 
 function getRussianLetterForRole(role: SurveyRole) {
     switch (role) {
@@ -65,7 +66,7 @@ export function SurveyItem({ survey, onClick }: SurveyItemProps) {
             <button type='button' onClick={onClick} className={style.details}>
                 <div className={style.detail}>
                     <Text typography='title-4-semibold' style='primary'>
-                        {survey.title}
+                        {htmlToText(survey.title)}
                     </Text>
                     <div className={style.info}>
                         <p>{getRussianLetterForRole(survey.userRole)}</p>
@@ -74,7 +75,7 @@ export function SurveyItem({ survey, onClick }: SurveyItemProps) {
                         <DotFilledSize16 fill='#777777' color='#777777' />
                         <p>Дата создания: {formatDate(survey.createdAt)}</p>
                     </div>
-                    {survey.description && <p className={style.description}>{survey.description}</p>}
+                    {survey.description && <p className={style.description}>{htmlToText(survey.description)}</p>}
                 </div>
             </button>
             {survey.userRole === 'AUTHOR' && (

@@ -1,5 +1,5 @@
 import type { AnswerOption, AnswerOptionOrder, Question, QuestionType } from '@/shared/types/Question.type';
-import type { Page, Survey, SurveyListItem } from '@/shared/types/Survey.type';
+import type { ClosingPage, Page, Survey, SurveyListItem } from '@/shared/types/Survey.type';
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 export interface ISurveyState {
@@ -325,6 +325,14 @@ const surveySlice = createSlice({
                 }
             });
         },
+        setClosingPage: (state, action: PayloadAction<{ closingPage: ClosingPage | null }>) => {
+            if (!state.selectedSurvey) return;
+            state.selectedSurvey.closingPage = action.payload.closingPage;
+        },
+        patchClosingPage: (state, action: PayloadAction<Partial<ClosingPage>>) => {
+            if (!state.selectedSurvey?.closingPage) return;
+            Object.assign(state.selectedSurvey.closingPage, action.payload);
+        },
         reorderQuestions: (
             state,
             action: PayloadAction<{
@@ -462,6 +470,8 @@ export const {
     deletePage,
     setQuestion,
     setPage,
+    setClosingPage,
+    patchClosingPage,
     reorderPages,
     setSurveyPages,
     reorderQuestions,

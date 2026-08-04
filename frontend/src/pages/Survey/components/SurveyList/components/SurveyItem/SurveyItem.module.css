@@ -48,5 +48,43 @@
 .info {
     display: flex;
     align-items: center;
+    gap: 4px;
     margin-bottom: 5px;
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 16px;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .details {
+        flex: none;
+    }
+
+    .info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+        margin-top: 8px;
+    }
+
+    .info > svg {
+        display: none;
+    }
+
+    .description {
+        max-width: 100%;
+        margin-top: 8px;
+        overflow-wrap: anywhere;
+    }
+
+    .actions {
+        width: 100%;
+        flex-direction: row;
+        align-self: auto;
+        align-items: center;
+        justify-content: flex-end;
+    }
 }

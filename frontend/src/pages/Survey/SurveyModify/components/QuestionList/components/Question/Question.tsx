@@ -25,6 +25,7 @@ import { attachImageToQuestion, removeImageFromQuestion, updateAttachmentOfQuest
 import style from './Question.module.css';
 import { DragHandle } from './components/QuestionControls/DragHandle/DragHandle';
 import { EditorInput } from '@/shared/ui/EditorInput/EditorInput';
+import { ImageAttachmentControl } from '@/shared/ui/ImageAttachmentControl/ImageAttachmentControl';
 
 interface Props {
     question: Question;
@@ -269,32 +270,21 @@ export function Question({
                         isTextColor
                     />
                 </div>
-                <div className={style.imageSettings}>
-                    <input
-                        type='file'
-                        id={`file-upload-${question.id}`}
+                <div className={style.imageControl}>
+                    <ImageAttachmentControl
+                        inputId={`file-upload-${question.id}`}
+                        hasImage={Boolean(questionImage)}
                         onChange={handleFileChange}
-                        style={{ display: 'none' }} // Полностью скрываем стандартный вид
+                        onDelete={deleteAttachmentUrlHandler}
                     />
-
-                    <label htmlFor={`file-upload-${question.id}`} className={style.button}>
-                        <img src='/img.svg' alt='Выбрать файл' />
-                    </label>
-
-                    {questionImage && (
-                        <button className={style.button} onClick={deleteAttachmentUrlHandler}>
-                            <img src='/trash.svg' />
-                        </button>
-                    )}
                 </div>
-                <div>
+
+                <div className={style.questionType}>
                     <Select
-                        type='radio'
+                        type='label'
                         value={questionType}
                         dataProvider={createStaticDataProvider(OPTIONS, 'Тип вопроса')}
                         name='area'
-                        widthEqualToActivator={false}
-                        dropWidth={270}
                         onChange={(e) => {
                             setTypeQuestion(e.value as QuestionType);
                         }}

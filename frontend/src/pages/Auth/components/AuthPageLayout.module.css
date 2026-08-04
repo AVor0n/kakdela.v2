@@ -1,0 +1,10 @@
+.layout {
+    min-height: 100vh;
+}
+
+@media (max-width: 768px) {
+    .layout {
+        padding-block: 16px;
+        background: #ffffff;
+    }
+}

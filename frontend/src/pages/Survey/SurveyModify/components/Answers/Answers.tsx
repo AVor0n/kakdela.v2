@@ -10,6 +10,8 @@ import {
 } from '@/shared/types/SurveyResponse.type';
 import { setSelectedSurvey } from '@/entities/Survey/Survey.slice';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { downloadBlob } from '@/shared/utils/download';
+import { htmlToText } from '@/shared/utils/html';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import type { Question } from '@/shared/types/Question.type';
 import type { Survey } from '@/shared/types/Survey.type';
@@ -69,11 +71,6 @@ function getSelectValue(options: StaticDataFetcherItem[], value: string) {
     return options.find((option) => option.value === value);
 }
 
-function removeHTML(content: string) {
-    const doc = new DOMParser().parseFromString(content, 'text/html');
-    return doc.body.textContent || '';
-}
-
 export function Answers() {
     const { id } = useParams();
     const dispatch = useAppDispatch();
@@ -120,7 +117,7 @@ export function Answers() {
         () =>
             questions.map((question, index) => ({
                 value: String(index),
-                text: removeHTML(question.text),
+                text: htmlToText(question.text),
             })),
         [questions],
     );
@@ -163,15 +160,7 @@ export function Answers() {
 
         try {
             const { file, filename } = await exportSurveyResponses(id);
-            const downloadUrl = URL.createObjectURL(file);
-            const downloadLink = document.createElement('a');
-
-            downloadLink.href = downloadUrl;
-            downloadLink.download = filename;
-            document.body.appendChild(downloadLink);
-            downloadLink.click();
-            downloadLink.remove();
-            URL.revokeObjectURL(downloadUrl);
+            downloadBlob(file, filename);
         } catch {
             dispatch(setErrorMessage({ message: 'Не удалось скачать ответы' }));
         } finally {
@@ -225,7 +214,7 @@ export function Answers() {
 
                             return (
                                 <article className={style.questionBlock} key={question.id}>
-                                    <h2 className={style.questionTitle}>{removeHTML(question.text)}</h2>
+                                    <h2 className={style.questionTitle}>{htmlToText(question.text)}</h2>
                                     {answers.length === 0 ? (
                                         <div className={style.empty}>Нет ответов на этот вопрос</div>
                                     ) : (
@@ -242,7 +231,7 @@ export function Answers() {
                                                                 type='button'
                                                                 onClick={() => openResponse(responseIndex)}
                                                             >
-                                                                {removeHTML(answerText.answerOptionTextSnapshot)}
+                                                                {htmlToText(answerText.answerOptionTextSnapshot)}
                                                             </button>
                                                         </li>
                                                     ))}
@@ -256,7 +245,7 @@ export function Answers() {
                                                                 type='button'
                                                                 onClick={() => openResponse(responseIndex)}
                                                             >
-                                                                {removeHTML(answer.textValue)}
+                                                                {htmlToText(answer.textValue)}
                                                             </button>
                                                         </li>
                                                     )}
@@ -303,7 +292,7 @@ export function Answers() {
                         </div>
 
                         <article className={style.questionBlock}>
-                            <h2 className={style.questionTitle}>{removeHTML(currentQuestion.text)}</h2>
+                            <h2 className={style.questionTitle}>{htmlToText(currentQuestion.text)}</h2>
                             {getQuestionAnswers(responses, currentQuestion.id).length === 0 ? (
                                 <div className={style.empty}>Нет ответов на этот вопрос</div>
                             ) : (
@@ -321,7 +310,7 @@ export function Answers() {
                                                             type='button'
                                                             onClick={() => openResponse(responseIndex)}
                                                         >
-                                                            {removeHTML(answerText.answerOptionTextSnapshot)}
+                                                            {htmlToText(answerText.answerOptionTextSnapshot)}
                                                         </button>
                                                     </li>
                                                 ))}
@@ -335,7 +324,7 @@ export function Answers() {
                                                             type='button'
                                                             onClick={() => openResponse(responseIndex)}
                                                         >
-                                                            {removeHTML(answer.textValue)}
+                                                            {htmlToText(answer.textValue)}
                                                         </button>
                                                     </li>
                                                 )}
@@ -385,17 +374,17 @@ export function Answers() {
                                 const answer = getAnswerByQuestion(currentResponse, question.id);
                                 return (
                                     <article className={style.questionBlock} key={question.id}>
-                                        <h2 className={style.questionTitle}>{removeHTML(question.text)}</h2>
+                                        <h2 className={style.questionTitle}>{htmlToText(question.text)}</h2>
                                         {answer &&
                                             (answer.selectedAnswerOptions.length !== 0
                                                 ? answer.selectedAnswerOptions.map((answerValue) => (
                                                       <div className={style.singleAnswer}>
-                                                          {removeHTML(answerValue.answerOptionTextSnapshot)}
+                                                          {htmlToText(answerValue.answerOptionTextSnapshot)}
                                                       </div>
                                                   ))
                                                 : answer.textValue && (
                                                       <div className={style.singleAnswer}>
-                                                          {removeHTML(answer.textValue)}
+                                                          {htmlToText(answer.textValue)}
                                                       </div>
                                                   ))}
                                     </article>

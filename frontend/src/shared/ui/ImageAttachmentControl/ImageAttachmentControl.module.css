@@ -1,0 +1,38 @@
+.container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.hiddenInput {
+    display: none;
+}
+
+.button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 10px;
+    box-sizing: border-box;
+    border: 0;
+    border-radius: 16px;
+    background: transparent;
+    cursor: pointer;
+    transition: background 200ms ease-in;
+}
+
+.button:hover:not(:disabled) {
+    background: #c8c8c8;
+}
+
+.button:disabled,
+.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.disabled {
+    pointer-events: none;
+}
