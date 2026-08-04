@@ -11,14 +11,16 @@ import lombok.Setter;
 @Getter
 @Setter
 @Schema(
-    name = "SurveyPageUpdate",
-    title = "DTO для обновления страницы в опросе"
+    name = "SurveyPage.Update"
 )
 public class SurveyPageUpdateDto {
 
   @Min(value = 1, message = "Порядковый номер должен быть больше 0")
   private Integer serialNumber;
+
   @Size(max = 200, message = "Заголовок не должен быть длиннее 200 символов")
   private String title;
+
+  @Size(max = 5000, message = "Описание не должно быть длиннее 5000 символов")
   private String description;
 }
