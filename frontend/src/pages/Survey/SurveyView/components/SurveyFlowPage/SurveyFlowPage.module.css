@@ -32,3 +32,8 @@
         font-size: 0.9rem;
     }
 }
+
+.description ol,
+.description ul {
+    padding: 1.5em;
+}

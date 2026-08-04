@@ -29,6 +29,11 @@
     }
 }
 
+.description ol,
+.description ul {
+    padding: 1.5em;
+}
+
 .content {
     display: flex;
     flex-direction: column;
