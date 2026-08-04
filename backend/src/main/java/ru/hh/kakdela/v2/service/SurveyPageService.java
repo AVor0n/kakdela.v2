@@ -35,7 +35,7 @@ public class SurveyPageService {
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Страница не найдена: " + id));
 
-    Response response = responseDao.findById(responseId)
+    Response response = responseDao.findByIdWithSurvey(responseId)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.FORBIDDEN, "Доступ к странице запрещён"));
 
