@@ -74,21 +74,6 @@ public class ConditionAtom {
           }
 
           return result;
-        }),
-    NOT_EQUALS(List.of(
-        Question.QuestionType.YES_NO,
-        Question.QuestionType.MULTIPLE_CHOICE,
-        Question.QuestionType.SINGLE_CHOICE),
-        (a, b) -> {
-          boolean result;
-
-          if (a instanceof Collection<?>) {
-            result = !((Collection<?>) a).contains(b);
-          } else {
-            result = !a.equals(b);
-          }
-
-          return result;
         });
 
     public final List<Question.QuestionType> allowedQuestionTypes;
