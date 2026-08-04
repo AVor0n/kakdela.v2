@@ -20,10 +20,11 @@ public class CookieOAuth2AuthorizationRequestRepository
 
   @Override
   public OAuth2AuthorizationRequest loadAuthorizationRequest(HttpServletRequest request) {
-    if (request.getCookies() == null) {
+    Cookie[] cookies = request.getCookies();
+    if (cookies == null) {
       return null;
     }
-    for (Cookie cookie : request.getCookies()) {
+    for (Cookie cookie : cookies) {
       if (COOKIE_NAME.equals(cookie.getName())) {
         return deserialize(cookie.getValue());
       }
@@ -56,7 +57,7 @@ public class CookieOAuth2AuthorizationRequestRepository
     ResponseCookie cookie = ResponseCookie.from(COOKIE_NAME, value)
         .httpOnly(true)
         .sameSite("Lax")
-        .path("/api")
+        .path("/")
         .maxAge(maxAgeSeconds)
         .build();
     response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
