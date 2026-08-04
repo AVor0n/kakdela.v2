@@ -35,12 +35,20 @@ function sortBySerialNumber<T extends { serialNumber: number }>(items: T[]) {
     return [...items].sort((firstItem, secondItem) => firstItem.serialNumber - secondItem.serialNumber);
 }
 
-function isQuestionAnswered(question: Question, value: AnswerValue | undefined) {
+function isQuestionAnswered(question: Question, value: AnswerValue | undefined, otherText: string | undefined) {
     if (question.type === 'MULTIPLE_CHOICE') {
-        return Array.isArray(value) && value.length > 0;
+        if (!Array.isArray(value) || value.length === 0) return false;
+        if (value.includes(OTHER_OPTION_VALUE) && !(otherText ?? '').trim()) {
+            return false;
+        }
+        return true;
     }
 
-    return typeof value === 'string' && value.trim().length > 0;
+    if (typeof value !== 'string' || !value.trim()) return false;
+    if (value === OTHER_OPTION_VALUE && !(otherText ?? '').trim()) {
+        return false;
+    }
+    return true;
 }
 
 function isQuestionVisible(question: Question) {
@@ -48,8 +56,8 @@ function isQuestionVisible(question: Question) {
 }
 function buildMultipleChoicePayload(selectedIds: string[], otherText: string) {
     const normalIds = selectedIds.filter((id) => id !== OTHER_OPTION_VALUE);
-    const otherSelected = selectedIds.includes(OTHER_OPTION_VALUE);
     const trimmedOtherText = otherText.trim();
+    const otherSelected = selectedIds.includes(OTHER_OPTION_VALUE) && trimmedOtherText.length > 0;
 
     if (!otherSelected) {
         return { selectedAnswerOptionIds: normalIds };
@@ -142,7 +150,10 @@ export function SurveyRunner({ survey, mode }: Props) {
 
         survey.pages.forEach((page) => {
             page.questions.filter(isQuestionVisible).forEach((question) => {
-                if (question.isMandatory && !isQuestionAnswered(question, answers[question.id])) {
+                if (
+                    question.isMandatory &&
+                    !isQuestionAnswered(question, answers[question.id], otherTexts[question.id])
+                ) {
                     nextErrors[question.id] = 'Ответьте на обязательный вопрос';
                 }
             });
@@ -156,7 +167,7 @@ export function SurveyRunner({ survey, mode }: Props) {
         const nextErrors: Errors = {};
 
         questions.forEach((question) => {
-            if (question.isMandatory && !isQuestionAnswered(question, answers[question.id])) {
+            if (question.isMandatory && !isQuestionAnswered(question, answers[question.id], otherTexts[question.id])) {
                 nextErrors[question.id] = 'Ответьте на обязательный вопрос';
             }
         });
