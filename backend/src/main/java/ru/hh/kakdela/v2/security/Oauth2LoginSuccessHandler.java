@@ -46,7 +46,8 @@ public class Oauth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
     try {
       if (email == null || email.isBlank()) {
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+        throw new ResponseStatusException(
+            HttpStatus.BAD_REQUEST,
             "hh.ru не передал email в ответе");
       }
 
@@ -61,7 +62,9 @@ public class Oauth2LoginSuccessHandler implements AuthenticationSuccessHandler {
       authCookieService.setRefreshTokenCookie(response, tokens.getRefreshToken());
 
       log.info("Выполнен вход через hh.ru login={}", account.getLogin());
+
       response.sendRedirect(frontendRedirectUri);
+
     } catch (ResponseStatusException ex) {
       log.warn("Не удалось войти через hh.ru: {}", ex.getReason());
       response.sendRedirect(buildErrorRedirect());

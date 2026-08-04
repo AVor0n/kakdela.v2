@@ -24,7 +24,7 @@ public class SurveyServiceUpdateTest extends SurveyServiceTestBase {
         () -> surveyService.updatePartial(SurveyServiceTestConstants.plainSurveyId, plainSurveyUnpublishedUpdateDtoNoChanges, SurveyServiceTestConstants.account1Id)
     );
     assertEquals(
-        "404 NOT_FOUND \"Опрос не найден: " + SurveyServiceTestConstants.plainSurveyId + "\"",
+        "404 NOT_FOUND \"Опрос не найден: id=" + SurveyServiceTestConstants.plainSurveyId + "\"",
         ex.getMessage()
     );
 

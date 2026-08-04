@@ -48,7 +48,7 @@ public class SurveyService {
   public SurveyResponseDto getById(UUID surveyId, UUID accountId) {
     Survey survey = surveyDao.findById(surveyId)
         .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
+            HttpStatus.NOT_FOUND, "Опрос не найден: id=" + surveyId));
 
     if (!survey.isPublished()) {
       permissionService.checkHasAnyPermission(surveyId, accountId);
@@ -109,7 +109,7 @@ public class SurveyService {
 
     Survey survey = surveyDao.findById(surveyId)
         .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
+            HttpStatus.NOT_FOUND, "Опрос не найден: id=" + surveyId));
 
     if (dto.getTitle().isPresent()) {
       survey.setTitle(dto.getTitle().get());
