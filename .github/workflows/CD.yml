@@ -25,17 +25,17 @@ jobs:
           filters: |
             nginx:
               - 'nginx/**'
-              - '!nginx/*.md'
+              - '!nginx/**/*.md'
               - '!nginx/nginx.dev.conf'
               - '!nginx/nginx.prod.conf'
             frontend:
               - 'frontend/**'
-              - '!frontend/*.md'
+              - '!frontend/**/*.md'
             backend:
               - 'backend/**'
               - '!backend/src/test/**'
-              - '!backend/*.md'
-              - '!backend/src/main/resources/*.sql'
+              - '!backend/**/*.md'
+              - '!backend/src/main/resources/**/*.sql'
           predicate-quantifier: every
   backend-image:
     name: Build and push backend Docker image
