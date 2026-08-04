@@ -1,7 +1,6 @@
 package ru.hh.kakdela.v2.dto.survey;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -9,6 +8,7 @@ import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import ru.hh.kakdela.v2.constants.DefaultValues;
 import ru.hh.kakdela.v2.validator.NullOrNotBlank;
 
 @NoArgsConstructor
@@ -26,15 +26,14 @@ public class SurveyCreateDto {
   private String description;
   @Schema(description = "Это необязательное поле, у него есть дефолтное значение")
   @NotNull
-  private Boolean isAuthorizedOnly = false;
+  private Boolean isAuthorizedOnly = DefaultValues.IS_AUTHORIZED_ONLY_DEFAULT;
   @Schema(description = "Это необязательное поле, у него есть дефолтное значение")
   @NotNull
-  private Boolean isLimitedToOneResponse = false;
+  private Boolean isLimitedToOneResponse = DefaultValues.IS_LIMITED_TO_ONE_RESPONSE_DEFAULT;
   @Schema(description = "Это необязательное поле, у него есть дефолтное значение")
   @NotNull
-  private Boolean doNotify = true;
-  @FutureOrPresent(message = "Дедлайн не должен быть в прошлом")
+  private Boolean doNotify = DefaultValues.DO_NOTIFY_DEFAULT;
   private LocalDateTime expireAtAtTargetTimezone;
   @NullOrNotBlank(message = "Часовой пояс не может быть пустым")
-  private String targetTimezone = "Europe/Moscow";
+  private String targetTimezone = DefaultValues.TARGET_TIMEZONE_DEFAULT;
 }

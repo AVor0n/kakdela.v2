@@ -5,7 +5,6 @@ import jakarta.validation.ConstraintValidatorContext;
 
 public class NullOrNotBlankConstraintValidator
     implements ConstraintValidator<NullOrNotBlank, CharSequence> {
-
   @Override
   public boolean isValid(CharSequence value, ConstraintValidatorContext context) {
     if (value == null) {
