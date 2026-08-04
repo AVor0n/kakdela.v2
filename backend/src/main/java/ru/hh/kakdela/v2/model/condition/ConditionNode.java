@@ -70,7 +70,8 @@ public class ConditionNode {
   public enum Operator {
     AND(true),
     OR(true),
-    ATOM(false);
+    ATOM(false),
+    NOT_ATOM(false);
 
     public final boolean isLink;
   }
