@@ -27,6 +27,7 @@ import lombok.ToString;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.jsoup.Jsoup;
+import ru.hh.kakdela.v2.constants.DefaultValues;
 
 @Data
 @Builder
@@ -57,11 +58,11 @@ public class Survey {
 
   @Column(name = "is_authorized_only", nullable = false)
   @Builder.Default
-  private boolean isAuthorizedOnly = false;
+  private boolean isAuthorizedOnly = DefaultValues.IS_AUTHORIZED_ONLY_DEFAULT;
 
   @Column(name = "is_limited_to_one_response", nullable = false)
   @Builder.Default
-  private boolean isLimitedToOneResponse = false;
+  private boolean isLimitedToOneResponse = DefaultValues.IS_LIMITED_TO_ONE_RESPONSE_DEFAULT;
 
   @Column(name = "is_published", nullable = false)
   @Builder.Default
@@ -74,7 +75,7 @@ public class Survey {
   @Column(name = "do_notify", nullable = false)
   @Getter(AccessLevel.NONE)
   @Builder.Default
-  private boolean doNotify = true;
+  private boolean doNotify = DefaultValues.DO_NOTIFY_DEFAULT;
 
   public boolean doNotify() {
     return this.doNotify;
@@ -85,7 +86,7 @@ public class Survey {
 
   @Column(name = "target_timezone")
   @Builder.Default
-  private String targetTimezone = "Europe/Moscow";
+  private String targetTimezone = DefaultValues.TARGET_TIMEZONE_DEFAULT;
 
   @Column(name = "created_at", updatable = false, nullable = false)
   private Instant createdAt;

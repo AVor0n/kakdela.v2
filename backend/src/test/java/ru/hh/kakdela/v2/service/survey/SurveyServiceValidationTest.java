@@ -32,7 +32,7 @@ public class SurveyServiceValidationTest extends SurveyServiceTestBase {
   }
 
   @Test
-  void update_surveyIsInconsistent_throwException() {
+  void update_Partial_surveyIsInconsistent_throwException() {
     Survey surveyToUpdate = SurveyServiceTestBase.getFreshPlainSurveyUnpublished();
 
     Mockito.when(surveyDao.findById(SurveyServiceTestConstants.plainSurveyId))
@@ -40,7 +40,7 @@ public class SurveyServiceValidationTest extends SurveyServiceTestBase {
 
     Exception ex = assertThrows(
         ResponseStatusException.class,
-        () -> surveyService.update(SurveyServiceTestConstants.plainSurveyId,
+        () -> surveyService.updatePartial(SurveyServiceTestConstants.plainSurveyId,
             plainSurveyAuthorizationInconsistentUpdateDto,
             SurveyServiceTestConstants.account1Id)
     );

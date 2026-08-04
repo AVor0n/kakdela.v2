@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+import ru.hh.kakdela.v2.constants.DefaultValues;
 import ru.hh.kakdela.v2.dao.AccountDao;
 import ru.hh.kakdela.v2.dao.SurveyDao;
 import ru.hh.kakdela.v2.dao.SurveyNotificationSubscriptionDao;
@@ -27,6 +28,7 @@ import ru.hh.kakdela.v2.model.ClosingPage;
 import ru.hh.kakdela.v2.model.Question;
 import ru.hh.kakdela.v2.model.Survey;
 import ru.hh.kakdela.v2.model.SurveyPage;
+import ru.hh.kakdela.v2.util.JsonNullableUtil;
 
 @Slf4j
 @Service
@@ -101,55 +103,96 @@ public class SurveyService {
   }
 
   @Transactional
-  public SurveyResponseDto update(UUID surveyId, SurveyUpdateDto dto, UUID accountId) {
+  public SurveyResponseDto updatePartial(UUID surveyId, SurveyUpdateDto dto, UUID accountId) {
     permissionService.checkCanEdit(surveyId, accountId);
 
     Survey survey = surveyDao.findById(surveyId)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
 
-    if (dto.getTitle() != null) {
-      survey.setTitle(dto.getTitle());
+    if (dto.getTitle().isPresent()) {
+      survey.setTitle(dto.getTitle().get());
     }
-    if (dto.getDescription() != null) {
-      survey.setDescription(dto.getDescription());
+    if (dto.getDescription().isPresent()) {
+      survey.setDescription(dto.getDescription().get());
     }
-    if (dto.getIsAuthorizedOnly() != null) {
-      survey.setAuthorizedOnly(dto.getIsAuthorizedOnly());
+
+    if (dto.getIsAuthorizedOnly().isPresent()) {
+      survey.setAuthorizedOnly(
+          JsonNullableUtil.ifNotNullGetOrElse(
+              dto.getIsAuthorizedOnly(),
+              DefaultValues.IS_AUTHORIZED_ONLY_DEFAULT));
     }
-    if (dto.getIsLimitedToOneResponse() != null) {
-      survey.setLimitedToOneResponse(dto.getIsLimitedToOneResponse());
+    if (dto.getIsLimitedToOneResponse().isPresent()) {
+      survey.setLimitedToOneResponse(
+          JsonNullableUtil.ifNotNullGetOrElse(
+              dto.getIsLimitedToOneResponse(),
+              DefaultValues.IS_LIMITED_TO_ONE_RESPONSE_DEFAULT));
     }
     validateAuthorizationConsistency(survey);
 
     final boolean wasPublished = survey.isPublished();
-    if (dto.getIsPublished() != null) {
-      survey.setPublished(dto.getIsPublished());
+    if (dto.getIsPublished().isPresent()) {
+      survey.setPublished(dto.getIsPublished().get());
     }
-    if (dto.getDoNotify() != null) {
-      survey.setDoNotify(dto.getDoNotify());
+
+    if (dto.getDoNotify().isPresent()) {
+      survey.setDoNotify(
+          JsonNullableUtil.ifNotNullGetOrElse(
+              dto.getDoNotify(),
+              DefaultValues.DO_NOTIFY_DEFAULT));
     }
-    if (dto.getExpireAtAtTargetTimezone() != null) {
-      if (dto.getTargetTimezone() != null) {
-        survey.setExpireAt(dto.getExpireAtAtTargetTimezone()
-            .atZone(ZoneId.of(dto.getTargetTimezone()))
-            .toInstant()
-            .truncatedTo(ChronoUnit.SECONDS));
-        survey.setTargetTimezone(dto.getTargetTimezone());
+
+    if (dto.getExpireAtAtTargetTimezone().isPresent()) {
+      if (dto.getTargetTimezone().isPresent()) {
+        String targetTimezone = JsonNullableUtil.ifNotNullGetOrElse(
+            dto.getTargetTimezone(),
+            DefaultValues.TARGET_TIMEZONE_DEFAULT);
+
+        if (dto.getExpireAtAtTargetTimezone().get() != null) {
+          Instant expireAt = dto.getExpireAtAtTargetTimezone().get()
+              .atZone(ZoneId.of(targetTimezone))
+              .toInstant()
+              .truncatedTo(ChronoUnit.SECONDS);
+
+          validateExpireAt(expireAt);
+          survey.setExpireAt(expireAt);
+        } else {
+          survey.setExpireAt(null);
+        }
+
+        survey.setTargetTimezone(targetTimezone);
       } else {
-        survey.setExpireAt(dto.getExpireAtAtTargetTimezone()
-            .atZone(ZoneId.of(survey.getTargetTimezone()))
-            .toInstant()
-            .truncatedTo(ChronoUnit.SECONDS));
+        if (dto.getExpireAtAtTargetTimezone().get() != null) {
+          Instant expireAt = dto.getExpireAtAtTargetTimezone().get()
+              .atZone(ZoneId.of(survey.getTargetTimezone()))
+              .toInstant()
+              .truncatedTo(ChronoUnit.SECONDS);
+
+          validateExpireAt(expireAt);
+          survey.setExpireAt(expireAt);
+        } else {
+          survey.setExpireAt(null);
+        }
       }
-    } else if (dto.getTargetTimezone() != null) {
-      survey.setExpireAt(survey.getExpireAt()
-          .atZone(ZoneId.of(survey.getTargetTimezone()))
-          .toLocalDateTime()
-          .atZone(ZoneId.of(dto.getTargetTimezone()))
-          .toInstant()
-          .truncatedTo(ChronoUnit.SECONDS));
-      survey.setTargetTimezone(dto.getTargetTimezone());
+    } else if (dto.getTargetTimezone().isPresent()) {
+      String targetTimezone = JsonNullableUtil.ifNotNullGetOrElse(
+          dto.getTargetTimezone(),
+          DefaultValues.TARGET_TIMEZONE_DEFAULT);
+
+      if (survey.getExpireAt() != null) {
+        Instant expireAt = survey.getExpireAt()
+            .atZone(ZoneId.of(survey.getTargetTimezone()))
+            .toLocalDateTime()
+            .atZone(ZoneId.of(targetTimezone))
+            .toInstant()
+            .truncatedTo(ChronoUnit.SECONDS);
+
+        validateExpireAtAfterTargetTimezoneChanged(expireAt);
+        survey.setExpireAt(expireAt);
+      }
+
+      survey.setTargetTimezone(targetTimezone);
     }
 
     surveyDao.update(survey);
@@ -311,6 +354,20 @@ public class SurveyService {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
           "Опция \"Запретить проходить более одного раза\" доступна только при "
               + "включённой опции \"Запретить анонимное прохождение\"");
+    }
+  }
+
+  private void validateExpireAt(Instant expireAt) {
+    if (expireAt.isBefore(Instant.now())) {
+      throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST, "Дедлайн не может быть в прошлом");
+    }
+  }
+
+  private void validateExpireAtAfterTargetTimezoneChanged(Instant expireAt) {
+    if (expireAt.isBefore(Instant.now())) {
+      throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST, "Дедлайн в указанном часовом поясе уже прошёл");
     }
   }
 }
