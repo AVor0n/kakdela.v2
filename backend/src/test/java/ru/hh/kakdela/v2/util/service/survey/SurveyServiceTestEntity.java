@@ -21,27 +21,34 @@ public class SurveyServiceTestEntity {
 
   private static final boolean IS_ORIGINAL = false;
 
-  private static final String TEST_FILE_OBJECT_KEY = "closing-pages/test-file-key";
-
   public static final Account account1 = new Account(
       SurveyServiceTestConstants.account1Id,
       "account1",
       "account1@example.com",
       null,
+      false,
+      Instant.now(),
+      1,
+      false,
       null,
       null,
       null,
-      null);
+      null
+  );
   public static final Account account2 = new Account(
-      SurveyServiceTestConstants.account2Id,
+      SurveyServiceTestConstants.account1Id,
       "account2",
       "account2@example.com",
       null,
+      false,
+      Instant.now(),
+      1,
+      false,
       null,
       null,
       null,
-      null);
-
+      null
+  );
   private static Account getAuthorFor(boolean isClone) {
     return isClone
         ? account2
