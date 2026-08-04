@@ -26,8 +26,8 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfigurationSource;
 import ru.hh.kakdela.v2.security.JwtRequestFilter;
-import ru.hh.kakdela.v2.security.OAuth2LoginFailureHandler;
-import ru.hh.kakdela.v2.security.OAuth2LoginSuccessHandler;
+import ru.hh.kakdela.v2.security.Oauth2LoginFailureHandler;
+import ru.hh.kakdela.v2.security.Oauth2LoginSuccessHandler;
 
 @RequiredArgsConstructor
 @Configuration
@@ -42,8 +42,8 @@ public class SecurityConfig {
   private final AuthenticationEntryPoint authenticationEntryPoint;
   private final AuthorizationRequestRepository<OAuth2AuthorizationRequest>
       authorizationRequestRepository;
-  private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
-  private final OAuth2LoginFailureHandler oAuth2LoginFailureHandler;
+  private final Oauth2LoginSuccessHandler oauth2LoginSuccessHandler;
+  private final Oauth2LoginFailureHandler oauth2LoginFailureHandler;
   private final OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest>
       hhTokenResponseClient;
   private final OAuth2UserService<OAuth2UserRequest, OAuth2User> hhUserService;
@@ -105,8 +105,8 @@ public class SecurityConfig {
             .redirectionEndpoint(r -> r.baseUri(OAUTH2_CALLBACK_BASE_URI))
             .tokenEndpoint(t -> t.accessTokenResponseClient(hhTokenResponseClient))
             .userInfoEndpoint(u -> u.userService(hhUserService))
-            .successHandler(oAuth2LoginSuccessHandler)
-            .failureHandler(oAuth2LoginFailureHandler))
+            .successHandler(oauth2LoginSuccessHandler)
+            .failureHandler(oauth2LoginFailureHandler))
         .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 
     return http.build();

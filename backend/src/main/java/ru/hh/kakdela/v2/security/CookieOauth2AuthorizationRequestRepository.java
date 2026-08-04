@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.SerializationUtils;
 
 @Component
-public class CookieOAuth2AuthorizationRequestRepository
+public class CookieOauth2AuthorizationRequestRepository
     implements AuthorizationRequestRepository<OAuth2AuthorizationRequest> {
 
   private static final String COOKIE_NAME = "oauth2AuthRequest";
