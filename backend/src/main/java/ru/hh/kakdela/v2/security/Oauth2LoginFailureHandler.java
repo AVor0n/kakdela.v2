@@ -13,7 +13,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 @Slf4j
 @Component
-public class OAuth2LoginFailureHandler implements AuthenticationFailureHandler {
+public class Oauth2LoginFailureHandler implements AuthenticationFailureHandler {
 
   @Value("${app.oauth2.frontend-redirect-uri}")
   private String frontendRedirectUri;

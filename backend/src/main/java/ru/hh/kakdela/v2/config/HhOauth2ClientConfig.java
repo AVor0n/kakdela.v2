@@ -14,13 +14,14 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.client.RestTemplate;
 
 @Configuration
-public class HhOAuth2ClientConfig {
+public class HhOauth2ClientConfig {
 
   @Value("${app.oauth2.hh-user-agent}")
   private String hhUserAgent;
 
   @Bean
-  public OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest> hhTokenResponseClient() {
+  public OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest>
+  hhTokenResponseClient() {
     RestClientAuthorizationCodeTokenResponseClient client =
         new RestClientAuthorizationCodeTokenResponseClient();
     client.addHeadersConverter(grantRequest -> {
@@ -34,10 +35,11 @@ public class HhOAuth2ClientConfig {
   @Bean
   public OAuth2UserService<OAuth2UserRequest, OAuth2User> hhUserService() {
     RestTemplate restTemplate = new RestTemplate();
-    restTemplate.getInterceptors().add((req, body, execution) -> {
-      req.getHeaders().add("HH-User-Agent", hhUserAgent);
-      return execution.execute(req, body);
-    });
+    restTemplate.getInterceptors().add(
+        (req, body, execution) -> {
+          req.getHeaders().add("HH-User-Agent", hhUserAgent);
+          return execution.execute(req, body);
+        });
 
     DefaultOAuth2UserService service = new DefaultOAuth2UserService();
     service.setRestOperations(restTemplate);

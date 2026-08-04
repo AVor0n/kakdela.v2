@@ -4,11 +4,10 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
-import ru.hh.kakdela.v2.model.Account;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import ru.hh.kakdela.v2.model.Account;
 
 @Slf4j
 @Repository

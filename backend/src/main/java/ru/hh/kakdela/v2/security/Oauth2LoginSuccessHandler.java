@@ -24,7 +24,7 @@ import ru.hh.kakdela.v2.service.AuthService;
 @Slf4j
 @RequiredArgsConstructor
 @Component
-public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
+public class Oauth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
   private static final String ATTR_EMAIL = "email";
 
@@ -45,8 +45,8 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
       Authentication authentication
   ) throws IOException {
 
-    OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
-    String email = Objects.requireNonNull(oAuth2User).getAttribute(ATTR_EMAIL);
+    OAuth2User oauth2User = (OAuth2User) authentication.getPrincipal();
+    String email = Objects.requireNonNull(oauth2User).getAttribute(ATTR_EMAIL);
 
     try {
       if (email == null || email.isBlank()) {
