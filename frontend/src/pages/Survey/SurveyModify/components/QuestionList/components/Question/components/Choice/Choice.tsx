@@ -86,7 +86,7 @@ export function Choice({ options, type, isEdit, question }: Props) {
         }
 
         addAnswerOption(question.id, {
-            text: `Вопрос ${serialNumber}`,
+            text: `Вариант ${serialNumber}`,
             serialNumber: serialNumber,
         })
             .then((data) => {
@@ -170,10 +170,14 @@ export function Choice({ options, type, isEdit, question }: Props) {
                         <Link Element='button' mode='secondary' style='accent' onClick={createAnswerOptionHandler}>
                             Добавить ответ
                         </Link>
-                        <span>или</span>
-                        <Link Element='button' mode='secondary' style='accent' onClick={anotherOptionHandler}>
-                            {question.hasOtherOption ? 'Убрать вариант "Другое"' : 'Добавить вариант "Другое"'}
-                        </Link>
+                        {!question.hasOtherOption && (
+                            <>
+                                <span>или</span>
+                                <Link Element='button' mode='secondary' style='accent' onClick={anotherOptionHandler}>
+                                    Добавить вариант "Другое"
+                                </Link>
+                            </>
+                        )}
                     </div>
                 </div>
             )}

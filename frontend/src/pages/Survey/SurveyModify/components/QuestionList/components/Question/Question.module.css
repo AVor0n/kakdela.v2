@@ -37,6 +37,11 @@
     margin-bottom: 10px;
 }
 
+.questionType {
+    display: flex;
+    justify-content: end;
+}
+
 .edit {
     /* box-shadow: -5px 0px #00f; */
     box-shadow: inset 5px 0 var(--color-primary);
