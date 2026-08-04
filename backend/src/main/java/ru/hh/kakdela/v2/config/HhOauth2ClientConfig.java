@@ -21,7 +21,7 @@ public class HhOauth2ClientConfig {
 
   @Bean
   public OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest>
-  hhTokenResponseClient() {
+      hhTokenResponseClient() {
     RestClientAuthorizationCodeTokenResponseClient client =
         new RestClientAuthorizationCodeTokenResponseClient();
     client.addHeadersConverter(grantRequest -> {
