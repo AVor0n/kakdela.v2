@@ -1,5 +1,5 @@
 import { Button, createStaticDataProvider, Select, type StaticDataFetcherItem } from '@hh.ru/magritte-ui';
-import { useEffect, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
 import { getSurveyById } from '@/api/survey';
@@ -218,14 +218,11 @@ export function Answers() {
                                     {answers.length === 0 ? (
                                         <div className={style.empty}>Нет ответов на этот вопрос</div>
                                     ) : (
-                                        <ul className={style.answers} key={`${question.id}-${question.text}`}>
+                                        <ul className={style.answers} key={question.id}>
                                             {answers.map(({ answer, responseIndex }) => (
-                                                <>
+                                                <Fragment key={answer.responseId}>
                                                     {answer.selectedAnswerOptions.map((answerText) => (
-                                                        <li
-                                                            className={style.answer}
-                                                            key={`${answer.responseId}-${answerText.id}`}
-                                                        >
+                                                        <li className={style.answer} key={answerText.id}>
                                                             <button
                                                                 className={style.answerButton}
                                                                 type='button'
@@ -238,7 +235,7 @@ export function Answers() {
                                                     {answer.textValue && (
                                                         <li
                                                             className={style.answer}
-                                                            key={`${answer.responseId}-${answer.questionId}-${answer.textValue}`}
+                                                            key={`${answer.responseId}-${answer.questionId}`}
                                                         >
                                                             <button
                                                                 className={style.answerButton}
@@ -249,7 +246,7 @@ export function Answers() {
                                                             </button>
                                                         </li>
                                                     )}
-                                                </>
+                                                </Fragment>
                                             ))}
                                         </ul>
                                     )}
@@ -296,15 +293,12 @@ export function Answers() {
                             {getQuestionAnswers(responses, currentQuestion.id).length === 0 ? (
                                 <div className={style.empty}>Нет ответов на этот вопрос</div>
                             ) : (
-                                <ul className={style.answers}>
+                                <ul className={style.answers} key={'question_id'}>
                                     {getQuestionAnswers(responses, currentQuestion.id).map(
                                         ({ answer, responseIndex }) => (
-                                            <>
+                                            <Fragment key={answer.responseId}>
                                                 {answer.selectedAnswerOptions.map((answerText) => (
-                                                    <li
-                                                        className={style.answer}
-                                                        key={`${answer.responseId}-${answerText.id}`}
-                                                    >
+                                                    <li className={style.answer} key={answerText.id}>
                                                         <button
                                                             className={style.answerButton}
                                                             type='button'
@@ -317,7 +311,7 @@ export function Answers() {
                                                 {answer.textValue && (
                                                     <li
                                                         className={style.answer}
-                                                        key={`${answer.responseId}-${answer.questionId}-${answer.textValue}`}
+                                                        key={`${answer.responseId}-${answer.questionId}`}
                                                     >
                                                         <button
                                                             className={style.answerButton}
@@ -328,7 +322,7 @@ export function Answers() {
                                                         </button>
                                                     </li>
                                                 )}
-                                            </>
+                                            </Fragment>
                                         ),
                                     )}
                                 </ul>
@@ -378,12 +372,15 @@ export function Answers() {
                                         {answer &&
                                             (answer.selectedAnswerOptions.length !== 0
                                                 ? answer.selectedAnswerOptions.map((answerValue) => (
-                                                      <div className={style.singleAnswer}>
+                                                      <div className={style.singleAnswer} key={answerValue.id}>
                                                           {htmlToText(answerValue.answerOptionTextSnapshot)}
                                                       </div>
                                                   ))
                                                 : answer.textValue && (
-                                                      <div className={style.singleAnswer}>
+                                                      <div
+                                                          className={style.singleAnswer}
+                                                          key={`${answer.responseId}-${answer.questionId}`}
+                                                      >
                                                           {htmlToText(answer.textValue)}
                                                       </div>
                                                   ))}

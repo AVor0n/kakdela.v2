@@ -17,6 +17,7 @@ interface Props {
     isTextColor?: boolean;
     isMarkColor?: boolean;
     className?: string;
+    disabled?: boolean;
 }
 
 export function EditorInput({
@@ -28,6 +29,7 @@ export function EditorInput({
     isTextColor,
     isMarkColor,
     className,
+    disabled = false,
 }: Props) {
     const editor = useEditor({
         extensions: [
@@ -56,7 +58,7 @@ export function EditorInput({
 
     return (
         <EditorContext.Provider value={providerValue}>
-            <EditorContent className={className ?? style.tiptap} value={value} editor={editor} />
+            <EditorContent className={className ?? style.tiptap} value={value} editor={editor} disabled={disabled} />
             <BubbleMenu editor={editor}>
                 <Menu editor={editor} isHeading={isHeading} isMarkColor={isMarkColor} isTextColor={isTextColor} />
             </BubbleMenu>
