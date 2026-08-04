@@ -206,16 +206,18 @@ public class ConditionNodeService {
         .id(UUID.randomUUID())
         .condition(condition)
         .parentNode(parentNode)
-        .operator(ConditionNode.Operator.ATOM)
+        .operator(dto.getIsNegative()
+            ? ConditionNode.Operator.NOT_ATOM
+            : ConditionNode.Operator.ATOM)
         .height(nodeHeight)
         .build();
 
     ConditionAtom atom = ConditionAtom.builder()
         .node(node)
         .question(question)
-        .operator(dto.getOperator())
         .requiredBooleanValue(dto.getRequiredBooleanValue())
         .requiredAnswerOption(requiredAnswerOption)
+        .operator(dto.getOperator())
         .build();
 
     node.setAtom(atom);
@@ -270,10 +272,13 @@ public class ConditionNodeService {
       requiredAnswerOption = null;
     }
 
+    node.setOperator(dto.getIsNegative()
+        ? ConditionNode.Operator.NOT_ATOM
+        : ConditionNode.Operator.ATOM);
     node.getAtom().setQuestion(question);
-    node.getAtom().setOperator(dto.getOperator());
     node.getAtom().setRequiredBooleanValue(dto.getRequiredBooleanValue());
     node.getAtom().setRequiredAnswerOption(requiredAnswerOption);
+    node.getAtom().setOperator(dto.getOperator());
 
     conditionNodeDao.update(node);
 
