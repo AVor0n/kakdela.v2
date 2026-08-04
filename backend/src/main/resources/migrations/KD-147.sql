@@ -17,6 +17,10 @@ ALTER TABLE survey_page
 ALTER TABLE question
     RENAME COLUMN title TO text;
 
+UPDATE question
+    SET answer_option_order = 'ORIGINAL'
+    WHERE answer_option_order IS NULL;
+
 ALTER TABLE question
     ALTER COLUMN answer_option_order SET DEFAULT 'ORIGINAL',
     ALTER COLUMN answer_option_order SET NOT NULL,
@@ -41,11 +45,22 @@ ALTER TABLE answer
 
 ALTER TABLE answer
     ADD COLUMN id uuid,
-    ADD COLUMN serial_number int NOT NULL,
-    ADD COLUMN question_text_snapshot varchar(200) NOT NULL,
+    ADD COLUMN serial_number int,
+    ADD COLUMN question_text_snapshot varchar(200),
     ADD COLUMN boolean_value bool,
     ADD COLUMN date_value date,
     ADD COLUMN time_value time;
+
+UPDATE answer a
+    SET
+        serial_number = q.serial_number,
+        question_text_snapshot = q.text
+    FROM question q
+    WHERE a.question_id = q.id;
+
+ALTER TABLE answer
+    ALTER COLUMN serial_number SET NOT NULL,
+    ALTER COLUMN question_text_snapshot SET NOT NULL;
 
 UPDATE answer
     SET id = gen_random_uuid()

@@ -35,7 +35,7 @@ jobs:
               - 'backend/**'
               - '!backend/src/test/**'
               - '!backend/*.md'
-              - '!backend/src/main/resources/schema.sql'
+              - '!backend/src/main/resources/*.sql'
           predicate-quantifier: every
   backend-image:
     name: Build and push backend Docker image
