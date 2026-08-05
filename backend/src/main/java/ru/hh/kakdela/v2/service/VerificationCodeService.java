@@ -72,8 +72,8 @@ public class VerificationCodeService {
     hashOps.put(hashKey, "attempts", String.valueOf(++attemptsCount));
 
     if (attemptsCount >= maxAttempts) {
-      long blockUntil = System.currentTimeMillis() +
-          TimeUnit.MINUTES.toMillis(blockExpirationMinutes);
+      long blockUntil = System.currentTimeMillis()
+          + TimeUnit.MINUTES.toMillis(blockExpirationMinutes);
       hashOps.put(hashKey, "blocked_until", String.valueOf(blockUntil));
 
       redisTemplate.expire(hashKey, blockExpirationMinutes, TimeUnit.MINUTES);
@@ -86,12 +86,12 @@ public class VerificationCodeService {
         );
     }
 
-      return new VerifyCodeResponseDto(
-          false,
-          true,
-          "Неверный код",
-          maxAttempts - attemptsCount
-      );
+    return new VerifyCodeResponseDto(
+        false,
+        true,
+        "Неверный код",
+        maxAttempts - attemptsCount
+    );
   }
 
   public boolean verifyAndDelete(String email, String inputCode) {
