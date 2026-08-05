@@ -15,6 +15,7 @@ import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.BiFunction;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -22,6 +23,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+import ru.hh.kakdela.v2.model.Response;
 
 @Data
 @Builder
@@ -66,11 +68,40 @@ public class ConditionNode {
 
   @AllArgsConstructor(access = AccessLevel.PRIVATE)
   public enum Operator {
-    AND(true),
-    OR(true),
-    ATOM(false),
-    NOT_ATOM(false);
+    AND(true,
+        (cn, r) -> {
+          boolean result = true;
+
+          for (ConditionNode child : cn.getChildNodes()) {
+            result = result && child.evaluate(r);
+          }
+
+          return result;
+        }),
+    OR(true,
+        (cn, r) -> {
+          boolean result = false;
+
+          for (ConditionNode child : cn.getChildNodes()) {
+            result = result || child.evaluate(r);
+          }
+
+          return result;
+        }),
+    ATOM(false,
+        (cn, r) -> cn.getAtom().evaluate(r)),
+    NOT_ATOM(false,
+        (cn, r) -> !cn.getAtom().evaluate(r));
 
     public final boolean isLink;
+    private final BiFunction<ConditionNode, Response, Boolean> function;
+
+    public boolean apply(ConditionNode cn, Response r) {
+      return this.function.apply(cn, r);
+    }
+  }
+
+  public boolean evaluate(Response response) {
+    return operator.apply(this, response);
   }
 }
