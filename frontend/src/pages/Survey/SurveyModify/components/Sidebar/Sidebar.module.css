@@ -13,7 +13,7 @@
 
 @media (max-width: 768px) {
     .container {
-        z-index: 15;
+        z-index: var(--z-floating-controls);
         right: auto;
         bottom: calc(12px + env(safe-area-inset-bottom));
         left: 50%;
@@ -21,6 +21,5 @@
         flex-direction: row;
         transform: translateX(-50%);
         background: #ffffff;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
     }
 }
