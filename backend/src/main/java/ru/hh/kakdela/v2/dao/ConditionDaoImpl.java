@@ -30,6 +30,20 @@ public class ConditionDaoImpl implements ConditionDao {
         .getResultList();
   }
 
+  public boolean existsByPageIdAndNextPageId(UUID pageId, UUID nextPageId) {
+    return entityManager
+        .createQuery(
+            """
+            SELECT COUNT(c)
+            FROM Condition c
+            WHERE c.surveyPage.id = :pageId
+            AND c.nextPage.id = :nextPageId
+            """, Long.class)
+        .setParameter("pageId", pageId)
+        .setParameter("nextPageId", nextPageId)
+        .getSingleResult() > 0;
+  }
+
   @Override
   public void save(Condition condition) {
     entityManager.persist(condition);

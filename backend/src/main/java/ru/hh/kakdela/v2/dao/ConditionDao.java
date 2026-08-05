@@ -11,6 +11,8 @@ public interface ConditionDao {
 
   List<Condition> findAllByPageId(UUID pageId);
 
+  boolean existsByPageIdAndNextPageId(UUID pageId, UUID nextPageId);
+
   void save(Condition condition);
 
   void update(Condition condition);
