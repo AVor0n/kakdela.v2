@@ -13,6 +13,7 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.BiFunction;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -85,25 +86,30 @@ public class ConditionAtom {
   }
 
   public boolean evaluate(Response response) {
-    Answer answer = response.getAnswers().stream()
+    Optional<Answer> answerOptional = response.getAnswers().stream()
         .filter(a -> a.getQuestion().getId().equals(question.getId()))
-        .findFirst().orElseThrow(RuntimeException::new);
+        .findFirst();
+
+    if (answerOptional.isEmpty()) {
+      return false;
+    }
+
+    Answer answer = answerOptional.get();
 
     boolean result = true;
 
-    //    if (question.getType().isBooleanAllowed) {
-    //      result = this.getOperator()
-    //          .apply(answer.getBooleanValue(), requiredBooleanValue);
-    //    }
-    //
-    //    if (requiredAnswerOption != null) {
-    //      result = result && this.getOperator()
-    //          .apply(
-    //              answer.getSelectedAnswerOptions().stream()
-    //                  .map(sao -> sao.getAnswerOption().getId())
-    //                  .toList(),
-    //              requiredAnswerOption.getId());
-    //    }
+    if (question.getType().isBooleanAllowed) {
+      result = this.getOperator().apply(
+          answer.getBooleanValue(), requiredBooleanValue);
+    }
+
+    if (requiredAnswerOption != null) {
+      result = result && this.getOperator().apply(
+          answer.getSelectedAnswerOptions().stream()
+              .map(sao -> sao.getAnswerOption().getId())
+              .toList(),
+          requiredAnswerOption.getId());
+    }
 
     return result;
   }

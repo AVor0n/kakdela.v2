@@ -17,6 +17,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+import ru.hh.kakdela.v2.model.Response;
 import ru.hh.kakdela.v2.model.SurveyPage;
 
 @Data
@@ -47,4 +48,8 @@ public class Condition {
   @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
   @JoinColumn(name = "root_node_id", unique = true)
   private ConditionNode root;
+
+  public boolean evaluate(Response response) {
+    return root.evaluate(response);
+  }
 }
