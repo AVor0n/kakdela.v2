@@ -106,27 +106,51 @@ public class QuestionService {
     permissionService.checkCanEdit(
         originalQuestion.getSurveyPage().getSurvey().getId(), accountId);
 
+    UUID questionCopyId = UUID.randomUUID();
+
     Question questionCopy = Question.builder()
+        .id(questionCopyId)
         .surveyPage(originalQuestion.getSurveyPage())
-        .serialNumber(originalQuestion.getSerialNumber() + 1)
+        .serialNumber(originalQuestion.getSerialNumber())
         .text(originalQuestion.getText())
         .description(originalQuestion.getDescription())
-        .attachmentObjectKey(originalQuestion.getAttachmentObjectKey())
         .type(originalQuestion.getType())
         .answerOptionOrder(originalQuestion.getAnswerOptionOrder())
         .hasOtherOption(originalQuestion.hasOtherOption())
         .isMandatory(originalQuestion.isMandatory())
         .isVisible(originalQuestion.isVisible())
         .condition(originalQuestion.getCondition())
-        .answers(List.of())
         .build();
 
+    if (originalQuestion.getAttachmentObjectKey() != null) {
+      String questionAttachmentObjectKey =
+          "questions/%s/%s".formatted(questionCopyId, UUID.randomUUID());
+      objectStorageService.copyObject(
+          originalQuestion.getAttachmentObjectKey(),
+          questionAttachmentObjectKey
+      );
+      questionCopy.setAttachmentObjectKey(questionAttachmentObjectKey);
+    }
+
     for (AnswerOption originalOption : originalQuestion.getAnswerOptions()) {
+      UUID optionId = UUID.randomUUID();
+
       AnswerOption optionCopy = AnswerOption.builder()
+          .id(optionId)
           .question(questionCopy)
           .serialNumber(originalOption.getSerialNumber())
           .text(originalOption.getText())
           .build();
+
+      if (originalOption.getAttachmentObjectKey() != null) {
+        String optionAttachmentObjectKey =
+            "answer-options/%s/%s".formatted(optionId, UUID.randomUUID());
+        objectStorageService.copyObject(
+            originalOption.getAttachmentObjectKey(),
+            optionAttachmentObjectKey
+        );
+        optionCopy.setAttachmentObjectKey(optionAttachmentObjectKey);
+      }
       questionCopy.getAnswerOptions().add(optionCopy);
     }
 
