@@ -11,8 +11,7 @@ import ru.hh.kakdela.v2.validator.NullOrNotBlank;
 @Getter
 @Setter
 @Schema(
-    name = "PasswordReset",
-    title = "PasswordReset.Request"
+    name = "PasswordReset.Request"
 )
 public class PasswordResetDto {
   @NullOrNotBlank(message = "Электронная почта не должна быть пустой")

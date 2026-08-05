@@ -17,10 +17,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import ru.hh.kakdela.v2.dto.account.AccountCreateDto;
 import ru.hh.kakdela.v2.dto.account.AccountResponseDto;
-import ru.hh.kakdela.v2.dto.auth.PasswordResetDto;
-import ru.hh.kakdela.v2.dto.auth.VerifyCodeRequestDto;
-import ru.hh.kakdela.v2.dto.auth.AuthTokensDto;
-import ru.hh.kakdela.v2.dto.auth.LoginDto;
+import ru.hh.kakdela.v2.dto.auth.*;
 import ru.hh.kakdela.v2.security.CustomUserDetails;
 import ru.hh.kakdela.v2.service.AccountService;
 import ru.hh.kakdela.v2.service.AuthCookieService;
@@ -110,8 +107,8 @@ public class AuthController {
   }
 
   @GetMapping("/auth/verify-reset-code")
-  public ResponseEntity<Boolean> verifyResetCode(VerifyCodeRequestDto dto) {
-    return ResponseEntity.ok(authService.verifyResetCode(dto));
+  public VerifyCodeResponseDto verifyResetCode(VerifyCodeRequestDto dto) {
+    return authService.verifyResetCode(dto);
   }
 
   @PatchMapping("/auth/reset-password")

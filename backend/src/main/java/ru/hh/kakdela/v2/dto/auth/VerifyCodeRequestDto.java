@@ -10,8 +10,7 @@ import ru.hh.kakdela.v2.validator.NullOrNotBlank;
 @Getter
 @Setter
 @Schema(
-    name = "VerifyCodeRequest",
-    title = "VerifyCode.Request"
+    name = "VerifyCode.Request"
 )
 public class VerifyCodeRequestDto {
   @NullOrNotBlank(message = "Электронная почта не должна быть пустой")

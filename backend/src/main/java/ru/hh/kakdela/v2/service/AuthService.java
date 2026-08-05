@@ -13,10 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import ru.hh.kakdela.v2.dao.AccountDao;
-import ru.hh.kakdela.v2.dto.auth.PasswordResetDto;
-import ru.hh.kakdela.v2.dto.auth.VerifyCodeRequestDto;
-import ru.hh.kakdela.v2.dto.auth.AuthTokensDto;
-import ru.hh.kakdela.v2.dto.auth.LoginDto;
+import ru.hh.kakdela.v2.dto.auth.*;
 import ru.hh.kakdela.v2.model.Account;
 import ru.hh.kakdela.v2.security.JwtService;
 
@@ -145,7 +142,7 @@ public class AuthService {
     notificationService.sendPasswordResetCodeEmail(email, code);
   }
 
-  public boolean verifyResetCode(VerifyCodeRequestDto dto) {
+  public VerifyCodeResponseDto verifyResetCode(VerifyCodeRequestDto dto) {
     return verificationCodeService
         .verifyCode(dto.getEmail(), dto.getCode());
   }
@@ -153,7 +150,7 @@ public class AuthService {
   @Transactional
   public void resetPassword(PasswordResetDto dto) {
     if (!verificationCodeService
-        .verifyCode(dto.getEmail(), dto.getCode())) {
+        .verifyAndDelete(dto.getEmail(), dto.getCode())) {
       throw new ResponseStatusException(
           HttpStatus.BAD_REQUEST, "Код подтверждения неверный или истек");
     }
@@ -174,8 +171,6 @@ public class AuthService {
 
     account.setPasswordHash(passwordEncoder.encode(dto.getNewPassword()));
     accountDao.update(account);
-
-    verificationCodeService.deleteVerificationCode(dto.getEmail());
   }
 
   private static String generateNumericCode(int codeLength) {
