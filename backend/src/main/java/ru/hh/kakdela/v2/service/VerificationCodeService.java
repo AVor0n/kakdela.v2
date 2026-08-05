@@ -103,9 +103,11 @@ public class VerificationCodeService {
     }
 
     String storedCode = hashOps.get(hashKey, "code");
+    String blockedUntilStr = hashOps.get(hashKey, "blocked_until");
+    long blockedUntil = Long.parseLong(blockedUntilStr != null ? blockedUntilStr : "0");
     deleteVerificationCode(email);
 
-    return storedCode.equals(inputCode);
+    return storedCode.equals(inputCode) && !(blockedUntil > System.currentTimeMillis());
   }
 
   public void deleteVerificationCode(String email) {
