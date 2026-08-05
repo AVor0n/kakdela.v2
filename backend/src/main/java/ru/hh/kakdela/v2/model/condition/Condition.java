@@ -10,6 +10,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -28,7 +29,10 @@ import ru.hh.kakdela.v2.model.SurveyPage;
 @Table(
     name = "condition",
     indexes = {
-        @Index(name = "idx_condition_survey_page_id", columnList = "survey_page_id")})
+        @Index(name = "idx_condition_survey_page_id", columnList = "survey_page_id")},
+    uniqueConstraints = {
+        @UniqueConstraint(name = "uk_condition_page_next_page",
+            columnNames = {"survey_page_id", "next_page_id"})})
 public class Condition {
 
   @Id

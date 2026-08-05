@@ -8,10 +8,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import ru.hh.kakdela.v2.dao.ConditionDao;
+import ru.hh.kakdela.v2.dao.ResponseDao;
 import ru.hh.kakdela.v2.dao.SurveyPageDao;
 import ru.hh.kakdela.v2.dto.condition.ConditionRequestDto;
 import ru.hh.kakdela.v2.dto.condition.ConditionResponseDto;
 import ru.hh.kakdela.v2.mapper.ConditionMapper;
+import ru.hh.kakdela.v2.model.Response;
 import ru.hh.kakdela.v2.model.SurveyPage;
 import ru.hh.kakdela.v2.model.condition.Condition;
 
@@ -57,6 +59,11 @@ public class ConditionService {
     SurveyPage nextPage = surveyPageDao.findById(dto.getNextPageId())
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Указанная страница не найдена: id=" + dto.getNextPageId()));
+
+    if (conditionDao.existsByPageIdAndNextPageId(pageId, dto.getNextPageId())) {
+      throw new ResponseStatusException(HttpStatus.CONFLICT,
+          "Для указанной страницы и указанной следующей страницы уже существует условие");
+    }
 
     if (!nextPage.getSurvey().getId().equals(surveyPage.getSurvey().getId())) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST,

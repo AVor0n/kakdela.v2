@@ -134,7 +134,8 @@ CREATE TABLE condition (
     id uuid PRIMARY KEY,
     survey_page_id uuid REFERENCES survey_page (id) ON DELETE CASCADE NOT NULL,
     next_page_id uuid REFERENCES survey_page (id) ON DELETE CASCADE NOT NULL,
-    root_node_id uuid UNIQUE
+    root_node_id uuid UNIQUE,
+    CONSTRAINT uk_condition_page_next_page UNIQUE (survey_page_id, next_page_id)
 );
 
 CREATE INDEX idx_condition_survey_page_id
