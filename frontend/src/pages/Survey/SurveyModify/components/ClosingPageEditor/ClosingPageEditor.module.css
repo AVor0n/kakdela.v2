@@ -71,7 +71,6 @@
 
 @media (max-width: 768px) {
     .titleSettings {
-        grid-template-columns: minmax(0, 1fr) auto;
         gap: 8px;
     }
 

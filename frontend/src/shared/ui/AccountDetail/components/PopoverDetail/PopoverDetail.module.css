@@ -6,7 +6,6 @@
     border-radius: 16px;
     margin-top: 10px;
     border: solid var(--color-border) 1px;
-    z-index: 10;
 }
 
 .login {

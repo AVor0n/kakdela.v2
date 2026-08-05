@@ -8,6 +8,7 @@ import { useAppSelector } from '@/hooks/useAppSelector';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { setErrorMessage } from '@/entities/Error/Error.slice';
 import { AccountDetail } from '@/shared/ui/AccountDetail/AccountDetail';
+import { ProductLogo } from '@/shared/ui/ProductLogo/ProductLogo';
 import style from './SurveyView.module.css';
 export function SurveyView() {
     const { id } = useParams();
@@ -66,11 +67,18 @@ export function SurveyView() {
     }
 
     return (
-        <>
-            <header className={style.accountDetail}>
-                {account ? <AccountDetail /> : <p className={style.label}>Анонимное прохождение</p>}
+        <div className={style.page}>
+            <header className={account ? style.accountHeader : style.anonymousHeader}>
+                {account ? (
+                    <AccountDetail />
+                ) : (
+                    <>
+                        <ProductLogo to={routes.root()} className={style.productLogo} />
+                        <p className={style.anonymousBadge}>Анонимное прохождение</p>
+                    </>
+                )}
             </header>
             <SurveyRunner survey={survey} mode={mode} />
-        </>
+        </div>
     );
 }

@@ -1,17 +1,44 @@
-.accountDetail {
+.page {
+    display: flex;
+    min-height: 100dvh;
+    flex-direction: column;
+}
+
+.accountHeader {
     position: absolute;
     right: 10px;
     top: 10px;
 }
 
-.label {
+.anonymousHeader {
+    display: flex;
+    width: 100%;
+    min-height: 72px;
+    padding: 12px 20px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    border-bottom: 1px solid var(--color-border);
+    background-color: #ffffff;
+}
+
+.productLogo {
+    flex: 0 0 auto;
+    font-size: 1.5rem;
+}
+
+.anonymousBadge {
+    min-width: 0;
+    margin: 0;
     padding: 5px 10px;
     border-radius: 12px;
     background: rgba(0, 0, 0, 0.1);
+    overflow-wrap: anywhere;
+    text-align: right;
 }
 
 @media (max-width: 768px) {
-    .accountDetail {
+    .accountHeader {
         position: static;
         display: flex;
         width: 100%;
@@ -23,8 +50,12 @@
         background: #ffffff;
     }
 
-    .label {
-        max-width: 100%;
-        overflow-wrap: anywhere;
+    .anonymousHeader {
+        padding: 12px;
+        gap: 12px;
+    }
+
+    .productLogo {
+        font-size: 1.15rem;
     }
 }

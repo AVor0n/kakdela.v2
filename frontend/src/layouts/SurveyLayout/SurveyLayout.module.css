@@ -22,14 +22,6 @@
     display: none;
 }
 
-.mobileMenuContent {
-    display: flex;
-    width: 100%;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 4px;
-}
-
 @media (max-width: 768px) {
     .header {
         position: relative;

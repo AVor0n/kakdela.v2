@@ -2,7 +2,6 @@
     border: solid 1px var(--color-border);
     padding: 15px;
     border-radius: 14px;
-    z-index: 100;
 
     ol,
     ul {
