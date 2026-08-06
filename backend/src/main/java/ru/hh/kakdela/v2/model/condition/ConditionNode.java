@@ -42,14 +42,12 @@ public class ConditionNode {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "parent_node_id")
+  @OnDelete(action = OnDeleteAction.CASCADE)
   private ConditionNode parentNode;
 
   @Column(name = "operator", nullable = false)
   @Enumerated(EnumType.STRING)
   private Operator operator;
-
-  @Column(name = "height", nullable = false)
-  private Integer height;
 
   @OneToOne(
       mappedBy = "node",
