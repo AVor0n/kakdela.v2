@@ -7,6 +7,7 @@ import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { setErrorMessage } from '@/entities/Error/Error.slice';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { AccountDetail } from '@/shared/ui/AccountDetail/AccountDetail';
+import { ProductLogo } from '@/shared/ui/ProductLogo/ProductLogo';
 
 const FEATURES = [
     {
@@ -47,7 +48,9 @@ function App() {
             <header className={style.header}>
                 <section className={style.logo}>
                     <img src='/hh-logo.svg' alt='HH' width={50} />
-                    <h1 className={style.title}>KakDela V2.0</h1>
+                    <h1 className={style.title}>
+                        <ProductLogo to={routes.root()} />
+                    </h1>
                 </section>
                 <section className={style.auth}>
                     {account !== null ? (
