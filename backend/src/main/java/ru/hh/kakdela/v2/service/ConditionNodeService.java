@@ -1,6 +1,7 @@
 package ru.hh.kakdela.v2.service;
 
-import java.util.List;
+import java.util.ArrayDeque;
+import java.util.Queue;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -33,6 +34,7 @@ public class ConditionNodeService {
   private final ConditionNodeDao conditionNodeDao;
   private final QuestionDao questionDao;
   private final AnswerOptionDao answerOptionDao;
+  private final ConditionService conditionService;
   private final PermissionService permissionService;
 
   @Transactional
@@ -41,9 +43,7 @@ public class ConditionNodeService {
       ConditionNodeCreateDto dto,
       UUID accountId
   ) {
-    Condition condition = conditionDao.findById(conditionId)
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Условие не найдено: id=" + conditionId));
+    Condition condition = conditionService.getEntityById(conditionId);
 
     permissionService.checkCanEdit(
         condition.getSurveyPage().getSurvey().getId(), accountId);
@@ -60,29 +60,11 @@ public class ConditionNodeService {
 
     ConditionNode childNode = conditionNodeDao.findById(dto.getChildNodeToLinkId())
         .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Дочерняя вершина не найдена: id="
-            + dto.getChildNodeToLinkId()));
+            HttpStatus.NOT_FOUND, "Дочерняя вершина не найдена: id=" + dto.getChildNodeToLinkId()));
 
-    if (childNode.getHeight() == null) {
-      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
-          "Внутренняя ошибка. Пересоздайте дерево условия");
-    }
-
-    if (childNode.getParentNode() == null
-        && childNode.getHeight() == MAX_CONDITION_TREE_HEIGHT
-        || childNode.getParentNode() != null
-        && childNode.getHeight() == 1) {
-      throw new ResponseStatusException(HttpStatus.CONFLICT,
-          "Достигнута максимальная высота дерева условия");
-    }
-
-    int nodeHeight;
-
-    if (childNode.getParentNode() == null) {
-      nodeHeight = childNode.getHeight() + 1;
-    } else {
-      nodeHeight = childNode.getHeight();
-      childNode.setHeight(childNode.getHeight() - 1);
+    if (!childNode.getCondition().getId().equals(conditionId)) {
+      throw new ResponseStatusException(
+          HttpStatus.NOT_FOUND, "Дочерняя вершина не найдена: id=" + dto.getChildNodeToLinkId());
     }
 
     ConditionNode node = ConditionNode.builder()
@@ -90,17 +72,24 @@ public class ConditionNodeService {
         .condition(condition)
         .parentNode(childNode.getParentNode())
         .operator(dto.getOperator())
-        .height(nodeHeight)
-        .childNodes(List.of(childNode))
         .build();
 
-    childNode.setParentNode(node);
-
-    if (node.getParentNode() != null) {
-      conditionNodeDao.save(node);
-    } else {
+    if (node.getParentNode() == null) {
       condition.setRoot(node);
+    } else {
+      childNode.getParentNode().getChildNodes().remove(childNode);
+      childNode.getParentNode().getChildNodes().add(node);
+    }
+
+    childNode.setParentNode(node);
+    node.getChildNodes().add(childNode);
+
+    checkConditionTreeHeight(condition);
+
+    if (node.getParentNode() == null) {
       conditionDao.update(condition);
+    } else {
+      conditionNodeDao.save(node);
     }
 
     return ConditionMapper.conditionNodeToDto(node);
@@ -112,9 +101,7 @@ public class ConditionNodeService {
       ConditionNodeUpdateDto dto,
       UUID accountId
   ) {
-    ConditionNode node = conditionNodeDao.findById(nodeId)
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Вершина условия не найдена: id=" + nodeId));
+    ConditionNode node = getEntityById(nodeId);
 
     permissionService.checkCanEdit(
         node.getCondition().getSurveyPage().getSurvey().getId(), accountId);
@@ -137,21 +124,18 @@ public class ConditionNodeService {
       ConditionAtomCreateDto dto,
       UUID accountId
   ) {
-    Condition condition = conditionDao.findById(conditionId)
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Условие не найдено: id=" + conditionId));
+    Condition condition = conditionService.getEntityById(conditionId);
 
     permissionService.checkCanEdit(
         condition.getSurveyPage().getSurvey().getId(), accountId);
 
     ConditionNode parentNode;
-    int nodeHeight;
 
     if (condition.getRoot() != null) {
       if (dto.getParentNodeId() == null) {
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-            "Дерево условия не пусто. Для новых атомарных условий"
-                + " необходимо указывать родительскую вершину");
+            "Дерево условия не пусто. Для новых атомарных условий "
+                + "необходимо указывать родительскую вершину");
       }
 
       parentNode = conditionNodeDao.findById(dto.getParentNodeId())
@@ -159,7 +143,10 @@ public class ConditionNodeService {
               HttpStatus.NOT_FOUND, "Родительская вершина не найдена: id="
               + dto.getParentNodeId()));
 
-      nodeHeight = parentNode.getHeight() - 1;
+      if (!parentNode.getCondition().getId().equals(conditionId)) {
+        throw new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Родительская вершина не найдена: id=" + dto.getParentNodeId());
+      }
 
       if (!parentNode.getOperator().isLink) {
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
@@ -173,7 +160,6 @@ public class ConditionNodeService {
       }
 
       parentNode = null;
-      nodeHeight = 1;
     }
 
     Question question = questionDao.findById(dto.getQuestionId())
@@ -182,7 +168,7 @@ public class ConditionNodeService {
 
     if (!question.getSurveyPage().getId().equals(condition.getSurveyPage().getId())) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-          "Указанный вопрос принадлежит другой странице: id=" + dto.getQuestionId());
+          "Вопрос не найден: id=" + dto.getQuestionId());
     }
 
     verifyAtomRequestDto(dto, question);
@@ -196,7 +182,7 @@ public class ConditionNodeService {
 
       if (!requiredAnswerOption.getQuestion().getId().equals(question.getId())) {
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-            "Указанный вариант ответа принадлежит другому вопросу: id=" + dto.getQuestionId());
+            "Вариант ответа не найден: id=" + dto.getQuestionId());
       }
     } else {
       requiredAnswerOption = null;
@@ -209,7 +195,6 @@ public class ConditionNodeService {
         .operator(dto.getIsNegative()
             ? ConditionNode.Operator.NOT_ATOM
             : ConditionNode.Operator.ATOM)
-        .height(nodeHeight)
         .build();
 
     ConditionAtom atom = ConditionAtom.builder()
@@ -222,11 +207,11 @@ public class ConditionNodeService {
 
     node.setAtom(atom);
 
-    if (parentNode != null) {
-      conditionNodeDao.save(node);
-    } else {
+    if (parentNode == null) {
       condition.setRoot(node);
       conditionDao.update(condition);
+    } else {
+      conditionNodeDao.save(node);
     }
 
     return ConditionMapper.conditionNodeToDto(node);
@@ -238,13 +223,10 @@ public class ConditionNodeService {
       ConditionAtomUpdateDto dto,
       UUID accountId
   ) {
-    ConditionNode node = conditionNodeDao.findById(nodeId)
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Вершина условия не найдена: id=" + nodeId));
+    ConditionNode node = getEntityById(nodeId);
 
     permissionService.checkCanEdit(
         node.getCondition().getSurveyPage().getSurvey().getId(), accountId);
-
 
     Question question = questionDao.findById(dto.getQuestionId())
         .orElseThrow(() -> new ResponseStatusException(
@@ -252,7 +234,7 @@ public class ConditionNodeService {
 
     if (!question.getSurveyPage().getId().equals(node.getCondition().getSurveyPage().getId())) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-          "Указанный вопрос принадлежит другой странице: id=" + dto.getQuestionId());
+          "Вопрос не найден: id=" + dto.getQuestionId());
     }
 
     verifyAtomRequestDto(dto, question);
@@ -266,7 +248,7 @@ public class ConditionNodeService {
 
       if (!requiredAnswerOption.getQuestion().getId().equals(question.getId())) {
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-            "Указанный вариант ответа принадлежит другому вопросу: id=" + dto.getQuestionId());
+            "Вариант ответа не найден: id=" + dto.getQuestionId());
       }
     } else {
       requiredAnswerOption = null;
@@ -287,20 +269,28 @@ public class ConditionNodeService {
 
   @Transactional
   public void delete(UUID nodeId, UUID accountId) {
-    ConditionNode node = conditionNodeDao.findById(nodeId)
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Вершина условия не найдена: id=" + nodeId));
+    ConditionNode node = getEntityById(nodeId);
 
     permissionService.checkCanEdit(
         node.getCondition().getSurveyPage().getSurvey().getId(), accountId);
 
-    if (node.getOperator().isLink && node.getChildNodes().size() > 1) {
-      throw new ResponseStatusException(HttpStatus.CONFLICT,
-          "Удаление вершины возможно, только если она имеет максимум одну дочернюю вершину");
+    ConditionNode nodeToDelete;
+
+    if (node.getParentNode() != null
+        && conditionNodeDao.doesNodeHaveOneChild(node.getParentNode().getId())) {
+      nodeToDelete = node.getParentNode();
+    } else {
+      nodeToDelete = node;
     }
 
-    conditionNodeDao.delete(node);
+    if (nodeToDelete.getParentNode() == null) {
+      nodeToDelete.getCondition().setRoot(null);
+    }
+
+    conditionNodeDao.delete(nodeToDelete);
   }
+
+  // Вспомогательные методы
 
   private void verifyAtomRequestDto(ConditionAtomUpdateDto dto, Question question) {
     final Question.QuestionType questionType = question.getType();
@@ -338,5 +328,34 @@ public class ConditionNodeService {
                 .formatted(questionType));
       }
     }
+  }
+
+  private void checkConditionTreeHeight(Condition condition) {
+    record NodeWithHeight(ConditionNode node, int height) {}
+
+    Queue<NodeWithHeight> queue = new ArrayDeque<>();
+
+    for (ConditionNode child : condition.getRoot().getChildNodes()) {
+      queue.add(new NodeWithHeight(child, 2));
+    }
+
+    while (!queue.isEmpty()) {
+      NodeWithHeight current = queue.poll();
+
+      if (current.height() > MAX_CONDITION_TREE_HEIGHT) {
+        throw new ResponseStatusException(
+            HttpStatus.CONFLICT, "Превышена максимальная высота дерева условия");
+      }
+
+      for (ConditionNode child : current.node().getChildNodes()) {
+        queue.add(new NodeWithHeight(child, current.height() + 1));
+      }
+    }
+  }
+
+  ConditionNode getEntityById(UUID id) {
+    return conditionNodeDao.findById(id)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Вершина условия не найдена: id=" + id));
   }
 }
