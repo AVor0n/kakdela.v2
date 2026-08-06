@@ -23,6 +23,8 @@ public interface ResponseDao {
 
   boolean areAllMandatoryQuestionsAnswered(UUID responseId);
 
+  boolean areAllMandatoryQuestionsOfPageAnswered(UUID responseId, UUID pageId);
+
   void save(Response response);
 
   void update(Response response);

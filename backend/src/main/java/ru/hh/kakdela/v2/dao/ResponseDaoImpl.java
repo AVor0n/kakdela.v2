@@ -149,18 +149,39 @@ public class ResponseDaoImpl implements ResponseDao {
             SELECT COUNT(q)
             FROM Question q
             WHERE q.isMandatory = true
-              AND q.surveyPage.survey = (
-                  SELECT r.survey
-                  FROM Response r
-                  WHERE r.id = :responseId
-              )
-              AND q.id NOT IN (
-                  SELECT a.question.id
-                  FROM Answer a
-                  WHERE a.response.id = :responseId
-              )
+            AND q.surveyPage.survey = (
+                SELECT r.survey
+                FROM Response r
+                WHERE r.id = :responseId
+            )
+            AND q.id NOT IN (
+                SELECT a.question.id
+                FROM Answer a
+                WHERE a.response.id = :responseId
+            )
             """, Long.class)
         .setParameter("responseId", responseId)
+        .getSingleResultOrNull()
+        .equals(0L);
+  }
+
+  @Override
+  public boolean areAllMandatoryQuestionsOfPageAnswered(UUID responseId, UUID pageId) {
+    return entityManager
+        .createQuery(
+            """
+            SELECT COUNT(q)
+            FROM Question q
+            WHERE q.isMandatory = true
+            AND q.surveyPage.id = :pageId
+            AND q.id NOT IN (
+                SELECT a.question.id
+                FROM Answer a
+                WHERE a.response.id = :responseId
+            )
+            """, Long.class)
+        .setParameter("responseId", responseId)
+        .setParameter("pageId", pageId)
         .getSingleResultOrNull()
         .equals(0L);
   }

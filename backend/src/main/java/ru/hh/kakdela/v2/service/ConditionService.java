@@ -53,7 +53,7 @@ public class ConditionService {
   }
 
   @Transactional(readOnly = true)
-  public ConditionNextPageResponseDto verify(
+  public ConditionNextPageResponseDto determineNextPage(
       UUID pageId,
       UUID responseId,
       UUID accountId,
@@ -64,6 +64,8 @@ public class ConditionService {
             HttpStatus.NOT_FOUND, "Страница не найдена: id=" + pageId));
 
     Response response = responseService.loadResponseAndCheckAccess(responseId, accountId, token);
+
+    responseService.checkMandatoryQuestionsOfPageAnswered(responseId, pageId);
 
     for (Condition condition : surveyPage.getConditions()) {
       if (condition.evaluate(response)) {
