@@ -23,11 +23,9 @@ public class ConditionService {
   private final SurveyPageDao surveyPageDao;
   private final PermissionService permissionService;
 
-  @Transactional
+  @Transactional(readOnly = true)
   public ConditionResponseDto getById(UUID id, UUID accountId) {
-    Condition condition = conditionDao.findById(id)
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Условие не найдено: id=" + id));
+    Condition condition = getEntityById(id);
 
     permissionService.checkHasAnyPermission(
         condition.getSurveyPage().getSurvey().getId(), accountId);
@@ -35,7 +33,7 @@ public class ConditionService {
     return ConditionMapper.conditionToDto(condition);
   }
 
-  @Transactional
+  @Transactional(readOnly = true)
   public List<ConditionResponseDto> getAllByPageId(UUID pageId, UUID accountId) {
     SurveyPage surveyPage = surveyPageDao.findById(pageId)
         .orElseThrow(() -> new ResponseStatusException(
@@ -62,7 +60,12 @@ public class ConditionService {
 
     if (!nextPage.getSurvey().getId().equals(surveyPage.getSurvey().getId())) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-          "Указанная страница принадлежит другому опросу: id=" + dto.getNextPageId());
+          "Страница не найдена: id=" + dto.getNextPageId());
+    }
+
+    if (nextPage.getSerialNumber() <= surveyPage.getSerialNumber()) {
+      throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST, "Условия могут перенаправлять только вперёд");
     }
 
     Condition condition = Condition.builder()
@@ -78,9 +81,7 @@ public class ConditionService {
 
   @Transactional
   public ConditionResponseDto update(UUID id, ConditionRequestDto dto, UUID accountId) {
-    Condition condition = conditionDao.findById(id)
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Условие не найдено: id=" + id));
+    Condition condition = getEntityById(id);
 
     permissionService.checkCanEdit(
         condition.getSurveyPage().getSurvey().getId(), accountId);
@@ -91,7 +92,12 @@ public class ConditionService {
 
     if (!nextPage.getSurvey().getId().equals(condition.getSurveyPage().getSurvey().getId())) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-          "Указанная страница принадлежит другому опросу: id=" + dto.getNextPageId());
+          "Страница не найдена: id=" + dto.getNextPageId());
+    }
+
+    if (nextPage.getSerialNumber() <= condition.getSurveyPage().getSerialNumber()) {
+      throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST, "Условия могут перенаправлять только вперёд");
     }
 
     condition.setNextPage(nextPage);
@@ -103,13 +109,19 @@ public class ConditionService {
 
   @Transactional
   public void delete(UUID id, UUID accountId) {
-    Condition condition = conditionDao.findById(id)
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Условие не найдено: id=" + id));
+    Condition condition = getEntityById(id);
 
     permissionService.checkCanEdit(
         condition.getSurveyPage().getSurvey().getId(), accountId);
 
     conditionDao.delete(condition);
+  }
+
+  // Вспомогательные методы
+
+  Condition getEntityById(UUID id) {
+    return conditionDao.findById(id)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Условие не найдено: id=" + id));
   }
 }
