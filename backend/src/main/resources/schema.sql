@@ -3,7 +3,7 @@ CREATE TABLE account (
     login varchar(32) NOT NULL UNIQUE,
     email varchar(254) NOT NULL UNIQUE,
     password_hash text NOT NULL,
-    is_hh_sso bool NOT NULL DEFAULT false,
+    is_hh_sso bool NOT NULL DEFAULT FALSE,
     registered_at timestamptz NOT NULL,
     token_version int NOT NULL,
     is_deleted bool NOT NULL
@@ -170,6 +170,11 @@ CREATE TABLE refresh_token (
     last_used_at timestamptz
 );
 
-CREATE INDEX idx_refresh_token_account_id ON refresh_token(account_id);
-CREATE INDEX idx_refresh_token_account_device ON refresh_token(account_id, device_id);
-CREATE INDEX idx_refresh_token_expires_at ON refresh_token(expires_at);
+CREATE INDEX idx_refresh_token_account_id
+ON refresh_token(account_id);
+
+CREATE INDEX idx_refresh_token_account_device
+ON refresh_token(account_id, device_id);
+
+CREATE INDEX idx_refresh_token_expires_at
+ON refresh_token(expires_at);
