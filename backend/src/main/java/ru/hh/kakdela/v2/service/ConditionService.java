@@ -85,11 +85,16 @@ public class ConditionService {
     permissionService.checkCanEdit(
         condition.getSurveyPage().getSurvey().getId(), accountId);
 
-    SurveyPage surveyPage = surveyPageDao.findById(dto.getNextPageId())
+    SurveyPage nextPage = surveyPageDao.findById(dto.getNextPageId())
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Страница не найдена: id=" + dto.getNextPageId()));
 
-    condition.setNextPage(surveyPage);
+    if (!nextPage.getSurvey().getId().equals(condition.getSurveyPage().getSurvey().getId())) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+          "Указанная страница принадлежит другому опросу: id=" + dto.getNextPageId());
+    }
+
+    condition.setNextPage(nextPage);
 
     conditionDao.update(condition);
 
