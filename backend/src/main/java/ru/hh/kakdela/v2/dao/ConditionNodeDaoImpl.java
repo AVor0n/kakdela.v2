@@ -19,6 +19,18 @@ public class ConditionNodeDaoImpl implements ConditionNodeDao {
   }
 
   @Override
+  public boolean doesNodeHaveOneChild(UUID id) {
+    return entityManager.createQuery(
+        """
+        SELECT COUNT(cn)
+        FROM ConditionNode cn
+        WHERE cn.parentNode.id = :id
+        """, Long.class)
+        .setParameter("id", id)
+        .getSingleResult() == 1L;
+  }
+
+  @Override
   public void save(ConditionNode conditionNode) {
     entityManager.persist(conditionNode);
   }

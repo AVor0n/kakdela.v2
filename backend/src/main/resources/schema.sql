@@ -141,9 +141,8 @@ ON condition (survey_page_id);
 CREATE TABLE condition_node (
     id uuid PRIMARY KEY,
     condition_id uuid REFERENCES condition (id) ON DELETE CASCADE NOT NULL,
-    parent_node_id uuid REFERENCES condition_node (id),
-    operator varchar(255) NOT NULL,
-    height int NOT NULL
+    parent_node_id uuid REFERENCES condition_node (id) ON DELETE CASCADE,
+    operator varchar(255) NOT NULL
 );
 
 ALTER TABLE condition
