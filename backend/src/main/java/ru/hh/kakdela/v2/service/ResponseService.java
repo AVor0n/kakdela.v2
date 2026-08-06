@@ -17,6 +17,7 @@ import ru.hh.kakdela.v2.dao.SurveyDao;
 import ru.hh.kakdela.v2.dto.response.ResponseExportDto;
 import ru.hh.kakdela.v2.dto.response.ResponseResponseDto;
 import ru.hh.kakdela.v2.dto.response.ResponseWithTokenDto;
+import ru.hh.kakdela.v2.exception.response.NotAllMandatoryQuestionsAnsweredException;
 import ru.hh.kakdela.v2.mapper.ResponseMapper;
 import ru.hh.kakdela.v2.model.Account;
 import ru.hh.kakdela.v2.model.Response;
@@ -175,8 +176,7 @@ public class ResponseService {
     }
 
     if (!responseDao.areAllMandatoryQuestionsAnswered(id)) {
-      throw new ResponseStatusException(
-          HttpStatus.CONFLICT, "Не все обязательные вопросы заполнены");
+      throw new NotAllMandatoryQuestionsAnsweredException();
     }
 
     if (response.isCompleted()) {
