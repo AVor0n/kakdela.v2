@@ -6,7 +6,7 @@
     border: 1px solid #ff0000;
     border-radius: 8px;
     padding: 10px 20px;
-    z-index: 1000;
+    z-index: var(--z-notification);
     animation: slideIn 0.3s ease-out;
     display: flex;
     align-items: center;
