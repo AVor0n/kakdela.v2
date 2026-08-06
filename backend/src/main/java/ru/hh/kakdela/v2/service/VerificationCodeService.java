@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import ru.hh.kakdela.v2.dto.auth.VerifyCodeResponseDto;
+import ru.hh.kakdela.v2.exception.ResetCodeException;
 
 @Service
 @RequiredArgsConstructor
@@ -38,8 +39,11 @@ public class VerificationCodeService {
       long blockedUntil = Long.parseLong(blockedUntilStr != null ? blockedUntilStr : "0");
       long currentTime = System.currentTimeMillis();
       if (blockedUntil > currentTime) {
-        // TODO: кастомное исключение
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        throw new ResetCodeException(
+            "Запрещено получать новый код ещё: " + (blockedUntil - currentTime)/6000 + " минут",
+            0,
+            HttpStatus.TOO_MANY_REQUESTS
+        );
       }
 
       String prevBlockExpStr = hashOps.get(blockHashKey, "block_exp");
@@ -77,25 +81,25 @@ public class VerificationCodeService {
 
     if (attemptsCount > maxAttempts) {
       deleteVerificationCode(email);
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-          "Код не найден или истек");
+      throw new ResetCodeException(
+          "Превышено число попыток ввода",
+          0,
+          HttpStatus.TOO_MANY_REQUESTS
+      );
     }
 
     String storedCode = hashOps.get(hashKey, "code");
-    if (storedCode != null && storedCode.equals(inputCode)) {
-      return new VerifyCodeResponseDto(
-          true,
-          false,
-          "Код подтвержден",
-          0
+    if (storedCode == null || !storedCode.equals(inputCode)) {
+      throw new ResetCodeException(
+          "Неверный код",
+          maxAttempts - attemptsCount,
+          HttpStatus.BAD_REQUEST
       );
     }
 
     return new VerifyCodeResponseDto(
-        false,
         true,
-        "Неверный код",
-        maxAttempts - attemptsCount
+        "Код подтвержден"
     );
   }
 
@@ -104,7 +108,8 @@ public class VerificationCodeService {
     HashOperations<String, String, String> hashOps = redisTemplate.opsForHash();
 
     if (!redisTemplate.hasKey(codeHashKey)) {
-      return false;
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+          "Код не найден или истек");
     }
 
     String storedCode = hashOps.get(codeHashKey, "code");

@@ -13,7 +13,5 @@ import lombok.Setter;
 )
 public class VerifyCodeResponseDto {
   private boolean success;
-  private boolean blocked;
   private String message;
-  private int remainingAttempts;
 }
