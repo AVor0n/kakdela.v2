@@ -175,9 +175,7 @@ public class ResponseService {
       );
     }
 
-    if (!responseDao.areAllMandatoryQuestionsAnswered(id)) {
-      throw new NotAllMandatoryQuestionsAnsweredException();
-    }
+    checkMandatoryQuestionsAnswered(id);
 
     if (response.isCompleted()) {
       throw new ResponseStatusException(
@@ -249,5 +247,17 @@ public class ResponseService {
     }
 
     return response;
+  }
+
+  void checkMandatoryQuestionsAnswered(UUID responseId) {
+    if (!responseDao.areAllMandatoryQuestionsAnswered(responseId)) {
+      throw new NotAllMandatoryQuestionsAnsweredException();
+    }
+  }
+
+  void checkMandatoryQuestionsOfPageAnswered(UUID responseId, UUID pageId) {
+    if (!responseDao.areAllMandatoryQuestionsOfPageAnswered(responseId, pageId)) {
+      throw new NotAllMandatoryQuestionsAnsweredException();
+    }
   }
 }
