@@ -36,8 +36,8 @@ import ru.hh.kakdela.v2.model.Response;
 public class ConditionAtom {
 
   @Id
-  @OneToOne(fetch = FetchType.LAZY)
   @MapsId
+  @OneToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "condition_node_id")
   @OnDelete(action = OnDeleteAction.CASCADE)
   private ConditionNode node;

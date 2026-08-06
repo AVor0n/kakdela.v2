@@ -9,6 +9,7 @@ import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
@@ -25,6 +26,7 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.jsoup.Jsoup;
 import ru.hh.kakdela.v2.model.condition.Condition;
+import ru.hh.kakdela.v2.model.condition.ConditionElsePage;
 
 @Data
 @Builder
@@ -69,6 +71,9 @@ public class SurveyPage {
   @OneToMany(mappedBy = "surveyPage", cascade = CascadeType.ALL, orphanRemoval = true)
   @Builder.Default
   private List<Condition> conditions = new ArrayList<>();
+
+  @OneToOne(mappedBy = "surveyPage", cascade = CascadeType.ALL, orphanRemoval = true)
+  private ConditionElsePage elsePage;
 
   public String getTitleAsPlainString() {
     return Jsoup.parseBodyFragment(title).text();
