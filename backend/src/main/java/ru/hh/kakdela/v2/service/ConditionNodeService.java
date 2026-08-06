@@ -100,7 +100,7 @@ public class ConditionNodeService {
       conditionNodeDao.save(node);
     } else {
       condition.setRoot(node);
-      conditionDao.save(condition);
+      conditionDao.update(condition);
     }
 
     return ConditionMapper.conditionNodeToDto(node);
