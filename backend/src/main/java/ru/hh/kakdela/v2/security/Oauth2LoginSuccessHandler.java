@@ -23,7 +23,7 @@ import ru.hh.kakdela.v2.service.AuthService;
 @Slf4j
 @RequiredArgsConstructor
 @Component
-public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
+public class Oauth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
   // Подтверждено реальным ответом GET /me для соискателя (auth_type=applicant).
   private static final String ATTR_EMAIL = "email";
