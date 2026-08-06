@@ -9,6 +9,7 @@ import org.springframework.http.ResponseCookie;
 public final class CookieUtil {
 
   private static final String SAME_SITE = "Strict";
+  private static final String SAME_SITE_LAX = "Lax";
 
   private CookieUtil() {
   }
@@ -35,6 +36,21 @@ public final class CookieUtil {
         .httpOnly(true)
         .secure(true)
         .sameSite(SAME_SITE)
+        .path(path)
+        .maxAge(maxAgeSeconds)
+        .build();
+  }
+  
+  public static ResponseCookie buildLaxCookie(
+      String name,
+      String value,
+      String path,
+      long maxAgeSeconds
+  ) {
+    return ResponseCookie.from(name, value)
+        .httpOnly(true)
+        .secure(true)
+        .sameSite(SAME_SITE_LAX)
         .path(path)
         .maxAge(maxAgeSeconds)
         .build();

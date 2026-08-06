@@ -87,6 +87,10 @@ public class AccountService {
       throw new ResponseStatusException(HttpStatus.CONFLICT,
           "Такой email уже зарегистрирован: " + account.getEmail());
     }
+    if (Boolean.TRUE.equals(account.getIsDeleted())) {
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+          "Аккаунт удалён: login=" + account.getLogin());
+    }
     return account;
   }
 
@@ -95,10 +99,13 @@ public class AccountService {
     String randomPassword = UUID.randomUUID().toString();
 
     Account account = Account.builder()
+        .id(UUID.randomUUID())
         .login(login)
         .email(email)
         .passwordHash(passwordEncoder.encode(randomPassword))
         .isHhSso(true)
+        .tokenVersion(1)
+        .isDeleted(false)
         .registeredAt(Instant.now())
         .build();
 
