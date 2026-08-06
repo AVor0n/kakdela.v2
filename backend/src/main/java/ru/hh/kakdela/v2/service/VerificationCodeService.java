@@ -40,7 +40,7 @@ public class VerificationCodeService {
       long currentTime = System.currentTimeMillis();
       if (blockedUntil > currentTime) {
         throw new ResetCodeException(
-            "Запрещено получать новый код ещё: " + (blockedUntil - currentTime)/6000 + " минут",
+            "Запрещено получать новый код ещё: " + (blockedUntil - currentTime) / 6000 + " минут",
             0,
             HttpStatus.TOO_MANY_REQUESTS
         );
@@ -129,10 +129,18 @@ public class VerificationCodeService {
   }
 
   private long getNextBlockExpiration(long prev) {
-    if (prev==0) return 1;
-    if (prev==1) return 5;
-    if (prev==5) return 15;
-    if (prev==15) return 60;
+    if (prev == 0) {
+      return 1;
+    }
+    if (prev == 1) {
+      return 5;
+    }
+    if (prev == 5) {
+      return 15;
+    }
+    if (prev == 15) {
+      return 60;
+    }
     return 1440;
   }
 }
