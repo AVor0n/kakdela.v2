@@ -2,6 +2,7 @@ package ru.hh.kakdela.v2.service;
 
 import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
@@ -17,9 +18,13 @@ public class VerificationCodeService {
 
   private static final String codeResetPrefix = "reset:code:";
   private static final String blockResetPrefix = "reset:block:";
-  private static final int maxAttempts = 3;
-  private static final long codeExpirationMinutes = 15;
-  private static final long blockExpirationMinutes = 1440;
+
+  @Value("${app.pwdrest.max_attempts}")
+  private int maxAttempts;
+  @Value("${app.redis.ttl.code}")
+  private long codeExpirationMinutes;
+  @Value("${app.redis.ttl.block}")
+  private long blockExpirationMinutes;
 
   public void saveVerificationCode(String email, String code) {
     String codeHashKey = codeResetPrefix + email;
@@ -72,6 +77,8 @@ public class VerificationCodeService {
 
     if (attemptsCount > maxAttempts) {
       deleteVerificationCode(email);
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+          "Код не найден или истек");
     }
 
     String storedCode = hashOps.get(hashKey, "code");
