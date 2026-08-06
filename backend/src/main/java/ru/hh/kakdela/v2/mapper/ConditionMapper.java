@@ -23,7 +23,9 @@ public class ConditionMapper {
     return new ConditionAtomResponseDto(
         conditionAtom.getQuestion().getId(),
         conditionAtom.getRequiredBooleanValue(),
-        conditionAtom.getRequiredAnswerOption().getId(),
+        conditionAtom.getRequiredAnswerOption() != null
+            ? conditionAtom.getRequiredAnswerOption().getId()
+            : null,
         conditionAtom.getOperator().name());
   }
 
