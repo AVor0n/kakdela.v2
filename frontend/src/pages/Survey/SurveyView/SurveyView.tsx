@@ -17,7 +17,7 @@ export function SurveyView() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const mode: SurveyRunnerMode = searchParams.get('preview') === 'true' ? 'preview' : 'respond';
-    const { account } = useAppSelector((state) => state.account);
+    const { account, loading: isAccountLoading } = useAppSelector((state) => state.account);
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
     const location = useLocation();
@@ -47,11 +47,11 @@ export function SurveyView() {
             dispatch(setErrorMessage({ message: 'Опрос не существует или ещё не опубликован' }));
             navigate(routePatterns.notFound);
         }
-        if (!account && survey && survey.isAuthorizedOnly) {
+        if (!isAccountLoading && !account && survey && survey.isAuthorizedOnly) {
             dispatch(setErrorMessage({ message: 'Этот опрос только для зарегистрированных пользователей' }));
             navigate(routes.login(), { state: { from: location } });
         }
-    }, [account, dispatch, location, mode, navigate, survey]);
+    }, [account, dispatch, isAccountLoading, location, mode, navigate, survey]);
 
     if (isLoading) {
         return <div>Загрузка...</div>;
@@ -68,15 +68,12 @@ export function SurveyView() {
 
     return (
         <div className={style.page}>
-            <header className={account ? style.accountHeader : style.anonymousHeader}>
-                {account ? (
-                    <AccountDetail />
-                ) : (
-                    <>
-                        <ProductLogo to={routes.root()} className={style.productLogo} />
-                        <p className={style.anonymousBadge}>Анонимное прохождение</p>
-                    </>
-                )}
+            <header className={style.header}>
+                <ProductLogo to={routes.root()} className={style.productLogo} />
+                <div className={style.accountState}>
+                    {!isAccountLoading &&
+                        (account ? <AccountDetail /> : <p className={style.anonymousBadge}>Анонимное прохождение</p>)}
+                </div>
             </header>
             <SurveyRunner survey={survey} mode={mode} />
         </div>
