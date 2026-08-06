@@ -11,7 +11,7 @@ import org.springframework.util.SerializationUtils;
 import ru.hh.kakdela.v2.util.CookieUtil;
 
 @Component
-public class CookieOAuth2AuthorizationRequestRepository
+public class CookieOauth2AuthorizationRequestRepository
     implements AuthorizationRequestRepository<OAuth2AuthorizationRequest> {
 
   private static final String COOKIE_NAME = "oauth2AuthRequest";
