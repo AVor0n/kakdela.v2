@@ -111,7 +111,7 @@ public class QuestionService {
     Question questionCopy = Question.builder()
         .id(questionCopyId)
         .surveyPage(originalQuestion.getSurveyPage())
-        .serialNumber(originalQuestion.getSerialNumber())
+        .serialNumber(originalQuestion.getSerialNumber() + 1)
         .text(originalQuestion.getText())
         .description(originalQuestion.getDescription())
         .type(originalQuestion.getType())
