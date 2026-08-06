@@ -50,7 +50,7 @@ export async function getSurveys(): Promise<SurveyListItem[]> {
 }
 
 export async function updateSurvey(surveyId: string, updateData: UpdateSurveyRequest): Promise<SurveyResponse> {
-    const { data } = await apiClient.put<SurveyResponse>(`/api/surveys/${surveyId}`, updateData);
+    const { data } = await apiClient.patch<SurveyResponse>(`/api/surveys/${surveyId}`, updateData);
 
     return data;
 }

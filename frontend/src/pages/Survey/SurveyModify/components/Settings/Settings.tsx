@@ -159,6 +159,25 @@ export function Settings() {
         }
     };
 
+    const clearExpireAtHandler = () => {
+        if (!selectedSurvey) return;
+        updateSurvey(selectedSurvey.id, {
+            expireAtAtTargetTimezone: null,
+        })
+            .then((data) => {
+                dispatch(setSelectedSurvey({ survey: data }));
+            })
+            .catch((err) => {
+                if (err.response) {
+                    dispatch(
+                        setErrorMessage({
+                            message: 'Не удалось изменить настройку "Присылать сообщение о прохождении опроса"',
+                        }),
+                    );
+                }
+            });
+    };
+
     useEffect(() => {
         return () => {
             if (skipSaveOnUnmountRef) return;
@@ -262,8 +281,7 @@ export function Settings() {
                             alt='X'
                             onClick={() => {
                                 setExpireAt(null);
-                                expireAtRef.current?.focus();
-                                expireAtRef.current?.blur();
+                                clearExpireAtHandler();
                             }}
                             className={style.clear}
                         />
