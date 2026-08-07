@@ -2,6 +2,7 @@ package ru.hh.kakdela.v2.mapper;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import ru.hh.kakdela.v2.dto.survey.page.SurveyPagePublicResponseDto;
 import ru.hh.kakdela.v2.dto.survey.page.SurveyPageResponseDto;
 import ru.hh.kakdela.v2.dto.survey.page.SurveyPageShortResponseDto;
 import ru.hh.kakdela.v2.model.SurveyPage;
@@ -14,6 +15,18 @@ public class SurveyPageMapper {
 
   public SurveyPageResponseDto surveyPageToDto(SurveyPage surveyPage) {
     return new SurveyPageResponseDto(
+        surveyPage.getId(),
+        surveyPage.getSurvey().getId(),
+        surveyPage.getSerialNumber(),
+        surveyPage.getTitle(),
+        surveyPage.getDescription(),
+        surveyPage.getQuestions().stream()
+            .map(questionMapper::questionToDto)
+            .toList());
+  }
+
+  public SurveyPagePublicResponseDto surveyPageToPublicDto(SurveyPage surveyPage) {
+    return new SurveyPagePublicResponseDto(
         surveyPage.getId(),
         surveyPage.getSurvey().getId(),
         surveyPage.getSerialNumber(),

@@ -11,6 +11,7 @@ import org.springframework.web.server.ResponseStatusException;
 import ru.hh.kakdela.v2.dao.SurveyDao;
 import ru.hh.kakdela.v2.dao.SurveyPageDao;
 import ru.hh.kakdela.v2.dto.survey.page.SurveyPageCreateDto;
+import ru.hh.kakdela.v2.dto.survey.page.SurveyPagePublicResponseDto;
 import ru.hh.kakdela.v2.dto.survey.page.SurveyPageResponseDto;
 import ru.hh.kakdela.v2.dto.survey.page.SurveyPageUpdateDto;
 import ru.hh.kakdela.v2.mapper.SurveyPageMapper;
@@ -31,7 +32,7 @@ public class SurveyPageService {
   private final SurveyPageMapper surveyPageMapper;
 
   @Transactional(readOnly = true)
-  public SurveyPageResponseDto getPublicById(
+  public SurveyPagePublicResponseDto getPublicById(
       UUID pageId,
       UUID responseId,
       UUID accountId,
@@ -55,7 +56,7 @@ public class SurveyPageService {
           HttpStatus.FORBIDDEN, "Доступ к странице запрещён");
     }
 
-    return surveyPageMapper.surveyPageToDto(surveyPage);
+    return surveyPageMapper.surveyPageToPublicDto(surveyPage);
   }
 
   @Transactional(readOnly = true)
