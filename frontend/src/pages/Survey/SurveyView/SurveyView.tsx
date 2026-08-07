@@ -1,5 +1,6 @@
 import { getSurveyById } from '@/api/survey';
 import type { Survey } from '@/shared/types/Survey.type';
+import { getAccountDetails } from '@/api/account';
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { routePatterns, routes } from '@/app/routes';
@@ -9,6 +10,7 @@ import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { setErrorMessage } from '@/entities/Error/Error.slice';
 import { AccountDetail } from '@/shared/ui/AccountDetail/AccountDetail';
 import { ProductLogo } from '@/shared/ui/ProductLogo/ProductLogo';
+import { setAccount, clearAccount, setLoading } from '@/entities/Account/Account.slice';
 import style from './SurveyView.module.css';
 export function SurveyView() {
     const { id } = useParams();
@@ -52,6 +54,16 @@ export function SurveyView() {
             navigate(routes.login(), { state: { from: location } });
         }
     }, [account, dispatch, isAccountLoading, location, mode, navigate, survey]);
+
+    useEffect(() => {
+        if (!survey || !survey.isAuthorizedOnly || account) return;
+
+        dispatch(setLoading(true));
+        getAccountDetails()
+            .then((data) => dispatch(setAccount(data)))
+            .catch(() => dispatch(clearAccount()))
+            .finally(() => dispatch(setLoading(false)));
+    }, [survey, account, dispatch]);
 
     if (isLoading) {
         return <div>Загрузка...</div>;
