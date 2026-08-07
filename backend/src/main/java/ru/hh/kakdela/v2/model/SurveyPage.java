@@ -72,7 +72,11 @@ public class SurveyPage {
   @Builder.Default
   private List<Condition> conditions = new ArrayList<>();
 
-  @OneToOne(mappedBy = "surveyPage", cascade = CascadeType.ALL, orphanRemoval = true)
+  @OneToOne(
+      mappedBy = "surveyPage",
+      cascade = CascadeType.ALL,
+      orphanRemoval = true,
+      fetch = FetchType.LAZY)
   private ConditionElsePage elsePage;
 
   public String getTitleAsPlainString() {
