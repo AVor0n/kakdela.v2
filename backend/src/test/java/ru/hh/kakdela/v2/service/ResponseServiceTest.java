@@ -29,6 +29,9 @@ import ru.hh.kakdela.v2.dao.ResponseDao;
 import ru.hh.kakdela.v2.dao.SurveyDao;
 import ru.hh.kakdela.v2.dto.response.ResponseResponseDto;
 import ru.hh.kakdela.v2.dto.response.ResponseWithTokenDto;
+import ru.hh.kakdela.v2.exception.ErrorCode;
+import ru.hh.kakdela.v2.exception.Kd2Exception;
+import ru.hh.kakdela.v2.exception.response.NotAllMandatoryQuestionsAnsweredException;
 import ru.hh.kakdela.v2.mapper.ResponseMapper;
 import ru.hh.kakdela.v2.model.Account;
 import ru.hh.kakdela.v2.model.Response;
@@ -349,12 +352,12 @@ class ResponseServiceTest {
     when(jwtService.extractResponseId(testToken)).thenReturn(responseId);
     when(responseDao.areAllMandatoryQuestionsAnswered(responseId)).thenReturn(false);
 
-    ResponseStatusException exception = assertThrows(
-        ResponseStatusException.class,
+    Kd2Exception exception = assertThrows(
+        NotAllMandatoryQuestionsAnsweredException.class,
         () -> responseService.complete(responseId, respondentAccountId, testToken)
     );
-    assertEquals(HttpStatus.CONFLICT, exception.getStatusCode());
-    assertEquals("Не все обязательные вопросы заполнены", exception.getReason());
+    assertEquals(ErrorCode.NOT_ALL_MANDATORY_QUESTIONS_ANSWERED, exception.getErrorCode());
+    assertEquals("Не все обязательные вопросы заполнены", exception.getMessage());
     verify(responseDao, never()).update(any(Response.class));
   }
 
