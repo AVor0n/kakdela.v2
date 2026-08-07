@@ -169,7 +169,12 @@ public class PermissionService {
 
     checkCanManagePermissions(survey, currentUserId);
 
-    permissionDao.deleteBySurveyIdAndAccountId(surveyId, accountId);
+    Permission permission = permissionDao.findBySurveyIdAndAccountId(surveyId, accountId)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Права доступа не найдены: surveyId=%s, accountId=%s"
+            .formatted(surveyId, accountId)));
+
+    permissionDao.delete(permission);
     log.info("Удалены права доступа: surveyId={}, accountId={}", surveyId, accountId);
   }
 

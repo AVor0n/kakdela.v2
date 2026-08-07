@@ -53,7 +53,7 @@ public class SurveyPageController {
       @PathVariable UUID pageId,
       @AuthenticationPrincipal CustomUserDetails currentUser
   ) {
-    return surveyPageService.getPublicById(
+    return surveyPageService.getById(
         pageId, currentUser != null ? currentUser.getId() : null);
   }
 
