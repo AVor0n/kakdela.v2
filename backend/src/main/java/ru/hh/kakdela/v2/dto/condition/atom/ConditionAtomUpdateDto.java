@@ -19,4 +19,6 @@ public class ConditionAtomUpdateDto {
   private UUID requiredAnswerOptionId;
   @NotNull
   private ConditionAtom.Operator operator;
+  @NotNull
+  private Boolean isNegative;
 }

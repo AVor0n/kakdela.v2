@@ -1,6 +1,7 @@
 package ru.hh.kakdela.v2.controller;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
@@ -21,6 +22,7 @@ import ru.hh.kakdela.v2.dto.survey.page.SurveyPageCreateDto;
 import ru.hh.kakdela.v2.dto.survey.page.SurveyPageResponseDto;
 import ru.hh.kakdela.v2.dto.survey.page.SurveyPageUpdateDto;
 import ru.hh.kakdela.v2.security.CustomUserDetails;
+import ru.hh.kakdela.v2.service.AuthCookieService;
 import ru.hh.kakdela.v2.service.SurveyPageService;
 
 @RestController
@@ -30,6 +32,7 @@ import ru.hh.kakdela.v2.service.SurveyPageService;
 public class SurveyPageController {
 
   private final SurveyPageService surveyPageService;
+  private final AuthCookieService authCookieService;
 
   @GetMapping("/surveys/{surveyId}/pages")
   public List<SurveyPageResponseDto> getAllBySurveyId(
@@ -43,9 +46,14 @@ public class SurveyPageController {
   @GetMapping("/pages/{pageId}")
   public SurveyPageResponseDto getPublicById(
       @PathVariable UUID pageId,
-      @RequestParam UUID responseId
+      @RequestParam UUID responseId,
+      @AuthenticationPrincipal CustomUserDetails currentUser,
+      HttpServletRequest request
   ) {
-    return surveyPageService.getPublicById(pageId, responseId);
+    String token = authCookieService.getResponseToken(request, responseId);
+
+    return surveyPageService.getPublicById(
+        pageId, responseId, currentUser != null ? currentUser.getId() : null, token);
   }
 
   @GetMapping("/pages/{pageId}/edit")

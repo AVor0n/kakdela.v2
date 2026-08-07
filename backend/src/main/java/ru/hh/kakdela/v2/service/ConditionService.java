@@ -1,6 +1,7 @@
 package ru.hh.kakdela.v2.service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -52,28 +53,55 @@ public class ConditionService {
         .toList();
   }
 
-  @Transactional(readOnly = true)
+  @Transactional
   public ConditionNextPageResponseDto determineNextPage(
       UUID pageId,
       UUID responseId,
       UUID accountId,
       String token
   ) {
-    SurveyPage surveyPage = surveyPageDao.findById(pageId)
+    final SurveyPage surveyPage = surveyPageDao.findById(pageId)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Страница не найдена: id=" + pageId));
 
-    Response response = responseService.loadResponseAndCheckAccess(responseId, accountId, token);
+    final Response response =
+        responseService.loadResponseAndCheckAccess(responseId, accountId, token);
+
+    if (surveyPage.getSerialNumber() != 1 && !responseService.isPageIncluded(responseId, pageId)) {
+      throw new ResponseStatusException(
+          HttpStatus.FORBIDDEN, "Доступ к странице запрещён");
+    }
 
     responseService.checkMandatoryQuestionsOfPageAnswered(responseId, pageId);
 
     for (Condition condition : surveyPage.getConditions()) {
       if (condition.evaluate(response)) {
-        return new ConditionNextPageResponseDto(condition.getNextPage().getId());
+        SurveyPage nextPage = condition.getNextPage();
+        responseService.changeResponsePageStatus(response, nextPage, true);
+
+        return new ConditionNextPageResponseDto(nextPage.getId());
       }
     }
 
-    return new ConditionNextPageResponseDto(surveyPage.getElsePage().getElsePage().getId());
+    if (surveyPage.getElsePage() != null) {
+      responseService.changeResponsePageStatus(
+          response, surveyPage.getElsePage().getElsePage(), true);
+
+      return new ConditionNextPageResponseDto(surveyPage.getElsePage().getElsePage().getId());
+    }
+
+    Optional<SurveyPage> nextPageOptional =
+        surveyPageDao.findBySurveyIdAndSerialNumber(
+            surveyPage.getSurvey().getId(), surveyPage.getSerialNumber() + 1);
+
+    if (nextPageOptional.isPresent()) {
+      SurveyPage nextPage = nextPageOptional.get();
+
+      responseService.changeResponsePageStatus(response, nextPage, true);
+      return new ConditionNextPageResponseDto(nextPage.getId());
+    } else {
+      return new ConditionNextPageResponseDto(null);
+    }
   }
 
   @Transactional
@@ -116,7 +144,8 @@ public class ConditionService {
         .collect(Collectors.toSet());
 
     surveyPage.getSurvey().getPages().stream()
-        .filter(p -> !nextPageIds.contains(p.getId()))
+        .filter(p -> !nextPageIds.contains(p.getId())
+            && p.getSerialNumber() > surveyPage.getSerialNumber())
         .findFirst()
         .ifPresent(elsePage ->
             surveyPage.setElsePage(new ConditionElsePage(surveyPage, elsePage)));

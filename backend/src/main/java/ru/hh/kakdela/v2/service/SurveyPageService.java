@@ -8,7 +8,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
-import ru.hh.kakdela.v2.dao.ResponseDao;
 import ru.hh.kakdela.v2.dao.SurveyDao;
 import ru.hh.kakdela.v2.dao.SurveyPageDao;
 import ru.hh.kakdela.v2.dto.survey.page.SurveyPageCreateDto;
@@ -25,23 +24,31 @@ import ru.hh.kakdela.v2.model.SurveyPage;
 public class SurveyPageService {
 
   private final SurveyPageDao surveyPageDao;
-  private final ResponseDao responseDao;
   private final PermissionService permissionService;
+  private final ResponseService responseService;
   private final SurveyDao surveyDao;
   private final SurveyPageMapper surveyPageMapper;
 
   @Transactional(readOnly = true)
-  public SurveyPageResponseDto getPublicById(UUID id, UUID responseId) {
-    SurveyPage surveyPage = surveyPageDao.findById(id)
+  public SurveyPageResponseDto getPublicById(
+      UUID pageId,
+      UUID responseId,
+      UUID accountId,
+      String token
+  ) {
+    SurveyPage surveyPage = surveyPageDao.findById(pageId)
         .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Страница не найдена: " + id));
+            HttpStatus.NOT_FOUND, "Страница не найдена: id=" + pageId));
 
-    Response response = responseDao.findById(responseId)
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.FORBIDDEN, "Доступ к странице запрещён"));
+    Response response = responseService.loadResponseAndCheckAccess(responseId, accountId, token);
 
     if (!response.getSurvey().getId().equals(surveyPage.getSurvey().getId())
         || response.isCompleted()) {
+      throw new ResponseStatusException(
+          HttpStatus.FORBIDDEN, "Доступ к странице запрещён");
+    }
+
+    if (surveyPage.getSerialNumber() != 1 && !responseService.isPageIncluded(responseId, pageId)) {
       throw new ResponseStatusException(
           HttpStatus.FORBIDDEN, "Доступ к странице запрещён");
     }
@@ -50,10 +57,10 @@ public class SurveyPageService {
   }
 
   @Transactional(readOnly = true)
-  public SurveyPageResponseDto getById(UUID id, UUID currentUserId) {
-    SurveyPage surveyPage = surveyPageDao.findById(id)
+  public SurveyPageResponseDto getById(UUID pageId, UUID currentUserId) {
+    SurveyPage surveyPage = surveyPageDao.findById(pageId)
         .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Страница не найдена: id=" + id));
+            HttpStatus.NOT_FOUND, "Страница не найдена: id=" + pageId));
 
     permissionService.checkHasAnyPermission(surveyPage.getSurvey().getId(), currentUserId);
 
@@ -110,10 +117,10 @@ public class SurveyPageService {
   }
 
   @Transactional
-  public SurveyPageResponseDto update(UUID surveyPageId, SurveyPageUpdateDto dto, UUID accountId) {
-    SurveyPage surveyPage = surveyPageDao.findById(surveyPageId)
+  public SurveyPageResponseDto update(UUID pageId, SurveyPageUpdateDto dto, UUID accountId) {
+    SurveyPage surveyPage = surveyPageDao.findById(pageId)
         .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Страница не найдена: " + surveyPageId));
+            HttpStatus.NOT_FOUND, "Страница не найдена: " + pageId));
 
     permissionService.checkCanEdit(surveyPage.getSurvey().getId(), accountId);
 
@@ -145,15 +152,16 @@ public class SurveyPageService {
     }
 
     surveyPageDao.update(surveyPage);
-    log.info("Изменена страница id={}", surveyPageId);
+    log.info("Изменена страница id={}", pageId);
     return surveyPageMapper.surveyPageToDto(surveyPage);
   }
 
   @Transactional
-  public void delete(UUID id, UUID accountId) {
-    SurveyPage surveyPage = surveyPageDao.findById(id)
+  public void delete(UUID pageId, UUID accountId) {
+    SurveyPage surveyPage = surveyPageDao.findById(pageId)
         .orElseThrow(
-            () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Страница не найдена: " + id));
+            () -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                "Страница не найдена: " + pageId));
 
     permissionService.checkCanEdit(surveyPage.getSurvey().getId(), accountId);
 
@@ -162,6 +170,6 @@ public class SurveyPageService {
 
     surveyPageDao.delete(surveyPage);
     surveyPageDao.decreaseSerialNumbers(surveyId, deletedSerial + 1);
-    log.info("Удалена страница id={}", id);
+    log.info("Удалена страница pageId={}", pageId);
   }
 }

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import ru.hh.kakdela.v2.dao.AccountDao;
 import ru.hh.kakdela.v2.dao.ResponseDao;
+import ru.hh.kakdela.v2.dao.ResponsePageStatusDao;
 import ru.hh.kakdela.v2.dao.SurveyDao;
 import ru.hh.kakdela.v2.dto.response.ResponseExportDto;
 import ru.hh.kakdela.v2.dto.response.ResponseResponseDto;
@@ -21,7 +23,9 @@ import ru.hh.kakdela.v2.exception.response.NotAllMandatoryQuestionsAnsweredExcep
 import ru.hh.kakdela.v2.mapper.ResponseMapper;
 import ru.hh.kakdela.v2.model.Account;
 import ru.hh.kakdela.v2.model.Response;
+import ru.hh.kakdela.v2.model.ResponsePageStatus;
 import ru.hh.kakdela.v2.model.Survey;
+import ru.hh.kakdela.v2.model.SurveyPage;
 import ru.hh.kakdela.v2.security.JwtService;
 
 @Slf4j
@@ -30,6 +34,7 @@ import ru.hh.kakdela.v2.security.JwtService;
 public class ResponseService {
 
   private final ResponseDao responseDao;
+  private final ResponsePageStatusDao responsePageStatusDao;
   private final SurveyDao surveyDao;
   private final AccountDao accountDao;
   private final PermissionService permissionService;
@@ -111,34 +116,7 @@ public class ResponseService {
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
 
-    if (survey.isTemplate()) {
-      throw new ResponseStatusException(
-          HttpStatus.NOT_FOUND,
-          "Опрос не найден"
-      );
-    }
-
-    if (!survey.isPublished()) {
-      throw new ResponseStatusException(
-          HttpStatus.BAD_REQUEST, "Опрос ещё не опубликован");
-    }
-
-    if (survey.getExpireAt() != null && survey.getExpireAt().isBefore(Instant.now())) {
-      throw new ResponseStatusException(
-          HttpStatus.BAD_REQUEST, "Дедлайн прохождения опроса истёк");
-    }
-
-    if (survey.isAuthorizedOnly() && accountId == null) {
-      throw new ResponseStatusException(
-          HttpStatus.UNAUTHORIZED, "Опрос доступен только авторизованным пользователям");
-    }
-
-    if (survey.isLimitedToOneResponse() && accountId != null) {
-      if (responseDao.existsBySurveyIdAndAccountId(surveyId, accountId)) {
-        throw new ResponseStatusException(
-            HttpStatus.CONFLICT, "Вы уже проходили этот опрос");
-      }
-    }
+    verifyResponseCreationRequest(survey, accountId);
 
     Account account = null;
     if (accountId != null) {
@@ -226,6 +204,37 @@ public class ResponseService {
 
   // Вспомогательные методы
 
+  private void verifyResponseCreationRequest(Survey survey, UUID accountId) {
+    if (survey.isTemplate()) {
+      throw new ResponseStatusException(
+          HttpStatus.NOT_FOUND,
+          "Опрос не найден"
+      );
+    }
+
+    if (!survey.isPublished()) {
+      throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST, "Опрос ещё не опубликован");
+    }
+
+    if (survey.getExpireAt() != null && survey.getExpireAt().isBefore(Instant.now())) {
+      throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST, "Дедлайн прохождения опроса истёк");
+    }
+
+    if (survey.isAuthorizedOnly() && accountId == null) {
+      throw new ResponseStatusException(
+          HttpStatus.UNAUTHORIZED, "Опрос доступен только авторизованным пользователям");
+    }
+
+    if (survey.isLimitedToOneResponse() && accountId != null) {
+      if (responseDao.existsBySurveyIdAndAccountId(survey.getId(), accountId)) {
+        throw new ResponseStatusException(
+            HttpStatus.CONFLICT, "Вы уже проходили этот опрос");
+      }
+    }
+  }
+
   Response loadResponseAndCheckAccess(UUID responseId, UUID accountId, String token) {
     Response response = responseDao.findById(responseId)
         .orElseThrow(() -> new ResponseStatusException(
@@ -259,5 +268,40 @@ public class ResponseService {
     if (!responseDao.areAllMandatoryQuestionsOfPageAnswered(responseId, pageId)) {
       throw new NotAllMandatoryQuestionsAnsweredException();
     }
+  }
+
+  boolean isPageIncluded(UUID responseId, UUID pageId) {
+    Optional<ResponsePageStatus> pageStatus =
+        responsePageStatusDao.findResponsePageStatusByResponseIdAndPageId(responseId, pageId);
+
+    return pageStatus.isPresent() && pageStatus.get().getIsIncluded();
+  }
+
+  void changeResponsePageStatus(Response response, SurveyPage page, boolean isIncluded) {
+    Optional<ResponsePageStatus> responsePageStatusOptional =
+        responsePageStatusDao.findResponsePageStatusByResponseIdAndPageId(
+            response.getId(), page.getId());
+
+    if (responsePageStatusOptional.isEmpty()) {
+      ResponsePageStatus responsePageStatus = ResponsePageStatus.builder()
+          .id(UUID.randomUUID())
+          .response(response)
+          .surveyPage(page)
+          .isIncluded(isIncluded)
+          .build();
+
+      responsePageStatusDao.save(responsePageStatus);
+    } else {
+      ResponsePageStatus responsePageStatus = responsePageStatusOptional.get();
+
+      responsePageStatus.setIsIncluded(isIncluded);
+
+      responsePageStatusDao.update(responsePageStatus);
+    }
+  }
+
+  void resetResponsePageStatusForPagesAfterSpecified(UUID responseId, UUID pageId) {
+    responsePageStatusDao.resetResponsePageStatusForPagesAfterSpecifiedByResponseIdAndPageId(
+        responseId, pageId);
   }
 }

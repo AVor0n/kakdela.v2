@@ -37,6 +37,19 @@ public class SurveyPageDaoImpl implements SurveyPageDao {
   }
 
   @Override
+  public Optional<SurveyPage> findBySurveyIdAndSerialNumber(UUID surveyId, int serialNumber) {
+    return Optional.ofNullable(entityManager.createQuery(
+        """
+        FROM SurveyPage p
+        WHERE p.survey.id = :surveyId
+        AND p.serialNumber = :serialNumber
+        """, SurveyPage.class)
+        .setParameter("surveyId", surveyId)
+        .setParameter("serialNumber", serialNumber)
+        .getSingleResultOrNull());
+  }
+
+  @Override
   public void save(SurveyPage page) {
     log.debug("Сохранена страница id={}", page.getId());
     entityManager.persist(page);
