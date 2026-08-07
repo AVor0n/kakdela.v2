@@ -29,7 +29,6 @@ public class SurveyMapper {
         survey.isAuthorizedOnly(),
         survey.isLimitedToOneResponse(),
         survey.isPublished(),
-        survey.isTemplate(),
         survey.doNotify(),
         survey.getExpireAt(),
         survey.getExpireAt() != null

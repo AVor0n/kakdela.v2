@@ -43,6 +43,19 @@ public class NotificationScheduleService {
 
   @Transactional(readOnly = true)
   public List<NotificationScheduleResponseDto> getAllBySurveyId(UUID surveyId) {
+    Survey survey = surveyDao.findById(surveyId)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND,
+            "Опрос " + surveyId + " не найден"
+        ));
+
+    if (survey.isTemplate()) {
+      throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST,
+          "У шаблона нет расписания уведомлений"
+      );
+    }
+
     return notificationScheduleDao.findAllBySurveyId(surveyId).stream()
         .map(mapper::notificationScheduleToDto)
         .toList();
@@ -50,7 +63,9 @@ public class NotificationScheduleService {
 
   @Transactional(readOnly = true)
   public List<NotificationSchedule> getAllEntityByIsActiveTrueAndNextExecutionBefore(Instant now) {
-    return notificationScheduleDao.findByIsActiveTrueAndNextExecutionBefore(now);
+    return notificationScheduleDao.findByIsActiveTrueAndNextExecutionBefore(now).stream()
+        .filter(schedule -> !schedule.getSurvey().isTemplate())
+        .toList();
   }
 
   @Transactional
@@ -67,6 +82,13 @@ public class NotificationScheduleService {
             "Опрос " + surveyId + " не найден, нельзя задать расписание."
         )
     );
+
+    if (survey.isTemplate()) {
+      throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST,
+          "Нельзя создавать расписание уведомлений для шаблона"
+      );
+    }
 
     NotificationSchedule notificationSchedule = NotificationSchedule.builder()
         .id(UUID.randomUUID())
@@ -105,6 +127,16 @@ public class NotificationScheduleService {
                 "Опрос " + id + " не найден"
             )
         );
+
+    Survey survey = notificationSchedule.getSurvey();
+
+    if (survey.isTemplate()) {
+      throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST,
+          "Нельзя обновлять расписание уведомлений для шаблона"
+      );
+    }
+
     permissionService.checkCanEdit(
         notificationSchedule.getSurvey().getId(), accountId);
 
@@ -151,6 +183,12 @@ public class NotificationScheduleService {
 
   @Transactional
   public void updateByEntity(NotificationSchedule notificationSchedule) {
+    if (notificationSchedule.getSurvey().isTemplate()) {
+      log.warn("Попытка обновления расписания для шаблона id={}",
+          notificationSchedule.getSurvey().getId());
+      return;
+    }
+
     notificationScheduleDao.update(notificationSchedule);
   }
 
@@ -163,6 +201,16 @@ public class NotificationScheduleService {
                 "Опрос " + id + " не найден"
             )
         );
+
+    Survey survey = toDelete.getSurvey();
+
+    if (survey.isTemplate()) {
+      throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST,
+          "Нельзя удалять расписание уведомлений для шаблона"
+      );
+    }
+
     permissionService.checkCanEdit(toDelete.getSurvey().getId(), accountId);
 
     notificationScheduleDao.delete(toDelete);

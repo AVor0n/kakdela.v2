@@ -41,6 +41,13 @@ public class PermissionService {
   public void checkHasAnyPermission(UUID surveyId, UUID accountId) {
     Survey survey = getSurveyOrThrow(surveyId);
 
+    if (survey.isTemplate()) {
+      throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST,
+          "Нельзя управлять правами доступа для шаблона"
+      );
+    }
+
     if (survey.getAuthor().getId().equals(accountId)) {
       return;
     }
@@ -51,6 +58,13 @@ public class PermissionService {
   @Transactional(readOnly = true)
   public void checkCanReadResponses(UUID surveyId, UUID accountId) {
     Survey survey = getSurveyOrThrow(surveyId);
+
+    if (survey.isTemplate()) {
+      throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST,
+          "Нельзя управлять правами доступа для шаблона"
+      );
+    }
 
     if (survey.getAuthor().getId().equals(accountId)) {
       return;
@@ -68,6 +82,13 @@ public class PermissionService {
   public void checkCanEdit(UUID surveyId, UUID accountId) {
     Survey survey = getSurveyOrThrow(surveyId);
 
+    if (survey.isTemplate()) {
+      throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST,
+          "Нельзя управлять правами доступа для шаблона"
+      );
+    }
+
     if (survey.getAuthor().getId().equals(accountId)) {
       return;
     }
@@ -84,6 +105,13 @@ public class PermissionService {
   public void checkCanDelete(UUID surveyId, UUID accountId) {
     Survey survey = getSurveyOrThrow(surveyId);
 
+    if (survey.isTemplate()) {
+      throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST,
+          "Нельзя управлять правами доступа для шаблона"
+      );
+    }
+
     if (survey.getAuthor().getId().equals(accountId)) {
       return;
     }
@@ -98,6 +126,14 @@ public class PermissionService {
 
   @Transactional(readOnly = true)
   public List<PermissionResponseDto> getAllBySurveyId(UUID surveyId) {
+    Survey survey = getSurveyOrThrow(surveyId);
+
+    if (survey.isTemplate()) {
+      throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST,
+          "Нельзя управлять правами доступа для шаблона"
+      );
+    }
     return permissionDao.findAllBySurveyId(surveyId).stream()
         .map(PermissionMapper::permissionToDto)
         .toList();
@@ -110,6 +146,13 @@ public class PermissionService {
       UUID currentUserId
   ) {
     Survey survey = getSurveyOrThrow(surveyId);
+
+    if (survey.isTemplate()) {
+      throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST,
+          "Нельзя управлять правами доступа для шаблона"
+      );
+    }
 
     checkCanManagePermissions(survey, currentUserId);
 
@@ -149,12 +192,19 @@ public class PermissionService {
   ) {
     Survey survey = getSurveyOrThrow(surveyId);
 
+    if (survey.isTemplate()) {
+      throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST,
+          "Нельзя управлять правами доступа для шаблона"
+      );
+    }
+
     checkCanManagePermissions(survey, currentUserId);
 
     Permission permission = permissionDao.findBySurveyIdAndAccountId(surveyId, accountId)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Права доступа не найдены: surveyId=%s, accountId=%s"
-                .formatted(surveyId, accountId)));
+            .formatted(surveyId, accountId)));
 
     permission.setRole(dto.getRole());
 
@@ -168,6 +218,13 @@ public class PermissionService {
   public void delete(UUID surveyId, UUID accountId, UUID currentUserId) {
     Survey survey = getSurveyOrThrow(surveyId);
 
+    if (survey.isTemplate()) {
+      throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST,
+          "Нельзя управлять правами доступа для шаблона"
+      );
+    }
+
     checkCanManagePermissions(survey, currentUserId);
 
     permissionDao.deleteBySurveyIdAndAccountId(surveyId, accountId);
@@ -177,12 +234,14 @@ public class PermissionService {
   @Transactional(readOnly = true)
   public List<SurveyWithUserRoleDto> getAccessibleSurveys(UUID accountId) {
     List<SurveyWithUserRoleDto> authored = surveyDao.findAllByAuthorId(accountId).stream()
+        .filter(survey -> !survey.isTemplate())
         .map(survey ->
             surveyMapper.surveyToSurveyWithRoleDto(survey, SurveyRole.AUTHOR)
         )
         .toList();
 
     List<SurveyWithUserRoleDto> shared = permissionDao.findAllByAccountId(accountId).stream()
+        .filter(permission -> !permission.getSurvey().isTemplate())
         .map(permission ->
             surveyMapper.surveyToSurveyWithRoleDto(permission.getSurvey(), permission.getRole())
         )

@@ -30,7 +30,6 @@ public class SurveyResponseDto {
   private final Boolean isAuthorizedOnly;
   private final Boolean isLimitedToOneResponse;
   private final Boolean isPublished;
-  private final Boolean isTemplate;
   private final Boolean doNotify;
   private final Instant expireAt;
   private final LocalDateTime expireAtAtTargetTimezone;

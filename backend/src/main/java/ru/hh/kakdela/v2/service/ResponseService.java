@@ -39,6 +39,13 @@ public class ResponseService {
   public ResponseResponseDto getById(UUID id, UUID accountId, String token) {
     Response response = loadResponseAndCheckAccess(id, accountId, token);
 
+    if (response.getSurvey().isTemplate()) {
+      throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST,
+          "У шаблона нет ответов"
+      );
+    }
+
     if (response.getAccount() == null && response.isCompleted()
         && !response.getSurvey().isAuthor(accountId)) {
       throw new ResponseStatusException(
@@ -50,6 +57,17 @@ public class ResponseService {
 
   @Transactional(readOnly = true)
   public List<ResponseResponseDto> getCompletedBySurveyId(UUID surveyId, UUID accountId) {
+    Survey survey = surveyDao.findById(surveyId)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Опрос не найден: id=" + surveyId));
+
+    if (survey.isTemplate()) {
+      throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST,
+          "У шаблона нет ответов"
+      );
+    }
+
     permissionService.checkCanReadResponses(surveyId, accountId);
 
     return responseDao.findCompletedBySurveyId(surveyId).stream()
@@ -60,6 +78,7 @@ public class ResponseService {
   @Transactional(readOnly = true)
   public List<ResponseResponseDto> getAllByAccountId(UUID accountId) {
     return responseDao.findAllByAccountId(accountId).stream()
+        .filter(response -> !response.getSurvey().isTemplate())
         .map(ResponseMapper::responseToDto)
         .toList();
   }
@@ -69,6 +88,17 @@ public class ResponseService {
       UUID surveyId,
       UUID accountId
   ) {
+    Survey survey = surveyDao.findById(surveyId)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Опрос не найден: id=" + surveyId));
+
+    if (survey.isTemplate()) {
+      throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST,
+          "У шаблона нет ответов"
+      );
+    }
+
     return responseDao.findIncompletedBySurveyIdAndAccountId(surveyId, accountId).stream()
         .map(ResponseMapper::responseToDto)
         .toList();
@@ -79,6 +109,13 @@ public class ResponseService {
     Survey survey = surveyDao.findById(surveyId)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
+
+    if (survey.isTemplate()) {
+      throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST,
+          "Нельзя отвечать на шаблон. Шаблоны предназначены только для создания новых опросов."
+      );
+    }
 
     if (!survey.isPublished()) {
       throw new ResponseStatusException(
@@ -130,6 +167,13 @@ public class ResponseService {
   public ResponseResponseDto complete(UUID id, UUID accountId, String token) {
     Response response = loadResponseAndCheckAccess(id, accountId, token);
 
+    if (response.getSurvey().isTemplate()) {
+      throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST,
+          "У шаблона нет ответов для завершения"
+      );
+    }
+
     if (!responseDao.areAllMandatoryQuestionsAnswered(id)) {
       throw new ResponseStatusException(
           HttpStatus.CONFLICT, "Не все обязательные вопросы заполнены");
@@ -151,6 +195,17 @@ public class ResponseService {
 
   @Transactional
   public ResponseExportDto export(UUID surveyId, UUID accountId) {
+    Survey survey = surveyDao.findById(surveyId)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Опрос не найден: id=" + surveyId));
+
+    if (survey.isTemplate()) {
+      throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST,
+          "У шаблона нет ответов для экспорта"
+      );
+    }
+
     permissionService.checkCanReadResponses(surveyId, accountId);
 
     List<ResponseResponseDto> completedResponses = responseDao
