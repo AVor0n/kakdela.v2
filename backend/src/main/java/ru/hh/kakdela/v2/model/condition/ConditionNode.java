@@ -53,14 +53,13 @@ public class ConditionNode {
 
   @OneToOne(
       mappedBy = "node",
-      fetch = FetchType.LAZY,
       cascade = CascadeType.ALL,
-      orphanRemoval = true)
+      orphanRemoval = true,
+      fetch = FetchType.LAZY)
   private ConditionAtom atom;
 
   @OneToMany(
       mappedBy = "parentNode",
-      fetch = FetchType.LAZY,
       cascade = CascadeType.ALL,
       orphanRemoval = true)
   @Builder.Default
