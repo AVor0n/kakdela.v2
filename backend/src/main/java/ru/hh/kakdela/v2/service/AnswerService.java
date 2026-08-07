@@ -128,7 +128,7 @@ public class AnswerService {
       AnswerRequestDto dto,
       List<AnswerOption> selectedAnswerOptions
   ) {
-    responseService.resetResponsePageStatusForPagesAfterSpecified(
+    responseService.resetResponsePageStatuses(
         response.getId(), question.getSurveyPage().getId());
 
     answer.setSerialNumber(question.getSerialNumber());

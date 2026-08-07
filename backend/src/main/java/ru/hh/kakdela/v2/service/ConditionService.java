@@ -200,4 +200,8 @@ public class ConditionService {
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Условие не найдено: id=" + id));
   }
+
+  void makeConditionsConsistent(UUID pageId, int serialNumber) {
+    conditionDao.makeConditionsConsistentByPageIdAndItsSerialNumber(pageId, serialNumber);
+  }
 }

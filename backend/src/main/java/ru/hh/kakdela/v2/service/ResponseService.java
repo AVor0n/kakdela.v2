@@ -278,7 +278,7 @@ public class ResponseService {
     }
   }
 
-  void resetResponsePageStatusForPagesAfterSpecified(UUID responseId, UUID pageId) {
+  void resetResponsePageStatuses(UUID responseId, UUID pageId) {
     responsePageStatusDao.resetResponsePageStatusForPagesAfterSpecifiedByResponseIdAndPageId(
         responseId, pageId);
   }
