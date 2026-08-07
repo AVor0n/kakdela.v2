@@ -149,10 +149,11 @@ public class ResponseDaoImpl implements ResponseDao {
             SELECT COUNT(q)
             FROM Question q
             WHERE q.isMandatory = true
-            AND q.surveyPage.survey = (
-                SELECT r.survey
-                FROM Response r
-                WHERE r.id = :responseId
+            AND q.surveyPage IN (
+                 SELECT rsp.surveyPage
+                 FROM ResponsePageStatus rsp
+                 WHERE rsp.response.id = :responseId
+                 AND rsp.isIncluded = true
             )
             AND q.id NOT IN (
                 SELECT a.question.id
