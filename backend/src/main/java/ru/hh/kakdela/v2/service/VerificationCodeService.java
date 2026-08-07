@@ -9,7 +9,6 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-import ru.hh.kakdela.v2.dto.auth.VerifyCodeResponseDto;
 import ru.hh.kakdela.v2.exception.ResetCodeException;
 
 @Service

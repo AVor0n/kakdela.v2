@@ -17,7 +17,6 @@ import ru.hh.kakdela.v2.dto.auth.AuthTokensDto;
 import ru.hh.kakdela.v2.dto.auth.LoginDto;
 import ru.hh.kakdela.v2.dto.auth.PasswordResetDto;
 import ru.hh.kakdela.v2.dto.auth.VerifyCodeRequestDto;
-import ru.hh.kakdela.v2.dto.auth.VerifyCodeResponseDto;
 import ru.hh.kakdela.v2.model.Account;
 import ru.hh.kakdela.v2.security.JwtService;
 
