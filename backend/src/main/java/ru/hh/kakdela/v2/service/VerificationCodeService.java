@@ -1,5 +1,6 @@
 package ru.hh.kakdela.v2.service;
 
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,6 +20,14 @@ public class VerificationCodeService {
 
   private static final String codeResetPrefix = "reset:code:";
   private static final String blockResetPrefix = "reset:block:";
+  private static final Map<Long, Long> nextBlockExpirationMap = Map.of(
+      0L, 1L,
+      1L, 5L,
+      5L, 15L,
+      15L, 60L,
+      60L, 1440L,
+      1440L, 1440L
+  );
 
   @Value("${app.pwdrest.max_attempts}")
   private int maxAttempts;
@@ -40,7 +49,9 @@ public class VerificationCodeService {
       long currentTime = System.currentTimeMillis();
       if (blockedUntil > currentTime) {
         throw new ResetCodeException(
-            "Запрещено получать новый код ещё: " + (blockedUntil - currentTime) / 6000 + " минут",
+            "Запрещено получать новый код ещё: "
+                + ((blockedUntil - currentTime) / 60000 + 1)
+                + " минут",
             0,
             HttpStatus.TOO_MANY_REQUESTS
         );
@@ -56,7 +67,7 @@ public class VerificationCodeService {
     hashOps.put(codeHashKey, "code", code);
     hashOps.put(codeHashKey, "attempts", "0");
 
-    long blockExp = getNextBlockExpiration(prevBlockExp);
+    long blockExp = nextBlockExpirationMap.get(prevBlockExp);
     long blockUntil = System.currentTimeMillis()
         + TimeUnit.MINUTES.toMillis(blockExp);
     hashOps.put(blockHashKey, "blocked_until", String.valueOf(blockUntil));
@@ -66,7 +77,7 @@ public class VerificationCodeService {
     redisTemplate.expire(blockHashKey, blockExpirationMinutes, TimeUnit.MINUTES);
   }
 
-  public VerifyCodeResponseDto verifyCode(String email, String inputCode) {
+  public void verifyCode(String email, String inputCode) {
     String hashKey = codeResetPrefix + email;
     HashOperations<String, String, String> hashOps = redisTemplate.opsForHash();
 
@@ -96,11 +107,6 @@ public class VerificationCodeService {
           HttpStatus.BAD_REQUEST
       );
     }
-
-    return new VerifyCodeResponseDto(
-        true,
-        "Код подтвержден"
-    );
   }
 
   public boolean verifyAndDelete(String email, String inputCode) {
@@ -128,19 +134,4 @@ public class VerificationCodeService {
     redisTemplate.delete(redisKey);
   }
 
-  private long getNextBlockExpiration(long prev) {
-    if (prev == 0) {
-      return 1;
-    }
-    if (prev == 1) {
-      return 5;
-    }
-    if (prev == 5) {
-      return 15;
-    }
-    if (prev == 15) {
-      return 60;
-    }
-    return 1440;
-  }
 }

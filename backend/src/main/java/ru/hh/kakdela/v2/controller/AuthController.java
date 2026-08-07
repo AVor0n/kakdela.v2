@@ -110,8 +110,9 @@ public class AuthController {
   }
 
   @GetMapping("/auth/verify-reset-code")
-  public VerifyCodeResponseDto verifyResetCode(VerifyCodeRequestDto dto) {
-    return authService.verifyResetCode(dto);
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void verifyResetCode(VerifyCodeRequestDto dto) {
+    authService.verifyResetCode(dto);
   }
 
   @PatchMapping("/auth/reset-password")

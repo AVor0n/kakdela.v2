@@ -146,9 +146,8 @@ public class AuthService {
     notificationService.sendPasswordResetCodeEmail(email, code);
   }
 
-  public VerifyCodeResponseDto verifyResetCode(VerifyCodeRequestDto dto) {
-    return verificationCodeService
-        .verifyCode(dto.getEmail(), dto.getCode());
+  public void verifyResetCode(VerifyCodeRequestDto dto) {
+    verificationCodeService.verifyCode(dto.getEmail(), dto.getCode());
   }
 
   @Transactional
