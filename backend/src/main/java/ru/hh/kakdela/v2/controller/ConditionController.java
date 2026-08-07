@@ -57,7 +57,7 @@ public class ConditionController {
         conditionId, currentUser.getId() != null ? currentUser.getId() : null);
   }
 
-  @GetMapping("/pages/{pageId}/determineNextPage")
+  @GetMapping("/pages/{pageId}/verify")
   public ConditionNextPageResponseDto verify(
       @PathVariable UUID pageId,
       @RequestParam UUID responseId,

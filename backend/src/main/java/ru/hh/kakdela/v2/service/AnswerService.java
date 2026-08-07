@@ -70,7 +70,12 @@ public class AnswerService {
     if (!question.getSurveyPage().getSurvey().getId()
         .equals(response.getSurvey().getId())) {
       throw new ResponseStatusException(
-          HttpStatus.BAD_REQUEST, "Вопрос принадлежит другому опросу");
+          HttpStatus.NOT_FOUND, "Вопрос не найден: " + questionId);
+    }
+
+    if (question.getSurveyPage().getSerialNumber() != 1
+        && !responseService.isPageIncluded(responseId, question.getSurveyPage().getId())) {
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Ветка с вопросом закрыта");
     }
 
     verifyAnswerRequestDto(dto, question);
@@ -119,6 +124,9 @@ public class AnswerService {
       AnswerRequestDto dto,
       List<AnswerOption> selectedAnswerOptions
   ) {
+    responseService.resetResponsePageStatusForPagesAfterSpecified(
+        response.getId(), question.getSurveyPage().getId());
+
     answer.setSerialNumber(question.getSerialNumber());
     answer.setQuestionTextSnapshot(question.getTextAsPlainString());
     answer.setTextValue(dto.getTextValue());

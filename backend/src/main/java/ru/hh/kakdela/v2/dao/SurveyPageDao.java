@@ -9,6 +9,8 @@ public interface SurveyPageDao {
 
   Optional<SurveyPage> findById(UUID id);
 
+  Optional<SurveyPage> findBySurveyIdAndSerialNumber(UUID surveyId, int serialNumber);
+
   List<SurveyPage> findAllBySurveyId(UUID surveyId);
 
   void save(SurveyPage page);
