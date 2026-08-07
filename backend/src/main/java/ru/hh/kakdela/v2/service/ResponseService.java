@@ -43,7 +43,7 @@ public class ResponseService {
 
   @Transactional(readOnly = true)
   public ResponseResponseDto getById(UUID id, UUID accountId, String token) {
-    Response response = loadResponseAndCheckAccess(id, accountId, token);
+    Response response = getEntityByIdAndCheckOwnerOrSurveyAuthorAccess(id, accountId, token);
 
     if (response.getAccount() == null && response.isCompleted()
         && !response.getSurvey().isAuthor(accountId)) {
@@ -114,7 +114,7 @@ public class ResponseService {
 
   @Transactional
   public ResponseResponseDto complete(UUID id, UUID accountId, String token) {
-    Response response = loadResponseAndCheckAccess(id, accountId, token);
+    Response response = getEntityByIdAndCheckOwnerAccess(id, accountId, token);
 
     checkMandatoryQuestionsAnswered(id);
 
@@ -180,7 +180,11 @@ public class ResponseService {
     }
   }
 
-  Response loadResponseAndCheckAccess(UUID responseId, UUID accountId, String token) {
+  Response getEntityByIdAndCheckOwnerOrSurveyAuthorAccess(
+      UUID responseId,
+      UUID accountId,
+      String token
+  ) {
     Response response = responseDao.findById(responseId)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Ответ не найден: " + responseId));
@@ -189,18 +193,34 @@ public class ResponseService {
       return response;
     }
 
+    checkOwnerAccess(response, accountId, token);
+
+    return response;
+  }
+
+  Response getEntityByIdAndCheckOwnerAccess(UUID responseId, UUID accountId, String token) {
+    Response response = responseDao.findById(responseId)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Ответ не найден: " + responseId));
+
+    checkOwnerAccess(response, accountId, token);
+
+    return response;
+  }
+
+  private void checkOwnerAccess(Response response, UUID accountId, String token) {
     if (response.getAccount() == null && token == null) {
       throw new ResponseStatusException(
           HttpStatus.UNAUTHORIZED, "Не предоставлены учётные данные для доступа к прохождению");
     }
 
-    if (response.getAccount() != null && !response.getAccount().getId().equals(accountId)
-        || token != null && !Objects.equals(jwtService.extractResponseId(token), responseId)) {
+    if (response.getAccount() != null
+        && !response.getAccount().getId().equals(accountId)
+        || token != null
+        && !Objects.equals(jwtService.extractResponseId(token), response.getId())) {
       throw new ResponseStatusException(
           HttpStatus.FORBIDDEN, "Вы не являетесь автором ответа");
     }
-
-    return response;
   }
 
   void checkMandatoryQuestionsAnswered(UUID responseId) {
