@@ -145,36 +145,25 @@ public class SurveyService {
     }
 
     if (dto.getExpireAtAtTargetTimezone().isPresent()) {
-      if (dto.getTargetTimezone().isPresent()) {
-        String targetTimezone = JsonNullableUtil.ifNotNullGetOrElse(
-            dto.getTargetTimezone(),
-            DefaultValues.TARGET_TIMEZONE_DEFAULT);
+      String targetTimezone = JsonNullableUtil.ifNotNullGetOrElseIfNullFirstOrElseSecond(
+          dto.getTargetTimezone(),
+          DefaultValues.TARGET_TIMEZONE_DEFAULT,
+          survey.getTargetTimezone());
 
-        if (dto.getExpireAtAtTargetTimezone().get() != null) {
-          Instant expireAt = dto.getExpireAtAtTargetTimezone().get()
-              .atZone(ZoneId.of(targetTimezone))
-              .toInstant()
-              .truncatedTo(ChronoUnit.SECONDS);
+      if (dto.getExpireAtAtTargetTimezone().get() != null) {
+        Instant expireAt = dto.getExpireAtAtTargetTimezone().get()
+            .atZone(ZoneId.of(targetTimezone))
+            .toInstant()
+            .truncatedTo(ChronoUnit.SECONDS);
 
-          validateExpireAt(expireAt);
-          survey.setExpireAt(expireAt);
-        } else {
-          survey.setExpireAt(null);
-        }
-
-        survey.setTargetTimezone(targetTimezone);
+        validateExpireAt(expireAt);
+        survey.setExpireAt(expireAt);
       } else {
-        if (dto.getExpireAtAtTargetTimezone().get() != null) {
-          Instant expireAt = dto.getExpireAtAtTargetTimezone().get()
-              .atZone(ZoneId.of(survey.getTargetTimezone()))
-              .toInstant()
-              .truncatedTo(ChronoUnit.SECONDS);
+        survey.setExpireAt(null);
+      }
 
-          validateExpireAt(expireAt);
-          survey.setExpireAt(expireAt);
-        } else {
-          survey.setExpireAt(null);
-        }
+      if (dto.getTargetTimezone().isPresent()) {
+        survey.setTargetTimezone(targetTimezone);
       }
     } else if (dto.getTargetTimezone().isPresent()) {
       String targetTimezone = JsonNullableUtil.ifNotNullGetOrElse(
