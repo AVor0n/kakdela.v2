@@ -64,7 +64,6 @@ public class ConditionController {
   }
 
   @PutMapping("/conditions/{conditionId}")
-  @ResponseStatus(HttpStatus.CREATED)
   public ConditionResponseDto update(
       @PathVariable UUID conditionId,
       @Valid @RequestBody ConditionRequestDto dto,
@@ -96,7 +95,6 @@ public class ConditionController {
   }
 
   @PutMapping("/nodes/{nodeId}")
-  @ResponseStatus(HttpStatus.CREATED)
   public ConditionNodeResponseDto updateNode(
       @PathVariable UUID nodeId,
       @Valid @RequestBody ConditionNodeUpdateDto dto,
@@ -118,7 +116,6 @@ public class ConditionController {
   }
 
   @PutMapping("/nodes/{nodeId}/atom")
-  @ResponseStatus(HttpStatus.CREATED)
   public ConditionNodeResponseDto updateAtom(
       @PathVariable UUID nodeId,
       @Valid @RequestBody ConditionAtomUpdateDto dto,
