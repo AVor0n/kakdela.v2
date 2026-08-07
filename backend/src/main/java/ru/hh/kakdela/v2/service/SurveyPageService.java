@@ -24,9 +24,10 @@ import ru.hh.kakdela.v2.model.SurveyPage;
 public class SurveyPageService {
 
   private final SurveyPageDao surveyPageDao;
+  private final SurveyDao surveyDao;
   private final PermissionService permissionService;
   private final ResponseService responseService;
-  private final SurveyDao surveyDao;
+  private final ConditionService conditionService;
   private final SurveyPageMapper surveyPageMapper;
 
   @Transactional(readOnly = true)
@@ -143,6 +144,8 @@ public class SurveyPageService {
       }
 
       surveyPage.setSerialNumber(newSerial);
+
+      conditionService.makeConditionsConsistent(pageId, newSerial);
     }
 
     if (dto.getTitle() != null) {

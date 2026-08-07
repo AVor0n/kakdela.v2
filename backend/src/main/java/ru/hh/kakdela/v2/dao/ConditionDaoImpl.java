@@ -32,17 +32,29 @@ public class ConditionDaoImpl implements ConditionDao {
   }
 
   public boolean existsByPageIdAndNextPageId(UUID pageId, UUID nextPageId) {
-    return entityManager
-        .createQuery(
-            """
-            SELECT COUNT(c)
-            FROM Condition c
-            WHERE c.surveyPage.id = :pageId
-            AND c.nextPage.id = :nextPageId
-            """, Long.class)
+    return entityManager.createQuery(
+        """
+        SELECT COUNT(c)
+        FROM Condition c
+        WHERE c.surveyPage.id = :pageId
+        AND c.nextPage.id = :nextPageId
+        """, Long.class)
         .setParameter("pageId", pageId)
         .setParameter("nextPageId", nextPageId)
         .getSingleResult() > 0;
+  }
+
+  @Override
+  public void makeConditionsConsistentByPageIdAndItsSerialNumber(UUID pageId, int serialNumber) {
+    entityManager.createQuery(
+        """
+        DELETE FROM Condition c
+        WHERE c.surveyPage.id = :pageId
+        AND c.nextPage.serialNumber < :serialNumber
+        """)
+        .setParameter("pageId", pageId)
+        .setParameter("serialNumber", serialNumber)
+        .executeUpdate();
   }
 
   @Override
