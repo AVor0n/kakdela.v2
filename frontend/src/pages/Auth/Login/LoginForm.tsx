@@ -75,9 +75,23 @@ export function LoginForm({
                     Войти
                 </Button>
 
-                <Button style='accent' mode='tertiary' type='button' onClick={onRegisterClick}>
-                    Зарегистрироваться
-                </Button>
+                <Flex justify={'space-between'}>
+                    <Button style='accent' mode='tertiary' type='button' onClick={onRegisterClick}>
+                        Зарегистрироваться
+                    </Button>
+                    <Button
+                        style='negative'
+                        mode='primary'
+                        type='button'
+                        Element='a'
+                        href='/api/auth/oauth2/authorization/hh'
+                    >
+                        <Flex align={'center'} gap='0.5rem'>
+                            <img width={32} src='/hh-logo.svg' alt='HH' />
+                            <p>Войти через HH</p>
+                        </Flex>
+                    </Button>
+                </Flex>
             </Flex>
         </form>
     );
