@@ -5,7 +5,9 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -22,6 +24,7 @@ import ru.hh.kakdela.v2.dto.response.ResponseWithTokenDto;
 import ru.hh.kakdela.v2.exception.response.NotAllMandatoryQuestionsAnsweredException;
 import ru.hh.kakdela.v2.mapper.ResponseMapper;
 import ru.hh.kakdela.v2.model.Account;
+import ru.hh.kakdela.v2.model.Answer;
 import ru.hh.kakdela.v2.model.Response;
 import ru.hh.kakdela.v2.model.ResponsePageStatus;
 import ru.hh.kakdela.v2.model.Survey;
@@ -125,6 +128,16 @@ public class ResponseService {
 
     response.setCompleted(true);
     response.setReceivedAt(Instant.now());
+
+    Set<UUID> includedPageIds = response.getPageStatuses().stream()
+        .map(rps -> rps.getSurveyPage().getId())
+        .collect(Collectors.toSet());
+
+    List<Answer> answersToDelete = response.getAnswers().stream()
+        .filter(a -> !includedPageIds.contains(a.getQuestion().getSurveyPage().getId()))
+        .toList();
+
+    response.getAnswers().removeAll(answersToDelete);
 
     responseDao.update(response);
     log.info("Завершен ответ на опрос id={} accountId={}", id, accountId);
