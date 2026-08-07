@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import ru.hh.kakdela.v2.dto.survey.page.SurveyPageCreateDto;
+import ru.hh.kakdela.v2.dto.survey.page.SurveyPagePublicResponseDto;
 import ru.hh.kakdela.v2.dto.survey.page.SurveyPageResponseDto;
 import ru.hh.kakdela.v2.dto.survey.page.SurveyPageUpdateDto;
 import ru.hh.kakdela.v2.security.CustomUserDetails;
@@ -44,7 +45,7 @@ public class SurveyPageController {
   }
 
   @GetMapping("/pages/{pageId}")
-  public SurveyPageResponseDto getPublicById(
+  public SurveyPagePublicResponseDto getPublicById(
       @PathVariable UUID pageId,
       @RequestParam UUID responseId,
       @AuthenticationPrincipal CustomUserDetails currentUser,
