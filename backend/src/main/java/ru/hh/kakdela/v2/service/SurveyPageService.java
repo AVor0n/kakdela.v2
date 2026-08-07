@@ -40,7 +40,8 @@ public class SurveyPageService {
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Страница не найдена: id=" + pageId));
 
-    Response response = responseService.loadResponseAndCheckAccess(responseId, accountId, token);
+    Response response =
+        responseService.getEntityByIdAndCheckOwnerAccess(responseId, accountId, token);
 
     if (!response.getSurvey().getId().equals(surveyPage.getSurvey().getId())
         || response.isCompleted()) {

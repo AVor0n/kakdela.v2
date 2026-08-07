@@ -65,7 +65,7 @@ public class ConditionService {
             HttpStatus.NOT_FOUND, "Страница не найдена: id=" + pageId));
 
     final Response response =
-        responseService.loadResponseAndCheckAccess(responseId, accountId, token);
+        responseService.getEntityByIdAndCheckOwnerAccess(responseId, accountId, token);
 
     if (surveyPage.getSerialNumber() != 1 && !responseService.isPageIncluded(responseId, pageId)) {
       throw new ResponseStatusException(

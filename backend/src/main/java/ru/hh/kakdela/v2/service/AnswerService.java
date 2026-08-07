@@ -36,7 +36,9 @@ public class AnswerService {
 
   @Transactional(readOnly = true)
   public List<AnswerResponseDto> getAllByResponseId(UUID responseId, UUID accountId, String token) {
-    Response response = responseService.loadResponseAndCheckAccess(responseId, accountId, token);
+    Response response =
+        responseService.getEntityByIdAndCheckOwnerOrSurveyAuthorAccess(
+            responseId, accountId, token);
 
     if (response.getAccount() == null && response.isCompleted()
         && !response.getSurvey().isAuthor(accountId)) {
@@ -57,7 +59,8 @@ public class AnswerService {
       UUID accountId,
       String token
   ) {
-    Response response = responseService.loadResponseAndCheckAccess(responseId, accountId, token);
+    Response response =
+        responseService.getEntityByIdAndCheckOwnerAccess(responseId, accountId, token);
 
     if (response.isCompleted()) {
       throw new ResponseStatusException(
@@ -100,7 +103,8 @@ public class AnswerService {
 
   @Transactional
   public void delete(UUID responseId, UUID questionId, UUID accountId, String token) {
-    Response response = responseService.loadResponseAndCheckAccess(responseId, accountId, token);
+    Response response =
+        responseService.getEntityByIdAndCheckOwnerAccess(responseId, accountId, token);
 
     if (response.isCompleted()) {
       throw new ResponseStatusException(
