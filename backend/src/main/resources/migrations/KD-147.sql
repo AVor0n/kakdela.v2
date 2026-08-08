@@ -44,6 +44,9 @@ ALTER TABLE answer
     RENAME COLUMN answer_text TO text_value;
 
 ALTER TABLE answer
+    ALTER COLUMN text_value DROP NOT NULL;
+
+ALTER TABLE answer
     ADD COLUMN id uuid,
     ADD COLUMN serial_number int,
     ADD COLUMN question_text_snapshot varchar(200),

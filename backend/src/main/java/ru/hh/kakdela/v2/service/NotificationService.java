@@ -76,6 +76,15 @@ public class NotificationService {
     }
   }
 
+  @Async
+  public void sendPasswordResetCodeEmail(String email, String code) {
+    log.info("Отправка кода для сброса пароля на: {}", email);
+    emailService.sendTextEmail(
+        email,
+        "Код подтверждения: " + code
+    );
+  }
+
   private Survey checkSurvey(UUID surveyId) {
     Survey survey = surveyDao.findById(surveyId).orElse(null);
     if (survey == null) {

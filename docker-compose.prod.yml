@@ -9,6 +9,8 @@ services:
         condition: service_healthy
       service-obs:
         condition: service_started
+      redis:
+        condition: service_started
     env_file:
       - .env
     restart: unless-stopped
@@ -48,6 +50,12 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+  redis:
+    image: 'redis:alpine'
+    container_name: kd2-redis
+    ports:
+      - '6379:6379'
 
   service-obs:
     image: chrislusf/seaweedfs:latest

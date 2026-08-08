@@ -10,6 +10,9 @@
     --color-border: #dce3eb;
     --color-primary: #00f;
     --color-secondary: #dddddd;
+    --z-floating-controls: 20;
+    --z-popover: 30;
+    --z-notification: 1000;
 }
 
 body {
