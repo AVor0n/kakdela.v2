@@ -19,7 +19,8 @@ export function SurveyView() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const mode: SurveyRunnerMode = searchParams.get('preview') === 'true' ? 'preview' : 'respond';
-    const { account, loading: isAccountLoading } = useAppSelector((state) => state.account);
+    const { account } = useAppSelector((state) => state.account);
+    const [isAccountChecked, setIsAccountChecked] = useState(false);
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
     const location = useLocation();
@@ -49,20 +50,27 @@ export function SurveyView() {
             dispatch(setErrorMessage({ message: 'Опрос не существует или ещё не опубликован' }));
             navigate(routePatterns.notFound);
         }
-        if (!isAccountLoading && !account && survey && survey.isAuthorizedOnly) {
+        if (isAccountChecked && !account && survey && survey.isAuthorizedOnly) {
             dispatch(setErrorMessage({ message: 'Этот опрос только для зарегистрированных пользователей' }));
             navigate(routes.login(), { state: { from: location } });
         }
-    }, [account, dispatch, isAccountLoading, location, mode, navigate, survey]);
+    }, [account, dispatch, isAccountChecked, location, mode, navigate, survey]);
 
     useEffect(() => {
-        if (!survey || !survey.isAuthorizedOnly || account) return;
+        if (!survey) return;
 
-        dispatch(setLoading(true));
+        if (account) {
+            setIsAccountChecked(true);
+            return;
+        }
+
         getAccountDetails()
             .then((data) => dispatch(setAccount(data)))
             .catch(() => dispatch(clearAccount()))
-            .finally(() => dispatch(setLoading(false)));
+            .finally(() => {
+                setIsAccountChecked(true);
+                dispatch(setLoading(false));
+            });
     }, [survey, account, dispatch]);
 
     if (isLoading) {
@@ -83,8 +91,11 @@ export function SurveyView() {
             <header className={style.header}>
                 <ProductLogo to={routes.root()} className={style.productLogo} />
                 <div className={style.accountState}>
-                    {!isAccountLoading &&
-                        (account ? <AccountDetail /> : <p className={style.anonymousBadge}>Анонимное прохождение</p>)}
+                    {isAccountChecked && account ? (
+                        <AccountDetail />
+                    ) : (
+                        <p className={style.anonymousBadge}>Анонимное прохождение</p>
+                    )}
                 </div>
             </header>
             <SurveyRunner survey={survey} mode={mode} />

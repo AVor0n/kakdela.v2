@@ -1,6 +1,7 @@
 import axios from 'axios';
-import { routes } from '@/app/routes';
+import { routePatterns, routes } from '@/app/routes';
 import { refreshToken } from './account';
+import { matchPath } from 'react-router-dom';
 
 export const apiClient = axios.create({
     withCredentials: true,
@@ -17,6 +18,8 @@ function getRefreshPromise(): Promise<void> {
     return refreshPromise;
 }
 
+const ANONYMOUS_ALLOWED_PATTERNS = [routePatterns.root, routePatterns.surveysView];
+
 apiClient.interceptors.response.use(
     (response) => response,
     async (error) => {
@@ -28,8 +31,10 @@ apiClient.interceptors.response.use(
         const requestUrl = error.config?.url ?? '';
         const isRefreshRequest = requestUrl.includes('/api/auth/refresh');
         const isUnauthorized = status === 401 || status === 403;
-
-        if (isUnauthorized && !isRefreshRequest && window.location.pathname !== routes.login()) {
+        const isAnonymousAllowedPage = ANONYMOUS_ALLOWED_PATTERNS.some((pattern) =>
+            matchPath(pattern, window.location.pathname),
+        );
+        if (isUnauthorized && !isRefreshRequest && !isAnonymousAllowedPage) {
             try {
                 await getRefreshPromise();
                 return apiClient(error.config!);
