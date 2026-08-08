@@ -12,6 +12,7 @@ import { RequireAuth } from '@/features/auth/RequireAuth';
 import { Settings } from '@/pages/Survey/SurveyModify/components/Settings/Settings';
 import { NotFound } from '@/pages/Errors/NotFound';
 import { Answers } from '@/pages/Survey/SurveyModify/components/Answers/Answers';
+import { AccountBootstrap } from '@/features/auth/AccountBootstrap';
 
 export function AppRouter() {
     return (
@@ -27,9 +28,11 @@ export function AppRouter() {
                     <Route
                         path={routePatterns.surveys}
                         element={
-                            <RequireAuth>
-                                <SurveyList />
-                            </RequireAuth>
+                            <AccountBootstrap>
+                                <RequireAuth>
+                                    <SurveyList />
+                                </RequireAuth>
+                            </AccountBootstrap>
                         }
                     />
                     <Route>
@@ -38,9 +41,11 @@ export function AppRouter() {
                             <Route
                                 path={routePatterns.surveyModify}
                                 element={
-                                    <RequireAuth>
-                                        <Outlet />
-                                    </RequireAuth>
+                                    <AccountBootstrap>
+                                        <RequireAuth>
+                                            <Outlet />
+                                        </RequireAuth>
+                                    </AccountBootstrap>
                                 }
                             >
                                 <Route path='settings' element={<Settings />} />
@@ -50,9 +55,11 @@ export function AppRouter() {
                             <Route
                                 path={routePatterns.surveyCreate}
                                 element={
-                                    <RequireAuth>
-                                        <SurveyCreate />
-                                    </RequireAuth>
+                                    <AccountBootstrap>
+                                        <RequireAuth>
+                                            <SurveyCreate />
+                                        </RequireAuth>
+                                    </AccountBootstrap>
                                 }
                             >
                                 <Route path='settings' element={<Settings />} />

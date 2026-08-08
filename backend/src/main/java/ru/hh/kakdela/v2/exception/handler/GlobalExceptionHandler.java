@@ -1,4 +1,4 @@
-package ru.hh.kakdela.v2.exception;
+package ru.hh.kakdela.v2.exception.handler;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
@@ -22,6 +22,7 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 import ru.hh.kakdela.v2.dto.error.ErrorResponse;
+import ru.hh.kakdela.v2.exception.ResetCodeException;
 
 @Slf4j
 @RestControllerAdvice
@@ -203,6 +204,31 @@ public class GlobalExceptionHandler {
     log.error("{}: ", ex.getReason(), ex);
     return new ResponseEntity<>(error, ex.getStatusCode());
   }
+
+  @ExceptionHandler(ResetCodeException.class)
+  public ResponseEntity<ErrorResponse> handleResetCodeException(
+      ResetCodeException ex, WebRequest request
+  ) {
+    HttpStatus status = HttpStatus.resolve(ex.getStatusCode().value());
+    String errorName = null;
+    if (status != null) {
+      errorName = status.getReasonPhrase();
+      System.out.println(errorName);
+    }
+
+    ErrorResponse error = new ErrorResponse(
+        LocalDateTime.now(),
+        ex.getStatusCode().value(),
+        (errorName != null) ? errorName : ex.getReason(),
+        ex.getMessage(),
+        getPath(request),
+        "Осталось попыток: " + ex.getRemainingAttempts()
+    );
+
+    log.error("{}: ", ex.getReason(), ex);
+    return new ResponseEntity<>(error, ex.getStatusCode());
+  }
+
 
   @ExceptionHandler(Exception.class)
   @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)

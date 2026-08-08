@@ -7,6 +7,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,6 +18,8 @@ import ru.hh.kakdela.v2.dto.account.AccountCreateDto;
 import ru.hh.kakdela.v2.dto.account.AccountResponseDto;
 import ru.hh.kakdela.v2.dto.auth.AuthTokensDto;
 import ru.hh.kakdela.v2.dto.auth.LoginDto;
+import ru.hh.kakdela.v2.dto.auth.PasswordResetDto;
+import ru.hh.kakdela.v2.dto.auth.VerifyCodeRequestDto;
 import ru.hh.kakdela.v2.security.CustomUserDetails;
 import ru.hh.kakdela.v2.service.AccountService;
 import ru.hh.kakdela.v2.service.AuthCookieService;
@@ -96,5 +100,22 @@ public class AuthController {
     authService.logoutEverywhere(userDetails.getId());
 
     authCookieService.clearAllAuthCookies(response);
+  }
+
+  @PostMapping("/auth/forgot-password")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void sendPasswordResetEmail(String email) {
+    authService.sendPasswordResetEmail(email);
+  }
+
+  @GetMapping("/auth/verify-reset-code")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void verifyResetCode(VerifyCodeRequestDto dto) {
+    authService.verifyResetCode(dto);
+  }
+
+  @PatchMapping("/auth/reset-password")
+  public void resetPassword(PasswordResetDto dto) {
+    authService.resetPassword(dto);
   }
 }

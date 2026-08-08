@@ -9,6 +9,7 @@ import java.time.LocalTime;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import ru.hh.kakdela.v2.constants.DefaultValues;
 import ru.hh.kakdela.v2.model.NotificationSchedule;
 import ru.hh.kakdela.v2.validator.NullOrNotBlank;
 
@@ -31,6 +32,6 @@ public class NotificationScheduleCreateDto {
 
   private LocalTime executionTime;
   @NullOrNotBlank
-  private String targetTimezone = "Europe/Moscow";
+  private String targetTimezone = DefaultValues.TARGET_TIMEZONE_DEFAULT;
   private boolean isActive = true;
 }

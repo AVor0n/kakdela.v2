@@ -1,18 +1,39 @@
 import axios from 'axios';
 import { routes } from '@/app/routes';
+import { refreshToken } from './account';
 
 export const apiClient = axios.create({
     withCredentials: true,
 });
 
+let refreshPromise: Promise<void> | null = null;
+
+function getRefreshPromise(): Promise<void> {
+    if (!refreshPromise) {
+        refreshPromise = refreshToken().finally(() => {
+            refreshPromise = null;
+        });
+    }
+    return refreshPromise;
+}
+
 apiClient.interceptors.response.use(
     (response) => response,
-    (error) => {
-        if (axios.isAxiosError(error) && (error.response?.status === 401 || error.response?.status === 403)) {
-            const requestUrl = error.config?.url ?? '';
-            const isAccountCheck = requestUrl.includes('/api/accounts/me');
+    async (error) => {
+        if (!axios.isAxiosError(error)) {
+            return Promise.reject(error);
+        }
 
-            if (!isAccountCheck && window.location.pathname !== routes.login()) {
+        const status = error.response?.status;
+        const requestUrl = error.config?.url ?? '';
+        const isRefreshRequest = requestUrl.includes('/api/auth/refresh');
+        const isUnauthorized = status === 401 || status === 403;
+
+        if (isUnauthorized && !isRefreshRequest && window.location.pathname !== routes.login()) {
+            try {
+                await getRefreshPromise();
+                return apiClient(error.config!);
+            } catch {
                 window.location.assign(routes.login());
             }
         }

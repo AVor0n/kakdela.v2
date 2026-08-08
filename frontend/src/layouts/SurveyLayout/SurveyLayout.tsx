@@ -1,21 +1,30 @@
 import { Link, Outlet, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { routePatterns, routes } from '@/app/routes';
-import { ActionList, Link as LinkHH, Button } from '@hh.ru/magritte-ui';
+import { Link as LinkHH, Button } from '@hh.ru/magritte-ui';
 import style from './SurveyLayout.module.css';
 import { getMySurveys, getSurveyById, updateSurvey } from '@/api/survey';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { setSelectedSurvey } from '@/entities/Survey/Survey.slice';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { setErrorMessage } from '@/entities/Error/Error.slice';
 import { LoadingContent } from '@/shared/ui/LoadingContent/LoadingContent';
 import { AccountDetail } from '@/shared/ui/AccountDetail/AccountDetail';
 import type { SurveyRole } from '@/shared/types/Survey.type';
+import { SurveyMobileMenu } from './components/SurveyMobileMenu/SurveyMobileMenu';
+import type { SurveyNavigationItem, SurveySection } from './SurveyLayout.types';
 
 type SurveyAccess = {
     surveyId: string;
     role: SurveyRole;
 };
+
+function getActiveSection(pathname: string): SurveySection | null {
+    if (pathname.includes('/questions')) return 'questions';
+    if (pathname.includes('/answers')) return 'answers';
+    if (pathname.includes('/settings')) return 'settings';
+    return null;
+}
 
 export function SurveyLayout() {
     const { id } = useParams();
@@ -24,8 +33,6 @@ export function SurveyLayout() {
     const { selectedSurvey } = useAppSelector((state) => state.survey);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [surveyAccess, setSurveyAccess] = useState<SurveyAccess | null>(null);
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const mobileMenuButtonRef = useRef<HTMLButtonElement>(null!);
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
     const userRole = id && surveyAccess?.surveyId === id ? surveyAccess.role : null;
@@ -34,6 +41,31 @@ export function SurveyLayout() {
     const isAnalystRestrictedRoute =
         userRole === 'ANALYST' &&
         (pathname.startsWith(`${basePath}/questions`) || pathname.startsWith(`${basePath}/settings`));
+    const activeSection = getActiveSection(pathname);
+    const navigationItems: SurveyNavigationItem[] = [
+        {
+            section: 'questions',
+            label: 'Вопросы',
+            path: `${basePath}/questions`,
+            disabled: !canEditSurvey,
+            disabledTitle: 'Аналитику недоступно редактирование вопросов',
+            disabledAriaLabel: 'Вопросы недоступны для аналитика',
+        },
+        {
+            section: 'answers',
+            label: 'Ответы',
+            path: `${basePath}/answers`,
+            disabled: isAccessLoading,
+        },
+        {
+            section: 'settings',
+            label: 'Настройки',
+            path: `${basePath}/settings`,
+            disabled: !canEditSurvey,
+            disabledTitle: 'Аналитику недоступны настройки опроса',
+            disabledAriaLabel: 'Настройки недоступны для аналитика',
+        },
+    ];
 
     useEffect(() => {
         if (!id) {
@@ -97,10 +129,6 @@ export function SurveyLayout() {
             });
     };
 
-    const closeMobileMenu = () => {
-        setIsMobileMenuOpen(false);
-    };
-
     return (
         <>
             <header className={style.header}>
@@ -111,37 +139,20 @@ export function SurveyLayout() {
                 </div>
 
                 <nav className={style.navbar}>
-                    <Button
-                        mode={pathname.includes('/questions') ? 'primary' : 'secondary'}
-                        style='accent'
-                        Element={Link}
-                        to={`${basePath}/questions`}
-                        disabled={!canEditSurvey}
-                        title={!canEditSurvey ? 'Аналитику недоступно редактирование вопросов' : undefined}
-                        aria-label={!canEditSurvey ? 'Вопросы недоступны для аналитика' : 'Вопросы'}
-                    >
-                        Вопросы
-                    </Button>
-                    <Button
-                        mode={pathname.includes('/answers') ? 'primary' : 'secondary'}
-                        style='accent'
-                        Element={Link}
-                        to={`${basePath}/answers`}
-                        disabled={isAccessLoading}
-                    >
-                        Ответы
-                    </Button>
-                    <Button
-                        mode={pathname.includes('/settings') ? 'primary' : 'secondary'}
-                        style='accent'
-                        Element={Link}
-                        to={`${basePath}/settings`}
-                        disabled={!canEditSurvey}
-                        title={!canEditSurvey ? 'Аналитику недоступны настройки опроса' : undefined}
-                        aria-label={!canEditSurvey ? 'Настройки недоступны для аналитика' : 'Настройки'}
-                    >
-                        Настройки
-                    </Button>
+                    {navigationItems.map((item) => (
+                        <Button
+                            key={item.section}
+                            mode={activeSection === item.section ? 'primary' : 'secondary'}
+                            style='accent'
+                            Element={Link}
+                            to={item.path}
+                            disabled={item.disabled}
+                            title={item.disabled ? item.disabledTitle : undefined}
+                            aria-label={item.disabled ? item.disabledAriaLabel : item.label}
+                        >
+                            {item.label}
+                        </Button>
+                    ))}
                 </nav>
                 <div className={style.actions}>
                     {id && (
@@ -165,98 +176,17 @@ export function SurveyLayout() {
                 </div>
 
                 <div className={style.mobileHeader}>
-                    <Button
-                        ref={mobileMenuButtonRef}
-                        mode='secondary'
-                        style='accent'
-                        type='button'
-                        aria-expanded={isMobileMenuOpen}
-                        aria-controls='survey-mobile-menu'
-                        aria-haspopup='menu'
-                        onClick={() => setIsMobileMenuOpen((isOpen) => !isOpen)}
-                    >
-                        Меню
-                    </Button>
+                    <SurveyMobileMenu
+                        surveyId={id}
+                        navigationItems={navigationItems}
+                        activeSection={activeSection}
+                        canEditSurvey={canEditSurvey}
+                        isAccessLoading={isAccessLoading}
+                        hasSelectedSurvey={Boolean(selectedSurvey)}
+                        isPublished={selectedSurvey?.isPublished}
+                        onPublish={publishingHandler}
+                    />
                     <AccountDetail />
-
-                    <ActionList
-                        visible={isMobileMenuOpen}
-                        onClose={closeMobileMenu}
-                        dropProps={{
-                            activatorRef: mobileMenuButtonRef,
-                            placement: 'bottom-left',
-                            role: 'menu',
-                            maxWidth: 320,
-                            padding: 12,
-                        }}
-                    >
-                        <nav id='survey-mobile-menu' className={style.mobileMenuContent} aria-label='Меню опроса'>
-                            <Button
-                                mode='tertiary'
-                                style='accent'
-                                Element={Link}
-                                to={routes.survey()}
-                                onClick={closeMobileMenu}
-                            >
-                                Обратно в меню
-                            </Button>
-                            <Button
-                                mode={pathname.includes('/questions') ? 'primary' : 'tertiary'}
-                                style='accent'
-                                Element={Link}
-                                to={`${basePath}/questions`}
-                                disabled={!canEditSurvey}
-                                onClick={closeMobileMenu}
-                            >
-                                Вопросы
-                            </Button>
-                            <Button
-                                mode={pathname.includes('/answers') ? 'primary' : 'tertiary'}
-                                style='accent'
-                                Element={Link}
-                                to={`${basePath}/answers`}
-                                disabled={isAccessLoading}
-                                onClick={closeMobileMenu}
-                            >
-                                Ответы
-                            </Button>
-                            <Button
-                                mode={pathname.includes('/settings') ? 'primary' : 'tertiary'}
-                                style='accent'
-                                Element={Link}
-                                to={`${basePath}/settings`}
-                                disabled={!canEditSurvey}
-                                onClick={closeMobileMenu}
-                            >
-                                Настройки
-                            </Button>
-                            {id && (
-                                <Button
-                                    mode='tertiary'
-                                    style='neutral'
-                                    Element={Link}
-                                    to={routes.surveyPreview(id)}
-                                    disabled={!selectedSurvey || isAccessLoading}
-                                    onClick={closeMobileMenu}
-                                >
-                                    Предпросмотр
-                                </Button>
-                            )}
-                            {canEditSurvey && (
-                                <Button
-                                    mode='tertiary'
-                                    style='accent'
-                                    onClick={() => {
-                                        publishingHandler();
-                                        closeMobileMenu();
-                                    }}
-                                    disabled={!selectedSurvey}
-                                >
-                                    {selectedSurvey?.isPublished ? 'Снять с публикации' : 'Опубликовать'}
-                                </Button>
-                            )}
-                        </nav>
-                    </ActionList>
                 </div>
             </header>
 

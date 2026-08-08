@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import org.openapitools.jackson.nullable.JsonNullable;
 import ru.hh.kakdela.v2.dto.account.AccountResponseDto;
 import ru.hh.kakdela.v2.dto.answer.option.AnswerOptionResponseDto;
 import ru.hh.kakdela.v2.dto.closing.ClosingPageResponseDto;
@@ -207,22 +208,37 @@ public class SurveyServiceTestDto {
     SurveyUpdateDto dto = new SurveyUpdateDto();
 
     if (otherValuesOfTitleAndDescription != null) {
-      dto.setTitle(PlainSurveyConstants.getTitle(otherValuesOfTitleAndDescription));
-      dto.setDescription(PlainSurveyConstants.getDescription(otherValuesOfTitleAndDescription));
+      dto.setTitle(
+          JsonNullable.of(PlainSurveyConstants.getTitle(otherValuesOfTitleAndDescription)));
+      dto.setDescription(
+          JsonNullable.of(PlainSurveyConstants.getDescription(otherValuesOfTitleAndDescription)));
+    } else {
+      dto.setTitle(JsonNullable.undefined());
+      dto.setDescription(JsonNullable.undefined());
     }
     if (allSurveyOptionValues != null) {
-      dto.setIsAuthorizedOnly(allSurveyOptionValues);
-      dto.setIsLimitedToOneResponse(allSurveyOptionValues);
-      dto.setDoNotify(allSurveyOptionValues);
+      dto.setIsAuthorizedOnly(JsonNullable.of(allSurveyOptionValues));
+      dto.setIsLimitedToOneResponse(JsonNullable.of(allSurveyOptionValues));
+      dto.setDoNotify(JsonNullable.of(allSurveyOptionValues));
+    } else {
+      dto.setIsAuthorizedOnly(JsonNullable.undefined());
+      dto.setIsLimitedToOneResponse(JsonNullable.undefined());
+      dto.setDoNotify(JsonNullable.undefined());
     }
     if (isPublished != null) {
-      dto.setIsPublished(isPublished);
+      dto.setIsPublished(JsonNullable.of(isPublished));
+    } else {
+      dto.setIsPublished(JsonNullable.undefined());
     }
     if (expireAtAtTargetTimezone != null) {
-      dto.setExpireAtAtTargetTimezone(expireAtAtTargetTimezone);
+      dto.setExpireAtAtTargetTimezone(JsonNullable.of(expireAtAtTargetTimezone));
+    } else {
+      dto.setExpireAtAtTargetTimezone(JsonNullable.undefined());
     }
     if (targetTimezone != null) {
-      dto.setTargetTimezone(targetTimezone);
+      dto.setTargetTimezone(JsonNullable.of(targetTimezone));
+    } else {
+      dto.setTargetTimezone(JsonNullable.undefined());
     }
 
     return dto;
@@ -250,8 +266,13 @@ public class SurveyServiceTestDto {
   ) {
     SurveyUpdateDto dto = new SurveyUpdateDto();
 
-    dto.setIsAuthorizedOnly(isAuthorizedOnly);
-    dto.setIsLimitedToOneResponse(isLimitedToOneResponse);
+    dto.setDescription(JsonNullable.undefined());
+    dto.setIsAuthorizedOnly(JsonNullable.of(isAuthorizedOnly));
+    dto.setIsLimitedToOneResponse(JsonNullable.of(isLimitedToOneResponse));
+    dto.setDoNotify(JsonNullable.undefined());
+    dto.setIsPublished(JsonNullable.undefined());
+    dto.setExpireAtAtTargetTimezone(JsonNullable.undefined());
+    dto.setTargetTimezone(JsonNullable.undefined());
 
     return dto;
   }

@@ -15,13 +15,13 @@ import ru.hh.kakdela.v2.util.service.survey.SurveyServiceTestConstants;
 public class SurveyServiceUpdateTest extends SurveyServiceTestBase {
 
   @Test
-  void update_surveyNotFound_throwException() {
+  void update_Partial_surveyNotFound_throwException() {
     Mockito.when(surveyDao.findById(SurveyServiceTestConstants.plainSurveyId))
         .thenReturn(Optional.empty());
 
     Exception ex = assertThrows(
         ResponseStatusException.class,
-        () -> surveyService.update(SurveyServiceTestConstants.plainSurveyId, plainSurveyUnpublishedUpdateDtoNoChanges, SurveyServiceTestConstants.account1Id)
+        () -> surveyService.updatePartial(SurveyServiceTestConstants.plainSurveyId, plainSurveyUnpublishedUpdateDtoNoChanges, SurveyServiceTestConstants.account1Id)
     );
     assertEquals(
         "404 NOT_FOUND \"Опрос не найден: " + SurveyServiceTestConstants.plainSurveyId + "\"",
@@ -33,13 +33,13 @@ public class SurveyServiceUpdateTest extends SurveyServiceTestBase {
   }
 
   @Test
-  void update_surveyFound_checkPermissions() {
+  void update_Partial_surveyFound_checkPermissions() {
     Survey surveyToUpdate = SurveyServiceTestBase.getFreshPlainSurveyUnpublished();
 
     Mockito.when(surveyDao.findById(SurveyServiceTestConstants.plainSurveyId))
         .thenReturn(Optional.of(surveyToUpdate));
 
-    surveyService.update(
+    surveyService.updatePartial(
         SurveyServiceTestConstants.plainSurveyId,
         plainSurveyUnpublishedUpdateDtoNoChanges,
         SurveyServiceTestConstants.account1Id
@@ -50,7 +50,7 @@ public class SurveyServiceUpdateTest extends SurveyServiceTestBase {
   }
 
   @Test
-  void update_nothingChanged_returnSameSurveyDto() {
+  void update_Partial_nothingChanged_returnSameSurveyDto() {
     Survey surveyToUpdate = SurveyServiceTestBase.getFreshPlainSurveyUnpublished();
 
     Mockito.when(surveyDao.findById(SurveyServiceTestConstants.plainSurveyId))
@@ -64,7 +64,7 @@ public class SurveyServiceUpdateTest extends SurveyServiceTestBase {
       return null;
     }).when(surveyDao).update(Mockito.any(Survey.class));
 
-    SurveyResponseDto result = surveyService.update(
+    SurveyResponseDto result = surveyService.updatePartial(
         SurveyServiceTestConstants.plainSurveyId,
         plainSurveyUnpublishedUpdateDtoNoChanges,
         SurveyServiceTestConstants.account1Id
@@ -76,13 +76,13 @@ public class SurveyServiceUpdateTest extends SurveyServiceTestBase {
   }
 
   @Test
-  void update_isPublishedChangedToTrueButSurveyAlreadyPublished_doNotSendNotificationToSurveyParticipants() {
+  void update_Partial_isPublishedChangedToTrueButSurveyAlreadyPublished_doNotSendNotificationToSurveyParticipants() {
     Survey surveyToUpdate = SurveyServiceTestBase.getFreshPlainSurveyPublished();
 
     Mockito.when(surveyDao.findById(SurveyServiceTestConstants.plainSurveyId))
         .thenReturn(Optional.of(surveyToUpdate));
 
-    surveyService.update(
+    surveyService.updatePartial(
         SurveyServiceTestConstants.plainSurveyId,
         plainSurveyUnpublishedUpdateDtoPublished,
         SurveyServiceTestConstants.account1Id
@@ -93,13 +93,13 @@ public class SurveyServiceUpdateTest extends SurveyServiceTestBase {
   }
 
   @Test
-  void update_isPublishedChangedToTrue_sendNotificationToSurveyParticipants() {
+  void update_Partial_isPublishedChangedToTrue_sendNotificationToSurveyParticipants() {
     Survey surveyToUpdate = SurveyServiceTestBase.getFreshPlainSurveyUnpublished();
 
     Mockito.when(surveyDao.findById(SurveyServiceTestConstants.plainSurveyId))
         .thenReturn(Optional.of(surveyToUpdate));
 
-    surveyService.update(
+    surveyService.updatePartial(
         SurveyServiceTestConstants.plainSurveyId,
         plainSurveyUnpublishedUpdateDtoPublished,
         SurveyServiceTestConstants.account1Id
@@ -110,7 +110,7 @@ public class SurveyServiceUpdateTest extends SurveyServiceTestBase {
   }
 
   @Test
-  void update_expireAtChanged_convertNewExpireAtToUtcCorrectly() {
+  void update_Partial_expireAtChanged_convertNewExpireAtToUtcCorrectly() {
     Survey surveyToUpdate = SurveyServiceTestBase.getFreshPlainSurveyUnpublished();
 
     Mockito.when(surveyDao.findById(SurveyServiceTestConstants.plainSurveyId))
@@ -129,7 +129,7 @@ public class SurveyServiceUpdateTest extends SurveyServiceTestBase {
       return null;
     }).when(surveyDao).update(Mockito.any(Survey.class));
 
-    SurveyResponseDto result = surveyService.update(
+    SurveyResponseDto result = surveyService.updatePartial(
         SurveyServiceTestConstants.plainSurveyId,
         plainSurveyUnpublishedUpdateDtoAnotherExpireAt,
         SurveyServiceTestConstants.account1Id
@@ -147,7 +147,7 @@ public class SurveyServiceUpdateTest extends SurveyServiceTestBase {
   // как старое имело при конвертации в старый часовой пояс
 
   @Test
-  void update_targetTimezoneChanged_updateExpireAt() {
+  void update_targetTimezoneChanged_updatePartialExpireAt() {
     Survey surveyToUpdate = SurveyServiceTestBase.getFreshPlainSurveyUnpublished();
 
     Mockito.when(surveyDao.findById(SurveyServiceTestConstants.plainSurveyId))
@@ -168,7 +168,7 @@ public class SurveyServiceUpdateTest extends SurveyServiceTestBase {
       return null;
     }).when(surveyDao).update(Mockito.any(Survey.class));
 
-    SurveyResponseDto result = surveyService.update(
+    SurveyResponseDto result = surveyService.updatePartial(
         SurveyServiceTestConstants.plainSurveyId,
         plainSurveyUnpublishedUpdateDtoAnotherTargetTimezone,
         SurveyServiceTestConstants.account1Id
@@ -184,7 +184,7 @@ public class SurveyServiceUpdateTest extends SurveyServiceTestBase {
   }
 
   @Test
-  void update_everythingExceptIsPublishedChanged_updateEntityCorrectly() {
+  void update_everythingExceptIsPublishedChanged_updatePartialEntityCorrectly() {
     Survey surveyToUpdate = SurveyServiceTestBase.getFreshPlainSurveyUnpublished();
 
     Mockito.when(surveyDao.findById(SurveyServiceTestConstants.plainSurveyId))
@@ -198,7 +198,7 @@ public class SurveyServiceUpdateTest extends SurveyServiceTestBase {
       return null;
     }).when(surveyDao).update(Mockito.any(Survey.class));
 
-    SurveyResponseDto result = surveyService.update(
+    SurveyResponseDto result = surveyService.updatePartial(
         SurveyServiceTestConstants.plainSurveyId,
         plainSurveyUnpublishedUpdateDtoOtherValuesExceptIsPublished,
         SurveyServiceTestConstants.account1Id
