@@ -9,7 +9,7 @@ import ru.hh.kakdela.v2.model.Literal;
 @Component
 public class ClauseAnalyzer {
 
-  public boolean hasIntersection(Clause clause1, Clause clause2) {
+  public static boolean hasIntersection(Clause clause1, Clause clause2) {
     if (clause1.hasContradiction() || clause2.hasContradiction()) {
       return false;
     }
@@ -17,7 +17,7 @@ public class ClauseAnalyzer {
     return Clause.merge(clause1, clause2).isPresent();
   }
 
-  public boolean hasIntersection(DnfExpression dnf1, DnfExpression dnf2) {
+  public static boolean hasIntersection(DnfExpression dnf1, DnfExpression dnf2) {
     for (Clause clause1 : dnf1.getClauses()) {
       for (Clause clause2 : dnf2.getClauses()) {
         if (hasIntersection(clause1, clause2)) {
@@ -28,7 +28,7 @@ public class ClauseAnalyzer {
     return false;
   }
 
-  public List<Literal> findConflictingLiterals(Clause clause1, Clause clause2) {
+  public static List<Literal> findConflictingLiterals(Clause clause1, Clause clause2) {
     List<Literal> conflicts = new ArrayList<>();
 
     for (Literal lit1 : clause1.getLiterals()) {
