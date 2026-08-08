@@ -5,7 +5,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import ru.hh.kakdela.v2.model.Clause;
 import ru.hh.kakdela.v2.model.Literal;
@@ -15,10 +14,12 @@ import ru.hh.kakdela.v2.model.condition.ConditionNode;
 import ru.hh.kakdela.v2.model.condition.ConditionNode.Operator;
 
 @Component
-@RequiredArgsConstructor
 public class DnfConverter {
 
-  public DnfExpression convert(Condition condition) {
+  private DnfConverter() {
+  }
+
+  public static DnfExpression convert(Condition condition) {
     if (condition == null) {
       return DnfExpression.empty();
     }
@@ -33,7 +34,7 @@ public class DnfConverter {
     return cleaned;
   }
 
-  private DnfExpression visitNode(ConditionNode node, Set<UUID> visited) {
+  private static DnfExpression visitNode(ConditionNode node, Set<UUID> visited) {
     if (node == null) {
       return DnfExpression.empty();
     }
@@ -72,7 +73,7 @@ public class DnfConverter {
     }
   }
 
-  private DnfExpression mergeAnd(List<ConditionNode> children, Set<UUID> visited) {
+  private static DnfExpression mergeAnd(List<ConditionNode> children, Set<UUID> visited) {
     if (children == null || children.isEmpty()) {
       return DnfExpression.empty();
     }
@@ -90,7 +91,7 @@ public class DnfConverter {
     return result;
   }
 
-  private DnfExpression mergeOr(List<ConditionNode> children, Set<UUID> visited) {
+  private static DnfExpression mergeOr(List<ConditionNode> children, Set<UUID> visited) {
     if (children == null || children.isEmpty()) {
       return DnfExpression.empty();
     }
@@ -102,7 +103,7 @@ public class DnfConverter {
     return result;
   }
 
-  private Literal createLiteralFromNode(ConditionNode node, boolean isNegated) {
+  private static Literal createLiteralFromNode(ConditionNode node, boolean isNegated) {
     ConditionAtom atom = node.getAtom();
     if (atom == null) {
       throw new IllegalStateException("ATOM узел не содержит атома: " + node.getId());

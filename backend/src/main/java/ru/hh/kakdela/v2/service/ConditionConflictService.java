@@ -21,8 +21,6 @@ import ru.hh.kakdela.v2.model.condition.ConditionNode;
 public class ConditionConflictService {
 
   private final ConditionDao conditionDao;
-  private final DnfConverter dnfConverter;
-  private final ClauseAnalyzer clauseAnalyzer;
 
   public void validatePageConditions(UUID pageId) {
     List<Condition> conditions = conditionDao.findAllByPageId(pageId);
@@ -32,7 +30,7 @@ public class ConditionConflictService {
     }
 
     List<DnfExpression> dnfs = conditions.stream()
-        .map(dnfConverter::convert)
+        .map(DnfConverter::convert)
         .toList();
 
     for (int i = 0; i < dnfs.size(); i++) {
@@ -40,7 +38,7 @@ public class ConditionConflictService {
         Condition cond1 = conditions.get(i);
         Condition cond2 = conditions.get(j);
 
-        if (clauseAnalyzer.hasIntersection(dnfs.get(i), dnfs.get(j))) {
+        if (ClauseAnalyzer.hasIntersection(dnfs.get(i), dnfs.get(j))) {
           String summary1 = buildConditionSummary(cond1);
           String summary2 = buildConditionSummary(cond2);
 
