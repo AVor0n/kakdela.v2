@@ -98,7 +98,7 @@ public class ConditionNodeService {
     }
 
     conditionConflictService.validatePageConditions(
-    condition.getSurveyPage().getId());
+        condition.getSurveyPage().getId());
 
     return ConditionMapper.conditionNodeToDto(node);
   }
@@ -126,7 +126,7 @@ public class ConditionNodeService {
     conditionNodeDao.update(node);
 
     conditionConflictService.validatePageConditions(
-    node.getCondition().getSurveyPage().getId());
+        node.getCondition().getSurveyPage().getId());
 
     return ConditionMapper.conditionNodeToDto(node);
   }
@@ -167,7 +167,7 @@ public class ConditionNodeService {
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
             "Указанная родительская вершина не является соединительной");
       }
-    } else  {
+    } else {
       if (dto.getParentNodeId() != null) {
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
             "Дерево условия пусто. У нового атомарного условия"
@@ -193,7 +193,7 @@ public class ConditionNodeService {
       requiredAnswerOption = answerOptionDao.findById(dto.getRequiredAnswerOptionId())
           .orElseThrow(() -> new ResponseStatusException(
               HttpStatus.NOT_FOUND, "Вариант ответа не найден: id="
-                  + dto.getRequiredAnswerOptionId()));
+              + dto.getRequiredAnswerOptionId()));
 
       if (!requiredAnswerOption.getQuestion().getId().equals(question.getId())) {
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
@@ -230,7 +230,7 @@ public class ConditionNodeService {
     }
 
     conditionConflictService.validatePageConditions(
-    condition.getSurveyPage().getId());
+        condition.getSurveyPage().getId());
 
     return ConditionMapper.conditionNodeToDto(node);
   }
@@ -285,7 +285,7 @@ public class ConditionNodeService {
     conditionNodeDao.update(node);
 
     conditionConflictService.validatePageConditions(
-    node.getCondition().getSurveyPage().getId());
+        node.getCondition().getSurveyPage().getId());
 
     return ConditionMapper.conditionNodeToDto(node);
   }
@@ -315,7 +315,7 @@ public class ConditionNodeService {
     conditionNodeDao.delete(nodeToDelete);
 
     conditionConflictService.validatePageConditions(
-    node.getCondition().getSurveyPage().getId());
+        node.getCondition().getSurveyPage().getId());
   }
 
   // Вспомогательные методы
@@ -359,7 +359,8 @@ public class ConditionNodeService {
   }
 
   private void checkConditionTreeHeight(Condition condition) {
-    record NodeWithHeight(ConditionNode node, int height) {}
+    record NodeWithHeight(ConditionNode node, int height) {
+    }
 
     Queue<NodeWithHeight> queue = new ArrayDeque<>();
 

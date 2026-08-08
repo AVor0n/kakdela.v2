@@ -64,7 +64,8 @@ public class ConditionConflictService {
     if (condition.getRoot() == null) {
       return "Пустое условие " + getPageTitle(condition.getNextPage());
     }
-    return "Если " + buildNodeSummary(condition.getRoot()) + " - " + getPageTitle(condition.getNextPage());
+    return "Если " + buildNodeSummary(condition.getRoot())
+        + " - " + getPageTitle(condition.getNextPage());
   }
 
   private String buildNodeSummary(ConditionNode node) {
@@ -72,8 +73,8 @@ public class ConditionConflictService {
       throw new IllegalStateException("Вершина условия не может быть null");
     }
 
-    if (node.getOperator() == ConditionNode.Operator.ATOM ||
-        node.getOperator() == ConditionNode.Operator.NOT_ATOM) {
+    if (node.getOperator() == ConditionNode.Operator.ATOM
+        || node.getOperator() == ConditionNode.Operator.NOT_ATOM) {
       return buildAtomSummary(node);
     }
 
@@ -133,10 +134,10 @@ public class ConditionConflictService {
 
   private String buildConflictDetails(Condition cond1, Condition cond2) {
     return String.format(
-        """
+            """
             Условия конфликтуют: существует набор ответов, при котором оба условия истинны.
-                  Они ведут на разные страницы: '%s' и '%s'.
-                  Рекомендуется проверить логику ветвления.
+            Они ведут на разные страницы: '%s' и '%s'.
+            Рекомендуется проверить логику ветвления.
             """,
         getPageTitle(cond1.getNextPage()),
         getPageTitle(cond2.getNextPage())
