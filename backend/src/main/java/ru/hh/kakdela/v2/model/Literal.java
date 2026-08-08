@@ -31,12 +31,12 @@ public class Literal {
     return new Literal(questionId, false, answerOptionId, null);
   }
 
-  public static Literal notEquals(UUID questionId, UUID answerOptionId) {
-    return new Literal(questionId, true, answerOptionId, null);
-  }
-
   public static Literal equals(UUID questionId, Boolean value) {
     return new Literal(questionId, false, null, value);
+  }
+
+  public static Literal notEquals(UUID questionId, UUID answerOptionId) {
+    return new Literal(questionId, true, answerOptionId, null);
   }
 
   public static Literal notEquals(UUID questionId, Boolean value) {
