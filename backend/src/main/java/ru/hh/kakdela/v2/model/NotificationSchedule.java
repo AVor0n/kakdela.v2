@@ -29,6 +29,7 @@ import org.springframework.scheduling.TriggerContext;
 import org.springframework.scheduling.support.CronTrigger;
 import org.springframework.scheduling.support.SimpleTriggerContext;
 import org.springframework.web.server.ResponseStatusException;
+import ru.hh.kakdela.v2.constants.DefaultValues;
 
 @Entity
 @Table(name = "notification_schedule")
@@ -67,7 +68,7 @@ public class NotificationSchedule {
 
   @Column(name = "target_timezone")
   @Builder.Default
-  private String targetTimezone = "Europe/Moscow";
+  private String targetTimezone = DefaultValues.TARGET_TIMEZONE_DEFAULT;
 
   @Column(name = "is_active")
   @Builder.Default
