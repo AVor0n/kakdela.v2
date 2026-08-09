@@ -20,6 +20,7 @@ import ru.hh.kakdela.v2.dto.image.ProcessedImage;
 import ru.hh.kakdela.v2.dto.object.ObjectUrlResponseDto;
 import ru.hh.kakdela.v2.mapper.ClosingPageMapper;
 import ru.hh.kakdela.v2.model.ClosingPage;
+import ru.hh.kakdela.v2.model.Response;
 import ru.hh.kakdela.v2.model.Survey;
 
 @Slf4j
@@ -36,19 +37,51 @@ public class ClosingPageService {
   private final ClosingPageDao closingPageDao;
   private final SurveyDao surveyDao;
   private final PermissionService permissionService;
+  private final ResponseService responseService;
   private final ObjectStorageService objectStorageService;
   private final ImageProcessingService imageProcessingService;
   private final ClosingPageMapper closingPageMapper;
 
   @Transactional(readOnly = true)
-  public ClosingPageResponseDto getBySurveyId(UUID surveyId, UUID accountId) {
-    Survey survey = surveyDao.findById(surveyId)
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
+  public ClosingPageResponseDto getPublicBySurveyId(
+      UUID surveyId,
+      UUID responseId,
+      UUID accountId,
+      String token
+  ) {
+    if (!surveyDao.existsById(surveyId)) {
+      throw new ResponseStatusException(
+          HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId);
+    }
 
     ClosingPage closingPage = closingPageDao.findBySurveyId(surveyId)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Завершающая страница не найдена для опроса: " + surveyId));
+
+    Response response =
+        responseService.getEntityByIdAndCheckOwnerAccess(responseId, accountId, token);
+
+    if (!response.getSurvey().getId().equals(surveyId)
+        || !response.isCompleted()) {
+      throw new ResponseStatusException(
+          HttpStatus.FORBIDDEN, "Доступ к странице запрещён");
+    }
+
+    return closingPageMapper.closingPageToDto(closingPage);
+  }
+
+  @Transactional(readOnly = true)
+  public ClosingPageResponseDto getBySurveyId(UUID surveyId, UUID accountId) {
+    if (!surveyDao.existsById(surveyId)) {
+      throw new ResponseStatusException(
+          HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId);
+    }
+
+    ClosingPage closingPage = closingPageDao.findBySurveyId(surveyId)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Завершающая страница не найдена для опроса: " + surveyId));
+
+    permissionService.checkHasAnyPermission(surveyId, accountId);
 
     return closingPageMapper.closingPageToDto(closingPage);
   }

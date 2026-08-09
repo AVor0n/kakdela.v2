@@ -60,24 +60,24 @@ public class SurveyPageService {
   }
 
   @Transactional(readOnly = true)
-  public SurveyPageResponseDto getById(UUID pageId, UUID currentUserId) {
+  public SurveyPageResponseDto getById(UUID pageId, UUID accountId) {
     SurveyPage surveyPage = surveyPageDao.findById(pageId)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Страница не найдена: id=" + pageId));
 
-    permissionService.checkHasAnyPermission(surveyPage.getSurvey().getId(), currentUserId);
+    permissionService.checkHasAnyPermission(surveyPage.getSurvey().getId(), accountId);
 
     return surveyPageMapper.surveyPageToDto(surveyPage);
   }
 
   @Transactional(readOnly = true)
-  public List<SurveyPageResponseDto> getAllBySurveyId(UUID surveyId, UUID currentUserId) {
+  public List<SurveyPageResponseDto> getAllBySurveyId(UUID surveyId, UUID accountId) {
     if (!surveyDao.existsById(surveyId)) {
       throw new ResponseStatusException(
           HttpStatus.NOT_FOUND, "Опрос не найден: id=" + surveyId);
     }
 
-    permissionService.checkHasAnyPermission(surveyId, currentUserId);
+    permissionService.checkHasAnyPermission(surveyId, accountId);
 
     return surveyPageDao.findAllBySurveyId(surveyId).stream()
         .map(surveyPageMapper::surveyPageToDto)
