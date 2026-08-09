@@ -36,7 +36,7 @@ public class AnswerService {
   @Transactional(readOnly = true)
   public List<AnswerResponseDto> getAllByResponseId(UUID responseId, UUID accountId, String token) {
     Response response =
-        responseService.getEntityByIdAndCheckOwnerOrSurveyAuthorAccess(
+        responseService.getEntityByIdAndCheckOwnerOrSurveyTeamAccess(
             responseId, accountId, token);
 
     if (response.getAccount() == null && response.isCompleted()
