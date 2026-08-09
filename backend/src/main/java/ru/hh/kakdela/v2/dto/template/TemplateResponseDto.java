@@ -1,10 +1,9 @@
 package ru.hh.kakdela.v2.dto.template;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
-
-import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
 import ru.hh.kakdela.v2.dto.closing.ClosingPageResponseDto;

@@ -22,7 +22,6 @@ import ru.hh.kakdela.v2.dto.template.TemplateUpdateDto;
 import ru.hh.kakdela.v2.security.CustomUserDetails;
 import ru.hh.kakdela.v2.service.TemplateService;
 
-
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
