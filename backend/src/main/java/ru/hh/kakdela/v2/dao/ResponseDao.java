@@ -19,7 +19,7 @@ public interface ResponseDao {
 
   List<Response> findIncompletedBySurveyIdAndAccountId(UUID surveyId, UUID accountId);
 
-  boolean existsBySurveyIdAndAccountId(UUID accountId, UUID surveyId);
+  boolean existsBySurveyIdAndAccountId(UUID surveyId, UUID accountId);
 
   boolean areAllMandatoryQuestionsAnswered(UUID responseId);
 

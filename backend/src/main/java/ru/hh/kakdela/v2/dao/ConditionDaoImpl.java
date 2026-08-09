@@ -32,16 +32,19 @@ public class ConditionDaoImpl implements ConditionDao {
   }
 
   public boolean existsByPageIdAndNextPageId(UUID pageId, UUID nextPageId) {
-    return entityManager.createQuery(
+    List<UUID> results = entityManager.createQuery(
         """
-        SELECT COUNT(c)
+        SELECT c.id
         FROM Condition c
         WHERE c.surveyPage.id = :pageId
         AND c.nextPage.id = :nextPageId
-        """, Long.class)
+        """, UUID.class)
         .setParameter("pageId", pageId)
         .setParameter("nextPageId", nextPageId)
-        .getSingleResult() > 0;
+        .setMaxResults(1)
+        .getResultList();
+
+    return !results.isEmpty();
   }
 
   @Override

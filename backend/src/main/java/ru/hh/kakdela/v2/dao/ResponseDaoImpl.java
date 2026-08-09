@@ -128,63 +128,59 @@ public class ResponseDaoImpl implements ResponseDao {
   }
 
   @Override
-  public boolean existsBySurveyIdAndAccountId(UUID accountId, UUID surveyId) {
-    return entityManager
-        .createQuery(
-            """
-            SELECT COUNT(r) FROM Response r
-            WHERE r.account.id = :accountId
-            AND r.survey.id = :surveyId
-            """, Long.class)
-        .setParameter("accountId", accountId)
+  public boolean existsBySurveyIdAndAccountId(UUID surveyId, UUID accountId) {
+    List<UUID> results = entityManager.createQuery(
+        """
+        SELECT r.id
+        FROM Response r
+        WHERE r.survey.id = :surveyId
+        AND r.account.id = :accountId
+        """, UUID.class)
         .setParameter("surveyId", surveyId)
-        .getSingleResultOrNull() > 0;
+        .setParameter("accountId", accountId)
+        .setMaxResults(1)
+        .getResultList();
+
+    return !results.isEmpty();
   }
 
   @Override
   public boolean areAllMandatoryQuestionsAnswered(UUID responseId) {
-    return entityManager
-        .createQuery(
-            """
-            SELECT COUNT(q)
-            FROM Question q
-            WHERE q.isMandatory = true
-            AND q.surveyPage.id IN (
-                 SELECT rsp.surveyPage.id
-                 FROM ResponsePageStatus rsp
-                 WHERE rsp.response.id = :responseId
-                 AND rsp.isIncluded = true
-            )
-            AND q.id NOT IN (
-                SELECT a.question.id
-                FROM Answer a
-                WHERE a.response.id = :responseId
-            )
-            """, Long.class)
+    List<UUID> result = entityManager.createQuery(
+        """
+        SELECT q.id
+        FROM Question q
+        JOIN ResponsePageStatus rsp ON rsp.surveyPage.id = q.surveyPage.id
+        LEFT JOIN Answer a ON a.question.id = q.id AND a.response.id = :responseId
+        WHERE q.isMandatory = true
+        AND rsp.response.id = :responseId
+        AND rsp.isIncluded = true
+        AND a.id IS NULL
+        """, UUID.class)
         .setParameter("responseId", responseId)
-        .getSingleResultOrNull()
-        .equals(0L);
+        .setMaxResults(1)
+        .getResultList();
+
+    return result.isEmpty();
   }
 
   @Override
   public boolean areAllMandatoryQuestionsOfPageAnswered(UUID responseId, UUID pageId) {
-    return entityManager
-        .createQuery(
-            """
-            SELECT COUNT(q)
-            FROM Question q
-            WHERE q.isMandatory = true
-            AND q.surveyPage.id = :pageId
-            AND q.id NOT IN (
-                SELECT a.question.id
-                FROM Answer a
-                WHERE a.response.id = :responseId
-            )
-            """, Long.class)
+    List<UUID> result = entityManager.createQuery(
+        """
+        SELECT q.id
+        FROM Question q
+        LEFT JOIN Answer a ON a.question.id = q.id AND a.response.id = :responseId
+        WHERE q.isMandatory = true
+        AND q.surveyPage.id = :pageId
+        AND a.id IS NULL
+        """, UUID.class)
         .setParameter("responseId", responseId)
         .setParameter("pageId", pageId)
-        .getSingleResultOrNull()
-        .equals(0L);
+        .setMaxResults(1)
+        .getResultList();
+
+    return result.isEmpty();
   }
 
   @Override
