@@ -46,7 +46,7 @@ public class ResponseService {
 
   @Transactional(readOnly = true)
   public ResponseResponseDto getById(UUID id, UUID accountId, String token) {
-    Response response = getEntityByIdAndCheckOwnerOrSurveyAuthorAccess(id, accountId, token);
+    Response response = getEntityByIdAndCheckOwnerOrSurveyTeamAccess(id, accountId, token);
 
     if (response.getSurvey().isTemplate()) {
       throw new ResponseStatusException(
@@ -248,7 +248,7 @@ public class ResponseService {
     }
   }
 
-  Response getEntityByIdAndCheckOwnerOrSurveyAuthorAccess(
+  Response getEntityByIdAndCheckOwnerOrSurveyTeamAccess(
       UUID responseId,
       UUID accountId,
       String token
@@ -257,7 +257,11 @@ public class ResponseService {
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Ответ не найден: " + responseId));
 
-    if (response.isCompleted() && response.getSurvey().isAuthor(accountId)) {
+    if (response.isCompleted()
+        && response.getAccount() != null
+        && !response.getAccount().getId().equals(accountId)) {
+      permissionService.checkCanReadResponses(response.getSurvey().getId(), accountId);
+
       return response;
     }
 
