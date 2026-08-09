@@ -19,7 +19,6 @@ import ru.hh.kakdela.v2.mapper.ConditionMapper;
 import ru.hh.kakdela.v2.model.Response;
 import ru.hh.kakdela.v2.model.SurveyPage;
 import ru.hh.kakdela.v2.model.condition.Condition;
-import ru.hh.kakdela.v2.model.condition.ConditionElsePage;
 
 @Service
 @RequiredArgsConstructor
@@ -83,25 +82,10 @@ public class ConditionService {
       }
     }
 
-    if (surveyPage.getElsePage() != null) {
-      responseService.changeResponsePageStatus(
-          response, surveyPage.getElsePage().getElsePage(), true);
+    Optional<UUID> elsePageId = determineElsePage(surveyPage);
 
-      return new ConditionNextPageResponseDto(surveyPage.getElsePage().getElsePage().getId());
-    }
-
-    Optional<SurveyPage> nextPageOptional =
-        surveyPageDao.findBySurveyIdAndSerialNumber(
-            surveyPage.getSurvey().getId(), surveyPage.getSerialNumber() + 1);
-
-    if (nextPageOptional.isPresent()) {
-      SurveyPage nextPage = nextPageOptional.get();
-
-      responseService.changeResponsePageStatus(response, nextPage, true);
-      return new ConditionNextPageResponseDto(nextPage.getId());
-    } else {
-      return new ConditionNextPageResponseDto(null);
-    }
+    return elsePageId.map(ConditionNextPageResponseDto::new)
+        .orElseGet(() -> new ConditionNextPageResponseDto(null));
   }
 
   @Transactional
@@ -137,20 +121,7 @@ public class ConditionService {
         .nextPage(nextPage)
         .build();
 
-    surveyPage.getConditions().add(condition);
-
-    Set<UUID> nextPageIds = surveyPage.getConditions().stream()
-        .map(c -> c.getNextPage().getId())
-        .collect(Collectors.toSet());
-
-    surveyPage.getSurvey().getPages().stream()
-        .filter(p -> !nextPageIds.contains(p.getId())
-            && p.getSerialNumber() > surveyPage.getSerialNumber())
-        .findFirst()
-        .ifPresent(elsePage ->
-            surveyPage.setElsePage(new ConditionElsePage(surveyPage, elsePage)));
-
-    surveyPageDao.update(surveyPage);
+    conditionDao.save(condition);
 
     return ConditionMapper.conditionToDto(condition);
   }
@@ -199,6 +170,18 @@ public class ConditionService {
     return conditionDao.findById(id)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Условие не найдено: id=" + id));
+  }
+
+  Optional<UUID> determineElsePage(SurveyPage surveyPage) {
+    Set<UUID> nextPageIds = surveyPage.getConditions().stream()
+        .map(c -> c.getNextPage().getId())
+        .collect(Collectors.toSet());
+
+    return surveyPage.getSurvey().getPages().stream()
+        .filter(p -> !nextPageIds.contains(p.getId())
+            && p.getSerialNumber() > surveyPage.getSerialNumber())
+        .findFirst()
+        .map(SurveyPage::getId);
   }
 
   void makeConditionsConsistent(UUID pageId, int serialNumber) {

@@ -12,11 +12,6 @@ CREATE TABLE condition (
 CREATE INDEX idx_condition_survey_page_id
 ON condition (survey_page_id);
 
-CREATE TABLE condition_else_page (
-    survey_page_id uuid PRIMARY KEY REFERENCES survey_page (id) ON DELETE CASCADE,
-    else_page_id uuid REFERENCES survey_page (id) ON DELETE CASCADE
-);
-
 CREATE TABLE condition_node (
     id uuid PRIMARY KEY,
     condition_id uuid REFERENCES condition (id) ON DELETE CASCADE NOT NULL,
