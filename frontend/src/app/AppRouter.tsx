@@ -1,6 +1,6 @@
-import { BrowserRouter, Outlet, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Navigate, Outlet, Route, Routes } from 'react-router-dom';
 import App from '@/pages/Root/App';
-import { routePatterns } from '@/app/routes';
+import { routePatterns, routes } from '@/app/routes';
 import { Login } from '@/pages/Auth/Login/Login';
 import { Register } from '@/pages/Auth/Register/Register';
 import { SurveyList } from '@/pages/Survey/components/SurveyList/SurveyList';
@@ -18,6 +18,7 @@ export function AppRouter() {
         <BrowserRouter>
             <Routes>
                 <Route path={routePatterns.root} element={<App />} />
+                <Route path={routePatterns.authCallback} element={<Navigate to={routes.root()} />} />
                 <Route path={routePatterns.auth}>
                     <Route path={routePatterns.authLogin} element={<Login />} />
                     <Route path={routePatterns.authRegister} element={<Register />} />

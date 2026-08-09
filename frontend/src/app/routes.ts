@@ -2,6 +2,7 @@ import { generatePath } from 'react-router-dom';
 
 export const routePatterns = {
     root: '/',
+    authCallback: 'auth/callback',
     notFound: '/not-found',
     auth: '/auth',
     authLogin: '/auth/login',
