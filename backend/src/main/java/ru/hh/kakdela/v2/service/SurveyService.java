@@ -43,7 +43,7 @@ public class SurveyService {
   private final PermissionService permissionService;
   private final NotificationService notificationService;
   private final ObjectStorageService objectStorageService;
-  private final ClosingPageService closingPageService;
+  private final ConditionService conditionService;
   private final SurveyMapper surveyMapper;
 
   @Transactional(readOnly = true)
