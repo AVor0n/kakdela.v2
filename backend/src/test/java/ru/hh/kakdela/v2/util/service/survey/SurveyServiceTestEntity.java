@@ -106,8 +106,7 @@ public class SurveyServiceTestEntity {
         "surveyPage",
         "description",
         new ArrayList<>(),
-        Collections.emptyList(),
-        null);
+        Collections.emptyList());
     Question question1 = new Question(
         FullSurveyConstants.QUESTION1.getId(isClone),
         surveyPage1,
