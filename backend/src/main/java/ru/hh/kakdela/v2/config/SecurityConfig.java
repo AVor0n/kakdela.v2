@@ -2,46 +2,70 @@ package ru.hh.kakdela.v2.config;
 
 import jakarta.servlet.DispatcherType;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.endpoint.OAuth2AccessTokenResponseClient;
+import org.springframework.security.oauth2.client.endpoint.OAuth2AuthorizationCodeGrantRequest;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
+import org.springframework.security.oauth2.client.web.AuthorizationRequestRepository;
+import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
+import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestCustomizers;
+import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestResolver;
+import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfigurationSource;
 import ru.hh.kakdela.v2.security.JwtRequestFilter;
+import ru.hh.kakdela.v2.security.Oauth2LoginFailureHandler;
+import ru.hh.kakdela.v2.security.Oauth2LoginSuccessHandler;
 
 @RequiredArgsConstructor
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
+  @Value("${app.oauth2.authorization-base-uri:/api/auth/oauth2/authorization}")
+  private String oauth2AuthorizationBaseUri;
+  @Value("${app.oauth2.callback-base-uri:/api/auth/oauth2/callback/*}")
+  private String oauth2CallbackBaseUri;
+
   private final JwtRequestFilter jwtRequestFilter;
   private final CorsConfigurationSource corsConfigurationSource;
   private final AuthenticationEntryPoint authenticationEntryPoint;
+  private final AuthorizationRequestRepository<OAuth2AuthorizationRequest>
+      authorizationRequestRepository;
+  private final Oauth2LoginSuccessHandler oauth2LoginSuccessHandler;
+  private final Oauth2LoginFailureHandler oauth2LoginFailureHandler;
+  private final OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest>
+      hhTokenResponseClient;
+  private final OAuth2UserService<OAuth2UserRequest, OAuth2User> hhUserService;
 
   @Bean
-  public PasswordEncoder passwordEncoder() {
-    return new BCryptPasswordEncoder();
+  public OAuth2AuthorizationRequestResolver authorizationRequestResolver(
+      ClientRegistrationRepository clientRegistrationRepository) {
+    DefaultOAuth2AuthorizationRequestResolver resolver =
+        new DefaultOAuth2AuthorizationRequestResolver(
+            clientRegistrationRepository, oauth2AuthorizationBaseUri);
+    // hh.ru поддерживает PKCE (code_challenge/S256) - включаем его даже для confidential-клиента
+    resolver.setAuthorizationRequestCustomizer(OAuth2AuthorizationRequestCustomizers.withPkce());
+    return resolver;
   }
 
   @Bean
-  public AuthenticationManager authenticationManager(
-      AuthenticationConfiguration configuration) throws Exception {
-    return configuration.getAuthenticationManager();
-  }
-
-  @Bean
-  public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+  public SecurityFilterChain filterChain(
+      HttpSecurity http,
+      OAuth2AuthorizationRequestResolver authorizationRequestResolver) throws Exception {
 
     http
         .cors(cors -> cors.configurationSource(corsConfigurationSource))
@@ -74,6 +98,18 @@ public class SecurityConfig {
             .authenticationEntryPoint(authenticationEntryPoint)
             .accessDeniedHandler((request, response, ex) ->
                 response.sendError(HttpStatus.FORBIDDEN.value(), ex.getMessage())))
+        // Отдельно эндпоинты /api/auth/oauth2/** не перечисляем - они уже покрыты
+        // существующим правилом .requestMatchers("/api/auth/**").permitAll() выше
+        .oauth2Login(oauth2 -> oauth2
+            .authorizationEndpoint(a -> a
+                .baseUri(oauth2AuthorizationBaseUri)
+                .authorizationRequestRepository(authorizationRequestRepository)
+                .authorizationRequestResolver(authorizationRequestResolver))
+            .redirectionEndpoint(r -> r.baseUri(oauth2CallbackBaseUri))
+            .tokenEndpoint(t -> t.accessTokenResponseClient(hhTokenResponseClient))
+            .userInfoEndpoint(u -> u.userService(hhUserService))
+            .successHandler(oauth2LoginSuccessHandler)
+            .failureHandler(oauth2LoginFailureHandler))
         .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 
     return http.build();

@@ -2,11 +2,11 @@ package ru.hh.kakdela.v2.dao;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Repository;
 import ru.hh.kakdela.v2.model.Account;
 
 @Slf4j
@@ -38,6 +38,14 @@ public class AccountDaoImpl implements AccountDao {
   }
 
   @Override
+  public Optional<Account> findByHhUserId(String hhUserId) {
+    return Optional.ofNullable(entityManager
+        .createQuery("FROM Account a WHERE a.hhUserId = :hhUserId", Account.class)
+        .setParameter("hhUserId", hhUserId)
+        .getSingleResultOrNull());
+  }
+
+  @Override
   public List<Account> findUsersWithIncompletedResponseBySurveyId(UUID surveyId) {
     return entityManager.createQuery(
         """
@@ -52,8 +60,8 @@ public class AccountDaoImpl implements AccountDao {
   @Override
   public List<Account> findAll() {
     return entityManager
-            .createQuery("FROM Account", Account.class)
-            .getResultList();
+        .createQuery("FROM Account", Account.class)
+        .getResultList();
   }
 
   @Override
