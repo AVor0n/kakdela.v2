@@ -45,7 +45,7 @@ public class SurveyMapper {
     );
   }
 
-  public SurveyPublicResponseDto surveyToPublicDto(Survey survey) {
+  public SurveyPublicResponseDto surveyToPublicDto(Survey survey, boolean hasConditions) {
     return new SurveyPublicResponseDto(
         survey.getId(),
         AccountMapper.accountToDto(survey.getAuthor()),
@@ -62,7 +62,8 @@ public class SurveyMapper {
         survey.getPages().stream()
             .map(surveyPageMapper::surveyPageToShortDto)
             .toList(),
-        survey.getClosingPage() != null);
+        survey.getClosingPage() != null,
+        hasConditions);
   }
 
   public SurveyShortResponseDto surveyToShortDto(Survey survey) {
