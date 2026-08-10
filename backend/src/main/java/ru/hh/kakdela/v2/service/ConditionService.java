@@ -31,10 +31,10 @@ public class ConditionService {
 
   @Transactional(readOnly = true)
   public ConditionResponseDto getById(UUID id, UUID accountId) {
-    Condition condition = getEntityById(id);
+    Condition condition = getFullyInitializedEntityById(id);
 
     permissionService.checkHasAnyPermission(
-        condition.getSurveyPage().getSurvey().getId(), accountId);
+        getParentSurveyId(id), accountId);
 
     return ConditionMapper.conditionToDto(condition);
   }
@@ -59,14 +59,16 @@ public class ConditionService {
       UUID accountId,
       String token
   ) {
-    final SurveyPage surveyPage = surveyPageDao.findById(pageId)
+    final SurveyPage surveyPage =
+        surveyPageDao.findByIdWithAllConditionsAndParentSurveyWithRelatives(pageId)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Страница не найдена: id=" + pageId));
 
     final Response response =
-        responseService.getEntityByIdAndCheckOwnerAccess(responseId, accountId, token);
+        responseService.getFullyInitializedEntityByIdAndCheckOwnerAccess(
+            responseId, accountId, token);
 
-    if (surveyPage.getSerialNumber() != 1 && !responseService.isPageIncluded(responseId, pageId)) {
+    if (surveyPage.getSerialNumber() != 1 && !responseService.isPageIncluded(response, pageId)) {
       throw new ResponseStatusException(
           HttpStatus.FORBIDDEN, "Доступ к странице запрещён");
     }
@@ -76,14 +78,14 @@ public class ConditionService {
     for (Condition condition : surveyPage.getConditions()) {
       if (condition.evaluate(response)) {
         SurveyPage nextPage = condition.getNextPage();
-        responseService.changeResponsePageStatus(response, nextPage, true);
+        responseService.setResponsePageStatus(response, nextPage, true);
 
         return new ConditionNextPageResponseDto(nextPage.getId());
       }
     }
 
     Optional<SurveyPage> elsePage = determineElsePage(surveyPage);
-    elsePage.ifPresent(page -> responseService.changeResponsePageStatus(response, page, true));
+    elsePage.ifPresent(page -> responseService.setResponsePageStatus(response, page, true));
 
     return elsePage.map(page -> new ConditionNextPageResponseDto(page.getId()))
         .orElseGet(() -> new ConditionNextPageResponseDto(null));
@@ -128,19 +130,19 @@ public class ConditionService {
   }
 
   @Transactional
-  public ConditionResponseDto update(UUID id, ConditionRequestDto dto, UUID accountId) {
-    Condition condition = getEntityById(id);
+  public ConditionResponseDto update(UUID conditionId, ConditionRequestDto dto, UUID accountId) {
+    Condition condition = getEntityById(conditionId);
 
     permissionService.checkCanEdit(
-        condition.getSurveyPage().getSurvey().getId(), accountId);
+        getParentSurveyId(conditionId), accountId);
 
     SurveyPage nextPage = surveyPageDao.findById(dto.getNextPageId())
         .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Страница не найдена: id=" + dto.getNextPageId()));
+            HttpStatus.NOT_FOUND, "Страница не найдена: conditionId=" + dto.getNextPageId()));
 
     if (!nextPage.getSurvey().getId().equals(condition.getSurveyPage().getSurvey().getId())) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-          "Страница не найдена: id=" + dto.getNextPageId());
+          "Страница не найдена: conditionId=" + dto.getNextPageId());
     }
 
     if (nextPage.getSerialNumber() <= condition.getSurveyPage().getSerialNumber()) {
@@ -156,11 +158,11 @@ public class ConditionService {
   }
 
   @Transactional
-  public void delete(UUID id, UUID accountId) {
-    Condition condition = getEntityById(id);
+  public void delete(UUID conditionId, UUID accountId) {
+    Condition condition = getEntityById(conditionId);
 
     permissionService.checkCanEdit(
-        condition.getSurveyPage().getSurvey().getId(), accountId);
+        getParentSurveyId(conditionId), accountId);
 
     conditionDao.delete(condition);
   }
@@ -169,6 +171,12 @@ public class ConditionService {
 
   Condition getEntityById(UUID id) {
     return conditionDao.findById(id)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Условие не найдено: id=" + id));
+  }
+
+  Condition getFullyInitializedEntityById(UUID id) {
+    return conditionDao.findByIdWithWholeTree(id)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Условие не найдено: id=" + id));
   }
@@ -182,6 +190,10 @@ public class ConditionService {
         .filter(p -> !nextPageIds.contains(p.getId())
             && p.getSerialNumber() > surveyPage.getSerialNumber())
         .findFirst();
+  }
+
+  UUID getParentSurveyId(UUID conditionId) {
+    return conditionDao.findParentSurveyIdById(conditionId);
   }
 
   void makeConditionsConsistent(UUID pageId, int serialNumber) {

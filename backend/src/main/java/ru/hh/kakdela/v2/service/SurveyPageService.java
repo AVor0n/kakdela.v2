@@ -43,7 +43,8 @@ public class SurveyPageService {
             HttpStatus.NOT_FOUND, "Страница не найдена: id=" + pageId));
 
     Response response =
-        responseService.getEntityByIdAndCheckOwnerAccess(responseId, accountId, token);
+        responseService.getEntityWithPageStatusesByIdAndCheckOwnerAccess(
+            responseId, accountId, token);
 
     if (!response.getSurvey().getId().equals(surveyPage.getSurvey().getId())
         || response.isCompleted()) {
@@ -51,7 +52,7 @@ public class SurveyPageService {
           HttpStatus.FORBIDDEN, "Доступ к странице запрещён");
     }
 
-    if (surveyPage.getSerialNumber() != 1 && !responseService.isPageIncluded(responseId, pageId)) {
+    if (surveyPage.getSerialNumber() != 1 && !responseService.isPageIncluded(response, pageId)) {
       throw new ResponseStatusException(
           HttpStatus.FORBIDDEN, "Доступ к странице запрещён");
     }

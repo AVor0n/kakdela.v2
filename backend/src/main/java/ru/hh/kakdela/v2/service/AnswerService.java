@@ -30,6 +30,7 @@ public class AnswerService {
 
   private final AnswerDao answerDao;
   private final QuestionDao questionDao;
+  private final QuestionService questionService;
   private final ResponseService responseService;
   private final AnswerOptionService answerOptionService;
 
@@ -59,7 +60,8 @@ public class AnswerService {
       String token
   ) {
     Response response =
-        responseService.getEntityByIdAndCheckOwnerAccess(responseId, accountId, token);
+        responseService.getEntityWithPageStatusesByIdAndCheckOwnerAccess(
+            responseId, accountId, token);
 
     if (response.isCompleted()) {
       throw new ResponseStatusException(
@@ -70,14 +72,14 @@ public class AnswerService {
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Вопрос не найден: " + questionId));
 
-    if (!question.getSurveyPage().getSurvey().getId()
+    if (!questionService.getParentSurveyIdById(questionId)
         .equals(response.getSurvey().getId())) {
       throw new ResponseStatusException(
           HttpStatus.NOT_FOUND, "Вопрос не найден: " + questionId);
     }
 
     if (question.getSurveyPage().getSerialNumber() != 1
-        && !responseService.isPageIncluded(responseId, question.getSurveyPage().getId())) {
+        && !responseService.isPageIncluded(response, question.getSurveyPage().getId())) {
       throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Ветка с вопросом закрыта");
     }
 

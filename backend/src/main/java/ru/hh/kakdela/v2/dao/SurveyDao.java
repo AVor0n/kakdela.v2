@@ -9,6 +9,8 @@ public interface SurveyDao {
 
   Optional<Survey> findById(UUID id);
 
+  Optional<UUID> findAuthorIdById(UUID id);
+
   boolean existsById(UUID id);
 
   List<Survey> findAllByAuthorId(UUID authorId);

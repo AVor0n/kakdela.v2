@@ -226,6 +226,34 @@ public class ResponseService {
     return response;
   }
 
+  Response getFullyInitializedEntityByIdAndCheckOwnerAccess(
+      UUID responseId,
+      UUID accountId,
+      String token
+  ) {
+    Response response = responseDao.findByIdWithAllAnswersAndPageStatuses(responseId)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Ответ не найден: " + responseId));
+
+    checkOwnerAccess(response, accountId, token);
+
+    return response;
+  }
+
+  Response getEntityWithPageStatusesByIdAndCheckOwnerAccess(
+      UUID responseId,
+      UUID accountId,
+      String token
+  ) {
+    Response response = responseDao.findByIdWithAllAnswersAndPageStatuses(responseId)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Ответ не найден: " + responseId));
+
+    checkOwnerAccess(response, accountId, token);
+
+    return response;
+  }
+
   private void checkOwnerAccess(Response response, UUID accountId, String token) {
     if (response.getAccount() == null && token == null) {
       throw new ResponseStatusException(
@@ -253,17 +281,19 @@ public class ResponseService {
     }
   }
 
-  boolean isPageIncluded(UUID responseId, UUID pageId) {
-    Optional<ResponsePageStatus> pageStatus =
-        responsePageStatusDao.findResponsePageStatusByResponseIdAndPageId(responseId, pageId);
+  boolean isPageIncluded(Response response, UUID pageId) {
+    Optional<ResponsePageStatus> pageStatus = response.getPageStatuses().stream()
+        .filter(rps -> rps.getSurveyPage().getId().equals(pageId))
+        .findAny();
 
     return pageStatus.isPresent() && pageStatus.get().getIsIncluded();
   }
 
-  void changeResponsePageStatus(Response response, SurveyPage page, boolean isIncluded) {
-    Optional<ResponsePageStatus> responsePageStatusOptional =
-        responsePageStatusDao.findResponsePageStatusByResponseIdAndPageId(
-            response.getId(), page.getId());
+  void setResponsePageStatus(Response response, SurveyPage page, boolean isIncluded) {
+    Optional<ResponsePageStatus> responsePageStatusOptional = response.getPageStatuses().stream()
+        .filter(rsp -> rsp.getResponse().getId().equals(response.getId())
+            && rsp.getSurveyPage().getId().equals(page.getId()))
+        .findAny();
 
     if (responsePageStatusOptional.isEmpty()) {
       ResponsePageStatus responsePageStatus = ResponsePageStatus.builder()

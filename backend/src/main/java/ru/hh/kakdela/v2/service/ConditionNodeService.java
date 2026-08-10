@@ -43,10 +43,10 @@ public class ConditionNodeService {
       ConditionNodeCreateDto dto,
       UUID accountId
   ) {
-    Condition condition = conditionService.getEntityById(conditionId);
+    Condition condition = conditionService.getFullyInitializedEntityById(conditionId);
 
     permissionService.checkCanEdit(
-        condition.getSurveyPage().getSurvey().getId(), accountId);
+        conditionService.getParentSurveyId(conditionId), accountId);
 
     if (!dto.getOperator().isLink) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
@@ -104,7 +104,7 @@ public class ConditionNodeService {
     ConditionNode node = getEntityById(nodeId);
 
     permissionService.checkCanEdit(
-        node.getCondition().getSurveyPage().getSurvey().getId(), accountId);
+        conditionNodeDao.findParentSurveyIdById(nodeId), accountId);
 
     if (!node.getOperator().isLink) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
@@ -124,10 +124,10 @@ public class ConditionNodeService {
       ConditionAtomCreateDto dto,
       UUID accountId
   ) {
-    Condition condition = conditionService.getEntityById(conditionId);
+    Condition condition = conditionService.getFullyInitializedEntityById(conditionId);
 
     permissionService.checkCanEdit(
-        condition.getSurveyPage().getSurvey().getId(), accountId);
+        conditionService.getParentSurveyId(conditionId), accountId);
 
     ConditionNode parentNode;
 
@@ -226,7 +226,7 @@ public class ConditionNodeService {
     ConditionNode node = getEntityById(nodeId);
 
     permissionService.checkCanEdit(
-        node.getCondition().getSurveyPage().getSurvey().getId(), accountId);
+        conditionNodeDao.findParentSurveyIdById(nodeId), accountId);
 
     Question question = questionDao.findById(dto.getQuestionId())
         .orElseThrow(() -> new ResponseStatusException(
@@ -269,10 +269,10 @@ public class ConditionNodeService {
 
   @Transactional
   public void delete(UUID nodeId, UUID accountId) {
-    ConditionNode node = getEntityById(nodeId);
+    ConditionNode node = getEntityWithParentNodeAndParentConditionById(nodeId);
 
     permissionService.checkCanEdit(
-        node.getCondition().getSurveyPage().getSurvey().getId(), accountId);
+        conditionNodeDao.findParentSurveyIdById(nodeId), accountId);
 
     ConditionNode nodeToDelete;
 
@@ -355,6 +355,12 @@ public class ConditionNodeService {
 
   ConditionNode getEntityById(UUID id) {
     return conditionNodeDao.findById(id)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Вершина условия не найдена: id=" + id));
+  }
+
+  ConditionNode getEntityWithParentNodeAndParentConditionById(UUID id) {
+    return conditionNodeDao.findByIdWithParentAndGrandparentNodeAndParentCondition(id)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Вершина условия не найдена: id=" + id));
   }

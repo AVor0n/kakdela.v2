@@ -9,6 +9,10 @@ public interface ResponseDao {
 
   Optional<Response> findById(UUID id);
 
+  Optional<Response> findByIdWithAllAnswersAndPageStatuses(UUID id);
+
+  Optional<Response> findByIdWithPageStatuses(UUID id);
+
   List<Response> findCompletedBySurveyId(UUID surveyId);
 
   List<Response> findAllByAccountId(UUID accountId);

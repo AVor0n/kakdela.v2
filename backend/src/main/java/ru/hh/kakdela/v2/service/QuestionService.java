@@ -321,4 +321,10 @@ public class QuestionService {
     questionDao.update(question);
     log.info("Удалено вложение вопроса id={}", questionId);
   }
+
+  // Вспомогательные методы
+
+  UUID getParentSurveyIdById(UUID id) {
+    return questionDao.findParentSurveyIdById(id);
+  }
 }

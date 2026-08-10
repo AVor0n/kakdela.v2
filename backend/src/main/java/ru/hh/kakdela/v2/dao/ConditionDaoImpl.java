@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Repository;
 import ru.hh.kakdela.v2.model.condition.Condition;
+import ru.hh.kakdela.v2.model.condition.ConditionNode;
 
 @Repository
 public class ConditionDaoImpl implements ConditionDao {
@@ -17,6 +18,62 @@ public class ConditionDaoImpl implements ConditionDao {
   @Override
   public Optional<Condition> findById(UUID id) {
     return Optional.ofNullable(entityManager.find(Condition.class, id));
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public Optional<Condition> findByIdWithWholeTree(UUID id) {
+    Optional<Condition> result = Optional.ofNullable(entityManager.find(Condition.class, id));
+
+    if (result.isEmpty() || result.get().getRoot() == null) {
+      return result;
+    }
+
+    Condition condition = result.get();
+
+    List<UUID> treeNodeIds = entityManager.createNativeQuery(
+        """
+        WITH RECURSIVE tree AS (
+            SELECT :rootNodeId AS id
+        
+            UNION ALL
+        
+            SELECT current.id
+            FROM condition_node current
+            JOIN tree
+                ON current.parent_node_id = tree.id
+        )
+        SELECT id
+        FROM tree
+        """, UUID.class)
+        .setParameter("rootNodeId", condition.getRoot().getId())
+        .getResultList();
+
+    entityManager.createQuery(
+          """
+          SELECT DISTINCT cn
+          FROM ConditionNode cn
+          LEFT JOIN FETCH cn.atom
+          LEFT JOIN FETCH cn.childNodes cns
+          LEFT JOIN FETCH cns.atom
+          WHERE cn.id IN :treeNodeIds
+          """, ConditionNode.class)
+        .setParameter("treeNodeIds", treeNodeIds)
+        .getResultList();
+
+    return result;
+  }
+
+  @Override
+  public UUID findParentSurveyIdById(UUID id) {
+    return entityManager.createQuery(
+            """
+            SELECT c.surveyPage.survey.id
+            FROM Condition c
+            WHERE c.id = :id
+            """, UUID.class)
+        .setParameter("id", id)
+        .getSingleResult();
   }
 
   @Override

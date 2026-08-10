@@ -9,6 +9,8 @@ public interface QuestionDao {
 
   Optional<Question> findById(UUID id);
 
+  UUID findParentSurveyIdById(UUID id);
+
   List<Question> findAllByPageId(UUID pageId);
 
   void save(Question question);
