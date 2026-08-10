@@ -82,9 +82,10 @@ public class ConditionService {
       }
     }
 
-    Optional<UUID> elsePageId = determineElsePage(surveyPage);
+    Optional<SurveyPage> elsePage = determineElsePage(surveyPage);
+    elsePage.ifPresent(page -> responseService.changeResponsePageStatus(response, page, true));
 
-    return elsePageId.map(ConditionNextPageResponseDto::new)
+    return elsePage.map(page -> new ConditionNextPageResponseDto(page.getId()))
         .orElseGet(() -> new ConditionNextPageResponseDto(null));
   }
 
@@ -172,7 +173,7 @@ public class ConditionService {
             HttpStatus.NOT_FOUND, "Условие не найдено: id=" + id));
   }
 
-  Optional<UUID> determineElsePage(SurveyPage surveyPage) {
+  Optional<SurveyPage> determineElsePage(SurveyPage surveyPage) {
     Set<UUID> nextPageIds = surveyPage.getConditions().stream()
         .map(c -> c.getNextPage().getId())
         .collect(Collectors.toSet());
@@ -180,8 +181,7 @@ public class ConditionService {
     return surveyPage.getSurvey().getPages().stream()
         .filter(p -> !nextPageIds.contains(p.getId())
             && p.getSerialNumber() > surveyPage.getSerialNumber())
-        .findFirst()
-        .map(SurveyPage::getId);
+        .findFirst();
   }
 
   void makeConditionsConsistent(UUID pageId, int serialNumber) {
