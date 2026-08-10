@@ -36,9 +36,9 @@ import ru.hh.kakdela.v2.security.Oauth2LoginSuccessHandler;
 public class SecurityConfig {
 
   @Value("${app.oauth2.authorization-base-uri:/api/auth/oauth2/authorization}")
-  private String OAUTH2_AUTHORIZATION_BASE_URI;
+  private String oauth2AuthorizationBaseUri;
   @Value("${app.oauth2.callback-base-uri:/api/auth/oauth2/callback/}")
-  private String OAUTH2_CALLBACK_BASE_URI;
+  private String oauth2CallbackBaseUri;
 
   private final JwtRequestFilter jwtRequestFilter;
   private final CorsConfigurationSource corsConfigurationSource;
@@ -56,7 +56,7 @@ public class SecurityConfig {
       ClientRegistrationRepository clientRegistrationRepository) {
     DefaultOAuth2AuthorizationRequestResolver resolver =
         new DefaultOAuth2AuthorizationRequestResolver(
-            clientRegistrationRepository, OAUTH2_AUTHORIZATION_BASE_URI);
+            clientRegistrationRepository, oauth2AuthorizationBaseUri);
     // hh.ru поддерживает PKCE (code_challenge/S256) - включаем его даже для confidential-клиента
     resolver.setAuthorizationRequestCustomizer(OAuth2AuthorizationRequestCustomizers.withPkce());
     return resolver;
@@ -102,10 +102,10 @@ public class SecurityConfig {
         // существующим правилом .requestMatchers("/api/auth/**").permitAll() выше
         .oauth2Login(oauth2 -> oauth2
             .authorizationEndpoint(a -> a
-                .baseUri(OAUTH2_AUTHORIZATION_BASE_URI)
+                .baseUri(oauth2AuthorizationBaseUri)
                 .authorizationRequestRepository(authorizationRequestRepository)
                 .authorizationRequestResolver(authorizationRequestResolver))
-            .redirectionEndpoint(r -> r.baseUri(OAUTH2_CALLBACK_BASE_URI))
+            .redirectionEndpoint(r -> r.baseUri(oauth2CallbackBaseUri))
             .tokenEndpoint(t -> t.accessTokenResponseClient(hhTokenResponseClient))
             .userInfoEndpoint(u -> u.userService(hhUserService))
             .successHandler(oauth2LoginSuccessHandler)
