@@ -37,7 +37,7 @@ public class SecurityConfig {
 
   @Value("${app.oauth2.authorization-base-uri:/api/auth/oauth2/authorization}")
   private String oauth2AuthorizationBaseUri;
-  @Value("${app.oauth2.callback-base-uri:/api/auth/oauth2/callback/}")
+  @Value("${app.oauth2.callback-base-uri:/api/auth/oauth2/callback/*}")
   private String oauth2CallbackBaseUri;
 
   private final JwtRequestFilter jwtRequestFilter;
