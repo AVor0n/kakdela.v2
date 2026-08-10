@@ -2,6 +2,7 @@ package ru.hh.kakdela.v2.config;
 
 import jakarta.servlet.DispatcherType;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -34,8 +35,10 @@ import ru.hh.kakdela.v2.security.Oauth2LoginSuccessHandler;
 @EnableWebSecurity
 public class SecurityConfig {
 
-  private static final String OAUTH2_AUTHORIZATION_BASE_URI = "/api/auth/oauth2/authorization";
-  private static final String OAUTH2_CALLBACK_BASE_URI = "/api/auth/oauth2/callback/*";
+  @Value("${app.oauth2.authorization-base-uri:/api/auth/oauth2/authorization}")
+  private String OAUTH2_AUTHORIZATION_BASE_URI;
+  @Value("${app.oauth2.callback-base-uri:/api/auth/oauth2/callback/}")
+  private String OAUTH2_CALLBACK_BASE_URI;
 
   private final JwtRequestFilter jwtRequestFilter;
   private final CorsConfigurationSource corsConfigurationSource;
