@@ -2,6 +2,7 @@ package ru.hh.kakdela.v2.service;
 
 import static java.util.stream.Collectors.toList;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -189,6 +190,11 @@ public class PermissionService {
 
     return Stream.concat(authored.stream(), shared.stream())
         .distinct()
+        .sorted(
+            Comparator.comparing(
+                (SurveyWithUserRoleDto dto) -> dto.getSurvey().getCreatedAt()
+            ).reversed()
+        )
         .collect(toList());
   }
 
