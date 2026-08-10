@@ -34,7 +34,7 @@ public class CookieOauth2AuthorizationRequestRepository
       CookieUtil.addCookie(response, CookieUtil.buildExpiredCookie(COOKIE_NAME, COOKIE_PATH));
       return;
     }
-    ResponseCookie cookie = CookieUtil.buildLaxCookie(
+    ResponseCookie cookie = CookieUtil.buildHttpOnlyLaxCookie(
         COOKIE_NAME, serialize(authorizationRequest), COOKIE_PATH, COOKIE_MAX_AGE);
     CookieUtil.addCookie(response, cookie);
   }
