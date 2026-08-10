@@ -19,6 +19,33 @@ public class ConditionNodeDaoImpl implements ConditionNodeDao {
   }
 
   @Override
+  public Optional<ConditionNode> findByIdWithParentAndGrandparentNodeAndParentCondition(UUID id) {
+    return Optional.ofNullable(entityManager.createQuery(
+        """
+        FROM ConditionNode cn
+        LEFT JOIN FETCH cn.condition
+        LEFT JOIN FETCH cn.atom
+        LEFT JOIN FETCH cn.parentNode cnp
+        LEFT JOIN FETCH cnp.atom
+        WHERE cn.id = :id
+        """, ConditionNode.class)
+        .setParameter("id", id)
+        .getSingleResultOrNull());
+  }
+
+  @Override
+  public UUID findParentSurveyIdById(UUID id) {
+    return entityManager.createQuery(
+        """
+        SELECT cn.condition.surveyPage.survey.id
+        FROM ConditionNode cn
+        WHERE cn.id = :id
+        """, UUID.class)
+        .setParameter("id", id)
+        .getSingleResult();
+  }
+
+  @Override
   public boolean doesNodeHaveOneChild(UUID id) {
     return entityManager.createQuery(
         """

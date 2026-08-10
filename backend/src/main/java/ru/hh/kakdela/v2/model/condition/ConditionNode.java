@@ -55,7 +55,7 @@ public class ConditionNode {
       mappedBy = "node",
       cascade = CascadeType.ALL,
       orphanRemoval = true,
-      fetch = FetchType.LAZY)
+      fetch = FetchType.EAGER)
   private ConditionAtom atom;
 
   @OneToMany(

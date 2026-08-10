@@ -9,7 +9,7 @@ public interface SurveyPageDao {
 
   Optional<SurveyPage> findById(UUID id);
 
-  Optional<SurveyPage> findBySurveyIdAndSerialNumber(UUID surveyId, int serialNumber);
+  Optional<SurveyPage> findByIdWithAllConditionsAndParentSurveyWithRelatives(UUID id);
 
   List<SurveyPage> findAllBySurveyId(UUID surveyId);
 

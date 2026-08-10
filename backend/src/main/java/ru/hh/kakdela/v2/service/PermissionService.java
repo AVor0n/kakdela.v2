@@ -39,16 +39,9 @@ public class PermissionService {
 
   @Transactional(readOnly = true)
   public void checkHasAnyPermission(UUID surveyId, UUID accountId) {
-    Survey survey = getSurveyOrThrow(surveyId);
+    UUID authorId = getSurveyAuthorIdOrThrow(surveyId);
 
-    if (survey.isTemplate()) {
-      throw new ResponseStatusException(
-          HttpStatus.NOT_FOUND,
-          "Опрос не найден"
-      );
-    }
-
-    if (survey.getAuthor().getId().equals(accountId)) {
+    if (authorId.equals(accountId)) {
       return;
     }
 
@@ -57,16 +50,9 @@ public class PermissionService {
 
   @Transactional(readOnly = true)
   public void checkCanReadResponses(UUID surveyId, UUID accountId) {
-    Survey survey = getSurveyOrThrow(surveyId);
+    UUID authorId = getSurveyAuthorIdOrThrow(surveyId);
 
-    if (survey.isTemplate()) {
-      throw new ResponseStatusException(
-          HttpStatus.NOT_FOUND,
-          "Опрос не найден"
-      );
-    }
-
-    if (survey.getAuthor().getId().equals(accountId)) {
+    if (authorId.equals(accountId)) {
       return;
     }
 
@@ -80,17 +66,10 @@ public class PermissionService {
 
   @Transactional(readOnly = true)
   public void checkCanEdit(UUID surveyId, UUID accountId) {
-    Survey survey = getSurveyOrThrow(surveyId);
+    UUID authorId = getSurveyAuthorIdOrThrow(surveyId);
 
-    if (survey.isAuthor(accountId)) {
+    if (authorId.equals(accountId)) {
       return;
-    }
-
-    if (survey.isTemplate() && !survey.isAuthor(accountId)) {
-      throw new ResponseStatusException(
-          HttpStatus.NOT_FOUND,
-          "Опрос не найден"
-      );
     }
 
     Permission permission = getPermissionOrThrow(surveyId, accountId);
@@ -103,16 +82,9 @@ public class PermissionService {
 
   @Transactional(readOnly = true)
   public void checkCanDelete(UUID surveyId, UUID accountId) {
-    Survey survey = getSurveyOrThrow(surveyId);
+    UUID authorId = getSurveyAuthorIdOrThrow(surveyId);
 
-    if (survey.isTemplate()) {
-      throw new ResponseStatusException(
-          HttpStatus.NOT_FOUND,
-          "Опрос не найден"
-      );
-    }
-
-    if (survey.getAuthor().getId().equals(accountId)) {
+    if (authorId.equals(accountId)) {
       return;
     }
 
@@ -126,14 +98,6 @@ public class PermissionService {
 
   @Transactional(readOnly = true)
   public List<PermissionResponseDto> getAllBySurveyId(UUID surveyId) {
-    Survey survey = getSurveyOrThrow(surveyId);
-
-    if (survey.isTemplate()) {
-      throw new ResponseStatusException(
-          HttpStatus.NOT_FOUND,
-          "Опрос не найден"
-      );
-    }
     return permissionDao.findAllBySurveyId(surveyId).stream()
         .map(PermissionMapper::permissionToDto)
         .toList();
@@ -147,14 +111,7 @@ public class PermissionService {
   ) {
     Survey survey = getSurveyOrThrow(surveyId);
 
-    if (survey.isTemplate()) {
-      throw new ResponseStatusException(
-          HttpStatus.NOT_FOUND,
-          "Опрос не найден"
-      );
-    }
-
-    checkCanManagePermissions(survey, currentUserId);
+    checkCanManagePermissions(surveyId, currentUserId);
 
     Account account = accountDao.findByEmail(dto.getEmail())
         .orElseThrow(() -> new ResponseStatusException(
@@ -190,21 +147,12 @@ public class PermissionService {
       PermissionUpdateDto dto,
       UUID currentUserId
   ) {
-    Survey survey = getSurveyOrThrow(surveyId);
-
-    if (survey.isTemplate()) {
-      throw new ResponseStatusException(
-          HttpStatus.NOT_FOUND,
-          "Опрос не найден"
-      );
-    }
-
-    checkCanManagePermissions(survey, currentUserId);
+    checkCanManagePermissions(surveyId, currentUserId);
 
     Permission permission = permissionDao.findBySurveyIdAndAccountId(surveyId, accountId)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Права доступа не найдены: surveyId=%s, accountId=%s"
-            .formatted(surveyId, accountId)));
+                .formatted(surveyId, accountId)));
 
     permission.setRole(dto.getRole());
 
@@ -216,16 +164,7 @@ public class PermissionService {
 
   @Transactional
   public void delete(UUID surveyId, UUID accountId, UUID currentUserId) {
-    Survey survey = getSurveyOrThrow(surveyId);
-
-    if (survey.isTemplate()) {
-      throw new ResponseStatusException(
-          HttpStatus.NOT_FOUND,
-          "Опрос не найден"
-      );
-    }
-
-    checkCanManagePermissions(survey, currentUserId);
+    checkCanManagePermissions(surveyId, currentUserId);
 
     Permission permission = permissionDao.findBySurveyIdAndAccountId(surveyId, accountId)
         .orElseThrow(() -> new ResponseStatusException(
@@ -241,24 +180,21 @@ public class PermissionService {
     List<SurveyWithUserRoleDto> authored = surveyDao.findAllByAuthorId(accountId).stream()
         .filter(survey -> !survey.isTemplate())
         .map(survey ->
-            surveyMapper.surveyToSurveyWithRoleDto(survey, SurveyRole.AUTHOR)
-        )
+            surveyMapper.surveyToSurveyWithRoleDto(survey, SurveyRole.AUTHOR))
         .toList();
 
     List<SurveyWithUserRoleDto> shared = permissionDao.findAllByAccountId(accountId).stream()
         .filter(permission -> !permission.getSurvey().isTemplate())
         .map(permission ->
-            surveyMapper.surveyToSurveyWithRoleDto(permission.getSurvey(), permission.getRole())
-        )
+            surveyMapper.surveyToSurveyWithRoleDto(permission.getSurvey(), permission.getRole()))
         .toList();
 
     return Stream.concat(authored.stream(), shared.stream())
         .distinct()
         .sorted(
-            Comparator.comparing(
-                (SurveyWithUserRoleDto dto) -> dto.getSurvey().getCreatedAt()
-            ).reversed()
-        )
+            Comparator
+                .comparing((SurveyWithUserRoleDto dto) -> dto.getSurvey().getCreatedAt())
+                .reversed())
         .collect(toList());
   }
 
@@ -270,6 +206,12 @@ public class PermissionService {
             HttpStatus.NOT_FOUND, "Опрос не найден: id=" + surveyId));
   }
 
+  private UUID getSurveyAuthorIdOrThrow(UUID surveyId) {
+    return surveyDao.findAuthorIdById(surveyId)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Опрос не найден: id=" + surveyId));
+  }
+
   private Permission getPermissionOrThrow(UUID surveyId, UUID accountId) {
     return permissionDao.findBySurveyIdAndAccountId(surveyId, accountId)
         .orElseThrow(() -> new ResponseStatusException(
@@ -277,11 +219,28 @@ public class PermissionService {
   }
 
   private void checkCanManagePermissions(Survey survey, UUID accountId) {
-    if (survey.getAuthor().getId().equals(accountId)) {
+    if (survey.isAuthor(accountId)) {
       return;
     }
 
     Permission permission = getPermissionOrThrow(survey.getId(), accountId);
+
+    if (!permission.getRole().isPermissionManagementAccess()) {
+      throw new ResponseStatusException(
+          HttpStatus.FORBIDDEN, "У вас нет прав на управление доступом к опросу");
+    }
+  }
+
+  private void checkCanManagePermissions(UUID surveyId, UUID accountId) {
+    UUID authorId = surveyDao.findAuthorIdById(surveyId)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Опрос не найден: id=" + surveyId));
+
+    if (authorId.equals(accountId)) {
+      return;
+    }
+
+    Permission permission = getPermissionOrThrow(surveyId, accountId);
 
     if (!permission.getRole().isPermissionManagementAccess()) {
       throw new ResponseStatusException(

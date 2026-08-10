@@ -9,6 +9,10 @@ public interface ConditionDao {
 
   Optional<Condition> findById(UUID id);
 
+  Optional<Condition> findByIdWithWholeTree(UUID id);
+
+  UUID findParentSurveyIdById(UUID id);
+
   List<Condition> findAllByPageId(UUID pageId);
 
   boolean existsByPageIdAndNextPageId(UUID pageId, UUID nextPageId);

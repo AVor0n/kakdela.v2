@@ -324,6 +324,10 @@ public class QuestionService {
 
   // Вспомогательные методы
 
+  UUID getParentSurveyIdById(UUID id) {
+    return questionDao.findParentSurveyIdById(id);
+  }
+
   int getParentPageSerialNumberById(UUID id) {
     return questionDao.findParentPageSerialNumberById(id);
   }
