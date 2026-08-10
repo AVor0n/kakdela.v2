@@ -50,14 +50,14 @@ public class AuthCookieService {
   }
 
   public void setAccessTokenCookie(HttpServletResponse response, String token) {
-    ResponseCookie cookie = CookieUtil.buildHttpOnlyCookie(
+    ResponseCookie cookie = CookieUtil.buildHttpOnlyStrictCookie(
         ACCESS_TOKEN_COOKIE_NAME, token, MAIN_PATH, accessTokenMaxAge
     );
     CookieUtil.addCookie(response, cookie);
   }
 
   public void setRefreshTokenCookie(HttpServletResponse response, String token) {
-    ResponseCookie cookie = CookieUtil.buildHttpOnlyCookie(
+    ResponseCookie cookie = CookieUtil.buildHttpOnlyStrictCookie(
         REFRESH_TOKEN_COOKIE_NAME, token, REFRESH_PATH, refreshTokenMaxAge
     );
     CookieUtil.addCookie(response, cookie);
@@ -71,7 +71,7 @@ public class AuthCookieService {
 
   public void setResponseTokenCookie(HttpServletResponse response, UUID responseId, String token) {
     String cookieName = RESPONSE_TOKEN_PREFIX + responseId;
-    ResponseCookie cookie = CookieUtil.buildHttpOnlyCookie(
+    ResponseCookie cookie = CookieUtil.buildHttpOnlyStrictCookie(
         cookieName, token, RESPONSES_PATH, responseTokenMaxAge);
     CookieUtil.addCookie(response, cookie);
   }

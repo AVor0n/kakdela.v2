@@ -74,6 +74,65 @@ public class AccountService {
     return AccountMapper.accountToDto(account);
   }
 
+  // Возвращает существующий аккаунт, привязанный к данному пользователю hh.ru,
+  // либо создает новый (с автосгенерированными login и паролем), если это первый вход
+  @Transactional
+  public Account findOrCreateByHhSso(String email) {
+    return accountDao.findByEmail(email)
+        .map(this::requireHhSsoAccount)
+        .orElseGet(() -> createFromHhSso(email));
+  }
+
+  private Account requireHhSsoAccount(Account account) {
+    if (!account.isHhSso()) {
+      throw new ResponseStatusException(HttpStatus.CONFLICT,
+          "Такой email уже зарегистрирован: " + account.getEmail());
+    }
+    if (Boolean.TRUE.equals(account.getIsDeleted())) {
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+          "Аккаунт удалён: login=" + account.getLogin());
+    }
+    return account;
+  }
+
+  private Account createFromHhSso(String email) {
+    String login = generateUniqueLoginFromEmail(email);
+    String randomPassword = UUID.randomUUID().toString();
+
+    Account account = Account.builder()
+        .id(UUID.randomUUID())
+        .login(login)
+        .email(email)
+        .passwordHash(passwordEncoder.encode(randomPassword))
+        .isHhSso(true)
+        .tokenVersion(1)
+        .isDeleted(false)
+        .registeredAt(Instant.now())
+        .build();
+
+    accountDao.save(account);
+    log.info("Создан аккаунт через hh.ru SSO id={} login={}", account.getId(), account.getLogin());
+    return account;
+  }
+
+  private String generateUniqueLoginFromEmail(String email) {
+    String base = email.substring(0, email.indexOf('@'))
+        .replaceAll("[^a-zA-Z0-9_.]", "")
+        .toLowerCase();
+    if (base.isBlank()) {
+      base = "user";
+    }
+    base = base.substring(0, Math.min(base.length(), 28));
+
+    String candidate = base;
+    int suffix = 1;
+    while (accountDao.existsByLogin(candidate)) {
+      String suffixStr = String.valueOf(suffix++);
+      candidate = base.substring(0, Math.min(base.length(), 32 - suffixStr.length())) + suffixStr;
+    }
+    return candidate;
+  }
+
   @Transactional
   public AccountResponseDto updateFull(CustomUserDetails currentUser, AccountPutDto accountPutDto) {
     authService.checkPassword(currentUser, accountPutDto.getPassword());

@@ -4,6 +4,7 @@ import java.security.SecureRandom;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -25,13 +26,36 @@ import ru.hh.kakdela.v2.security.JwtService;
 @Service
 public class AuthService {
 
-  private final AuthenticationManager authenticationManager;
+  private final ObjectProvider<AuthenticationManager> authenticationManagerProvider;
   private final PasswordEncoder passwordEncoder;
   private final AccountDao accountDao;
   private final NotificationService notificationService;
   private final VerificationCodeService verificationCodeService;
   private final JwtService jwtService;
   private final RefreshTokenService refreshTokenService;
+
+  @Transactional
+  public AuthTokensDto issueTokens(
+      Account account,
+      String deviceId,
+      String userAgent,
+      String ipAddress
+  ) {
+
+    refreshTokenService.revokeAllByAccountIdAndDeviceId(account.getId(), deviceId);
+
+    String refreshToken = refreshTokenService.createRefreshToken(
+        account.getId(),
+        deviceId,
+        userAgent,
+        ipAddress);
+
+    String accessToken = jwtService.generateAccessToken(account);
+
+    log.info("Успешный вход: accountId={}, deviceId={}", account.getId(), deviceId);
+
+    return new AuthTokensDto(accessToken, refreshToken);
+  }
 
   @Transactional
   public AuthTokensDto login(
@@ -43,23 +67,19 @@ public class AuthService {
     Account account = accountDao.findByLogin(loginDto.getLogin()).orElseThrow(() ->
         new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Неверный логин или пароль"));
 
-    authenticationManager
-        .authenticate(
+    authenticationManagerProvider.getObject().authenticate(
             new UsernamePasswordAuthenticationToken(
                 loginDto.getLogin(),
                 loginDto.getPassword()));
 
     log.info("Успешная аутентификация: login={}", loginDto.getLogin());
 
-    refreshTokenService.revokeAllByAccountIdAndDeviceId(account.getId(), deviceId);
-
-    String refreshToken = refreshTokenService
-        .createRefreshToken(account.getId(), deviceId, userAgent, ipAddress);
-    String accessToken = jwtService.generateAccessToken(account);
-
-    log.info("Успешный вход: accountId={}, deviceId={}", account.getId(), deviceId);
-
-    return new AuthTokensDto(accessToken, refreshToken);
+    return issueTokens(
+        account,
+        deviceId,
+        userAgent,
+        ipAddress
+    );
   }
 
   @Transactional

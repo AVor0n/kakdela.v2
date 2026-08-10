@@ -8,7 +8,8 @@ import org.springframework.http.ResponseCookie;
 
 public final class CookieUtil {
 
-  private static final String SAME_SITE = "Strict";
+  private static final String STRICT = "Strict";
+  private static final String LAX = "Lax";
 
   private CookieUtil() {
   }
@@ -25,7 +26,7 @@ public final class CookieUtil {
         .orElse(null);
   }
 
-  public static ResponseCookie buildHttpOnlyCookie(
+  public static ResponseCookie buildHttpOnlyStrictCookie(
       String name,
       String value,
       String path,
@@ -34,7 +35,22 @@ public final class CookieUtil {
     return ResponseCookie.from(name, value)
         .httpOnly(true)
         .secure(true)
-        .sameSite(SAME_SITE)
+        .sameSite(STRICT)
+        .path(path)
+        .maxAge(maxAgeSeconds)
+        .build();
+  }
+  
+  public static ResponseCookie buildHttpOnlyLaxCookie(
+      String name,
+      String value,
+      String path,
+      long maxAgeSeconds
+  ) {
+    return ResponseCookie.from(name, value)
+        .httpOnly(true)
+        .secure(true)
+        .sameSite(LAX)
         .path(path)
         .maxAge(maxAgeSeconds)
         .build();
@@ -49,7 +65,7 @@ public final class CookieUtil {
     return ResponseCookie.from(name, value)
         .httpOnly(false)
         .secure(true)
-        .sameSite(SAME_SITE)
+        .sameSite(STRICT)
         .path(path)
         .maxAge(maxAgeSeconds)
         .build();
@@ -59,7 +75,7 @@ public final class CookieUtil {
     return ResponseCookie.from(name, "")
         .httpOnly(true)
         .secure(true)
-        .sameSite(SAME_SITE)
+        .sameSite(STRICT)
         .path(path)
         .maxAge(0)
         .build();
