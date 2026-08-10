@@ -52,9 +52,6 @@ function isQuestionAnswered(question: Question, value: AnswerValue | undefined, 
     }
 }
 
-function isQuestionVisible(question: Question) {
-    return question.visible ?? question.isVisible ?? true;
-}
 function buildMultipleChoicePayload(selectedIds: string[], otherText: string) {
     const normalIds = selectedIds.filter((id) => id !== OTHER_OPTION_VALUE);
     const trimmedOtherText = otherText.trim();
@@ -199,7 +196,7 @@ export function SurveyRunner({ survey, mode }: Props) {
             ? survey.pages
             : visitedPageIds.flatMap((pageId) => (loadedPages[pageId] ? [loadedPages[pageId]] : []));
         pages.forEach((page) => {
-            page.questions.filter(isQuestionVisible).forEach((question) => {
+            page.questions.forEach((question) => {
                 if (
                     question.isMandatory &&
                     !isQuestionAnswered(question, answers[question.id], otherTexts[question.id])
@@ -431,7 +428,7 @@ export function SurveyRunner({ survey, mode }: Props) {
     const previewPages = isPreview
         ? sortBySerialNumber(survey.pages).map((page) => ({
               ...page,
-              questions: sortBySerialNumber(page.questions).filter(isQuestionVisible),
+              questions: sortBySerialNumber(page.questions),
           }))
         : [];
     const currentPageSummary = orderedPageSummaries[currentPageIndex];

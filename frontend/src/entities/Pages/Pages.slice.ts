@@ -1,5 +1,6 @@
 import type { AnswerOption, AnswerOptionOrder, Question, QuestionType } from '@/shared/types/Question.type';
 import type { Page } from '@/shared/types/Survey.type';
+import type { Condition } from '@/shared/types/Condition.type';
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 interface PageState {
@@ -353,6 +354,24 @@ const pagesSlice = createSlice({
                     questions.find((question) => question.id === selectedQuestionId) ?? state.selectedQuestion;
             }
         },
+        setPageConditions: (state, action: PayloadAction<{ pageId: string; conditions: Condition[] }>) => {
+            const page = state.pages.find(({ id }) => id === action.payload.pageId);
+            if (page) page.conditions = action.payload.conditions;
+        },
+        addPageCondition: (state, action: PayloadAction<{ pageId: string; condition: Condition }>) => {
+            const page = state.pages.find(({ id }) => id === action.payload.pageId);
+            if (page) page.conditions.push(action.payload.condition);
+        },
+        replacePageCondition: (state, action: PayloadAction<{ pageId: string; condition: Condition }>) => {
+            const page = state.pages.find(({ id }) => id === action.payload.pageId);
+            if (!page) return;
+            const conditionIndex = page.conditions.findIndex(({ id }) => id === action.payload.condition.id);
+            if (conditionIndex >= 0) page.conditions[conditionIndex] = action.payload.condition;
+        },
+        deletePageCondition: (state, action: PayloadAction<{ pageId: string; conditionId: string }>) => {
+            const page = state.pages.find(({ id }) => id === action.payload.pageId);
+            if (page) page.conditions = page.conditions.filter(({ id }) => id !== action.payload.conditionId);
+        },
         reorderAnswerOptions: (
             state,
             action: PayloadAction<{
@@ -425,6 +444,10 @@ export const {
     setPage,
     reorderQuestions,
     setPageQuestions,
+    setPageConditions,
+    addPageCondition,
+    replacePageCondition,
+    deletePageCondition,
     reorderAnswerOptions,
     setQuestionAnswerOptions,
     setMandatory,

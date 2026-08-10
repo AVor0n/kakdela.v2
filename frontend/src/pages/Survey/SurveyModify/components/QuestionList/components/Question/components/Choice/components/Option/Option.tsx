@@ -9,6 +9,8 @@ import { Button } from '@hh.ru/magritte-ui';
 import { setErrorMessage } from '@/entities/Error/Error.slice';
 import style from './Option.module.css';
 import { EditorInput } from '@/shared/ui/EditorInput/EditorInput';
+import { useAppSelector } from '@/hooks/useAppSelector';
+import { isAnswerOptionUsedInConditions } from '@/shared/utils/conditions';
 
 interface Props {
     option: AnswerOption;
@@ -21,6 +23,7 @@ interface Props {
 
 export function Option({ option, children, isEdit, dragHandleAttributes, dragHandleListeners, dragHandleRef }: Props) {
     const [optionAnswer, setOptionAnswer] = useState<string>(option.text);
+    const pages = useAppSelector((state) => state.survey.selectedSurvey?.pages ?? []);
 
     const dispatch = useAppDispatch();
     const stopClickPropagation: MouseEventHandler<HTMLDivElement> = (event) => {
@@ -28,6 +31,12 @@ export function Option({ option, children, isEdit, dragHandleAttributes, dragHan
     };
 
     const deleteAnswerOptionHandler = () => {
+        if (
+            isAnswerOptionUsedInConditions(pages, option.id) &&
+            !window.confirm('Этот вариант ответа используется в логике перехода. Всё равно удалить его?')
+        ) {
+            return;
+        }
         deleteAnswerOption(option.id)
             .then(() => {
                 dispatch(deleteOption({ id: option.id }));

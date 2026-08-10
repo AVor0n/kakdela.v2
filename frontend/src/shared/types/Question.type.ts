@@ -18,10 +18,7 @@ type BaseQuestion<T extends QuestionType> = {
     type: T;
     isMandatory: boolean;
     serialNumber: number;
-    condition: null;
     description: string | null;
-    visible?: boolean;
-    isVisible?: boolean;
     attachmentUrl: string | null;
     hasOtherOption: boolean;
 };

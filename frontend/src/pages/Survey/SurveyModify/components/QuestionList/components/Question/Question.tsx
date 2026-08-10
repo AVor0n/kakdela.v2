@@ -33,6 +33,7 @@ import style from './Question.module.css';
 import { DragHandle } from './components/QuestionControls/DragHandle/DragHandle';
 import { EditorInput } from '@/shared/ui/EditorInput/EditorInput';
 import { ImageAttachmentControl } from '@/shared/ui/ImageAttachmentControl/ImageAttachmentControl';
+import { isQuestionUsedInConditions } from '@/shared/utils/conditions';
 
 interface Props {
     question: Question;
@@ -221,6 +222,12 @@ export function Question({
 
     const deleteQuestionHandler = () => {
         if (!selectedSurvey) return;
+        if (
+            isQuestionUsedInConditions(selectedSurvey.pages, question.id) &&
+            !window.confirm('Этот вопрос используется в логике перехода. Всё равно удалить вопрос?')
+        ) {
+            return;
+        }
         deleteQuestion(question.id)
             .then(() => {
                 dispatch(deleteQuestionState({ id: question.id }));

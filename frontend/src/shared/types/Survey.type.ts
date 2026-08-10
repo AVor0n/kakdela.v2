@@ -1,5 +1,6 @@
 import type { Question } from './Question.type';
 import type { Account } from './Account.type';
+import type { Condition } from './Condition.type';
 
 export type SurveyRole = 'AUTHOR' | 'EDITOR' | 'ANALYST';
 
@@ -59,6 +60,7 @@ export type Page = {
     surveyId: string;
     serialNumber: number;
     questions: Question[];
+    conditions: Condition[];
 };
 
 export type SurveyListItem = Pick<Survey, 'id' | 'title' | 'description' | 'createdAt' | 'isPublished'> & {
