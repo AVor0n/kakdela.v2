@@ -21,10 +21,10 @@ public class TemplateBookmarkDaoImpl implements TemplateBookmarkDao {
   public Optional<TemplateBookmark> findByAccountIdAndTemplateId(UUID accountId, UUID templateId) {
     return entityManager.createQuery(
             """
-            FROM TemplateBookmark b 
-            WHERE b.account.id = :accountId 
+            FROM TemplateBookmark b
+            WHERE b.account.id = :accountId
             AND b.template.id = :templateId
-            """,TemplateBookmark.class)
+            """, TemplateBookmark.class)
         .setParameter("accountId", accountId)
         .setParameter("templateId", templateId)
         .getResultStream()
@@ -35,11 +35,11 @@ public class TemplateBookmarkDaoImpl implements TemplateBookmarkDao {
   public List<Survey> findTemplatesByAccountId(UUID accountId) {
     return entityManager.createQuery(
             """
-            SELECT b.template 
-            FROM TemplateBookmark b 
-            WHERE b.account.id = :accountId 
+            SELECT b.template
+            FROM TemplateBookmark b
+            WHERE b.account.id = :accountId
             ORDER BY b.createdAt DESC
-            """,Survey.class)
+            """, Survey.class)
         .setParameter("accountId", accountId)
         .getResultList();
   }
@@ -48,11 +48,11 @@ public class TemplateBookmarkDaoImpl implements TemplateBookmarkDao {
   public boolean existsByAccountIdAndTemplateId(UUID accountId, UUID templateId) {
     Long count = entityManager.createQuery(
             """
-            SELECT COUNT(b) 
-            FROM TemplateBookmark b 
-            WHERE b.account.id = :accountId 
+            SELECT COUNT(b)
+            FROM TemplateBookmark b
+            WHERE b.account.id = :accountId
             AND b.template.id = :templateId
-            """,Long.class)
+            """, Long.class)
         .setParameter("accountId", accountId)
         .setParameter("templateId", templateId)
         .getSingleResult();
@@ -73,8 +73,8 @@ public class TemplateBookmarkDaoImpl implements TemplateBookmarkDao {
   public void deleteByAccountIdAndTemplateId(UUID accountId, UUID templateId) {
     entityManager.createQuery(
             """
-            DELETE FROM TemplateBookmark b 
-            WHERE b.account.id = :accountId 
+            DELETE FROM TemplateBookmark b
+            WHERE b.account.id = :accountId
             AND b.template.id = :templateId
             """)
         .setParameter("accountId", accountId)
