@@ -21,7 +21,7 @@ const OTHER_OPTION_VALUE = '__other__';
 
 export type SurveyRunnerMode = 'preview' | 'respond';
 
-type AnswerValue = string | string[];
+type AnswerValue = string | string[] | boolean;
 type Answers = Record<string, AnswerValue>;
 type Errors = Record<string, string>;
 type SurveyRunnerStage = 'welcome' | 'questions' | 'closing';
@@ -36,19 +36,22 @@ function sortBySerialNumber<T extends { serialNumber: number }>(items: T[]) {
 }
 
 function isQuestionAnswered(question: Question, value: AnswerValue | undefined, otherText: string | undefined) {
-    if (question.type === 'MULTIPLE_CHOICE') {
-        if (!Array.isArray(value) || value.length === 0) return false;
-        if (value.includes(OTHER_OPTION_VALUE) && !(otherText ?? '').trim()) {
-            return false;
+    switch (question.type) {
+        case 'MULTIPLE_CHOICE': {
+            if (!Array.isArray(value) || value.length === 0) return false;
+            return !value.includes(OTHER_OPTION_VALUE) || Boolean((otherText ?? '').trim());
         }
-        return true;
+        case 'YES_NO':
+            return typeof value === 'boolean';
+        case 'SHORT_TEXT':
+        case 'LONG_TEXT':
+        case 'DATE':
+        case 'TIME':
+            return typeof value === 'string' && value.trim().length > 0;
+        case 'SINGLE_CHOICE':
+            if (typeof value !== 'string' || !value.trim()) return false;
+            return value !== OTHER_OPTION_VALUE || Boolean((otherText ?? '').trim());
     }
-
-    if (typeof value !== 'string' || !value.trim()) return false;
-    if (value === OTHER_OPTION_VALUE && !(otherText ?? '').trim()) {
-        return false;
-    }
-    return true;
 }
 
 function isQuestionVisible(question: Question) {
@@ -66,14 +69,22 @@ function buildMultipleChoicePayload(selectedIds: string[], otherText: string) {
 }
 
 function buildAnswerPayload(question: Question, value: AnswerValue | undefined, otherText: string) {
-    if (question.type === 'SINGLE_CHOICE') {
-        if (value === OTHER_OPTION_VALUE) return { textValue: otherText.trim() };
-        return { selectedAnswerOptionIds: value ? [value as string] : [] };
+    switch (question.type) {
+        case 'SINGLE_CHOICE':
+            if (value === OTHER_OPTION_VALUE) return { textValue: otherText.trim() };
+            return { selectedAnswerOptionIds: typeof value === 'string' && value ? [value] : [] };
+        case 'MULTIPLE_CHOICE':
+            return buildMultipleChoicePayload(Array.isArray(value) ? value : [], otherText);
+        case 'YES_NO':
+            return { booleanValue: typeof value === 'boolean' ? value : undefined };
+        case 'DATE':
+            return { dateValue: typeof value === 'string' && value ? value : undefined };
+        case 'TIME':
+            return { timeValue: typeof value === 'string' && value ? value : undefined };
+        case 'SHORT_TEXT':
+        case 'LONG_TEXT':
+            return { textValue: typeof value === 'string' ? value.trim() : '' };
     }
-    if (question.type === 'MULTIPLE_CHOICE') {
-        return buildMultipleChoicePayload(Array.isArray(value) ? value : [], otherText);
-    }
-    return { textValue: typeof value === 'string' ? value.trim() : '' };
 }
 
 export function SurveyRunner({ survey, mode }: Props) {
@@ -325,6 +336,53 @@ export function SurveyRunner({ survey, mode }: Props) {
                             </div>
                         )}
                     </div>
+                );
+            case 'YES_NO':
+                return (
+                    <div className={choiceStyle.container}>
+                        <label className={optionStyle.option}>
+                            <Radio
+                                name={question.id}
+                                disabled={isSubmitting}
+                                checked={value === true}
+                                onChange={() => updateAnswer(question, true)}
+                            />
+                            <Text typography='paragraph-2-regular' style='primary'>
+                                Да
+                            </Text>
+                        </label>
+                        <label className={optionStyle.option}>
+                            <Radio
+                                name={question.id}
+                                disabled={isSubmitting}
+                                checked={value === false}
+                                onChange={() => updateAnswer(question, false)}
+                            />
+                            <Text typography='paragraph-2-regular' style='primary'>
+                                Нет
+                            </Text>
+                        </label>
+                    </div>
+                );
+            case 'DATE':
+                return (
+                    <input
+                        className={style.temporalInput}
+                        type='date'
+                        disabled={isSubmitting}
+                        value={typeof value === 'string' ? value : ''}
+                        onChange={(event) => updateAnswer(question, event.target.value)}
+                    />
+                );
+            case 'TIME':
+                return (
+                    <input
+                        className={style.temporalInput}
+                        type='time'
+                        disabled={isSubmitting}
+                        value={typeof value === 'string' ? value : ''}
+                        onChange={(event) => updateAnswer(question, event.target.value)}
+                    />
                 );
             default:
                 return null;

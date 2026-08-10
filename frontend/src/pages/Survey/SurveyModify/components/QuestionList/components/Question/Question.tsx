@@ -1,6 +1,13 @@
 import type { AnswerOptionOrder, Question, QuestionType } from '@/shared/types/Question.type';
 import type { DraggableAttributes, DraggableSyntheticListeners } from '@dnd-kit/core';
-import { Button, Checkbox, createStaticDataProvider, Select, type StaticDataFetcherItem } from '@hh.ru/magritte-ui';
+import {
+    Button,
+    Checkbox,
+    createStaticDataProvider,
+    Radio,
+    Select,
+    type StaticDataFetcherItem,
+} from '@hh.ru/magritte-ui';
 import { useCallback, useEffect, useMemo, useState, type ChangeEvent, type Ref } from 'react';
 import { ShortText } from './components/ShortText/ShortText';
 import { LongText } from './components/LongText/LongText';
@@ -43,6 +50,9 @@ const OPTIONS: StaticDataFetcherItem[] = [
     { value: 'LONG_TEXT', text: 'Длинный текст' },
     { value: 'SINGLE_CHOICE', text: 'Один из списка' },
     { value: 'MULTIPLE_CHOICE', text: 'Несколько из списка' },
+    { value: 'YES_NO', text: 'Да / Нет' },
+    { value: 'DATE', text: 'Дата' },
+    { value: 'TIME', text: 'Время' },
 ];
 
 const ANSWER_OPTION_ORDER: StaticDataFetcherItem[] = [
@@ -244,6 +254,33 @@ export function Question({
                 return (
                     <Choice options={question.answerOptions!} isEdit={isEditMode} type='checkbox' question={question} />
                 );
+            case 'YES_NO':
+                return (
+                    <div className={style.yesNoPreview}>
+                        <label>
+                            <Radio
+                                name={`yes-no-preview-${question.id}`}
+                                checked={false}
+                                onChange={() => {}}
+                                disabled
+                            />
+                            Да
+                        </label>
+                        <label>
+                            <Radio
+                                name={`yes-no-preview-${question.id}`}
+                                checked={false}
+                                onChange={() => {}}
+                                disabled
+                            />
+                            Нет
+                        </label>
+                    </div>
+                );
+            case 'DATE':
+                return <input className={style.temporalInput} type='date' disabled />;
+            case 'TIME':
+                return <input className={style.temporalInput} type='time' disabled />;
             default:
                 return null;
         }

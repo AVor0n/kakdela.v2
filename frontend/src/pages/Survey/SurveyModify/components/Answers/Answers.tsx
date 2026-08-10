@@ -1,5 +1,5 @@
 import { Button, createStaticDataProvider, Select, type StaticDataFetcherItem } from '@hh.ru/magritte-ui';
-import { Fragment, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
 import { getSurveyById } from '@/api/survey';
@@ -60,6 +60,22 @@ function getQuestionAnswers(responses: SurveyCompletedResponse[], questionId: st
             responseIndex,
         }))
         .filter((item): item is { answer: SurveyAnswerResponse; responseIndex: number } => Boolean(item.answer));
+}
+
+function getAnswerDisplayValue(answer: SurveyAnswerResponse) {
+    if (answer.answerAsString.trim()) {
+        return answer.answerAsString;
+    }
+
+    return [
+        ...answer.selectedAnswerOptions.map((option) => option.answerOptionTextSnapshot),
+        answer.textValue,
+        answer.booleanValue == null ? null : answer.booleanValue ? 'Да' : 'Нет',
+        answer.dateValue,
+        answer.timeValue,
+    ]
+        .filter((value): value is string => Boolean(value))
+        .join(', ');
 }
 
 function getRespondentLabel(account: ResponseAccountDetail | null) {
@@ -220,33 +236,18 @@ export function Answers() {
                                     ) : (
                                         <ul className={style.answers} key={question.id}>
                                             {answers.map(({ answer, responseIndex }) => (
-                                                <Fragment key={answer.responseId}>
-                                                    {answer.selectedAnswerOptions.map((answerText) => (
-                                                        <li className={style.answer} key={answerText.id}>
-                                                            <button
-                                                                className={style.answerButton}
-                                                                type='button'
-                                                                onClick={() => openResponse(responseIndex)}
-                                                            >
-                                                                {htmlToText(answerText.answerOptionTextSnapshot)}
-                                                            </button>
-                                                        </li>
-                                                    ))}
-                                                    {answer.textValue && (
-                                                        <li
-                                                            className={style.answer}
-                                                            key={`${answer.responseId}-${answer.questionId}`}
-                                                        >
-                                                            <button
-                                                                className={style.answerButton}
-                                                                type='button'
-                                                                onClick={() => openResponse(responseIndex)}
-                                                            >
-                                                                {htmlToText(answer.textValue)}
-                                                            </button>
-                                                        </li>
-                                                    )}
-                                                </Fragment>
+                                                <li
+                                                    className={style.answer}
+                                                    key={`${answer.responseId}-${answer.questionId}`}
+                                                >
+                                                    <button
+                                                        className={style.answerButton}
+                                                        type='button'
+                                                        onClick={() => openResponse(responseIndex)}
+                                                    >
+                                                        {htmlToText(getAnswerDisplayValue(answer))}
+                                                    </button>
+                                                </li>
                                             ))}
                                         </ul>
                                     )}
@@ -296,33 +297,18 @@ export function Answers() {
                                 <ul className={style.answers} key={'question_id'}>
                                     {getQuestionAnswers(responses, currentQuestion.id).map(
                                         ({ answer, responseIndex }) => (
-                                            <Fragment key={answer.responseId}>
-                                                {answer.selectedAnswerOptions.map((answerText) => (
-                                                    <li className={style.answer} key={answerText.id}>
-                                                        <button
-                                                            className={style.answerButton}
-                                                            type='button'
-                                                            onClick={() => openResponse(responseIndex)}
-                                                        >
-                                                            {htmlToText(answerText.answerOptionTextSnapshot)}
-                                                        </button>
-                                                    </li>
-                                                ))}
-                                                {answer.textValue && (
-                                                    <li
-                                                        className={style.answer}
-                                                        key={`${answer.responseId}-${answer.questionId}`}
-                                                    >
-                                                        <button
-                                                            className={style.answerButton}
-                                                            type='button'
-                                                            onClick={() => openResponse(responseIndex)}
-                                                        >
-                                                            {htmlToText(answer.textValue)}
-                                                        </button>
-                                                    </li>
-                                                )}
-                                            </Fragment>
+                                            <li
+                                                className={style.answer}
+                                                key={`${answer.responseId}-${answer.questionId}`}
+                                            >
+                                                <button
+                                                    className={style.answerButton}
+                                                    type='button'
+                                                    onClick={() => openResponse(responseIndex)}
+                                                >
+                                                    {htmlToText(getAnswerDisplayValue(answer))}
+                                                </button>
+                                            </li>
                                         ),
                                     )}
                                 </ul>
@@ -364,29 +350,17 @@ export function Answers() {
                         </div>
 
                         <div className={style.list}>
-                            {questions.map((question) => {
-                                const answer = getAnswerByQuestion(currentResponse, question.id);
-                                return (
-                                    <article className={style.questionBlock} key={question.id}>
-                                        <h2 className={style.questionTitle}>{htmlToText(question.text)}</h2>
-                                        {answer &&
-                                            (answer.selectedAnswerOptions.length !== 0
-                                                ? answer.selectedAnswerOptions.map((answerValue) => (
-                                                      <div className={style.singleAnswer} key={answerValue.id}>
-                                                          {htmlToText(answerValue.answerOptionTextSnapshot)}
-                                                      </div>
-                                                  ))
-                                                : answer.textValue && (
-                                                      <div
-                                                          className={style.singleAnswer}
-                                                          key={`${answer.responseId}-${answer.questionId}`}
-                                                      >
-                                                          {htmlToText(answer.textValue)}
-                                                      </div>
-                                                  ))}
-                                    </article>
-                                );
-                            })}
+                            {currentResponse.answers.map((answer) => (
+                                <article
+                                    className={style.questionBlock}
+                                    key={`${answer.responseId}-${answer.questionId}`}
+                                >
+                                    <h2 className={style.questionTitle}>{htmlToText(answer.questionTextSnapshot)}</h2>
+                                    <div className={style.singleAnswer}>
+                                        {htmlToText(getAnswerDisplayValue(answer))}
+                                    </div>
+                                </article>
+                            ))}
                         </div>
                     </div>
                 )}

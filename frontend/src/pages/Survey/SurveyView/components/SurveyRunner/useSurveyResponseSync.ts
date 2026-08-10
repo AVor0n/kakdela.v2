@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import {
     createSurveyResponse,
     deleteSurveyAnswer,
-    updateSurveyAnswer,
+    upsertSurveyAnswer,
     type SurveyAnswerRequest,
 } from '@/api/surveyResponses';
 
@@ -102,9 +102,13 @@ export function useSurveyResponseSync(surveyId: string, disabled: boolean) {
     }, [surveyId]);
 
     function isEmptyPayload(payload: SurveyAnswerRequest) {
-        const hasIds = payload.selectedAnswerOptionIds && payload.selectedAnswerOptionIds.length > 0;
-        const hasText = payload.textValue && payload.textValue.trim() !== '';
-        return !hasIds && !hasText;
+        const hasIds = (payload.selectedAnswerOptionIds?.length ?? 0) > 0;
+        const hasText = (payload.textValue?.trim().length ?? 0) > 0;
+        const hasBoolean = payload.booleanValue !== undefined;
+        const hasDate = (payload.dateValue?.trim().length ?? 0) > 0;
+        const hasTime = (payload.timeValue?.trim().length ?? 0) > 0;
+
+        return !hasIds && !hasText && !hasBoolean && !hasDate && !hasTime;
     }
 
     const persistAnswer = useCallback(
@@ -136,31 +140,7 @@ export function useSurveyResponseSync(surveyId: string, disabled: boolean) {
 
                 const responseId = await ensureResponse();
 
-                if (isPersisted) {
-                    try {
-                        await updateSurveyAnswer(responseId, questionId, answerPayload);
-                        return;
-                    } catch (error) {
-                        if (!axios.isAxiosError(error) || error.response?.status !== 404) {
-                            throw error;
-                        }
-
-                        if (generation !== generationRef.current) {
-                            return;
-                        }
-                        persistedQuestionIdsRef.current.delete(questionId);
-                    }
-                }
-
-                try {
-                    await updateSurveyAnswer(responseId, questionId, answerPayload);
-                } catch (error) {
-                    if (!axios.isAxiosError(error) || error.response?.status !== 409) {
-                        throw error;
-                    }
-
-                    await updateSurveyAnswer(responseId, questionId, answerPayload);
-                }
+                await upsertSurveyAnswer(responseId, questionId, answerPayload);
 
                 if (generation === generationRef.current) {
                     persistedQuestionIdsRef.current.add(questionId);

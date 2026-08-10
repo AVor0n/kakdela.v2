@@ -1,4 +1,11 @@
-export type QuestionType = 'SHORT_TEXT' | 'LONG_TEXT' | 'SINGLE_CHOICE' | 'MULTIPLE_CHOICE';
+export type QuestionType =
+    | 'SHORT_TEXT'
+    | 'LONG_TEXT'
+    | 'SINGLE_CHOICE'
+    | 'MULTIPLE_CHOICE'
+    | 'YES_NO'
+    | 'DATE'
+    | 'TIME';
 export type AnswerOptionOrder = 'ORIGINAL' | 'RANDOM';
 export type AnswerOption = {
     id: string;
@@ -19,7 +26,7 @@ type BaseQuestion<T extends QuestionType> = {
     hasOtherOption: boolean;
 };
 
-type SimpleQuestion = BaseQuestion<'SHORT_TEXT' | 'LONG_TEXT'> & {
+type QuestionWithoutOptions = BaseQuestion<'SHORT_TEXT' | 'LONG_TEXT' | 'YES_NO' | 'DATE' | 'TIME'> & {
     answerOptions?: never;
     answerOptionOrder?: never;
 };
@@ -29,4 +36,4 @@ type QuestionWithOptions = BaseQuestion<'SINGLE_CHOICE' | 'MULTIPLE_CHOICE'> & {
     answerOptionOrder: AnswerOptionOrder | null;
 };
 
-export type Question = SimpleQuestion | QuestionWithOptions;
+export type Question = QuestionWithoutOptions | QuestionWithOptions;

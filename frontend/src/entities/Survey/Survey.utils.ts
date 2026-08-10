@@ -15,6 +15,9 @@ export function cloneQuestion(question: Question): Question {
             };
         case 'SHORT_TEXT':
         case 'LONG_TEXT':
+        case 'YES_NO':
+        case 'DATE':
+        case 'TIME':
         default:
             return {
                 ...question,
