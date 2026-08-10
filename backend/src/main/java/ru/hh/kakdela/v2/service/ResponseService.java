@@ -167,6 +167,7 @@ public class ResponseService {
     response.setReceivedAt(Instant.now());
 
     Set<UUID> includedPageIds = response.getPageStatuses().stream()
+        .filter(ResponsePageStatus::getIsIncluded)
         .map(rps -> rps.getSurveyPage().getId())
         .collect(Collectors.toSet());
 
