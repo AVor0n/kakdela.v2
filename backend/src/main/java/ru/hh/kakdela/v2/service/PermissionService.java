@@ -43,8 +43,8 @@ public class PermissionService {
 
     if (survey.isTemplate()) {
       throw new ResponseStatusException(
-          HttpStatus.BAD_REQUEST,
-          "Нельзя управлять правами доступа для шаблона"
+          HttpStatus.NOT_FOUND,
+          "Опрос не найден"
       );
     }
 
@@ -61,8 +61,8 @@ public class PermissionService {
 
     if (survey.isTemplate()) {
       throw new ResponseStatusException(
-          HttpStatus.BAD_REQUEST,
-          "Нельзя управлять правами доступа для шаблона"
+          HttpStatus.NOT_FOUND,
+          "Опрос не найден"
       );
     }
 
@@ -84,8 +84,8 @@ public class PermissionService {
 
     if (survey.isTemplate()) {
       throw new ResponseStatusException(
-          HttpStatus.BAD_REQUEST,
-          "Нельзя управлять правами доступа для шаблона"
+          HttpStatus.NOT_FOUND,
+          "Опрос не найден"
       );
     }
 
@@ -107,8 +107,8 @@ public class PermissionService {
 
     if (survey.isTemplate()) {
       throw new ResponseStatusException(
-          HttpStatus.BAD_REQUEST,
-          "Нельзя управлять правами доступа для шаблона"
+          HttpStatus.NOT_FOUND,
+          "Опрос не найден"
       );
     }
 
@@ -149,8 +149,8 @@ public class PermissionService {
 
     if (survey.isTemplate()) {
       throw new ResponseStatusException(
-          HttpStatus.BAD_REQUEST,
-          "Нельзя управлять правами доступа для шаблона"
+          HttpStatus.NOT_FOUND,
+          "Опрос не найден"
       );
     }
 
@@ -194,8 +194,8 @@ public class PermissionService {
 
     if (survey.isTemplate()) {
       throw new ResponseStatusException(
-          HttpStatus.BAD_REQUEST,
-          "Нельзя управлять правами доступа для шаблона"
+          HttpStatus.NOT_FOUND,
+          "Опрос не найден"
       );
     }
 
@@ -220,8 +220,8 @@ public class PermissionService {
 
     if (survey.isTemplate()) {
       throw new ResponseStatusException(
-          HttpStatus.BAD_REQUEST,
-          "Нельзя управлять правами доступа для шаблона"
+          HttpStatus.NOT_FOUND,
+          "Опрос не найден"
       );
     }
 

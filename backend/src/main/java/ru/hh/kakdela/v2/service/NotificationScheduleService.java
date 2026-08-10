@@ -51,8 +51,8 @@ public class NotificationScheduleService {
 
     if (survey.isTemplate()) {
       throw new ResponseStatusException(
-          HttpStatus.BAD_REQUEST,
-          "У шаблона нет расписания уведомлений"
+          HttpStatus.NOT_FOUND,
+          "Опрос не найден"
       );
     }
 
@@ -85,8 +85,8 @@ public class NotificationScheduleService {
 
     if (survey.isTemplate()) {
       throw new ResponseStatusException(
-          HttpStatus.BAD_REQUEST,
-          "Нельзя создавать расписание уведомлений для шаблона"
+          HttpStatus.NOT_FOUND,
+          "Опрос не найден"
       );
     }
 
@@ -132,8 +132,8 @@ public class NotificationScheduleService {
 
     if (survey.isTemplate()) {
       throw new ResponseStatusException(
-          HttpStatus.BAD_REQUEST,
-          "Нельзя обновлять расписание уведомлений для шаблона"
+          HttpStatus.NOT_FOUND,
+          "Опрос не найден"
       );
     }
 
@@ -206,8 +206,8 @@ public class NotificationScheduleService {
 
     if (survey.isTemplate()) {
       throw new ResponseStatusException(
-          HttpStatus.BAD_REQUEST,
-          "Нельзя удалять расписание уведомлений для шаблона"
+          HttpStatus.NOT_FOUND,
+          "Опрос не найден"
       );
     }
 

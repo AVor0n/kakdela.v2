@@ -41,8 +41,8 @@ public class ResponseService {
 
     if (response.getSurvey().isTemplate()) {
       throw new ResponseStatusException(
-          HttpStatus.BAD_REQUEST,
-          "У шаблона нет ответов"
+          HttpStatus.NOT_FOUND,
+          "Опрос не найден"
       );
     }
 
@@ -63,8 +63,8 @@ public class ResponseService {
 
     if (survey.isTemplate()) {
       throw new ResponseStatusException(
-          HttpStatus.BAD_REQUEST,
-          "У шаблона нет ответов"
+          HttpStatus.NOT_FOUND,
+          "Опрос не найден"
       );
     }
 
@@ -94,8 +94,8 @@ public class ResponseService {
 
     if (survey.isTemplate()) {
       throw new ResponseStatusException(
-          HttpStatus.BAD_REQUEST,
-          "У шаблона нет ответов"
+          HttpStatus.NOT_FOUND,
+          "Опрос не найден"
       );
     }
 
@@ -112,8 +112,8 @@ public class ResponseService {
 
     if (survey.isTemplate()) {
       throw new ResponseStatusException(
-          HttpStatus.BAD_REQUEST,
-          "Нельзя отвечать на шаблон. Шаблоны предназначены только для создания новых опросов."
+          HttpStatus.NOT_FOUND,
+          "Опрос не найден"
       );
     }
 
@@ -169,8 +169,8 @@ public class ResponseService {
 
     if (response.getSurvey().isTemplate()) {
       throw new ResponseStatusException(
-          HttpStatus.BAD_REQUEST,
-          "У шаблона нет ответов для завершения"
+          HttpStatus.NOT_FOUND,
+          "Опрос не найден"
       );
     }
 
@@ -201,8 +201,8 @@ public class ResponseService {
 
     if (survey.isTemplate()) {
       throw new ResponseStatusException(
-          HttpStatus.BAD_REQUEST,
-          "У шаблона нет ответов для экспорта"
+          HttpStatus.NOT_FOUND,
+          "Опрос не найден"
       );
     }
 

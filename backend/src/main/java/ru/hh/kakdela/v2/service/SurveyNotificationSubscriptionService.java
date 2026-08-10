@@ -47,8 +47,8 @@ public class SurveyNotificationSubscriptionService {
 
     if (survey.isTemplate()) {
       throw new ResponseStatusException(
-          HttpStatus.BAD_REQUEST,
-          "Нельзя подписывать пользователей на уведомления от шаблона"
+          HttpStatus.NOT_FOUND,
+          "Опрос не найден"
       );
     }
 
@@ -98,8 +98,8 @@ public class SurveyNotificationSubscriptionService {
 
     if (survey.isTemplate()) {
       throw new ResponseStatusException(
-          HttpStatus.BAD_REQUEST,
-          "У шаблона нет подписок"
+          HttpStatus.NOT_FOUND,
+          "Опрос не найден"
       );
     }
 
@@ -125,8 +125,8 @@ public class SurveyNotificationSubscriptionService {
 
     if (survey.isTemplate()) {
       throw new ResponseStatusException(
-          HttpStatus.BAD_REQUEST,
-          "У шаблона нет подписчиков"
+          HttpStatus.NOT_FOUND,
+          "Опрос не найден"
       );
     }
 
@@ -142,7 +142,10 @@ public class SurveyNotificationSubscriptionService {
             HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
 
     if (survey.isTemplate()) {
-      return false;
+      throw new ResponseStatusException(
+          HttpStatus.NOT_FOUND,
+          "Опрос не найден"
+      );
     }
 
     permissionService.checkCanEdit(surveyId, currentUserId);
