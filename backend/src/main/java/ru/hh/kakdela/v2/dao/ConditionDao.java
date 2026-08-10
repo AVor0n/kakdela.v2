@@ -13,6 +13,8 @@ public interface ConditionDao {
 
   boolean existsByPageIdAndNextPageId(UUID pageId, UUID nextPageId);
 
+  boolean existsBySurveyId(UUID surveyId);
+
   void makeConditionsConsistentByPageIdAndItsSerialNumber(UUID pageId, int serialNumber);
 
   void save(Condition condition);

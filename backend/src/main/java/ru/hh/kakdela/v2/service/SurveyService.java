@@ -55,7 +55,8 @@ public class SurveyService {
       permissionService.checkHasAnyPermission(surveyId, accountId);
     }
 
-    return surveyMapper.surveyToPublicDto(survey);
+    return surveyMapper.surveyToPublicDto(
+        survey, conditionService.doSurveyHaveConditions(surveyId));
   }
 
   @Transactional(readOnly = true)

@@ -47,6 +47,21 @@ public class ConditionDaoImpl implements ConditionDao {
   }
 
   @Override
+  public boolean existsBySurveyId(UUID surveyId) {
+    List<UUID> results = entityManager.createQuery(
+            """
+            SELECT c.id
+            FROM Condition c
+            WHERE c.surveyPage.survey.id = :surveyId
+            """, UUID.class)
+        .setParameter("surveyId", surveyId)
+        .setMaxResults(1)
+        .getResultList();
+
+    return !results.isEmpty();
+  }
+
+  @Override
   public void makeConditionsConsistentByPageIdAndItsSerialNumber(UUID pageId, int serialNumber) {
     entityManager.createQuery(
         """

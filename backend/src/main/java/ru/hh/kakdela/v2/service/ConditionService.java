@@ -187,4 +187,8 @@ public class ConditionService {
   void makeConditionsConsistent(UUID pageId, int serialNumber) {
     conditionDao.makeConditionsConsistentByPageIdAndItsSerialNumber(pageId, serialNumber);
   }
+
+  boolean doSurveyHaveConditions(UUID surveyId) {
+    return conditionDao.existsBySurveyId(surveyId);
+  }
 }
