@@ -34,6 +34,24 @@ export type Survey = {
     expireAtAtTargetTimezone: string | null;
 };
 
+export type SurveyPageShort = Pick<Page, 'id' | 'serialNumber'>;
+
+export type SurveyPublic = Pick<
+    Survey,
+    | 'id'
+    | 'author'
+    | 'title'
+    | 'description'
+    | 'isAuthorizedOnly'
+    | 'isLimitedToOneResponse'
+    | 'expireAt'
+    | 'targetTimezone'
+    | 'expireAtAtTargetTimezone'
+> & {
+    pages: SurveyPageShort[];
+    hasCustomClosingPage: boolean;
+};
+
 export type Page = {
     id: string;
     title: string | null;

@@ -1,9 +1,9 @@
-import { getSurveyById } from '@/api/survey';
-import type { Survey } from '@/shared/types/Survey.type';
+import { getPublicSurveyById, getSurveyForEditById } from '@/api/survey';
+import type { Survey, SurveyPublic } from '@/shared/types/Survey.type';
 import { getAccountDetails } from '@/api/account';
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { routePatterns, routes } from '@/app/routes';
+import { routes } from '@/app/routes';
 import { SurveyRunner, type SurveyRunnerMode } from './components/SurveyRunner/SurveyRunner';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
@@ -15,7 +15,7 @@ import style from './SurveyView.module.css';
 export function SurveyView() {
     const { id } = useParams();
     const [searchParams] = useSearchParams();
-    const [survey, setSurvey] = useState<Survey | null>(null);
+    const [survey, setSurvey] = useState<Survey | SurveyPublic | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const mode: SurveyRunnerMode = searchParams.get('preview') === 'true' ? 'preview' : 'respond';
@@ -32,7 +32,8 @@ export function SurveyView() {
         }
 
         setIsLoading(true);
-        getSurveyById(id)
+        const surveyRequest = mode === 'preview' ? getSurveyForEditById(id) : getPublicSurveyById(id);
+        surveyRequest
             .then((data) => {
                 setSurvey(data);
                 setError(null);
@@ -43,13 +44,9 @@ export function SurveyView() {
             .finally(() => {
                 setIsLoading(false);
             });
-    }, [id]);
+    }, [id, mode]);
 
     useEffect(() => {
-        if (survey && !survey.isPublished && mode !== 'preview') {
-            dispatch(setErrorMessage({ message: 'Опрос не существует или ещё не опубликован' }));
-            navigate(routePatterns.notFound);
-        }
         if (isAccountChecked && !account && survey && survey.isAuthorizedOnly) {
             dispatch(setErrorMessage({ message: 'Этот опрос только для зарегистрированных пользователей' }));
             navigate(routes.login(), { state: { from: location } });
@@ -98,7 +95,11 @@ export function SurveyView() {
                     )}
                 </div>
             </header>
-            <SurveyRunner survey={survey} mode={mode} />
+            {mode === 'preview' ? (
+                <SurveyRunner survey={survey as Survey} mode='preview' />
+            ) : (
+                <SurveyRunner survey={survey as SurveyPublic} mode='respond' />
+            )}
         </div>
     );
 }

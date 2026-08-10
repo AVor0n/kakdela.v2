@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { Question } from '@/shared/types/Question.type';
-import type { ClosingPage, Survey } from '@/shared/types/Survey.type';
+import type { ClosingPage, Page, Survey, SurveyPublic } from '@/shared/types/Survey.type';
 import { Button, Checkbox, Input, Radio, Text, TextArea, TextAreaGrowLimiter } from '@hh.ru/magritte-ui';
 import { Link } from 'react-router-dom';
 import { routes } from '@/app/routes';
@@ -16,6 +16,7 @@ import { HTMLRender } from '@/shared/ui/HTMLRender/HTMLRender';
 import { ClosingPageView } from '../ClosingPageView/ClosingPageView';
 import { WelcomePageView } from '../WelcomePageView/WelcomePageView';
 import { getClosingPage } from '@/api/closingPage';
+import { getSurveyPage } from '@/api/surveyPages';
 
 const OTHER_OPTION_VALUE = '__other__';
 
@@ -26,10 +27,7 @@ type Answers = Record<string, AnswerValue>;
 type Errors = Record<string, string>;
 type SurveyRunnerStage = 'welcome' | 'questions' | 'closing';
 
-type Props = {
-    survey: Survey;
-    mode: SurveyRunnerMode;
-};
+type Props = { survey: Survey; mode: 'preview' } | { survey: SurveyPublic; mode: 'respond' };
 
 function sortBySerialNumber<T extends { serialNumber: number }>(items: T[]) {
     return [...items].sort((firstItem, secondItem) => firstItem.serialNumber - secondItem.serialNumber);
@@ -89,14 +87,19 @@ function buildAnswerPayload(question: Question, value: AnswerValue | undefined, 
 
 export function SurveyRunner({ survey, mode }: Props) {
     const [currentPageIndex, setCurrentPageIndex] = useState(0);
+    const [currentPageId, setCurrentPageId] = useState<string | null>(null);
+    const [visitedPageIds, setVisitedPageIds] = useState<string[]>([]);
+    const [loadedPages, setLoadedPages] = useState<Record<string, Page>>({});
     const [answers, setAnswers] = useState<Answers>({});
     const [errors, setErrors] = useState<Errors>({});
     const [stage, setStage] = useState<SurveyRunnerStage>('welcome');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isStarting, setIsStarting] = useState(false);
+    const [isPageLoading, setIsPageLoading] = useState(false);
     const [otherTexts, setOtherTexts] = useState<Record<string, string>>({});
     const [submitError, setSubmitError] = useState<string | null>(null);
-    const [closingPage, setClosingPage] = useState<ClosingPage | null>(survey.closingPage);
     const isPreview = mode === 'preview';
+    const [closingPage, setClosingPage] = useState<ClosingPage | null>(isPreview ? survey.closingPage : null);
     const {
         ensureResponse,
         failedQuestionCount,
@@ -109,15 +112,19 @@ export function SurveyRunner({ survey, mode }: Props) {
 
     useEffect(() => {
         setCurrentPageIndex(0);
+        setCurrentPageId(null);
+        setVisitedPageIds([]);
+        setLoadedPages({});
         setAnswers({});
         setOtherTexts({});
         setErrors({});
         setStage('welcome');
         setSubmitError(null);
-        setClosingPage(survey.closingPage);
-    }, [survey.id]);
+        setClosingPage(mode === 'preview' ? survey.closingPage : null);
+    }, [mode, survey]);
 
     const refreshClosingPage = async () => {
+        if (!isPreview) return;
         try {
             setClosingPage(await getClosingPage(survey.id));
         } catch {
@@ -128,6 +135,35 @@ export function SurveyRunner({ survey, mode }: Props) {
     const showClosingPagePreview = () => {
         setStage('closing');
         void refreshClosingPage();
+    };
+
+    const orderedPageSummaries = sortBySerialNumber(survey.pages);
+
+    const startSurvey = async () => {
+        if (isPreview) {
+            setStage('questions');
+            return;
+        }
+
+        setIsStarting(true);
+        setSubmitError(null);
+        try {
+            const responseId = await ensureResponse();
+            const firstPage = orderedPageSummaries[0];
+            if (firstPage) {
+                const page = await getSurveyPage(firstPage.id, responseId);
+                setLoadedPages({ [page.id]: page });
+                setCurrentPageId(page.id);
+                setVisitedPageIds([page.id]);
+                const actualPageIndex = orderedPageSummaries.findIndex(({ id }) => id === page.id);
+                setCurrentPageIndex(actualPageIndex >= 0 ? actualPageIndex : 0);
+            }
+            setStage('questions');
+        } catch {
+            setSubmitError('Не удалось начать прохождение опроса');
+        } finally {
+            setIsStarting(false);
+        }
     };
 
     const updateAnswer = (question: Question, value: AnswerValue) => {
@@ -159,7 +195,10 @@ export function SurveyRunner({ survey, mode }: Props) {
     const validate = () => {
         const nextErrors: Errors = {};
 
-        survey.pages.forEach((page) => {
+        const pages = isPreview
+            ? survey.pages
+            : visitedPageIds.flatMap((pageId) => (loadedPages[pageId] ? [loadedPages[pageId]] : []));
+        pages.forEach((page) => {
             page.questions.filter(isQuestionVisible).forEach((question) => {
                 if (
                     question.isMandatory &&
@@ -389,21 +428,66 @@ export function SurveyRunner({ survey, mode }: Props) {
         }
     };
 
-    const visiblePages = sortBySerialNumber(survey.pages)
-        .map((page) => ({
-            ...page,
-            questions: sortBySerialNumber(page.questions).filter(isQuestionVisible),
-        }))
-        .filter((page) => page.questions.length > 0);
-    const currentPage = visiblePages[currentPageIndex];
-    const isFirstPage = currentPageIndex === 0;
-    const isLastPage = currentPageIndex === visiblePages.length - 1;
+    const previewPages = isPreview
+        ? sortBySerialNumber(survey.pages).map((page) => ({
+              ...page,
+              questions: sortBySerialNumber(page.questions).filter(isQuestionVisible),
+          }))
+        : [];
+    const currentPageSummary = orderedPageSummaries[currentPageIndex];
+    const currentPage = isPreview
+        ? previewPages[currentPageIndex]
+        : currentPageId
+          ? loadedPages[currentPageId]
+          : currentPageSummary
+            ? loadedPages[currentPageSummary.id]
+            : undefined;
+    const totalPageCount = orderedPageSummaries.length;
+    const isFirstPage = isPreview ? currentPageIndex === 0 : visitedPageIds.length <= 1;
+    const isLastPage = currentPageIndex === totalPageCount - 1;
+
+    const openPage = async (pageIndex: number) => {
+        if (isPreview) {
+            setCurrentPageIndex(pageIndex);
+            return;
+        }
+
+        const pageSummary = orderedPageSummaries[pageIndex];
+        if (!pageSummary) return;
+
+        setIsPageLoading(true);
+        setSubmitError(null);
+        try {
+            const responseId = await ensureResponse();
+            const page = await getSurveyPage(pageSummary.id, responseId);
+            setLoadedPages((pages) => ({ ...pages, [page.id]: page }));
+            setCurrentPageId(page.id);
+            setVisitedPageIds((pageIds) =>
+                pageIds[pageIds.length - 1] === page.id ? pageIds : [...pageIds, page.id],
+            );
+            const actualPageIndex = orderedPageSummaries.findIndex(({ id }) => id === page.id);
+            setCurrentPageIndex(actualPageIndex >= 0 ? actualPageIndex : pageIndex);
+        } catch {
+            setSubmitError('Не удалось загрузить страницу опроса');
+        } finally {
+            setIsPageLoading(false);
+        }
+    };
 
     const goToPreviousPage = async () => {
-        if (!isPreview) {
-            await flushPendingAnswers().catch(() => setSubmitError('Не удалось сохранить некоторые ответы'));
+        if (isPreview) {
+            await openPage(Math.max(currentPageIndex - 1, 0));
+            return;
         }
-        setCurrentPageIndex((pageIndex) => Math.max(pageIndex - 1, 0));
+
+        await flushPendingAnswers().catch(() => setSubmitError('Не удалось сохранить некоторые ответы'));
+        const previousPageId = visitedPageIds[visitedPageIds.length - 2];
+        if (!previousPageId || !loadedPages[previousPageId]) return;
+
+        setVisitedPageIds((pageIds) => pageIds.slice(0, -1));
+        setCurrentPageId(previousPageId);
+        const previousPageIndex = orderedPageSummaries.findIndex(({ id }) => id === previousPageId);
+        if (previousPageIndex >= 0) setCurrentPageIndex(previousPageIndex);
     };
 
     const goToNextPage = async () => {
@@ -413,7 +497,7 @@ export function SurveyRunner({ survey, mode }: Props) {
 
         if (isPreview) {
             setErrors({});
-            setCurrentPageIndex((pageIndex) => Math.min(pageIndex + 1, visiblePages.length - 1));
+            await openPage(Math.min(currentPageIndex + 1, totalPageCount - 1));
             return;
         }
 
@@ -421,8 +505,13 @@ export function SurveyRunner({ survey, mode }: Props) {
             return;
         }
 
-        await flushPendingAnswers().catch(() => setSubmitError('Не удалось сохранить некоторые ответы'));
-        setCurrentPageIndex((pageIndex) => Math.min(pageIndex + 1, visiblePages.length - 1));
+        try {
+            await flushPendingAnswers();
+        } catch {
+            setSubmitError('Не удалось сохранить некоторые ответы');
+            return;
+        }
+        await openPage(Math.min(currentPageIndex + 1, totalPageCount - 1));
     };
 
     return (
@@ -437,7 +526,12 @@ export function SurveyRunner({ survey, mode }: Props) {
                     </div>
                 )}
                 {stage === 'welcome' ? (
-                    <WelcomePageView survey={survey} onStart={() => setStage('questions')} />
+                    <WelcomePageView
+                        survey={survey}
+                        onStart={() => void startSurvey()}
+                        isStarting={isStarting}
+                        startError={submitError}
+                    />
                 ) : stage === 'closing' ? (
                     <ClosingPageView
                         surveyId={survey.id}
@@ -446,7 +540,7 @@ export function SurveyRunner({ survey, mode }: Props) {
                     />
                 ) : (
                     <>
-                        {visiblePages.length === 0 ? (
+                        {totalPageCount === 0 ? (
                             <div className={surveyDetailStyle.container}>
                                 <Text typography='paragraph-2-regular' style='primary'>
                                     В этом опросе пока нет вопросов.
@@ -457,6 +551,8 @@ export function SurveyRunner({ survey, mode }: Props) {
                                     </Button>
                                 )}
                             </div>
+                        ) : isPageLoading ? (
+                            <div>Загрузка страницы...</div>
                         ) : currentPage ? (
                             <section className={choiceStyle.container}>
                                 {(currentPage.description || currentPage.title) && (
@@ -507,20 +603,20 @@ export function SurveyRunner({ survey, mode }: Props) {
                                         type='button'
                                         mode='secondary'
                                         style='accent'
-                                        disabled={isFirstPage || isSubmitting}
+                                        disabled={isFirstPage || isSubmitting || isPageLoading}
                                         onClick={() => void goToPreviousPage()}
                                     >
                                         Назад
                                     </Button>
                                     <Text typography='paragraph-2-regular' style='secondary'>
-                                        {currentPageIndex + 1} из {visiblePages.length}
+                                        {currentPageIndex + 1} из {totalPageCount}
                                     </Text>
                                     {isLastPage ? (
                                         <Button
                                             type='button'
                                             mode='primary'
                                             style='accent'
-                                            disabled={isSubmitting}
+                                            disabled={isSubmitting || isPageLoading}
                                             onClick={isPreview ? showClosingPagePreview : submitHandler}
                                         >
                                             {isPreview
@@ -534,7 +630,7 @@ export function SurveyRunner({ survey, mode }: Props) {
                                             type='button'
                                             mode='primary'
                                             style='accent'
-                                            disabled={isSubmitting}
+                                            disabled={isSubmitting || isPageLoading}
                                             onClick={() => void goToNextPage()}
                                         >
                                             Далее

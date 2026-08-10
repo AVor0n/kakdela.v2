@@ -2,7 +2,7 @@ import { Button, createStaticDataProvider, Select, type StaticDataFetcherItem } 
 import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
-import { getSurveyById } from '@/api/survey';
+import { getSurveyForEditById } from '@/api/survey';
 import {
     type ResponseAccountDetail,
     type SurveyAnswerResponse,
@@ -111,7 +111,7 @@ export function Answers() {
         setError(null);
 
         Promise.all([
-            selectedSurvey?.id === id ? Promise.resolve(selectedSurvey) : getSurveyById(id),
+            selectedSurvey?.id === id ? Promise.resolve(selectedSurvey) : getSurveyForEditById(id),
             getSurveyResponses(id),
         ])
             .then(([surveyData, responsesData]) => {

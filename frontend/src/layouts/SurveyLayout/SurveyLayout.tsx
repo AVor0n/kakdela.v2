@@ -2,7 +2,7 @@ import { Link, Outlet, useLocation, useNavigate, useParams, useSearchParams } fr
 import { routePatterns, routes } from '@/app/routes';
 import { Link as LinkHH, Button } from '@hh.ru/magritte-ui';
 import style from './SurveyLayout.module.css';
-import { getMySurveys, getSurveyById, updateSurvey } from '@/api/survey';
+import { getMySurveys, getSurveyForEditById, updateSurvey } from '@/api/survey';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { setSelectedSurvey } from '@/entities/Survey/Survey.slice';
@@ -98,7 +98,7 @@ export function SurveyLayout() {
                 });
             return;
         } else {
-            getSurveyById(id)
+            getSurveyForEditById(id)
                 .then((data) => {
                     dispatch(setSelectedSurvey({ survey: data }));
                     dispatch(setPages({ pages: data.pages }));
