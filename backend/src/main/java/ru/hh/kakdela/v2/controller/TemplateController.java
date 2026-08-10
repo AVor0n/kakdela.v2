@@ -38,11 +38,6 @@ public class TemplateController {
     return templateService.createTemplate(surveyId, currentUser.getId());
   }
 
-  @GetMapping("/templates")
-  public List<TemplateResponseDto> getPublicTemplates() {
-    return templateService.getPublicTemplates();
-  }
-
   @GetMapping("/templates/{templateId}")
   public TemplateResponseDto getTemplate(
       @PathVariable UUID templateId,

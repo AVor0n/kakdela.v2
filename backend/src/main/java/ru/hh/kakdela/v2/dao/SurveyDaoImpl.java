@@ -37,13 +37,6 @@ public class SurveyDaoImpl implements SurveyDao {
   }
 
   @Override
-  public List<Survey> findAllPublishedTemplates() {
-    return entityManager.createQuery(
-            "FROM Survey s WHERE s.isPublished = true AND s.isTemplate = true", Survey.class)
-        .getResultList();
-  }
-
-  @Override
   public void save(Survey survey) {
     log.debug("Сохранен опрос id={}", survey.getId());
     entityManager.persist(survey);

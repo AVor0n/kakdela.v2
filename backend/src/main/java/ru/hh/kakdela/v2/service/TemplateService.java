@@ -84,13 +84,6 @@ public class TemplateService {
   }
 
   @Transactional(readOnly = true)
-  public List<TemplateResponseDto> getPublicTemplates() {
-    return templateMapper.templatesToDtoList(
-        surveyDao.findAllPublishedTemplates()
-    );
-  }
-
-  @Transactional(readOnly = true)
   public List<TemplateResponseDto> getMyTemplates(UUID accountId) {
     List<Survey> templates = surveyDao.findAllByAuthorId(accountId).stream()
         .filter(Survey::isTemplate)

@@ -13,8 +13,6 @@ public interface SurveyDao {
 
   List<Survey> findAllPublished();
 
-  List<Survey> findAllPublishedTemplates();
-
   void save(Survey survey);
 
   void update(Survey survey);
