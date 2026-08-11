@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import ru.hh.kakdela.v2.dto.survey.SurveyCreateDto;
+import ru.hh.kakdela.v2.dto.survey.SurveyPublicResponseDto;
 import ru.hh.kakdela.v2.dto.survey.SurveyResponseDto;
 import ru.hh.kakdela.v2.dto.survey.SurveyShortResponseDto;
 import ru.hh.kakdela.v2.dto.survey.SurveyShortResponseWithPermissionDto;
@@ -47,6 +48,13 @@ public class SurveyController {
   }
 
   @GetMapping("/surveys/{surveyId}")
+  public SurveyPublicResponseDto getPublicById(
+      @PathVariable UUID surveyId,
+      @AuthenticationPrincipal CustomUserDetails currentUser) {
+    return surveyService.getPublicById(surveyId, currentUser.getId());
+  }
+
+  @GetMapping("/surveys/{surveyId}/edit")
   public SurveyResponseDto getById(
       @PathVariable UUID surveyId,
       @AuthenticationPrincipal CustomUserDetails currentUser) {

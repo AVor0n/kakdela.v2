@@ -17,6 +17,7 @@ import ru.hh.kakdela.v2.dao.AccountDao;
 import ru.hh.kakdela.v2.dao.SurveyDao;
 import ru.hh.kakdela.v2.dao.SurveyNotificationSubscriptionDao;
 import ru.hh.kakdela.v2.dto.survey.SurveyCreateDto;
+import ru.hh.kakdela.v2.dto.survey.SurveyPublicResponseDto;
 import ru.hh.kakdela.v2.dto.survey.SurveyResponseDto;
 import ru.hh.kakdela.v2.dto.survey.SurveyShortResponseDto;
 import ru.hh.kakdela.v2.dto.survey.SurveyShortResponseWithPermissionDto;
@@ -45,7 +46,7 @@ public class SurveyService {
   private final SurveyMapper surveyMapper;
 
   @Transactional(readOnly = true)
-  public SurveyResponseDto getById(UUID surveyId, UUID accountId) {
+  public SurveyPublicResponseDto getPublicById(UUID surveyId, UUID accountId) {
     Survey survey = surveyDao.findById(surveyId)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
@@ -53,6 +54,17 @@ public class SurveyService {
     if (!survey.isPublished()) {
       permissionService.checkHasAnyPermission(surveyId, accountId);
     }
+
+    return surveyMapper.surveyToPublicDto(survey);
+  }
+
+  @Transactional(readOnly = true)
+  public SurveyResponseDto getById(UUID surveyId, UUID accountId) {
+    Survey survey = surveyDao.findById(surveyId)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
+
+    permissionService.checkHasAnyPermission(surveyId, accountId);
 
     return surveyMapper.surveyToDto(survey);
   }
@@ -242,8 +254,6 @@ public class SurveyService {
             .answerOptionOrder(originalQuestion.getAnswerOptionOrder())
             .hasOtherOption(originalQuestion.hasOtherOption())
             .isMandatory(originalQuestion.isMandatory())
-            .isVisible(originalQuestion.isVisible())
-            .condition(originalQuestion.getCondition())
             .build();
 
         if (originalQuestion.getAttachmentObjectKey() != null) {
