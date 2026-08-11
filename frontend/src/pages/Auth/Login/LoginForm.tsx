@@ -83,8 +83,8 @@ export function LoginForm({
                     href='/api/auth/oauth2/authorization/hh'
                 >
                     <Flex align={'center'} gap='0.5rem'>
-                        <img width={28} src='/hh-logo.svg' alt='HH' />
-                        <p>Войти через HH</p>
+                        <p>Войти через</p>
+                        <img width={28} src='/hh_logo_white.png' alt='hh' />
                     </Flex>
                 </Button>
                 <Button style='accent' mode='tertiary' type='button' onClick={onRegisterClick}>
