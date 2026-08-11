@@ -1,0 +1,47 @@
+.container {
+    display: flex;
+    justify-content: space-between;
+    border-radius: 16px;
+    padding: 10px;
+    border: solid 1px var(--color-border);
+}
+
+.content {
+    display: flex;
+    gap: 1rem;
+}
+
+.section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.dayOfMonthInput {
+    width: 300px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.days {
+    display: flex;
+    gap: 5px;
+    margin-top: 5px;
+}
+
+.day {
+    padding: 3px 5px;
+    border-radius: 6px;
+    background: #eeeeee;
+    transition: background 200ms ease-out;
+}
+
+.day:hover {
+    background: #cccccc;
+}
+
+.day.active {
+    background: #666666;
+    color: white;
+}

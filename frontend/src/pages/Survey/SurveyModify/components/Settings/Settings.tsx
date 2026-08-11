@@ -5,12 +5,13 @@ import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { setSelectedSurvey } from '@/entities/Survey/Survey.slice';
 import { useNavigate } from 'react-router-dom';
 import { routePatterns } from '@/app/routes';
-import { SubscribersInput } from './Subscribers/SubscribersInput';
+import { SubscribersInput } from './components/Subscribers/SubscribersInput';
 import { setErrorMessage } from '@/entities/Error/Error.slice';
-import { Permissions } from './Permissions/Permissions';
+import { Permissions } from './components/Permissions/Permissions';
 import style from './Settings.module.css';
 import { Button, Checkbox, DateTimeInput } from '@hh.ru/magritte-ui';
 import classNames from 'classnames';
+import { NotificationsSchedule } from './components/NotificationSchedule/NotificationsSchedule';
 
 function convertDateFromISO(isoStr: string): string {
     if (!isoStr) return '';
@@ -291,6 +292,8 @@ export function Settings() {
                 <SubscribersInput />
 
                 {isAuthor && <Permissions surveyId={selectedSurvey.id} />}
+
+                <NotificationsSchedule surveyId={selectedSurvey.id} />
 
                 <div className={style.buttons}>
                     <Button mode='secondary' style='neutral' onClick={resetSettings}>
