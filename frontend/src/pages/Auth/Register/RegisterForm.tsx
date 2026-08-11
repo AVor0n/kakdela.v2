@@ -108,6 +108,18 @@ export function RegisterForm({
                 <Button style='accent' mode='primary' type='submit'>
                     Зарегистрироваться
                 </Button>
+                <Button
+                    style='negative'
+                    mode='primary'
+                    type='button'
+                    Element='a'
+                    href='/api/auth/oauth2/authorization/hh'
+                >
+                    <Flex align={'center'} gap='0.5rem'>
+                        <p>Войти через</p>
+                        <img width={28} src='/hh_logo_white.png' alt='hh' />
+                    </Flex>
+                </Button>
 
                 <Button style='accent' mode='tertiary' type='button' onClick={onLoginClick}>
                     К входу
