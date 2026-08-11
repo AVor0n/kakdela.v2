@@ -1,4 +1,4 @@
-package ru.hh.kakdela.v2.dto.survey_page;
+package ru.hh.kakdela.v2.dto.survey.page;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Min;

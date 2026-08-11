@@ -1,10 +1,10 @@
 package ru.hh.kakdela.v2.service;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -14,11 +14,11 @@ import org.springframework.web.server.ResponseStatusException;
 import ru.hh.kakdela.v2.dao.AccountDao;
 import ru.hh.kakdela.v2.dao.ResponseDao;
 import ru.hh.kakdela.v2.dao.SurveyDao;
+import ru.hh.kakdela.v2.dto.response.ResponseExportDto;
 import ru.hh.kakdela.v2.dto.response.ResponseResponseDto;
 import ru.hh.kakdela.v2.dto.response.ResponseWithTokenDto;
 import ru.hh.kakdela.v2.mapper.ResponseMapper;
 import ru.hh.kakdela.v2.model.Account;
-import ru.hh.kakdela.v2.model.Permission;
 import ru.hh.kakdela.v2.model.Response;
 import ru.hh.kakdela.v2.model.Survey;
 import ru.hh.kakdela.v2.security.JwtService;
@@ -33,6 +33,7 @@ public class ResponseService {
   private final AccountDao accountDao;
   private final PermissionService permissionService;
   private final JwtService jwtService;
+  private final ResponseExportService exportService;
 
   private boolean isSurveyAuthor(Response response, UUID accountId) {
     return response.getSurvey().getAuthor().getId().equals(accountId);
@@ -134,6 +135,7 @@ public class ResponseService {
     }
 
     Response response = Response.builder()
+        .id(UUID.randomUUID())
         .account(account)
         .survey(survey)
         .isCompleted(false)
@@ -171,5 +173,27 @@ public class ResponseService {
     log.info("Завершен ответ на опрос id={} accountId={}", id, accountId);
 
     return ResponseMapper.responseToDto(response);
+  }
+
+  @Transactional
+  public ResponseExportDto export(UUID surveyId, UUID accountId) {
+    permissionService.checkCanReadResponses(surveyId, accountId);
+
+    List<ResponseResponseDto> completedResponses = responseDao
+        .findCompletedBySurveyId(surveyId).stream()
+        .map(ResponseMapper::responseToDto)
+        .toList();
+
+    ResponseExportDto excelData;
+    try {
+      excelData = exportService.exportResponsesWithFilename(
+          completedResponses,
+          surveyId
+      );
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+
+    return excelData;
   }
 }

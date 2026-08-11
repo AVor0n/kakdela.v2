@@ -33,6 +33,7 @@ jobs:
               - '!frontend/*.md'
             backend:
               - 'backend/**'
+              - '!backend/src/test/**'
               - '!backend/*.md'
               - '!backend/src/main/resources/schema.sql'
           predicate-quantifier: every

@@ -1,5 +1,8 @@
 package ru.hh.kakdela.v2.service;
 
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
@@ -12,10 +15,6 @@ import ru.hh.kakdela.v2.dao.SurveyNotificationSubscriptionDao;
 import ru.hh.kakdela.v2.model.Account;
 import ru.hh.kakdela.v2.model.Permission;
 import ru.hh.kakdela.v2.model.Survey;
-
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -56,7 +55,7 @@ public class NotificationService {
     log.info("Отправка {} уведомлений новым подписчикам опроса {}",
         emails.size(), survey.getId());
     for (String email : emails) {
-      emailService.sendSurveyPublishedEmail(email, survey.getTitle(), survey.getId());
+      emailService.sendSurveyPublishedEmail(email, survey.getTitleAsPlainString(), survey.getId());
     }
   }
 
@@ -71,7 +70,7 @@ public class NotificationService {
     for (Account account : users) {
       emailService.sendIncompletedResponseEmail(
           account.getEmail(),
-          survey.getTitle(),
+          survey.getTitleAsPlainString(),
           surveyId
       );
     }
@@ -103,8 +102,8 @@ public class NotificationService {
 
     for (Account account : teamMembers) {
       String email = account.getEmail();
-      log.info("Опрос опубликован: {} - {}", survey.getTitle(), email);
-      emailService.sendSurveyPublishedEmail(email, survey.getTitle(), survey.getId());
+      log.info("Опрос опубликован: {} - {}", survey.getTitleAsPlainString(), email);
+      emailService.sendSurveyPublishedEmail(email, survey.getTitleAsPlainString(), survey.getId());
     }
   }
 
@@ -113,8 +112,9 @@ public class NotificationService {
 
     for (Account account : subscribers) {
       String email = account.getEmail();
-      log.info("Приглашаем Вас принять участие в опросе: {} - {}", survey.getTitle(), email);
-      emailService.sendSurveyPublishedEmail(email, survey.getTitle(), survey.getId());
+      log.info("Приглашаем Вас принять участие в опросе: {} - {}",
+          survey.getTitleAsPlainString(), email);
+      emailService.sendSurveyPublishedEmail(email, survey.getTitleAsPlainString(), survey.getId());
     }
   }
 }

@@ -1,13 +1,14 @@
 package ru.hh.kakdela.v2.service;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
-
 import ru.hh.kakdela.v2.dao.AccountDao;
 import ru.hh.kakdela.v2.dao.SurveyDao;
 import ru.hh.kakdela.v2.dao.SurveyNotificationSubscriptionDao;
@@ -15,10 +16,6 @@ import ru.hh.kakdela.v2.dto.subscription.SubscriptionResponseDto;
 import ru.hh.kakdela.v2.model.Account;
 import ru.hh.kakdela.v2.model.Survey;
 import ru.hh.kakdela.v2.model.SurveyNotificationSubscription;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
 
 @Slf4j
 @Service
@@ -68,7 +65,7 @@ public class SurveyNotificationSubscriptionService {
         subscribedEmails.add(email);
 
         if (survey.isPublished()) {
-          emailService.sendSurveyPublishedEmail(email, survey.getTitle(), surveyId);
+          emailService.sendSurveyPublishedEmail(email, survey.getTitleAsPlainString(), surveyId);
         }
 
         log.info("Пользователь {} подписан на опрос {}", email, surveyId);

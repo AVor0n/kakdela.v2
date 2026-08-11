@@ -1,16 +1,18 @@
 package ru.hh.kakdela.v2.dto.survey;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Instant;
 import java.util.UUID;
-
-import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
 import ru.hh.kakdela.v2.model.Permission;
 
 @AllArgsConstructor
 @Getter
+@EqualsAndHashCode
+@ToString
 @Schema(
     name = "SurveyShortResponseWithPermissionDto",
     title = "Краткий DTO данных опроса с указанием прав пользователя"

@@ -1,5 +1,6 @@
 package ru.hh.kakdela.v2.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -15,8 +16,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-
-import io.swagger.v3.oas.annotations.tags.Tag;
 import ru.hh.kakdela.v2.dto.account.AccountDeleteDto;
 import ru.hh.kakdela.v2.dto.account.AccountPatchDto;
 import ru.hh.kakdela.v2.dto.account.AccountPutDto;

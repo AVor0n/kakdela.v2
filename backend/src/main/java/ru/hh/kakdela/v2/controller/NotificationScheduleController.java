@@ -1,18 +1,25 @@
 package ru.hh.kakdela.v2.controller;
 
 import jakarta.validation.Valid;
+import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 import ru.hh.kakdela.v2.dto.notification_schedule.NotificationScheduleCreateDto;
 import ru.hh.kakdela.v2.dto.notification_schedule.NotificationScheduleResponseDto;
 import ru.hh.kakdela.v2.dto.notification_schedule.NotificationScheduleUpdateDto;
 import ru.hh.kakdela.v2.security.CustomUserDetails;
 import ru.hh.kakdela.v2.service.NotificationScheduleService;
-
-import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api")
@@ -22,13 +29,13 @@ public class NotificationScheduleController {
   private final NotificationScheduleService notificationScheduleService;
 
   @GetMapping("/surveys/{surveyId}/notifications")
-  List<NotificationScheduleResponseDto> getAllBySurveyId (@PathVariable UUID surveyId) {
+  List<NotificationScheduleResponseDto> getAllBySurveyId(@PathVariable UUID surveyId) {
     return notificationScheduleService.getAllBySurveyId(surveyId);
   }
 
   @GetMapping("/notifications/{notificationId}")
-  NotificationScheduleResponseDto getById (@PathVariable UUID id) {
-    return notificationScheduleService.getById(id);
+  NotificationScheduleResponseDto getById(@PathVariable UUID notificationId) {
+    return notificationScheduleService.getById(notificationId);
   }
 
   @PostMapping("/surveys/{surveyId}/notifications")

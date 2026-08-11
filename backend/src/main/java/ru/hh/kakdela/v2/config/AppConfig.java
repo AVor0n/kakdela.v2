@@ -1,5 +1,6 @@
 package ru.hh.kakdela.v2.config;
 
+import java.time.Clock;
 import org.apache.tika.Tika;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,5 +11,10 @@ public class AppConfig {
   @Bean
   public Tika tika() {
     return new Tika();
+  }
+
+  @Bean
+  public Clock clock() {
+    return Clock.systemUTC();
   }
 }

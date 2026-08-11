@@ -1,16 +1,18 @@
-package ru.hh.kakdela.v2.dto.survey_page;
-
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import ru.hh.kakdela.v2.dto.question.QuestionResponseDto;
-
-import java.util.List;
-import java.util.UUID;
+package ru.hh.kakdela.v2.dto.survey.page;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.List;
+import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
+import ru.hh.kakdela.v2.dto.question.QuestionResponseDto;
 
 @AllArgsConstructor
 @Getter
+@EqualsAndHashCode
+@ToString
 @Schema(
     name = "SurveyPageResponse",
     title = "DTO для получения данных страницы опроса"

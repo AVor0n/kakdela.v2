@@ -7,8 +7,8 @@ public class PermissionMapper {
 
   public static PermissionResponseDto permissionToDto(Permission permission) {
     return new PermissionResponseDto(
-        permission.getId().getAccountId(),
         permission.getId().getSurveyId(),
+        AccountMapper.accountToDto(permission.getAccount()),
         permission.getRole().name(),
         permission.isDoNotify()
     );

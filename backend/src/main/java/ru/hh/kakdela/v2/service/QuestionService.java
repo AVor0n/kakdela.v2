@@ -2,7 +2,6 @@ package ru.hh.kakdela.v2.service;
 
 import java.util.List;
 import java.util.UUID;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,7 +19,6 @@ import ru.hh.kakdela.v2.dto.question.QuestionResponseDto;
 import ru.hh.kakdela.v2.dto.question.QuestionUpdateDto;
 import ru.hh.kakdela.v2.mapper.QuestionMapper;
 import ru.hh.kakdela.v2.model.AnswerOption;
-import ru.hh.kakdela.v2.model.Permission.SurveyRole;
 import ru.hh.kakdela.v2.model.Question;
 import ru.hh.kakdela.v2.model.SurveyPage;
 
@@ -75,6 +73,7 @@ public class QuestionService {
     }
 
     Question question = Question.builder()
+        .id(UUID.randomUUID())
         .surveyPage(page)
         .serialNumber(dto.getSerialNumber() != null
             ? dto.getSerialNumber()

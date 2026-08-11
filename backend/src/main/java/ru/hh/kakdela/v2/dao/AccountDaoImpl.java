@@ -2,13 +2,12 @@ package ru.hh.kakdela.v2.dao;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Repository;
-import ru.hh.kakdela.v2.model.Account;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Repository;
+import ru.hh.kakdela.v2.model.Account;
 
 @Slf4j
 @Repository
@@ -40,7 +39,8 @@ public class AccountDaoImpl implements AccountDao {
 
   @Override
   public List<Account> findUsersWithIncompletedResponseBySurveyId(UUID surveyId) {
-    return entityManager.createQuery("""
+    return entityManager.createQuery(
+        """
         FROM Account a
         JOIN Response r on a.id = r.account.id
         WHERE r.survey.id = :surveyId AND r.isCompleted = false
@@ -77,7 +77,8 @@ public class AccountDaoImpl implements AccountDao {
   @Override
   public boolean existsByLogin(String login) {
     return Optional.ofNullable(entityManager
-                    .createQuery("SELECT COUNT(a) FROM Account a WHERE a.login = :login", Long.class)
+                    .createQuery("SELECT COUNT(a) FROM Account a "
+                        + "WHERE a.login = :login", Long.class)
                     .setParameter("login", login)
                     .getSingleResultOrNull())
             .map(count -> count > 0)
@@ -87,7 +88,8 @@ public class AccountDaoImpl implements AccountDao {
   @Override
   public boolean existsByEmail(String email) {
     return Optional.ofNullable(entityManager
-                    .createQuery("SELECT COUNT(a) FROM Account a WHERE a.email = :email", Long.class)
+                    .createQuery("SELECT COUNT(a) FROM Account a "
+                        + "WHERE a.email = :email", Long.class)
                     .setParameter("email", email)
                     .getSingleResultOrNull())
             .map(count -> count > 0)

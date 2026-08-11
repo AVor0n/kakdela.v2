@@ -1,5 +1,8 @@
 package ru.hh.kakdela.v2.service;
 
+import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -13,12 +16,7 @@ import ru.hh.kakdela.v2.dto.notification_schedule.NotificationScheduleResponseDt
 import ru.hh.kakdela.v2.dto.notification_schedule.NotificationScheduleUpdateDto;
 import ru.hh.kakdela.v2.mapper.NotificationScheduleMapper;
 import ru.hh.kakdela.v2.model.NotificationSchedule;
-import ru.hh.kakdela.v2.model.Permission;
 import ru.hh.kakdela.v2.model.Survey;
-
-import java.time.Instant;
-import java.util.List;
-import java.util.UUID;
 
 @Service
 @Slf4j
@@ -71,6 +69,7 @@ public class NotificationScheduleService {
     );
 
     NotificationSchedule notificationSchedule = NotificationSchedule.builder()
+        .id(UUID.randomUUID())
         .survey(survey)
         .name(dto.getName())
         .scheduleType(dto.getType())
@@ -84,7 +83,8 @@ public class NotificationScheduleService {
 
     notificationSchedule.getScheduleType().verifyType(notificationSchedule);
 
-    notificationSchedule.setNextExecution(calculationService.calculateNextExecution(notificationSchedule));
+    notificationSchedule.setNextExecution(
+        calculationService.calculateNextExecution(notificationSchedule));
 
     notificationScheduleDao.save(notificationSchedule);
 
@@ -142,7 +142,8 @@ public class NotificationScheduleService {
 
     notificationSchedule.getScheduleType().setup(notificationSchedule);
 
-    notificationSchedule.setNextExecution(calculationService.calculateNextExecution(notificationSchedule));
+    notificationSchedule.setNextExecution(
+        calculationService.calculateNextExecution(notificationSchedule));
 
     notificationScheduleDao.update(notificationSchedule);
     return mapper.notificationScheduleToDto(notificationSchedule);
