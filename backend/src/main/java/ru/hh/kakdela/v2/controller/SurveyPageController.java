@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import ru.hh.kakdela.v2.dto.survey.page.SurveyPageCreateDto;
@@ -31,13 +32,29 @@ public class SurveyPageController {
   private final SurveyPageService surveyPageService;
 
   @GetMapping("/surveys/{surveyId}/pages")
-  public List<SurveyPageResponseDto> getAllBySurveyId(@PathVariable UUID surveyId) {
-    return surveyPageService.getAllBySurveyId(surveyId);
+  public List<SurveyPageResponseDto> getAllBySurveyId(
+      @PathVariable UUID surveyId,
+      @AuthenticationPrincipal CustomUserDetails currentUser
+  ) {
+    return surveyPageService.getAllBySurveyId(
+        surveyId, currentUser != null ? currentUser.getId() : null);
   }
 
   @GetMapping("/pages/{pageId}")
-  public SurveyPageResponseDto getById(@PathVariable UUID pageId) {
-    return surveyPageService.getById(pageId);
+  public SurveyPageResponseDto getPublicById(
+      @PathVariable UUID pageId,
+      @RequestParam UUID responseId
+  ) {
+    return surveyPageService.getPublicById(pageId, responseId);
+  }
+
+  @GetMapping("/pages/{pageId}/edit")
+  public SurveyPageResponseDto getById(
+      @PathVariable UUID pageId,
+      @AuthenticationPrincipal CustomUserDetails currentUser
+  ) {
+    return surveyPageService.getPublicById(
+        pageId, currentUser != null ? currentUser.getId() : null);
   }
 
   @PostMapping("/surveys/{surveyId}/pages")
@@ -47,7 +64,8 @@ public class SurveyPageController {
       @Valid @RequestBody SurveyPageCreateDto createDto,
       @AuthenticationPrincipal CustomUserDetails currentUser
   ) {
-    return surveyPageService.create(surveyId, createDto, currentUser.getId());
+    return surveyPageService.create(
+        surveyId, createDto, currentUser != null ? currentUser.getId() : null);
   }
 
   @PutMapping("/pages/{pageId}")
@@ -56,7 +74,8 @@ public class SurveyPageController {
       @Valid @RequestBody SurveyPageUpdateDto updateDto,
       @AuthenticationPrincipal CustomUserDetails currentUser
   ) {
-    return surveyPageService.update(pageId, updateDto, currentUser.getId());
+    return surveyPageService.update(
+        pageId, updateDto, currentUser != null ? currentUser.getId() : null);
   }
 
   @DeleteMapping("/pages/{pageId}")
@@ -65,6 +84,7 @@ public class SurveyPageController {
       @PathVariable UUID pageId,
       @AuthenticationPrincipal CustomUserDetails currentUser
   ) {
-    surveyPageService.delete(pageId, currentUser.getId());
+    surveyPageService.delete(
+        pageId, currentUser != null ? currentUser.getId() : null);
   }
 }

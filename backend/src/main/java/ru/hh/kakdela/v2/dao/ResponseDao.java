@@ -7,7 +7,7 @@ import ru.hh.kakdela.v2.model.Response;
 
 public interface ResponseDao {
 
-  Optional<Response> findByIdWithSurvey(UUID id);
+  Optional<Response> findById(UUID id);
 
   List<Response> findCompletedBySurveyId(UUID surveyId);
 

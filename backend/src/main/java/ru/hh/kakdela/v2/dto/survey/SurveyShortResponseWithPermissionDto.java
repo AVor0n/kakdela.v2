@@ -13,10 +13,7 @@ import ru.hh.kakdela.v2.model.Permission;
 @Getter
 @EqualsAndHashCode
 @ToString
-@Schema(
-    name = "SurveyShortResponseWithPermissionDto",
-    title = "Краткий DTO данных опроса с указанием прав пользователя"
-)
+@Schema(name = "Survey.ShortResponseWithPermission")
 public class SurveyShortResponseWithPermissionDto {
 
   private final UUID id;

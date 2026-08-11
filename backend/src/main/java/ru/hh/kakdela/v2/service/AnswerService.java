@@ -301,7 +301,7 @@ public class AnswerService {
   }
 
   private Response loadResponseAndCheckAccess(UUID responseId, UUID accountId, String token) {
-    Response response = responseDao.findByIdWithSurvey(responseId)
+    Response response = responseDao.findById(responseId)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Прохождение не найдено: " + responseId));
 

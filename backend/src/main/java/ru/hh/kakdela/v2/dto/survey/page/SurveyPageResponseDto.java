@@ -14,8 +14,7 @@ import ru.hh.kakdela.v2.dto.question.QuestionResponseDto;
 @EqualsAndHashCode
 @ToString
 @Schema(
-    name = "SurveyPageResponse",
-    title = "DTO для получения данных страницы опроса"
+    name = "SurveyPage.Response"
 )
 public class SurveyPageResponseDto {
 
