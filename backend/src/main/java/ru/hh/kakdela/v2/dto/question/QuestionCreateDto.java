@@ -28,7 +28,6 @@ public class QuestionCreateDto {
   private String text;
 
   @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @Size(max = 5000, message = "Описание не должно быть длиннее 5000 символов")
   private String description;
 
   @Schema(requiredMode = Schema.RequiredMode.REQUIRED)

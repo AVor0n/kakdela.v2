@@ -2,7 +2,6 @@ package ru.hh.kakdela.v2.dto.answer.option;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -22,6 +21,5 @@ public class AnswerOptionUpdateDto {
 
   @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
   @NullOrNotBlank(message = "Текст варианта ответа не должен быть пустым")
-  @Size(max = 1000, message = "Текст варианта ответа не должен быть длиннее 1000 символов")
   private String text;
 }

@@ -46,7 +46,7 @@ public class AnswerOption {
   @Column(name = "serial_number", nullable = false)
   private Integer serialNumber;
 
-  @Column(name = "text", length = 1000, nullable = false)
+  @Column(name = "text", columnDefinition = "text", nullable = false)
   private String text;
 
   @Column(name = "attachment_object_key", length = 1024)

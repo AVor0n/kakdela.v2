@@ -52,7 +52,7 @@ public class Survey {
   @Column(name = "title", length = 200, nullable = false)
   private String title;
 
-  @Column(name = "description", length = 5000)
+  @Column(name = "description", columnDefinition = "text")
   private String description;
 
   @Column(name = "is_authorized_only", nullable = false)

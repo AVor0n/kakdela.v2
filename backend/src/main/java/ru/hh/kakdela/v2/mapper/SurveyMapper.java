@@ -22,7 +22,7 @@ public class SurveyMapper {
   public SurveyResponseDto surveyToDto(Survey survey) {
     return new SurveyResponseDto(
         survey.getId(),
-        survey.getAuthor().getId(),
+        AccountMapper.accountToDto(survey.getAuthor()),
         survey.getTitle(),
         survey.getDescription(),
         survey.isAuthorizedOnly(),

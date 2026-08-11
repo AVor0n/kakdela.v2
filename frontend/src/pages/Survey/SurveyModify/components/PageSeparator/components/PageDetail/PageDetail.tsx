@@ -1,5 +1,3 @@
-import { Input } from '@hh.ru/magritte-ui-input';
-import { TextArea } from '@hh.ru/magritte-ui-textarea';
 import type { Page } from '@/shared/types/Survey.type';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { setPage } from '@/entities/Survey/Survey.slice';
@@ -7,6 +5,7 @@ import { useEffect, useState } from 'react';
 import style from './PageDetail.module.css';
 import { updateSurveyPage } from '@/api/surveyPages';
 import { setErrorMessage } from '@/entities/Error/Error.slice';
+import { EditorInput } from '@/shared/ui/EditorInput/EditorInput';
 interface Props {
     page: Page;
 }
@@ -52,22 +51,22 @@ export function PageDetail({ page }: Props) {
 
     return (
         <div className={style.container}>
-            <Input
+            <EditorInput
                 placeholder='Заголовок страницы'
                 value={title}
-                onChange={(value: string) => setTitle(value)}
+                onChange={setTitle}
                 onBlur={updateTitleHandler}
+                isTextColor={true}
             />
 
-            <TextArea
+            <EditorInput
                 placeholder='Описание страницы'
-                data-qa='textarea'
-                layout='fixed'
-                resize='none'
                 value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                elevatePlaceholder={true}
+                onChange={setDescription}
                 onBlur={updateDescriptionHandler}
+                isTextColor={true}
+                isMarkColor={true}
+                isHeading={true}
             />
         </div>
     );

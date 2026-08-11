@@ -8,6 +8,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import ru.hh.kakdela.v2.model.Account;
 
 public class SurveyServiceTestConstants {
   
@@ -48,8 +49,8 @@ public class SurveyServiceTestConstants {
     @Getter
     private static final UUID selectedAnswerOption2OfQuestion3AnswerId = UUID.randomUUID();
 
-    private static final UUID originalAuthorId = account1Id;
-    private static final UUID cloneAuthorId = account2Id;
+    private static final Account originalAuthor = SurveyServiceTestEntity.account1;
+    private static final Account cloneAuthor = SurveyServiceTestEntity.account2;
 
     private static final String originalTitle = "fullSurvey";
     private static final String cloneTitle = "Копия — fullSurvey";
@@ -62,8 +63,20 @@ public class SurveyServiceTestConstants {
 
     public static UUID getAuthorId(boolean isClone) {
       return isClone
-          ? cloneAuthorId
-          : originalAuthorId;
+          ? cloneAuthor.getId()
+          : originalAuthor.getId();
+    }
+
+    public static String getAuthorLogin(boolean isClone) {
+      return isClone
+          ? cloneAuthor.getLogin()
+          : originalAuthor.getLogin();
+    }
+
+    public static String getAuthorEmail(boolean isClone) {
+      return isClone
+          ? cloneAuthor.getEmail()
+          : originalAuthor.getEmail();
     }
 
     public static String getTitle(boolean isClone) {

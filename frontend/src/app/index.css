@@ -9,6 +9,7 @@
 :root {
     --color-border: #dce3eb;
     --color-primary: #00f;
+    --color-secondary: #dddddd;
 }
 
 body {

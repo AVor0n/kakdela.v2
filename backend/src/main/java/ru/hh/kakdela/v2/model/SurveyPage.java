@@ -58,7 +58,7 @@ public class SurveyPage {
   @Column(name = "title", length = 200)
   private String title;
 
-  @Column(name = "description", length = 5000)
+  @Column(name = "description", columnDefinition = "text")
   private String description;
 
   @OneToMany(mappedBy = "surveyPage", cascade = CascadeType.ALL, orphanRemoval = true)

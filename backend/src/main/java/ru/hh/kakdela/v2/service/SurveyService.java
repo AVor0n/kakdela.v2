@@ -38,10 +38,14 @@ public class SurveyService {
   private final SurveyMapper surveyMapper;
 
   @Transactional(readOnly = true)
-  public SurveyResponseDto getById(UUID id) {
-    Survey survey = surveyDao.findById(id)
+  public SurveyResponseDto getById(UUID surveyId, UUID accountId) {
+    Survey survey = surveyDao.findById(surveyId)
         .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Опрос не найден: " + id));
+            HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
+
+    if (!survey.isPublished()) {
+      permissionService.checkHasAnyPermission(surveyId, accountId);
+    }
 
     return surveyMapper.surveyToDto(survey);
   }
@@ -267,7 +271,7 @@ public class SurveyService {
 
   @Transactional
   public void delete(UUID id, UUID accountId) {
-    permissionService.checkOwnership(id, accountId);
+    permissionService.checkCanDelete(id, accountId);
     Survey survey = surveyDao.findById(id)
         .orElseThrow(
             () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Опрос не найден: " + id));
