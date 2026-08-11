@@ -26,6 +26,4 @@ public interface PermissionDao {
   void update(Permission permission);
 
   void delete(Permission permission);
-
-  void deleteBySurveyIdAndAccountId(UUID surveyId, UUID accountId);
 }
