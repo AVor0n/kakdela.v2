@@ -35,11 +35,6 @@ public class QuestionController {
     return questionService.getAllByPageId(pageId);
   }
 
-  @GetMapping("/questions/{questionId}")
-  public QuestionResponseDto getById(@PathVariable UUID questionId) {
-    return questionService.getById(questionId);
-  }
-
   @PostMapping("/pages/{pageId}/questions")
   @ResponseStatus(HttpStatus.CREATED)
   public QuestionResponseDto create(
