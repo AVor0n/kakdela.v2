@@ -8,7 +8,7 @@ import {
 } from '@/api/permissions';
 import { setErrorMessage } from '@/entities/Error/Error.slice';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { shortenUuid, UUID_PATTERN } from '@/shared/lib/uuid';
+import { validateEmail } from '@/pages/Auth/validation';
 import {
     Button,
     createStaticDataProvider,
@@ -40,7 +40,7 @@ function getCreateErrorMessage(error: unknown): string {
 
     switch (error.response?.status) {
         case 404:
-            return 'Пользователь с таким UUID не найден';
+            return 'Пользователь с такой почтой не найден';
         case 409:
             return 'Этот пользователь уже имеет права в опросе';
         case 403:
@@ -53,16 +53,16 @@ function getCreateErrorMessage(error: unknown): string {
 export function Permissions({ surveyId }: Props) {
     const dispatch = useAppDispatch();
     const [permissions, setPermissions] = useState<SurveyPermission[]>([]);
-    const [accountId, setAccountId] = useState('');
+    const [email, setEmail] = useState('');
     const [role, setRole] = useState<SurveyPermissionRole>('ANALYST');
     const [isLoading, setIsLoading] = useState(true);
     const [isCreating, setIsCreating] = useState(false);
     const [pendingAccountId, setPendingAccountId] = useState<string | null>(null);
     const [isValidationVisible, setIsValidationVisible] = useState(false);
-    const [copiedAccountId, setCopiedAccountId] = useState<string | null>(null);
 
-    const normalizedAccountId = accountId.trim();
-    const isUuidValid = UUID_PATTERN.test(normalizedAccountId);
+    const normalizedEmail = email.trim();
+    const emailError = validateEmail(normalizedEmail);
+    const isEmailValid = emailError === '';
     const selectedRole = useMemo(() => getRoleOption(role), [role]);
 
     useEffect(() => {
@@ -91,17 +91,16 @@ export function Permissions({ surveyId }: Props) {
         event.preventDefault();
         setIsValidationVisible(true);
 
-        if (!isUuidValid || isCreating) return;
+        if (!isEmailValid || isCreating) return;
 
         setIsCreating(true);
         createSurveyPermission(surveyId, {
-            accountId: normalizedAccountId,
+            email: normalizedEmail,
             role,
-            doNotify: true,
         })
             .then((createdPermission) => {
                 setPermissions((currentPermissions) => [...currentPermissions, createdPermission]);
-                setAccountId('');
+                setEmail('');
                 setIsValidationVisible(false);
             })
             .catch((error: unknown) => {
@@ -115,12 +114,12 @@ export function Permissions({ surveyId }: Props) {
     const updatePermissionHandler = (permission: SurveyPermission, newRole: SurveyPermissionRole) => {
         if (newRole === permission.role || pendingAccountId) return;
 
-        setPendingAccountId(permission.accountId);
-        updateSurveyPermissionRole(surveyId, permission.accountId, newRole)
+        setPendingAccountId(permission.account.id);
+        updateSurveyPermissionRole(surveyId, permission.account.id, newRole)
             .then((updatedPermission) => {
                 setPermissions((currentPermissions) =>
                     currentPermissions.map((item) =>
-                        item.accountId === updatedPermission.accountId ? updatedPermission : item,
+                        item.account.id === updatedPermission.account.id ? updatedPermission : item,
                     ),
                 );
             })
@@ -135,11 +134,11 @@ export function Permissions({ surveyId }: Props) {
     const deletePermissionHandler = (permission: SurveyPermission) => {
         if (pendingAccountId) return;
 
-        setPendingAccountId(permission.accountId);
-        deleteSurveyPermission(surveyId, permission.accountId)
+        setPendingAccountId(permission.account.id);
+        deleteSurveyPermission(surveyId, permission.account.id)
             .then(() => {
                 setPermissions((currentPermissions) =>
-                    currentPermissions.filter((item) => item.accountId !== permission.accountId),
+                    currentPermissions.filter((item) => item.account.id !== permission.account.id),
                 );
             })
             .catch(() => {
@@ -147,20 +146,6 @@ export function Permissions({ surveyId }: Props) {
             })
             .finally(() => {
                 setPendingAccountId(null);
-            });
-    };
-
-    const copyAccountIdHandler = (value: string) => {
-        navigator.clipboard
-            .writeText(value)
-            .then(() => {
-                setCopiedAccountId(value);
-                window.setTimeout(() => {
-                    setCopiedAccountId((currentValue) => (currentValue === value ? null : currentValue));
-                }, 2000);
-            })
-            .catch(() => {
-                dispatch(setErrorMessage({ message: 'Не удалось скопировать UUID пользователя' }));
             });
     };
 
@@ -176,20 +161,20 @@ export function Permissions({ surveyId }: Props) {
                     onChange={(option) => setRole(option.value as SurveyPermissionRole)}
                 />
                 <Input
-                    value={accountId}
+                    value={email}
                     onChange={(value) => {
-                        setAccountId(value);
+                        setEmail(value);
                         if (isValidationVisible) setIsValidationVisible(false);
                     }}
-                    placeholder='UUID пользователя'
-                    errorMessage={
-                        isValidationVisible && !isUuidValid ? 'Введите корректный UUID пользователя' : undefined
-                    }
+                    placeholder='Email пользователя'
+                    type='email'
+                    invalid={isValidationVisible && !isEmailValid}
+                    errorMessage={isValidationVisible ? emailError : undefined}
                     onBlur={() => {
-                        setIsValidationVisible(normalizedAccountId.length > 0 && !isUuidValid);
+                        setIsValidationVisible(!isEmailValid);
                     }}
                 />
-                <Button mode='primary' type='submit' disabled={!isUuidValid || isCreating}>
+                <Button mode='primary' type='submit' disabled={!isEmailValid || isCreating}>
                     {isCreating ? 'Добавление…' : 'Добавить'}
                 </Button>
             </form>
@@ -201,41 +186,24 @@ export function Permissions({ surveyId }: Props) {
             ) : permissions.length > 0 ? (
                 <div className={style.list}>
                     {permissions.map((permission) => (
-                        <div className={style.permissionRow} key={permission.accountId}>
+                        <div className={style.permissionRow} key={permission.account.id}>
                             <Select
                                 type='label'
                                 value={getRoleOption(permission.role)}
                                 dataProvider={createStaticDataProvider(ROLE_OPTIONS, 'Роль')}
-                                name={`permissionRole-${permission.accountId}`}
+                                name={`permissionRole-${permission.account.id}`}
                                 onChange={(option) =>
                                     updatePermissionHandler(permission, option.value as SurveyPermissionRole)
                                 }
                             />
-                            <div className={style.accountId}>
-                                <span title={permission.accountId}>{shortenUuid(permission.accountId)}</span>
-                                <button
-                                    className={style.copyButton}
-                                    type='button'
-                                    title={
-                                        copiedAccountId === permission.accountId
-                                            ? 'UUID скопирован'
-                                            : 'Скопировать полный UUID'
-                                    }
-                                    aria-label={
-                                        copiedAccountId === permission.accountId
-                                            ? 'UUID скопирован'
-                                            : 'Скопировать полный UUID пользователя'
-                                    }
-                                    onClick={() => copyAccountIdHandler(permission.accountId)}
-                                >
-                                    <img className={style.copyIcon} src='/copy.svg' alt='' />
-                                </button>
+                            <div className={style.accountDetails}>
+                                <span className={style.email}>{permission.account.email}</span>
                             </div>
                             <Button
                                 mode='secondary'
                                 style='negative'
                                 type='button'
-                                disabled={pendingAccountId === permission.accountId}
+                                disabled={pendingAccountId === permission.account.id}
                                 icon={<img src='/trash.svg' alt='Удалить права' />}
                                 onClick={() => deletePermissionHandler(permission)}
                             />

@@ -1,5 +1,6 @@
 package ru.hh.kakdela.v2.service;
 
+import java.nio.file.Paths;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
@@ -13,8 +14,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import ru.hh.kakdela.v2.dao.AccountDao;
 import ru.hh.kakdela.v2.dao.SurveyDao;
+import ru.hh.kakdela.v2.dao.SurveyNotificationSubscriptionDao;
 import ru.hh.kakdela.v2.dto.survey.SurveyCreateDto;
 import ru.hh.kakdela.v2.dto.survey.SurveyResponseDto;
+import ru.hh.kakdela.v2.dto.survey.SurveyShortResponseDto;
 import ru.hh.kakdela.v2.dto.survey.SurveyShortResponseWithPermissionDto;
 import ru.hh.kakdela.v2.dto.survey.SurveyUpdateDto;
 import ru.hh.kakdela.v2.mapper.SurveyMapper;
@@ -32,9 +35,11 @@ public class SurveyService {
 
   private final SurveyDao surveyDao;
   private final AccountDao accountDao;
+  private final SurveyNotificationSubscriptionDao subscriptionDao;
   private final PermissionService permissionService;
   private final NotificationService notificationService;
   private final ObjectStorageService objectStorageService;
+  private final ClosingPageService closingPageService;
   private final SurveyMapper surveyMapper;
 
   @Transactional(readOnly = true)
@@ -57,6 +62,13 @@ public class SurveyService {
         .toList();
   }
 
+  @Transactional(readOnly = true)
+  public List<SurveyShortResponseDto> getMyAssignedSurveys(UUID accountId) {
+    return subscriptionDao.findSurveysBySubscriberId(accountId).stream()
+        .map(surveyMapper::surveyToShortDto)
+        .toList();
+  }
+
   @Transactional
   public SurveyResponseDto create(UUID authorId, SurveyCreateDto dto) {
     Account author = accountDao.findById(authorId)
@@ -71,8 +83,6 @@ public class SurveyService {
         .isAuthorizedOnly(dto.getIsAuthorizedOnly())
         .isLimitedToOneResponse(dto.getIsLimitedToOneResponse())
         .doNotify(dto.getDoNotify())
-        .isPublished(false)
-        .isTemplate(false)
         .expireAt(dto.getExpireAtAtTargetTimezone() != null
             ? dto.getExpireAtAtTargetTimezone()
             .atZone(ZoneId.of(dto.getTargetTimezone()))
@@ -172,9 +182,7 @@ public class SurveyService {
         .description(originalSurvey.getDescription())
         .isAuthorizedOnly(originalSurvey.isAuthorizedOnly())
         .isLimitedToOneResponse(originalSurvey.isLimitedToOneResponse())
-        .isPublished(false)
-        .isTemplate(false)
-        .doNotify(originalSurvey.isDoNotify())
+        .doNotify(originalSurvey.doNotify())
         .expireAt(originalSurvey.getExpireAt())
         .targetTimezone(originalSurvey.getTargetTimezone())
         .createdAt(Instant.now().truncatedTo(ChronoUnit.SECONDS))
@@ -196,10 +204,11 @@ public class SurveyService {
             .id(questionId)
             .surveyPage(pageCopy)
             .serialNumber(originalQuestion.getSerialNumber())
-            .title(originalQuestion.getTitle())
+            .text(originalQuestion.getText())
             .description(originalQuestion.getDescription())
             .type(originalQuestion.getType())
             .answerOptionOrder(originalQuestion.getAnswerOptionOrder())
+            .hasOtherOption(originalQuestion.hasOtherOption())
             .isMandatory(originalQuestion.isMandatory())
             .isVisible(originalQuestion.isVisible())
             .condition(originalQuestion.getCondition())
@@ -222,7 +231,7 @@ public class SurveyService {
               .id(optionId)
               .question(questionCopy)
               .serialNumber(originalOption.getSerialNumber())
-              .answerOptionText(originalOption.getAnswerOptionText())
+              .text(originalOption.getText())
               .build();
 
           if (originalOption.getAttachmentObjectKey() != null) {
@@ -256,12 +265,25 @@ public class SurveyService {
 
       if (originalSurvey.getClosingPage().getAttachmentObjectKey() != null) {
         String closingAttachmentObjectKey =
-            "closing/%s/%s".formatted(closingPageId, UUID.randomUUID());
+            "closing-pages/%s/%s".formatted(closingPageId, UUID.randomUUID());
         objectStorageService.copyObject(
             originalSurvey.getClosingPage().getAttachmentObjectKey(),
             closingAttachmentObjectKey
         );
         closingPageCopy.setAttachmentObjectKey(closingAttachmentObjectKey);
+      }
+
+      if (originalSurvey.getClosingPage().getFileObjectKey() != null) {
+        String originalFileKey = originalSurvey.getClosingPage().getFileObjectKey();
+        String fileName =  Paths.get(originalFileKey).getFileName().toString();
+
+        String closingFileObjectKey =
+            "closing-pages/%s/%s".formatted(closingPageId, fileName);
+        objectStorageService.copyObject(
+            originalSurvey.getClosingPage().getFileObjectKey(),
+            closingFileObjectKey
+        );
+        closingPageCopy.setFileObjectKey(closingFileObjectKey);
       }
       surveyCopy.setClosingPage(closingPageCopy);
     }

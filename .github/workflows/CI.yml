@@ -27,15 +27,15 @@ jobs:
           filters: |
             nginx:
               - 'nginx/**'
-              - '!nginx/*.md'
+              - '!nginx/**/*.md'
             frontend:
               - 'frontend/**'
-              - '!frontend/*.md'
+              - '!frontend/**/*.md'
             backend:
               - 'backend/**'
               - '!backend/src/test/**'
-              - '!backend/*.md'
-              - '!backend/src/main/resources/schema.sql'
+              - '!backend/**/*.md'
+              - '!backend/src/main/resources/**/*.sql'
             backend-tests:
               - 'backend/src/test/**'
           predicate-quantifier: every

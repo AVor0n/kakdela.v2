@@ -106,8 +106,9 @@
 }
 
 .switcherSelect {
-    min-width: 260px;
-    max-width: 420px;
+    display: flex;
+    justify-content: center;
+    width: 300px;
 }
 
 .empty,
@@ -119,7 +120,7 @@
     padding: 40px;
 }
 
-@media (max-width: 720px) {
+@media (max-width: 768px) {
     .container {
         padding: 20px;
     }

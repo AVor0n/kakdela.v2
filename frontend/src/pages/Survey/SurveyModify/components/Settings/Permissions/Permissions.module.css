@@ -24,39 +24,18 @@
     border-radius: 8px;
 }
 
-.accountId {
+.accountDetails {
     display: flex;
-    align-items: center;
-    gap: 6px;
+    flex-direction: column;
+    gap: 4px;
     min-width: 0;
-    color: #000000a3;
-    font-variant-numeric: tabular-nums;
 }
 
-.copyButton {
-    display: inline-flex;
-    flex: 0 0 auto;
-    align-items: center;
-    justify-content: center;
-    width: 24px;
-    height: 24px;
-    padding: 4px;
-    border-radius: 6px;
-    transition: background-color 100ms ease-in;
-}
-
-.copyButton:hover {
-    background-color: #0000000f;
-}
-
-.copyButton:focus-visible {
-    outline: 2px solid currentColor;
-    outline-offset: 1px;
-}
-
-.copyIcon {
-    width: 14px;
-    height: 14px;
+.email {
+    overflow: hidden;
+    color: #0000006d;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .loader {
@@ -71,13 +50,9 @@
     font-size: 14px;
 }
 
-@media (max-width: 760px) {
+@media (max-width: 768px) {
     .formRow,
     .permissionRow {
         grid-template-columns: 1fr;
-    }
-
-    .accountId {
-        min-height: 40px;
     }
 }

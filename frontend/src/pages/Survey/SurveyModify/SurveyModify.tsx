@@ -19,6 +19,7 @@ import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrate
 import { useMemo } from 'react';
 import style from './SurveyModify.module.css';
 import { SortablePage } from './components/SortablePage/SortablePage';
+import { ClosingPageEditor } from './components/ClosingPageEditor/ClosingPageEditor';
 
 export function SurveyModify() {
     const { selectedSurvey } = useAppSelector((state) => state.survey);
@@ -71,6 +72,7 @@ export function SurveyModify() {
                         ))}
                     </SortableContext>
                 </DndContext>
+                <ClosingPageEditor surveyId={selectedSurvey.id} closingPage={selectedSurvey.closingPage} />
             </div>
             <Sidebar />
         </div>

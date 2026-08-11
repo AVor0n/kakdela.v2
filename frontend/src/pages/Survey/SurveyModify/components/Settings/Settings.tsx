@@ -1,4 +1,3 @@
-import { Button, Checkbox, DateTimeInput } from '@hh.ru/magritte-ui';
 import { useEffect, useRef, useState } from 'react';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { deleteSurvey, updateSurvey } from '@/api/survey';
@@ -10,6 +9,7 @@ import { SubscribersInput } from './Subscribers/SubscribersInput';
 import { setErrorMessage } from '@/entities/Error/Error.slice';
 import { Permissions } from './Permissions/Permissions';
 import style from './Settings.module.css';
+import { Button, Checkbox, DateTimeInput } from '@hh.ru/magritte-ui';
 
 function convertDateFromISO(isoStr: string): string {
     if (!isoStr) return '';
@@ -25,6 +25,7 @@ export function Settings() {
     const { account } = useAppSelector((state) => state.account);
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
+    const isAuthor = account?.id === selectedSurvey?.author.id;
 
     const [isAuthorizedOnly, setIsAuthorizedOnly] = useState<boolean>(selectedSurvey?.isAuthorizedOnly ?? false);
     const [isLimitedToOneResponse, setIsLimitedToOneResponse] = useState<boolean>(
@@ -221,7 +222,6 @@ export function Settings() {
                     />
                     <span>Прохождение только для авторизированных пользователей</span>
                 </div>
-
                 <div className={style.option}>
                     <Checkbox
                         checked={isLimitedToOneResponse}
@@ -242,7 +242,7 @@ export function Settings() {
                     <span>Присылать сообщение о прохождении опроса</span>
                 </div>
 
-                <div className={style.option}>
+                <div className={`${style.option} ${style.dateOption}`}>
                     <DateTimeInput
                         size='large'
                         value={expireAt ?? ''}
@@ -271,13 +271,13 @@ export function Settings() {
 
                 <SubscribersInput />
 
-                {account?.id === selectedSurvey.authorId && <Permissions surveyId={selectedSurvey.id} />}
+                {isAuthor && <Permissions surveyId={selectedSurvey.id} />}
 
                 <div className={style.buttons}>
                     <Button mode='secondary' style='neutral' onClick={resetSettings}>
                         Сбросить настройки
                     </Button>
-                    {account?.id === selectedSurvey.authorId && (
+                    {isAuthor && (
                         <Button mode='secondary' style='negative' onClick={deleteSurveyHandler}>
                             Удалить опрос
                         </Button>

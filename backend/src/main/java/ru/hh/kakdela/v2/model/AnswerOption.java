@@ -26,7 +26,7 @@ import org.jsoup.Jsoup;
 @Entity
 @Table(name = "answer_option",
     uniqueConstraints = {
-        @UniqueConstraint(name = "uq_answer_option_question_serial",
+        @UniqueConstraint(name = "uk_answer_option_question_serial",
             columnNames = {"question_id", "serial_number"})
     }
 )
@@ -46,13 +46,13 @@ public class AnswerOption {
   @Column(name = "serial_number", nullable = false)
   private Integer serialNumber;
 
-  @Column(name = "answer_option_text", length = 1000, nullable = false)
-  private String answerOptionText;
+  @Column(name = "text", columnDefinition = "text", nullable = false)
+  private String text;
 
   @Column(name = "attachment_object_key", length = 1024)
   private String attachmentObjectKey;
 
   public String getAnswerOptionTextAsPlainString() {
-    return Jsoup.parseBodyFragment(answerOptionText).text();
+    return Jsoup.parseBodyFragment(text).text();
   }
 }

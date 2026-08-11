@@ -7,23 +7,23 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import ru.hh.kakdela.v2.constants.CookieNames;
-import ru.hh.kakdela.v2.dto.answer.AnswerCreateDto;
+import ru.hh.kakdela.v2.dto.answer.AnswerRequestDto;
 import ru.hh.kakdela.v2.dto.answer.AnswerResponseDto;
-import ru.hh.kakdela.v2.dto.answer.AnswerUpdateDto;
+import ru.hh.kakdela.v2.dto.answer.AnswerResponseDtoWithStatusDto;
 import ru.hh.kakdela.v2.security.CustomUserDetails;
 import ru.hh.kakdela.v2.service.AnswerService;
+import ru.hh.kakdela.v2.service.AuthCookieService;
 import ru.hh.kakdela.v2.util.CookieUtil;
 
 @RestController
@@ -33,6 +33,7 @@ import ru.hh.kakdela.v2.util.CookieUtil;
 public class AnswerController {
 
   private final AnswerService answerService;
+  private final AuthCookieService authCookieService;
 
   @GetMapping("/responses/{responseId}/answers")
   public List<AnswerResponseDto> getAllByResponseId(
@@ -45,47 +46,28 @@ public class AnswerController {
         responseId,
         currentUser != null ? currentUser.getId() : null,
         CookieUtil.getCookieValueByName(
-            request, CookieNames.responseAccessTokenPrefix + responseId)
-    );
+            request, authCookieService.getResponseToken(request, responseId)));
   }
 
-  @PostMapping("/responses/{responseId}/answers")
-  @ResponseStatus(HttpStatus.CREATED)
-  public AnswerResponseDto create(
+  @PutMapping("/responses/{responseId}/answers")
+  public ResponseEntity<AnswerResponseDto> update(
       @PathVariable UUID responseId,
       @RequestParam UUID questionId,
-      @Valid @RequestBody AnswerCreateDto dto,
+      @Valid @RequestBody AnswerRequestDto dto,
       @AuthenticationPrincipal CustomUserDetails currentUser,
       HttpServletRequest request
   ) {
 
-    return answerService.create(
+    AnswerResponseDtoWithStatusDto result = answerService.upsert(
         responseId,
         questionId,
         dto,
         currentUser != null ? currentUser.getId() : null,
         CookieUtil.getCookieValueByName(
-            request, CookieNames.responseAccessTokenPrefix + responseId)
-    );
-  }
+            request, authCookieService.getResponseToken(request, responseId)));
 
-  @PutMapping("/responses/{responseId}/answers")
-  public AnswerResponseDto update(
-      @PathVariable UUID responseId,
-      @RequestParam UUID questionId,
-      @Valid @RequestBody AnswerUpdateDto dto,
-      @AuthenticationPrincipal CustomUserDetails currentUser,
-      HttpServletRequest request
-  ) {
-
-    return answerService.update(
-        responseId,
-        questionId,
-        dto.getAnswerText(),
-        currentUser != null ? currentUser.getId() : null,
-        CookieUtil.getCookieValueByName(
-            request, CookieNames.responseAccessTokenPrefix + responseId)
-    );
+    return ResponseEntity.status(result.getStatus().httpStatus)
+        .body(result.getAnswer());
   }
 
   @DeleteMapping("/responses/{responseId}/answers")
@@ -102,7 +84,6 @@ public class AnswerController {
         questionId,
         currentUser != null ? currentUser.getId() : null,
         CookieUtil.getCookieValueByName(
-            request, CookieNames.responseAccessTokenPrefix + responseId)
-    );
+            request, authCookieService.getResponseToken(request, responseId)));
   }
 }

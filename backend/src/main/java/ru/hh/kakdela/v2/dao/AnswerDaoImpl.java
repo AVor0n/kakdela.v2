@@ -17,16 +17,33 @@ public class AnswerDaoImpl implements AnswerDao {
   private EntityManager entityManager;
 
   @Override
-  public Optional<Answer> findById(Answer.AnswerId id) {
-    return Optional.ofNullable(entityManager.find(Answer.class, id));
+  public Optional<Answer> findByResponseIdAndQuestion(UUID responseId, UUID questionId) {
+    return Optional.ofNullable(entityManager
+        .createQuery(
+            """
+            SELECT DISTINCT a
+            FROM Answer a
+            LEFT JOIN FETCH a.selectedAnswerOptions
+            WHERE a.response.id = :responseId
+            AND a.question.id = :questionId
+            """, Answer.class)
+        .setParameter("responseId", responseId)
+        .setParameter("questionId", questionId)
+        .getSingleResultOrNull());
   }
 
   @Override
   public List<Answer> findAllByResponseId(UUID responseId) {
     return entityManager
-            .createQuery("FROM Answer a WHERE a.id.responseId = :responseId", Answer.class)
-            .setParameter("responseId", responseId)
-            .getResultList();
+        .createQuery(
+            """
+            SELECT DISTINCT a
+            FROM Answer a
+            LEFT JOIN FETCH a.selectedAnswerOptions
+            WHERE a.response.id = :responseId
+            """, Answer.class)
+        .setParameter("responseId", responseId)
+        .getResultList();
   }
 
   @Override

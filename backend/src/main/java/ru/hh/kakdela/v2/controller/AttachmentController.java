@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -15,9 +16,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import ru.hh.kakdela.v2.dto.file.FileResponseDto;
 import ru.hh.kakdela.v2.dto.object.ObjectUrlResponseDto;
 import ru.hh.kakdela.v2.security.CustomUserDetails;
 import ru.hh.kakdela.v2.service.AnswerOptionService;
+import ru.hh.kakdela.v2.service.ClosingPageService;
 import ru.hh.kakdela.v2.service.QuestionService;
 
 @RestController
@@ -28,6 +31,7 @@ public class AttachmentController {
 
   private final QuestionService questionService;
   private final AnswerOptionService answerOptionService;
+  private final ClosingPageService closingPageService;
 
   // Question attachment
 
@@ -122,5 +126,77 @@ public class AttachmentController {
         answerOptionId,
         currentUser.getId()
     );
+  }
+
+  // ClosingPage attachment
+
+  @PostMapping("/surveys/{surveyId}/closing-page/media-attachment")
+  @ResponseStatus(HttpStatus.CREATED)
+  public ObjectUrlResponseDto addAttachment(
+      @PathVariable UUID surveyId,
+      @RequestParam("file") MultipartFile file,
+      @AuthenticationPrincipal CustomUserDetails currentUser
+  ) {
+    return closingPageService.addAttachment(surveyId, currentUser.getId(), file);
+  }
+
+  @PutMapping("/surveys/{surveyId}/closing-page/media-attachment")
+  public ObjectUrlResponseDto updateAttachment(
+      @PathVariable UUID surveyId,
+      @RequestParam("file") MultipartFile file,
+      @AuthenticationPrincipal CustomUserDetails currentUser
+  ) {
+    return closingPageService.updateAttachment(surveyId, currentUser.getId(), file);
+  }
+
+  @DeleteMapping("/surveys/{surveyId}/closing-page/media-attachment")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void deleteAttachment(
+      @PathVariable UUID surveyId,
+      @AuthenticationPrincipal CustomUserDetails currentUser
+  ) {
+    closingPageService.deleteAttachment(surveyId, currentUser.getId());
+  }
+
+  @PostMapping(
+      value = "/surveys/{surveyId}/closing-page/attachment",
+      consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @ResponseStatus(HttpStatus.CREATED)
+  public FileResponseDto uploadFile(
+      @PathVariable UUID surveyId,
+      @RequestParam("file") MultipartFile file,
+      @AuthenticationPrincipal CustomUserDetails currentUser
+  ) {
+    return closingPageService.addFile(surveyId, currentUser.getId(), file);
+  }
+
+  @PutMapping(
+      value = "/surveys/{surveyId}/closing-page/attachment",
+      consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  public FileResponseDto updateFile(
+      @PathVariable UUID surveyId,
+      @RequestParam("file") MultipartFile file,
+      @AuthenticationPrincipal CustomUserDetails currentUser
+  ) {
+    return closingPageService.updateFile(surveyId, currentUser.getId(), file);
+  }
+
+  @DeleteMapping("/surveys/{surveyId}/closing-page/attachment")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void deleteFile(
+      @PathVariable UUID surveyId,
+      @AuthenticationPrincipal CustomUserDetails currentUser
+  ) {
+    closingPageService.deleteFile(surveyId, currentUser.getId());
+  }
+
+  @GetMapping("/surveys/{surveyId}/closing-page/attachment")
+  public ObjectUrlResponseDto getFileUrl(
+      @PathVariable UUID surveyId,
+      @AuthenticationPrincipal CustomUserDetails currentUser
+  ) {
+    return closingPageService.getFileUrl(
+        surveyId,
+        currentUser != null ? currentUser.getId() : null);
   }
 }

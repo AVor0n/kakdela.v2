@@ -1,9 +1,9 @@
-import type { AnswerOption, Question, QuestionType } from '@/shared/types/Question.type';
-import type { Page, Survey } from '@/shared/types/Survey.type';
+import type { AnswerOption, AnswerOptionOrder, Question, QuestionType } from '@/shared/types/Question.type';
+import type { ClosingPage, Page, Survey, SurveyListItem } from '@/shared/types/Survey.type';
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 export interface ISurveyState {
-    surveys: Survey[];
+    surveys: SurveyListItem[];
     currentQuestionPageIndex: number;
     selectedQuestion: Question | null;
     selectedSurvey: Survey | null;
@@ -30,7 +30,7 @@ const surveySlice = createSlice({
     name: 'survey',
     initialState,
     reducers: {
-        setSurveys: (state, action: PayloadAction<{ surveys: Survey[] }>) => {
+        setSurveys: (state, action: PayloadAction<{ surveys: SurveyListItem[] }>) => {
             const { surveys } = action.payload;
             state.surveys = surveys;
         },
@@ -68,12 +68,12 @@ const surveySlice = createSlice({
             state.selectedQuestion = question;
             state.currentQuestionPageIndex = pageIndex;
         },
-        updateQuestionTitle: (state, action: PayloadAction<{ id: string; title: string }>) => {
+        updateQuestionText: (state, action: PayloadAction<{ id: string; text: string }>) => {
             if (!state.selectedSurvey) return;
-            const { id, title } = action.payload;
+            const { id, text } = action.payload;
             state.selectedSurvey.pages[state.currentQuestionPageIndex].questions.map((question) => {
                 if (question.id === id) {
-                    question.title = title;
+                    question.text = text;
                 }
             });
         },
@@ -95,6 +95,20 @@ const surveySlice = createSlice({
                     question.type = type;
                 }
             });
+        },
+        updateAnswerOptionOrder: (
+            state,
+            action: PayloadAction<{ id: string; answerOptionOrder: AnswerOptionOrder }>,
+        ) => {
+            if (state.selectedSurvey === null) return;
+            const { id, answerOptionOrder } = action.payload;
+            const question = state.selectedSurvey.pages
+                .flatMap((page) => page.questions)
+                .find((pageQuestion) => pageQuestion.id === id);
+
+            if (question?.type === 'SINGLE_CHOICE' || question?.type === 'MULTIPLE_CHOICE') {
+                question.answerOptionOrder = answerOptionOrder;
+            }
         },
         addQuestionOptions: (state, action: PayloadAction<{ answerOption: AnswerOption }>) => {
             if (!state.selectedSurvey) return;
@@ -311,6 +325,14 @@ const surveySlice = createSlice({
                 }
             });
         },
+        setClosingPage: (state, action: PayloadAction<{ closingPage: ClosingPage | null }>) => {
+            if (!state.selectedSurvey) return;
+            state.selectedSurvey.closingPage = action.payload.closingPage;
+        },
+        patchClosingPage: (state, action: PayloadAction<Partial<ClosingPage>>) => {
+            if (!state.selectedSurvey?.closingPage) return;
+            Object.assign(state.selectedSurvey.closingPage, action.payload);
+        },
         reorderQuestions: (
             state,
             action: PayloadAction<{
@@ -405,14 +427,36 @@ const surveySlice = createSlice({
                 state.selectedQuestion = question;
             }
         },
+        deleteSurvey: (state, action: PayloadAction<{ surveyId: string }>) => {
+            const { surveyId } = action.payload;
+            state.surveys = state.surveys.filter((survey) => survey.id !== surveyId);
+            if (state.selectedSurvey?.id === surveyId) {
+                state.selectedSurvey = null;
+                state.selectedQuestion = null;
+                state.currentQuestionPageIndex = 0;
+            }
+        },
+        addSurvey: (state, action: PayloadAction<{ survey: Survey }>) => {
+            const { survey } = action.payload;
+            const newSurveyListItem: SurveyListItem = {
+                id: survey.id,
+                title: survey.title,
+                description: survey.description,
+                createdAt: survey.createdAt,
+                isPublished: survey.isPublished,
+                userRole: 'AUTHOR', // Assuming the user creating the survey is the author
+            };
+            state.surveys.push(newSurveyListItem);
+        },
     },
 });
 
 export const {
     setSurveys,
     setSelectedSurvey,
-    updateQuestionTitle,
+    updateQuestionText,
     updateQuestionType,
+    updateAnswerOptionOrder,
     updateQuestionDescription,
     addQuestionOptions,
     setSelectedQuestion,
@@ -426,11 +470,15 @@ export const {
     deletePage,
     setQuestion,
     setPage,
+    setClosingPage,
+    patchClosingPage,
     reorderPages,
     setSurveyPages,
     reorderQuestions,
     setPageQuestions,
     reorderAnswerOptions,
     setQuestionAnswerOptions,
+    deleteSurvey,
+    addSurvey,
 } = surveySlice.actions;
 export default surveySlice.reducer;

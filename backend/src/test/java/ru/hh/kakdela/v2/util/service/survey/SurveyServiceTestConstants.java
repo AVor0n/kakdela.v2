@@ -11,7 +11,9 @@ import lombok.Getter;
 import ru.hh.kakdela.v2.model.Account;
 
 public class SurveyServiceTestConstants {
-  
+
+  public static final String fileObjectKey = "closing-pages/test-file.pdf";
+
   public static final UUID account1Id = UUID.randomUUID();
   public static final UUID account2Id = UUID.randomUUID();
 
@@ -34,6 +36,20 @@ public class SurveyServiceTestConstants {
 
     @Getter
     private static final UUID response1Id = UUID.randomUUID();
+    @Getter
+    private static final UUID question1AnswerId = UUID.randomUUID();
+    @Getter
+    private static final UUID question2AnswerId = UUID.randomUUID();
+    @Getter
+    private static final UUID question3AnswerId = UUID.randomUUID();
+    @Getter
+    private static final UUID selectedAnswerOption1OfQuestion2AnswerId = UUID.randomUUID();
+    @Getter
+    private static final UUID selectedAnswerOption2OfQuestion2AnswerId = UUID.randomUUID();
+    @Getter
+    private static final UUID selectedAnswerOption1OfQuestion3AnswerId = UUID.randomUUID();
+    @Getter
+    private static final UUID selectedAnswerOption2OfQuestion3AnswerId = UUID.randomUUID();
 
     private static final Account originalAuthor = SurveyServiceTestEntity.account1;
     private static final Account cloneAuthor = SurveyServiceTestEntity.account2;
@@ -92,7 +108,7 @@ public class SurveyServiceTestConstants {
           : originalDescription;
     }
   }
-  
+
   public static final UUID plainSurveyId = UUID.randomUUID();
 
   public static final String attachmentObjectKey = "attachmentObjectKey";
@@ -114,7 +130,7 @@ public class SurveyServiceTestConstants {
   // Значение переменной ниже на 7 часов больше, чем у expireAtSevenDays.
   // При этом её значение в Asia/Kamchatka (UTC+12) равно значению expireAtSevenDays в Asia/Yekateringurg (UTC+5)
   public static final Instant expireAtAfterTargetTimezoneUpdateFromYekaterinburgToKamchatka =
-      toInstant(expireAtAtYekaterinburgTimezone,"Asia/Kamchatka");
+      toInstant(expireAtAtYekaterinburgTimezone, "Asia/Kamchatka");
 
   private static LocalDateTime atZone(Instant instant, String zoneId) {
     return instant.atZone(ZoneId.of(zoneId)).toLocalDateTime();
