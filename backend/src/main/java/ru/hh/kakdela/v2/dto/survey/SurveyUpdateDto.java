@@ -12,10 +12,7 @@ import ru.hh.kakdela.v2.validator.JsonNullableUndefinedOrNotNullAndNotBlank;
 @NoArgsConstructor
 @Getter
 @Setter
-@Schema(
-    name = "SurveyUpdate",
-    title = "DTO для обновления опроса"
-)
+@Schema(name = "Survey.Update")
 public class SurveyUpdateDto {
 
   @JsonNullableUndefinedOrNotNullAndNotBlank(message = "Заголовок не должен быть пустым")

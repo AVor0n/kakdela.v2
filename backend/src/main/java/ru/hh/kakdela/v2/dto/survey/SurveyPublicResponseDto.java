@@ -10,15 +10,14 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 import ru.hh.kakdela.v2.dto.account.AccountResponseDto;
-import ru.hh.kakdela.v2.dto.closing.ClosingPageResponseDto;
-import ru.hh.kakdela.v2.dto.survey.page.SurveyPageResponseDto;
+import ru.hh.kakdela.v2.dto.survey.page.SurveyPageShortResponseDto;
 
 @AllArgsConstructor
 @Getter
 @EqualsAndHashCode
 @ToString
-@Schema(name = "Survey.Response")
-public class SurveyResponseDto {
+@Schema(name = "Survey.PublicResponse")
+public class SurveyPublicResponseDto {
 
   private final UUID id;
   private final AccountResponseDto author;
@@ -26,12 +25,9 @@ public class SurveyResponseDto {
   private final String description;
   private final Boolean isAuthorizedOnly;
   private final Boolean isLimitedToOneResponse;
-  private final Boolean isPublished;
-  private final Boolean doNotify;
   private final Instant expireAt;
   private final LocalDateTime expireAtAtTargetTimezone;
   private final String targetTimezone;
-  private final Instant createdAt;
-  private final List<SurveyPageResponseDto> pages;
-  private final ClosingPageResponseDto closingPage;
+  private final List<SurveyPageShortResponseDto> pages;
+  private final boolean hasCustomClosingPage;
 }

@@ -5,6 +5,7 @@ import java.time.ZoneId;
 import java.util.Comparator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import ru.hh.kakdela.v2.dto.survey.SurveyPublicResponseDto;
 import ru.hh.kakdela.v2.dto.survey.SurveyResponseDto;
 import ru.hh.kakdela.v2.dto.survey.SurveyShortResponseDto;
 import ru.hh.kakdela.v2.dto.survey.SurveyShortResponseWithPermissionDto;
@@ -47,18 +48,25 @@ public class SurveyMapper {
     );
   }
 
-  public SurveyShortResponseWithPermissionDto surveyToShortDtoWithPermission(
-      Survey survey,
-      Permission.SurveyRole role
-  ) {
-    return new SurveyShortResponseWithPermissionDto(
+  public SurveyPublicResponseDto surveyToPublicDto(Survey survey) {
+    return new SurveyPublicResponseDto(
         survey.getId(),
+        AccountMapper.accountToDto(survey.getAuthor()),
         survey.getTitle(),
         survey.getDescription(),
-        survey.isPublished(),
-        survey.getCreatedAt(),
-        role
-    );
+        survey.isAuthorizedOnly(),
+        survey.isLimitedToOneResponse(),
+        survey.getExpireAt(),
+        survey.getExpireAt() != null
+            ? LocalDateTime.ofInstant(survey.getExpireAt(),
+                ZoneId.of(survey.getTargetTimezone()))
+            : null,
+        survey.getTargetTimezone(),
+        survey.getPages().stream()
+            .sorted(Comparator.comparingInt(SurveyPage::getSerialNumber))
+            .map(surveyPageMapper::surveyPageToShortDto)
+            .toList(),
+        survey.getClosingPage() != null);
   }
 
   public SurveyShortResponseDto surveyToShortDto(Survey survey) {
@@ -80,8 +88,7 @@ public class SurveyMapper {
         dto.getSurvey().getDescription(),
         dto.getSurvey().isPublished(),
         dto.getSurvey().getCreatedAt(),
-        dto.getRole()
-    );
+        dto.getRole());
   }
 
   public SurveyWithUserRoleDto surveyToSurveyWithRoleDto(
@@ -90,7 +97,6 @@ public class SurveyMapper {
   ) {
     return new SurveyWithUserRoleDto(
         survey,
-        role
-    );
+        role);
   }
 }
