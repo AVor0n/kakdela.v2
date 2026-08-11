@@ -37,12 +37,31 @@ public class QuestionService {
   private final QuestionMapper questionMapper;
   private final ImageProcessingService imageProcessingService;
 
-  //  @Transactional(readOnly = true)
-  //  public List<QuestionResponseDto> getAllByPageId(UUID pageId) {
-  //    return questionDao.findAllByPageId(pageId).stream()
-  //        .map(questionMapper::questionToDto)
-  //        .toList();
-  //  }
+  @Transactional(readOnly = true)
+  public QuestionResponseDto getById(UUID id, UUID currentUserId) {
+    Question question = questionDao.findById(id)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Вопрос не найден: id=" + id));
+
+    permissionService.checkHasAnyPermission(
+        question.getSurveyPage().getSurvey().getId(), currentUserId);
+
+    return questionMapper.questionToDto(question);
+  }
+
+  @Transactional(readOnly = true)
+  public List<QuestionResponseDto> getAllByPageId(UUID pageId, UUID currentUserId) {
+    SurveyPage surveyPage = surveyPageDao.findById(pageId)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Страница не найдена: id=" + pageId));
+
+    permissionService.checkHasAnyPermission(
+        surveyPage.getSurvey().getId(), currentUserId);
+
+    return questionDao.findAllByPageId(pageId).stream()
+        .map(questionMapper::questionToDto)
+        .toList();
+  }
 
   @Transactional
   public QuestionResponseDto create(UUID pageId, QuestionCreateDto dto, UUID accountId) {

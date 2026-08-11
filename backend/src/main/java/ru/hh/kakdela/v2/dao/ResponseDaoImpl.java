@@ -18,7 +18,7 @@ public class ResponseDaoImpl implements ResponseDao {
   private EntityManager entityManager;
 
   @Override
-  public Optional<Response> findByIdWithSurvey(UUID id) {
+  public Optional<Response> findById(UUID id) {
     return Optional.ofNullable(entityManager.find(Response.class, id));
   }
 
