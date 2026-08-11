@@ -4,9 +4,11 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.util.Optional;
 import java.util.UUID;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 import ru.hh.kakdela.v2.model.condition.ConditionNode;
 
+@Slf4j
 @Repository
 public class ConditionNodeDaoImpl implements ConditionNodeDao {
 
@@ -59,16 +61,19 @@ public class ConditionNodeDaoImpl implements ConditionNodeDao {
 
   @Override
   public void save(ConditionNode conditionNode) {
+    log.debug("Сохранена вершина условия: id={}", conditionNode.getId());
     entityManager.persist(conditionNode);
   }
 
   @Override
   public void update(ConditionNode conditionNode) {
+    log.debug("Обновлена вершина условия: id={}", conditionNode.getId());
     entityManager.merge(conditionNode);
   }
 
   @Override
   public void delete(ConditionNode conditionNode) {
+    log.debug("Удалена вершина условия: id={}", conditionNode.getId());
     entityManager.remove(conditionNode);
   }
 }

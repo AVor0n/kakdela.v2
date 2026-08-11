@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +21,7 @@ import ru.hh.kakdela.v2.model.Response;
 import ru.hh.kakdela.v2.model.SurveyPage;
 import ru.hh.kakdela.v2.model.condition.Condition;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ConditionService {
@@ -59,6 +61,8 @@ public class ConditionService {
       UUID accountId,
       String token
   ) {
+    log.info("Начата проверка условий дла страницы: pageId={}", pageId);
+
     final SurveyPage surveyPage =
         surveyPageDao.findByIdWithAllConditionsAndParentSurveyWithRelatives(pageId)
         .orElseThrow(() -> new ResponseStatusException(
@@ -93,6 +97,8 @@ public class ConditionService {
 
   @Transactional
   public ConditionResponseDto create(UUID pageId, ConditionRequestDto dto, UUID accountId) {
+    log.info("Начато создание условия дла страницы: pageId={}", pageId);
+
     SurveyPage surveyPage = surveyPageDao.findById(pageId)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Страница не найдена: id=" + pageId));
@@ -131,6 +137,8 @@ public class ConditionService {
 
   @Transactional
   public ConditionResponseDto update(UUID conditionId, ConditionRequestDto dto, UUID accountId) {
+    log.info("Начато изменение условия: id={}", conditionId);
+
     Condition condition = getEntityById(conditionId);
 
     permissionService.checkCanEdit(
@@ -159,6 +167,8 @@ public class ConditionService {
 
   @Transactional
   public void delete(UUID conditionId, UUID accountId) {
+    log.info("Начато удаление условия: id={}", conditionId);
+
     Condition condition = getEntityById(conditionId);
 
     permissionService.checkCanEdit(

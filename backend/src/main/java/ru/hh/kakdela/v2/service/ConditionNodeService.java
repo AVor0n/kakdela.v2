@@ -4,6 +4,7 @@ import java.util.ArrayDeque;
 import java.util.Queue;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +25,7 @@ import ru.hh.kakdela.v2.model.condition.Condition;
 import ru.hh.kakdela.v2.model.condition.ConditionAtom;
 import ru.hh.kakdela.v2.model.condition.ConditionNode;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ConditionNodeService {
@@ -43,6 +45,8 @@ public class ConditionNodeService {
       ConditionNodeCreateDto dto,
       UUID accountId
   ) {
+    log.info("Начато добавление вершины к дереву условия: conditionId={}", conditionId);
+
     Condition condition = conditionService.getFullyInitializedEntityById(conditionId);
 
     permissionService.checkCanEdit(
@@ -101,6 +105,8 @@ public class ConditionNodeService {
       ConditionNodeUpdateDto dto,
       UUID accountId
   ) {
+    log.info("Начато изменение вершины дерева условия: id={}", nodeId);
+
     ConditionNode node = getEntityById(nodeId);
 
     permissionService.checkCanEdit(
@@ -124,6 +130,8 @@ public class ConditionNodeService {
       ConditionAtomCreateDto dto,
       UUID accountId
   ) {
+    log.info("Начато добавление листа к дереву условия: conditionId={}", conditionId);
+
     Condition condition = conditionService.getFullyInitializedEntityById(conditionId);
 
     permissionService.checkCanEdit(
@@ -223,6 +231,8 @@ public class ConditionNodeService {
       ConditionAtomUpdateDto dto,
       UUID accountId
   ) {
+    log.info("Начато изменение листа дерева условия: id={}", nodeId);
+
     ConditionNode node = getEntityById(nodeId);
 
     permissionService.checkCanEdit(
@@ -269,6 +279,8 @@ public class ConditionNodeService {
 
   @Transactional
   public void delete(UUID nodeId, UUID accountId) {
+    log.info("Начато удаление вершины дерева условия: id={}", nodeId);
+
     ConditionNode node = getEntityWithParentNodeAndParentConditionById(nodeId);
 
     permissionService.checkCanEdit(

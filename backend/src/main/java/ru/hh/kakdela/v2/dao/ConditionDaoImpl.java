@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 import ru.hh.kakdela.v2.model.condition.Condition;
 import ru.hh.kakdela.v2.model.condition.ConditionNode;
 
+@Slf4j
 @Repository
 public class ConditionDaoImpl implements ConditionDao {
 
@@ -51,14 +52,14 @@ public class ConditionDaoImpl implements ConditionDao {
         .getResultList();
 
     entityManager.createQuery(
-          """
-          SELECT DISTINCT cn
-          FROM ConditionNode cn
-          LEFT JOIN FETCH cn.atom
-          LEFT JOIN FETCH cn.childNodes cns
-          LEFT JOIN FETCH cns.atom
-          WHERE cn.id IN :treeNodeIds
-          """, ConditionNode.class)
+        """
+        SELECT DISTINCT cn
+        FROM ConditionNode cn
+        LEFT JOIN FETCH cn.atom
+        LEFT JOIN FETCH cn.childNodes cns
+        LEFT JOIN FETCH cns.atom
+        WHERE cn.id IN :treeNodeIds
+        """, ConditionNode.class)
         .setParameter("treeNodeIds", treeNodeIds)
         .getResultList();
 
@@ -68,11 +69,11 @@ public class ConditionDaoImpl implements ConditionDao {
   @Override
   public UUID findParentSurveyIdById(UUID id) {
     return entityManager.createQuery(
-            """
-            SELECT c.surveyPage.survey.id
-            FROM Condition c
-            WHERE c.id = :id
-            """, UUID.class)
+        """
+        SELECT c.surveyPage.survey.id
+        FROM Condition c
+        WHERE c.id = :id
+        """, UUID.class)
         .setParameter("id", id)
         .getSingleResult();
   }
@@ -107,11 +108,11 @@ public class ConditionDaoImpl implements ConditionDao {
   @Override
   public boolean existsBySurveyId(UUID surveyId) {
     List<UUID> results = entityManager.createQuery(
-            """
-            SELECT c.id
-            FROM Condition c
-            WHERE c.surveyPage.survey.id = :surveyId
-            """, UUID.class)
+        """
+        SELECT c.id
+        FROM Condition c
+        WHERE c.surveyPage.survey.id = :surveyId
+        """, UUID.class)
         .setParameter("surveyId", surveyId)
         .setMaxResults(1)
         .getResultList();
@@ -134,16 +135,19 @@ public class ConditionDaoImpl implements ConditionDao {
 
   @Override
   public void save(Condition condition) {
+    log.debug("Сохранено условие: id={}", condition.getId());
     entityManager.persist(condition);
   }
 
   @Override
   public void update(Condition condition) {
+    log.debug("Обновлено условие: id={}", condition.getId());
     entityManager.merge(condition);
   }
 
   @Override
   public void delete(Condition condition) {
+    log.debug("Удалено условие: id={}", condition.getId());
     entityManager.remove(condition);
   }
 }
