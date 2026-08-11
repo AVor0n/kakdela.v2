@@ -46,3 +46,12 @@ export type Page = {
 export type SurveyListItem = Pick<Survey, 'id' | 'title' | 'description' | 'createdAt' | 'isPublished'> & {
     userRole: SurveyRole;
 };
+
+export type Template = Pick<Survey, 'id' | 'title' | 'description' | 'createdAt' | 'pages' | 'closingPage'> & {
+    authorId: string;
+    authorName: string;
+    published: boolean;
+};
+export type TemplateListItem = Pick<Template, 'id' | 'title' | 'description' | 'createdAt'> & {
+    published: boolean;
+};

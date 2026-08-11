@@ -216,6 +216,44 @@ export function Settings() {
             });
     };
 
+<<<<<<< HEAD
+=======
+    const makeTemplateHandler = () => {
+        if (!selectedSurvey) return;
+        createTemplateFromSurvey(selectedSurvey.id)
+            .then(() => {
+                setIsTemplateCreated(true);
+            })
+            .catch(() => dispatch(setErrorMessage({ message: 'Не удалось создать шаблон из этого опроса' })));
+    };
+
+    const handleCopyClick = async (valueForCopy: string) => {
+        try {
+            // Копируем значение в буфер обмена
+            await navigator.clipboard.writeText(valueForCopy);
+            setIsCopied(true);
+
+            // Возвращаем исходный текст кнопки через 2 секунды
+            setTimeout(() => {
+                setIsCopied(false);
+            }, 2000);
+        } catch (err) {
+            dispatch(setErrorMessage({ message: 'Ошибка при копировании: ' + err }));
+        }
+    };
+
+    useEffect(() => {
+        if (!isTemplateCreated) return;
+        const handler = setTimeout(() => {
+            setIsTemplateCreated(false);
+        }, 2000);
+
+        return () => {
+            clearTimeout(handler);
+        };
+    }, [isTemplateCreated]);
+
+>>>>>>> 33655226 (Added simple works with template)
     return (
         <section className={style.container}>
             <div className={style.content}>
@@ -290,6 +328,27 @@ export function Settings() {
                             Удалить опрос
                         </Button>
                     )}
+<<<<<<< HEAD
+=======
+                    <Button
+                        mode='secondary'
+                        style='neutral'
+                        onClick={() =>
+                            handleCopyClick(
+                                `https://${window.location.hostname}:${window.location.port}/surveys/${selectedSurvey.id}?responde=true`,
+                            )
+                        }
+                    >
+                        {isCopied ? 'Ссылка скопирована' : 'Скопировать ссылку на опрос'}
+                    </Button>
+                    <Button
+                        mode='secondary'
+                        style={isTemplateCreated ? 'positive' : 'neutral'}
+                        onClick={!isTemplateCreated ? makeTemplateHandler : () => {}}
+                    >
+                        {!isTemplateCreated ? 'Создать шаблон из этого опроса' : 'Шаблон создан'}
+                    </Button>
+>>>>>>> 33655226 (Added simple works with template)
                 </div>
             </div>
         </section>

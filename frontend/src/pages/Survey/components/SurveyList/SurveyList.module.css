@@ -9,6 +9,7 @@
     width: 100%;
     max-width: 1180px;
     margin: 0 auto;
+    margin-bottom: 8px;
 }
 
 .card {
@@ -31,12 +32,44 @@
     gap: 24px;
 }
 
+.buttonsChoose {
+    padding: 5px;
+    display: flex;
+    gap: 1rem;
+    position: relative;
+    align-items: center;
+    background: #ddd;
+    width: fit-content;
+    border-radius: 10px;
+    margin-bottom: 8px;
+}
+
+.button {
+    border-radius: 6px;
+    padding: 4px 8px;
+    transition: background 200ms ease-out;
+}
+
+.active {
+    background: #aaa;
+    padding: 4px 8px;
+}
+
 .message {
     display: flex;
     min-height: 232px;
     align-items: center;
     justify-content: center;
     text-align: center;
+}
+
+.empty {
+    display: flex;
+    min-height: 100px;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #aaa;
 }
 
 .itemButton {
@@ -58,6 +91,11 @@
     position: absolute;
     top: 20px;
     right: 20px;
+}
+
+.templates {
+    max-height: 300px;
+    overflow: auto;
 }
 
 @media (max-width: 768px) {

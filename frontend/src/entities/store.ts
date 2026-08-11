@@ -3,6 +3,7 @@ import surveySlice from '@/entities/Survey/Survey.slice';
 import errorSlice from '@/entities/Error/Error.slice';
 import accountSlice from '@/entities/Account/Account.slice';
 import notificationScheduleSlice from '@/entities/NotificationSchedule/NotificationSchedule.slice';
+import templateSlice from './Template/Template.slice';
 
 export const store = configureStore({
     reducer: {
@@ -10,6 +11,7 @@ export const store = configureStore({
         error: errorSlice,
         account: accountSlice,
         notificationSchedule: notificationScheduleSlice,
+        template: templateSlice,
     },
 });
 
