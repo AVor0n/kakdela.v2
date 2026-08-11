@@ -5,6 +5,12 @@ type TemplateResponse = Template;
 
 type UpdateTemplateRequest = Partial<Pick<TemplateResponse, 'title' | 'description' | 'published'>>;
 
+export async function getPublicTemplates(): Promise<TemplateResponse[]> {
+    const { data } = await apiClient.get<TemplateResponse[]>('/api/templates');
+
+    return data;
+}
+
 export async function getMyTemplates(): Promise<TemplateResponse[]> {
     const { data } = await apiClient.get<TemplateResponse[]>('/api/accounts/me/templates');
 

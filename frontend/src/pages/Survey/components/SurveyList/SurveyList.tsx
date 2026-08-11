@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { useEffect, useState } from 'react';
-import { Box, Text, Title } from '@hh.ru/magritte-ui';
+import { Box, Button, Text, Title } from '@hh.ru/magritte-ui';
 import { useNavigate } from 'react-router-dom';
 import { createSurvey, getMySurveys } from '@/api/survey';
 import { routes } from '@/app/routes';
@@ -13,18 +13,20 @@ import { clearErrorMessage, setErrorMessage } from '@/entities/Error/Error.slice
 import { AccountDetail } from '@/shared/ui/AccountDetail/AccountDetail';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { setSurveys } from '@/entities/Survey/Survey.slice';
-import { getMyTemplates } from '@/api/template';
+import { getMyTemplates, getPublicTemplates } from '@/api/template';
 import { setTemplates } from '@/entities/Template/Template.slice';
 import { TemplateItem } from './components/TemplateItem/TemplateItem';
 import classNames from 'classnames';
 
-// type TemplateKind = 'public' | 'local';
+type TemplateKind = 'public' | 'local';
 
 export function SurveyList() {
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(true);
+    const [templateIsLoading, setTemplateIsLoading] = useState<boolean>(false);
     const { surveys } = useAppSelector((state) => state.survey);
     const { templates } = useAppSelector((state) => state.template);
+    const [templateKind, setTemplateKind] = useState<TemplateKind>('local');
     const dispatch = useAppDispatch();
 
     useEffect(() => {
@@ -60,6 +62,25 @@ export function SurveyList() {
         };
     }, []);
 
+    useEffect(() => {
+        setTemplateIsLoading(true);
+        if (templateKind === 'local') {
+            getMyTemplates()
+                .then((data) => {
+                    dispatch(setTemplates(data));
+                    setTemplateIsLoading(false);
+                })
+                .catch(() => dispatch(setErrorMessage({ message: 'Не удалось загрузить список ваших шаблонов' })));
+        } else {
+            getPublicTemplates()
+                .then((data) => {
+                    dispatch(setTemplates(data));
+                    setTemplateIsLoading(false);
+                })
+                .catch(() => dispatch(setErrorMessage({ message: 'Не удалось загрузить список публичных шаблонов' })));
+        }
+    }, [templateKind]);
+
     const handleCreateClick = () => {
         createSurvey()
             .then((data) => {
@@ -88,10 +109,26 @@ export function SurveyList() {
                 </Title>
 
                 <Box p={24} className={styles.card}>
-                    {isLoading ? (
+                    <div className={styles.kinds}>
+                        <Button
+                            mode={templateKind === 'local' ? 'primary' : 'secondary'}
+                            style='accent'
+                            onClick={() => setTemplateKind('local')}
+                        >
+                            Локальные
+                        </Button>
+                        <Button
+                            mode={templateKind === 'public' ? 'primary' : 'secondary'}
+                            style='accent'
+                            onClick={() => setTemplateKind('public')}
+                        >
+                            Публичные
+                        </Button>
+                    </div>
+                    {templateIsLoading ? (
                         <div className={styles.message}>
                             <Text typography='paragraph-2-regular' style='secondary'>
-                                Загружаем опросы
+                                Загружаем шаблоны
                             </Text>
                         </div>
                     ) : (
