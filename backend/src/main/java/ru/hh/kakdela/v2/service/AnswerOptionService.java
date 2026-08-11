@@ -38,12 +38,31 @@ public class AnswerOptionService {
   private final AnswerOptionMapper answerOptionMapper;
   private final ImageProcessingService imageProcessingService;
 
-  //  @Transactional(readOnly = true)
-  //  public List<AnswerOptionResponseDto> getAllByQuestionId(UUID questionId) {
-  //    return answerOptionDao.findAllByQuestionId(questionId).stream()
-  //        .map(answerOptionMapper::answerOptionToDto)
-  //        .toList();
-  //  }
+  @Transactional(readOnly = true)
+  public AnswerOptionResponseDto getById(UUID id, UUID currentUserId) {
+    AnswerOption answerOption = answerOptionDao.findById(id)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Вариант ответа не найден: id=" + id));
+
+    permissionService.checkHasAnyPermission(
+        answerOption.getQuestion().getSurveyPage().getSurvey().getId(), currentUserId);
+
+    return answerOptionMapper.answerOptionToDto(answerOption);
+  }
+
+  @Transactional(readOnly = true)
+  public List<AnswerOptionResponseDto> getAllByQuestionId(UUID questionId, UUID currentUserId) {
+    Question question = questionDao.findById(questionId)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Вопрос не найден: id=" + questionId));
+
+    permissionService.checkHasAnyPermission(
+        question.getSurveyPage().getSurvey().getId(), currentUserId);
+
+    return answerOptionDao.findAllByQuestionId(questionId).stream()
+        .map(answerOptionMapper::answerOptionToDto)
+        .toList();
+  }
 
   @Transactional
   public AnswerOptionResponseDto create(UUID questionId,

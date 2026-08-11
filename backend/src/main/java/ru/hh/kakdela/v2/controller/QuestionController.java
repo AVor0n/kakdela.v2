@@ -2,11 +2,13 @@ package ru.hh.kakdela.v2.controller;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -28,10 +30,22 @@ public class QuestionController {
 
   private final QuestionService questionService;
 
-  //  @GetMapping("/pages/{pageId}/questions")
-  //  public List<QuestionResponseDto> getAllByPageId(@PathVariable UUID pageId) {
-  //    return questionService.getAllByPageId(pageId);
-  //  }
+  @GetMapping("/pages/{pageId}/questions")
+  public List<QuestionResponseDto> getAllByPageId(
+      @PathVariable UUID pageId,
+      @AuthenticationPrincipal CustomUserDetails currentUser) {
+    return questionService.getAllByPageId(
+        pageId, currentUser != null ? currentUser.getId() : null);
+  }
+
+  @GetMapping("/questions/{questionId}")
+  public QuestionResponseDto getById(
+      @PathVariable UUID questionId,
+      @AuthenticationPrincipal CustomUserDetails currentUser
+  ) {
+    return questionService.getById(
+        questionId, currentUser != null ? currentUser.getId() : null);
+  }
 
   @PostMapping("/pages/{pageId}/questions")
   @ResponseStatus(HttpStatus.CREATED)
@@ -40,7 +54,8 @@ public class QuestionController {
       @Valid @RequestBody QuestionCreateDto createDto,
       @AuthenticationPrincipal CustomUserDetails currentUser
   ) {
-    return questionService.create(pageId, createDto, currentUser.getId());
+    return questionService.create(
+        pageId, createDto, currentUser != null ? currentUser.getId() : null);
   }
 
   @PostMapping("/questions/{questionId}/clone")
@@ -49,7 +64,8 @@ public class QuestionController {
       @PathVariable UUID questionId,
       @AuthenticationPrincipal CustomUserDetails currentUser
   ) {
-    return questionService.clone(questionId, currentUser.getId());
+    return questionService.clone(
+        questionId, currentUser != null ? currentUser.getId() : null);
   }
 
   @PutMapping("/questions/{questionId}")
@@ -58,7 +74,8 @@ public class QuestionController {
       @Valid @RequestBody QuestionUpdateDto updateDto,
       @AuthenticationPrincipal CustomUserDetails currentUser
   ) {
-    return questionService.update(questionId, updateDto, currentUser.getId());
+    return questionService.update(
+        questionId, updateDto, currentUser != null ? currentUser.getId() : null);
   }
 
   @DeleteMapping("/questions/{questionId}")
@@ -67,6 +84,7 @@ public class QuestionController {
       @PathVariable UUID questionId,
       @AuthenticationPrincipal CustomUserDetails currentUser
   ) {
-    questionService.delete(questionId, currentUser.getId());
+    questionService.delete(
+        questionId, currentUser != null ? currentUser.getId() : null);
   }
 }

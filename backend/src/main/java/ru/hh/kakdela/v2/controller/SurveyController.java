@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import ru.hh.kakdela.v2.dto.survey.SurveyCreateDto;
 import ru.hh.kakdela.v2.dto.survey.SurveyPublicResponseDto;
+import ru.hh.kakdela.v2.dto.survey.SurveyResponseDto;
 import ru.hh.kakdela.v2.dto.survey.SurveyShortResponseDto;
 import ru.hh.kakdela.v2.dto.survey.SurveyShortResponseWithPermissionDto;
 import ru.hh.kakdela.v2.dto.survey.SurveyUpdateDto;
@@ -36,21 +37,24 @@ public class SurveyController {
   public List<SurveyShortResponseWithPermissionDto> getMySurveys(
       @AuthenticationPrincipal CustomUserDetails currentUser
   ) {
-    return surveyService.getMySurveys(currentUser.getId());
+    return surveyService.getMySurveys(
+        currentUser != null ? currentUser.getId() : null);
   }
 
   @GetMapping("/accounts/me/surveys/assigned")
   public List<SurveyShortResponseDto> getMyAssignedSurveys(
       @AuthenticationPrincipal CustomUserDetails currentUser
   ) {
-    return surveyService.getMyAssignedSurveys(currentUser.getId());
+    return surveyService.getMyAssignedSurveys(
+        currentUser != null ? currentUser.getId() : null);
   }
 
   @GetMapping("/surveys/{surveyId}")
   public SurveyPublicResponseDto getPublicById(
       @PathVariable UUID surveyId,
       @AuthenticationPrincipal CustomUserDetails currentUser) {
-    return surveyService.getPublicById(surveyId, currentUser.getId());
+    return surveyService.getPublicById(
+        surveyId, currentUser != null ? currentUser.getId() : null);
   }
 
   @GetMapping("/surveys/{surveyId}/edit")
@@ -66,7 +70,8 @@ public class SurveyController {
   public SurveyResponseDto create(
       @Valid @RequestBody SurveyCreateDto createDto,
       @AuthenticationPrincipal CustomUserDetails currentUser) {
-    return surveyService.create(currentUser.getId(), createDto);
+    return surveyService.create(
+        currentUser != null ? currentUser.getId() : null, createDto);
   }
 
   @PatchMapping("/surveys/{surveyId}")
@@ -74,7 +79,8 @@ public class SurveyController {
       @PathVariable UUID surveyId,
       @Valid @RequestBody SurveyUpdateDto updateDto,
       @AuthenticationPrincipal CustomUserDetails currentUser) {
-    return surveyService.updatePartial(surveyId, updateDto, currentUser.getId());
+    return surveyService.updatePartial(
+        surveyId, updateDto, currentUser != null ? currentUser.getId() : null);
   }
 
   @PostMapping("/surveys/{surveyId}/clone")
@@ -82,7 +88,8 @@ public class SurveyController {
   public SurveyResponseDto clone(
       @PathVariable UUID surveyId,
       @AuthenticationPrincipal CustomUserDetails currentUser) {
-    return surveyService.clone(surveyId, currentUser.getId());
+    return surveyService.clone(
+        surveyId, currentUser != null ? currentUser.getId() : null);
   }
 
   @DeleteMapping("/surveys/{surveyId}")
@@ -90,6 +97,7 @@ public class SurveyController {
   public void delete(
       @PathVariable UUID surveyId,
       @AuthenticationPrincipal CustomUserDetails currentUser) {
-    surveyService.delete(surveyId, currentUser.getId());
+    surveyService.delete(
+        surveyId, currentUser != null ? currentUser.getId() : null);
   }
 }
