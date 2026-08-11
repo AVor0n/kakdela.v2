@@ -208,6 +208,12 @@ public class AccountService {
       }
       account.setPasswordHash(passwordEncoder.encode(accountPatchDto.getNewPassword()));
     }
+    if (accountPatchDto.getLinkHh() != null) {
+      if (accountPatchDto.getLinkHh() && account.isHhSso()) {
+        throw new ResponseStatusException(HttpStatus.CONFLICT, "Аккаунт уже привязан к HH.ru");
+      }
+      account.setHhSso(accountPatchDto.getLinkHh());
+    }
 
     accountDao.update(account);
     return AccountMapper.accountToDto(account);
