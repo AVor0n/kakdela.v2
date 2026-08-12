@@ -1,4 +1,4 @@
-package ru.hh.kakdela.v2.model;
+package ru.hh.kakdela.v2.conflict;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -19,12 +19,6 @@ public class Literal {
     this.isNegated = isNegated;
     this.answerOptionId = answerOptionId;
     this.booleanValue = booleanValue;
-
-    if ((answerOptionId == null) == (booleanValue == null)) {
-      throw new IllegalArgumentException(
-          "Необходимо указать ровно одно из полей: answerOptionId или booleanValue"
-      );
-    }
   }
 
   public static Literal equals(UUID questionId, UUID answerOptionId) {
@@ -64,30 +58,31 @@ public class Literal {
       return false;
     }
 
-    if (this.isAnswerOptionType() != other.isAnswerOptionType()) {
-      return false;
-    }
+    if (!this.questionId.equals(other.questionId)) {
+            return false;
+        }
 
-    if (this.isNegated != other.isNegated) {
-      return areValuesEqual(other);
-    }
+        if (this.isAnswerOptionType() != other.isAnswerOptionType()) {
+            return false;
+        }
 
-    if (!this.isNegated && !other.isNegated) {
-      return !areValuesEqual(other);
-    }
+        if (!areValuesEqual(other)) {
+            return true;
+        }
 
-    return false;
+        return this.isNegated != other.isNegated;
   }
 
   private boolean areValuesEqual(Literal other) {
-    if (this.isAnswerOptionType() && other.isAnswerOptionType()) {
-      return Objects.equals(this.answerOptionId, other.answerOptionId);
+        if (this.isAnswerOptionType() && other.isAnswerOptionType()) {
+            return Objects.equals(this.answerOptionId, other.answerOptionId);
+        }
+        if (this.isBooleanType() && other.isBooleanType()) {
+            return Objects.equals(this.booleanValue, other.booleanValue);
+        }
+        return false;
     }
-    if (this.isBooleanType() && other.isBooleanType()) {
-      return Objects.equals(this.booleanValue, other.booleanValue);
-    }
-    return false;
-  }
+
 
   @Override
   public String toString() {

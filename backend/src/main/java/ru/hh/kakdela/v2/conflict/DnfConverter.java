@@ -3,25 +3,24 @@ package ru.hh.kakdela.v2.conflict;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
-import org.springframework.stereotype.Component;
-import ru.hh.kakdela.v2.model.Clause;
-import ru.hh.kakdela.v2.model.Literal;
 import ru.hh.kakdela.v2.model.condition.Condition;
 import ru.hh.kakdela.v2.model.condition.ConditionAtom;
 import ru.hh.kakdela.v2.model.condition.ConditionNode;
 import ru.hh.kakdela.v2.model.condition.ConditionNode.Operator;
 
-@Component
 public class DnfConverter {
 
   private DnfConverter() {
   }
 
   public static DnfExpression convert(Condition condition) {
-    if (condition == null) {
-      return DnfExpression.empty();
+    Objects.requireNonNull(condition, "condition не может быть null");
+    
+    if (condition.getRoot() == null) {
+        return DnfExpression.empty();
     }
 
     if (condition.getRoot() == null) {
@@ -35,9 +34,8 @@ public class DnfConverter {
   }
 
   private static DnfExpression visitNode(ConditionNode node, Set<UUID> visited) {
-    if (node == null) {
-      return DnfExpression.empty();
-    }
+    Objects.requireNonNull(node, "node не может быть null");
+    Objects.requireNonNull(visited, "visited не может быть null");
 
     if (visited.contains(node.getId())) {
       throw new IllegalStateException("Цикл в дереве условий: " + node.getId());

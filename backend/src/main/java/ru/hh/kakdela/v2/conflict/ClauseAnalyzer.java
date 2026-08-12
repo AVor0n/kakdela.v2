@@ -1,12 +1,5 @@
 package ru.hh.kakdela.v2.conflict;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.springframework.stereotype.Component;
-import ru.hh.kakdela.v2.model.Clause;
-import ru.hh.kakdela.v2.model.Literal;
-
-@Component
 public class ClauseAnalyzer {
 
   public static boolean hasIntersection(Clause clause1, Clause clause2) {
@@ -26,20 +19,5 @@ public class ClauseAnalyzer {
       }
     }
     return false;
-  }
-
-  public static List<Literal> findConflictingLiterals(Clause clause1, Clause clause2) {
-    List<Literal> conflicts = new ArrayList<>();
-
-    for (Literal lit1 : clause1.getLiterals()) {
-      for (Literal lit2 : clause2.getLiterals()) {
-        if (lit1.contradicts(lit2)) {
-          conflicts.add(lit1);
-          conflicts.add(lit2);
-        }
-      }
-    }
-
-    return conflicts;
   }
 }

@@ -1,4 +1,4 @@
-package ru.hh.kakdela.v2.model;
+package ru.hh.kakdela.v2.conflict;
 
 import java.util.ArrayList;
 import java.util.Arrays;

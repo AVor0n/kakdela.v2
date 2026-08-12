@@ -6,7 +6,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.Getter;
-import ru.hh.kakdela.v2.model.Clause;
 
 @Getter
 public class DnfExpression {
