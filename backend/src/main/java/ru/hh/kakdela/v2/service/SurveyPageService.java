@@ -43,7 +43,7 @@ public class SurveyPageService {
             HttpStatus.NOT_FOUND, "Страница не найдена: id=" + pageId));
 
     Response response =
-        responseService.getEntityWithPageStatusesByIdAndCheckOwnerAccess(
+        responseService.getEntityWithPageStatusesByIdWithOwnerAccessCheck(
             responseId, accountId, token);
 
     if (!response.getSurvey().getId().equals(surveyPage.getSurvey().getId())

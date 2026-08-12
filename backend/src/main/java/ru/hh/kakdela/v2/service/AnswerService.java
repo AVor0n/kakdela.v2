@@ -37,7 +37,7 @@ public class AnswerService {
   @Transactional(readOnly = true)
   public List<AnswerResponseDto> getAllByResponseId(UUID responseId, UUID accountId, String token) {
     Response response =
-        responseService.getEntityByIdAndCheckOwnerOrSurveyTeamAccess(
+        responseService.getEntityByIdWithOwnerOrSurveyTeamAccessCheck(
             responseId, accountId, token);
 
     if (response.getAccount() == null && response.isCompleted()
@@ -60,7 +60,7 @@ public class AnswerService {
       String token
   ) {
     Response response =
-        responseService.getEntityWithPageStatusesByIdAndCheckOwnerAccess(
+        responseService.getEntityWithPageStatusesByIdWithOwnerAccessCheck(
             responseId, accountId, token);
 
     if (response.isCompleted()) {
@@ -105,7 +105,7 @@ public class AnswerService {
   @Transactional
   public void delete(UUID responseId, UUID questionId, UUID accountId, String token) {
     Response response =
-        responseService.getEntityByIdAndCheckOwnerAccess(responseId, accountId, token);
+        responseService.getEntityByIdWithOwnerAccessCheck(responseId, accountId, token);
 
     if (response.isCompleted()) {
       throw new ResponseStatusException(

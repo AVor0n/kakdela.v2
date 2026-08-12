@@ -59,7 +59,7 @@ public class ClosingPageService {
             HttpStatus.NOT_FOUND, "Завершающая страница не найдена для опроса: " + surveyId));
 
     Response response =
-        responseService.getEntityByIdAndCheckOwnerAccess(responseId, accountId, token);
+        responseService.getEntityByIdWithOwnerAccessCheck(responseId, accountId, token);
 
     if (!response.getSurvey().getId().equals(surveyId)
         || !response.isCompleted()) {

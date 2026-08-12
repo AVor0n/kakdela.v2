@@ -46,7 +46,7 @@ public class ResponseService {
 
   @Transactional(readOnly = true)
   public ResponseResponseDto getById(UUID id, UUID accountId, String token) {
-    Response response = getEntityByIdAndCheckOwnerOrSurveyTeamAccess(id, accountId, token);
+    Response response = getEntityByIdWithOwnerOrSurveyTeamAccessCheck(id, accountId, token);
 
     if (response.getAccount() == null && response.isCompleted()
         && !response.getSurvey().isAuthor(accountId)) {
@@ -117,7 +117,7 @@ public class ResponseService {
 
   @Transactional
   public ResponseResponseDto complete(UUID id, UUID accountId, String token) {
-    Response response = getEntityByIdAndCheckOwnerAccess(id, accountId, token);
+    Response response = getEntityByIdWithOwnerAccessCheck(id, accountId, token);
 
     checkMandatoryQuestionsAnswered(id);
 
@@ -194,7 +194,7 @@ public class ResponseService {
     }
   }
 
-  Response getEntityByIdAndCheckOwnerOrSurveyTeamAccess(
+  Response getEntityByIdWithOwnerOrSurveyTeamAccessCheck(
       UUID responseId,
       UUID accountId,
       String token
@@ -216,7 +216,7 @@ public class ResponseService {
     return response;
   }
 
-  Response getEntityByIdAndCheckOwnerAccess(UUID responseId, UUID accountId, String token) {
+  Response getEntityByIdWithOwnerAccessCheck(UUID responseId, UUID accountId, String token) {
     Response response = responseDao.findById(responseId)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Ответ не найден: " + responseId));
@@ -226,7 +226,7 @@ public class ResponseService {
     return response;
   }
 
-  Response getFullyInitializedEntityByIdAndCheckOwnerAccess(
+  Response getFullyInitializedEntityByIdWithOwnerAccessCheck(
       UUID responseId,
       UUID accountId,
       String token
@@ -240,7 +240,7 @@ public class ResponseService {
     return response;
   }
 
-  Response getEntityWithPageStatusesByIdAndCheckOwnerAccess(
+  Response getEntityWithPageStatusesByIdWithOwnerAccessCheck(
       UUID responseId,
       UUID accountId,
       String token
