@@ -4,7 +4,9 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 import ru.hh.kakdela.v2.model.Answer;
@@ -23,6 +25,69 @@ public class ResponseDaoImpl implements ResponseDao {
   }
 
   @Override
+  public Optional<Response> findByIdWithAllAnswersAndPageStatuses(UUID id) {
+    Optional<Response> result = Optional.ofNullable(entityManager.createQuery(
+          """
+          SELECT DISTINCT r
+          FROM Response r
+          LEFT JOIN FETCH r.answers
+          WHERE r.id = :id
+          """, Response.class)
+        .setParameter("id", id)
+        .getSingleResultOrNull());
+
+    if (result.isEmpty()) {
+      return result;
+    }
+
+    Response response = result.get();
+
+    entityManager.createQuery(
+          """
+          SELECT DISTINCT r
+          FROM Response r
+          LEFT JOIN FETCH r.pageStatuses
+          WHERE r.id = :id
+          """, Response.class)
+        .setParameter("id", id)
+        .getSingleResultOrNull();
+
+    if (response.getAnswers().isEmpty()) {
+      return result;
+    }
+
+    Set<UUID> answerIds = response.getAnswers().stream()
+        .map(Answer::getId)
+        .collect(Collectors.toSet());
+
+    entityManager.createQuery(
+          """
+          SELECT DISTINCT a
+          FROM Answer a
+          LEFT JOIN FETCH a.selectedAnswerOptions
+          WHERE a.id IN :ids
+          """, Answer.class)
+        .setParameter("ids", answerIds)
+        .getResultList();
+
+    return result;
+  }
+
+  @Override
+  public Optional<Response> findByIdWithPageStatuses(UUID id) {
+    return Optional.ofNullable(entityManager.createQuery(
+            """
+            SELECT DISTINCT r
+            FROM Response r
+            LEFT JOIN FETCH r.pageStatuses
+            WHERE r.id = :id
+            """, Response.class)
+        .setParameter("id", id)
+        .getSingleResultOrNull());
+  }
+
+
+  @Override
   public List<Response> findCompletedBySurveyId(UUID surveyId) {
     List<Response> result = entityManager.createQuery(
         """
@@ -36,10 +101,10 @@ public class ResponseDaoImpl implements ResponseDao {
         .setParameter("surveyId", surveyId)
         .getResultList();
 
-    List<UUID> answerIds = result.stream()
+    Set<UUID> answerIds = result.stream()
         .flatMap(r -> r.getAnswers().stream())
         .map(Answer::getId)
-        .toList();
+        .collect(Collectors.toSet());
 
     entityManager.createQuery(
         """
@@ -67,10 +132,10 @@ public class ResponseDaoImpl implements ResponseDao {
         .setParameter("accountId", accountId)
         .getResultList();
 
-    List<UUID> answerIds = result.stream()
+    Set<UUID> answerIds = result.stream()
         .flatMap(r -> r.getAnswers().stream())
         .map(Answer::getId)
-        .toList();
+        .collect(Collectors.toSet());
 
     entityManager.createQuery(
         """
@@ -128,41 +193,59 @@ public class ResponseDaoImpl implements ResponseDao {
   }
 
   @Override
-  public boolean existsBySurveyIdAndAccountId(UUID accountId, UUID surveyId) {
-    return entityManager
-        .createQuery(
-            """
-            SELECT COUNT(r) FROM Response r
-            WHERE r.account.id = :accountId
-            AND r.survey.id = :surveyId
-            """, Long.class)
-        .setParameter("accountId", accountId)
+  public boolean existsBySurveyIdAndAccountId(UUID surveyId, UUID accountId) {
+    List<UUID> results = entityManager.createQuery(
+        """
+        SELECT r.id
+        FROM Response r
+        WHERE r.survey.id = :surveyId
+        AND r.account.id = :accountId
+        """, UUID.class)
         .setParameter("surveyId", surveyId)
-        .getSingleResultOrNull() > 0;
+        .setParameter("accountId", accountId)
+        .setMaxResults(1)
+        .getResultList();
+
+    return !results.isEmpty();
   }
 
   @Override
   public boolean areAllMandatoryQuestionsAnswered(UUID responseId) {
-    return entityManager
-        .createQuery(
-            """
-            SELECT COUNT(q)
-            FROM Question q
-            WHERE q.isMandatory = true
-              AND q.surveyPage.survey = (
-                  SELECT r.survey
-                  FROM Response r
-                  WHERE r.id = :responseId
-              )
-              AND q.id NOT IN (
-                  SELECT a.question.id
-                  FROM Answer a
-                  WHERE a.response.id = :responseId
-              )
-            """, Long.class)
+    List<UUID> result = entityManager.createQuery(
+        """
+        SELECT q.id
+        FROM Question q
+        JOIN ResponsePageStatus rsp ON rsp.surveyPage.id = q.surveyPage.id
+        LEFT JOIN Answer a ON a.question.id = q.id AND a.response.id = :responseId
+        WHERE q.isMandatory = true
+        AND rsp.response.id = :responseId
+        AND rsp.isIncluded = true
+        AND a.id IS NULL
+        """, UUID.class)
         .setParameter("responseId", responseId)
-        .getSingleResultOrNull()
-        .equals(0L);
+        .setMaxResults(1)
+        .getResultList();
+
+    return result.isEmpty();
+  }
+
+  @Override
+  public boolean areAllMandatoryQuestionsOfPageAnswered(UUID responseId, UUID pageId) {
+    List<UUID> result = entityManager.createQuery(
+        """
+        SELECT q.id
+        FROM Question q
+        LEFT JOIN Answer a ON a.question.id = q.id AND a.response.id = :responseId
+        WHERE q.isMandatory = true
+        AND q.surveyPage.id = :pageId
+        AND a.id IS NULL
+        """, UUID.class)
+        .setParameter("responseId", responseId)
+        .setParameter("pageId", pageId)
+        .setMaxResults(1)
+        .getResultList();
+
+    return result.isEmpty();
   }
 
   @Override

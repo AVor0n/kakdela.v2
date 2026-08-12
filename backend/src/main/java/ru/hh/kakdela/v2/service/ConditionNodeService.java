@@ -4,6 +4,7 @@ import java.util.ArrayDeque;
 import java.util.Queue;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +25,7 @@ import ru.hh.kakdela.v2.model.condition.Condition;
 import ru.hh.kakdela.v2.model.condition.ConditionAtom;
 import ru.hh.kakdela.v2.model.condition.ConditionNode;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ConditionNodeService {
@@ -36,6 +38,7 @@ public class ConditionNodeService {
   private final AnswerOptionDao answerOptionDao;
   private final ConditionService conditionService;
   private final PermissionService permissionService;
+  private final ConditionConflictService conditionConflictService;
 
   @Transactional
   public ConditionNodeResponseDto addNode(
@@ -43,10 +46,14 @@ public class ConditionNodeService {
       ConditionNodeCreateDto dto,
       UUID accountId
   ) {
-    Condition condition = conditionService.getEntityById(conditionId);
+    log.info("Начато добавление вершины к дереву условия: conditionId={}", conditionId);
+
+    Condition condition =
+        conditionService.getEntityWithParentPageWithAllQuestionsAndNeighbourConditionsById(
+            conditionId);
 
     permissionService.checkCanEdit(
-        condition.getSurveyPage().getSurvey().getId(), accountId);
+        conditionService.getParentSurveyId(conditionId), accountId);
 
     if (!dto.getOperator().isLink) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
@@ -86,6 +93,10 @@ public class ConditionNodeService {
 
     checkConditionTreeHeight(condition);
 
+    if (condition.getIsActive()) {
+      conditionConflictService.validatePageConditions(condition.getSurveyPage());
+    }
+
     if (node.getParentNode() == null) {
       conditionDao.update(condition);
     } else {
@@ -101,10 +112,13 @@ public class ConditionNodeService {
       ConditionNodeUpdateDto dto,
       UUID accountId
   ) {
-    ConditionNode node = getEntityById(nodeId);
+    log.info("Начато изменение вершины дерева условия: id={}", nodeId);
+
+    ConditionNode node =
+        getEntityWithParentConditionAndParentPageWithAllQuestionsAndNeighbourConditionsById(nodeId);
 
     permissionService.checkCanEdit(
-        node.getCondition().getSurveyPage().getSurvey().getId(), accountId);
+        conditionNodeDao.findParentSurveyIdById(nodeId), accountId);
 
     if (!node.getOperator().isLink) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
@@ -112,6 +126,10 @@ public class ConditionNodeService {
     }
 
     node.setOperator(dto.getOperator());
+
+    if (node.getCondition().getIsActive()) {
+      conditionConflictService.validatePageConditions(node.getCondition().getSurveyPage());
+    }
 
     conditionNodeDao.update(node);
 
@@ -124,10 +142,14 @@ public class ConditionNodeService {
       ConditionAtomCreateDto dto,
       UUID accountId
   ) {
-    Condition condition = conditionService.getEntityById(conditionId);
+    log.info("Начато добавление листа к дереву условия: conditionId={}", conditionId);
+
+    Condition condition =
+        conditionService.getEntityWithParentPageWithAllQuestionsAndNeighbourConditionsById(
+            conditionId);
 
     permissionService.checkCanEdit(
-        condition.getSurveyPage().getSurvey().getId(), accountId);
+        conditionService.getParentSurveyId(conditionId), accountId);
 
     ConditionNode parentNode;
 
@@ -152,7 +174,7 @@ public class ConditionNodeService {
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
             "Указанная родительская вершина не является соединительной");
       }
-    } else  {
+    } else {
       if (dto.getParentNodeId() != null) {
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
             "Дерево условия пусто. У нового атомарного условия"
@@ -178,7 +200,7 @@ public class ConditionNodeService {
       requiredAnswerOption = answerOptionDao.findById(dto.getRequiredAnswerOptionId())
           .orElseThrow(() -> new ResponseStatusException(
               HttpStatus.NOT_FOUND, "Вариант ответа не найден: id="
-                  + dto.getRequiredAnswerOptionId()));
+              + dto.getRequiredAnswerOptionId()));
 
       if (!requiredAnswerOption.getQuestion().getId().equals(question.getId())) {
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
@@ -207,6 +229,10 @@ public class ConditionNodeService {
 
     node.setAtom(atom);
 
+    if (condition.getIsActive()) {
+      conditionConflictService.validatePageConditions(condition.getSurveyPage());
+    }
+
     if (parentNode == null) {
       condition.setRoot(node);
       conditionDao.update(condition);
@@ -223,10 +249,13 @@ public class ConditionNodeService {
       ConditionAtomUpdateDto dto,
       UUID accountId
   ) {
-    ConditionNode node = getEntityById(nodeId);
+    log.info("Начато изменение листа дерева условия: id={}", nodeId);
+
+    ConditionNode node =
+        getEntityWithParentConditionAndParentPageWithAllQuestionsAndNeighbourConditionsById(nodeId);
 
     permissionService.checkCanEdit(
-        node.getCondition().getSurveyPage().getSurvey().getId(), accountId);
+        conditionNodeDao.findParentSurveyIdById(nodeId), accountId);
 
     Question question = questionDao.findById(dto.getQuestionId())
         .orElseThrow(() -> new ResponseStatusException(
@@ -262,6 +291,10 @@ public class ConditionNodeService {
     node.getAtom().setRequiredAnswerOption(requiredAnswerOption);
     node.getAtom().setOperator(dto.getOperator());
 
+    if (node.getCondition().getIsActive()) {
+      conditionConflictService.validatePageConditions(node.getCondition().getSurveyPage());
+    }
+
     conditionNodeDao.update(node);
 
     return ConditionMapper.conditionNodeToDto(node);
@@ -269,10 +302,13 @@ public class ConditionNodeService {
 
   @Transactional
   public void delete(UUID nodeId, UUID accountId) {
-    ConditionNode node = getEntityById(nodeId);
+    log.info("Начато удаление вершины дерева условия: id={}", nodeId);
+
+    ConditionNode node =
+        getEntityWithParentConditionAndParentPageWithAllQuestionsAndNeighbourConditionsById(nodeId);
 
     permissionService.checkCanEdit(
-        node.getCondition().getSurveyPage().getSurvey().getId(), accountId);
+        conditionNodeDao.findParentSurveyIdById(nodeId), accountId);
 
     ConditionNode nodeToDelete;
 
@@ -285,6 +321,10 @@ public class ConditionNodeService {
 
     if (nodeToDelete.getParentNode() == null) {
       nodeToDelete.getCondition().setRoot(null);
+    }
+
+    if (node.getCondition().getIsActive()) {
+      conditionConflictService.validatePageConditions(node.getCondition().getSurveyPage());
     }
 
     conditionNodeDao.delete(nodeToDelete);
@@ -331,7 +371,8 @@ public class ConditionNodeService {
   }
 
   private void checkConditionTreeHeight(Condition condition) {
-    record NodeWithHeight(ConditionNode node, int height) {}
+    record NodeWithHeight(ConditionNode node, int height) {
+    }
 
     Queue<NodeWithHeight> queue = new ArrayDeque<>();
 
@@ -353,8 +394,10 @@ public class ConditionNodeService {
     }
   }
 
-  ConditionNode getEntityById(UUID id) {
-    return conditionNodeDao.findById(id)
+  ConditionNode
+      getEntityWithParentConditionAndParentPageWithAllQuestionsAndNeighbourConditionsById(UUID id) {
+    return conditionNodeDao
+        .findByIdWithParentConditionAndParentPageWithAllQuestionsAndNeighbourConditions(id)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Вершина условия не найдена: id=" + id));
   }

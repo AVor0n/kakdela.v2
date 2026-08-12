@@ -20,5 +20,5 @@ public class ConditionAtomUpdateDto {
   @NotNull
   private ConditionAtom.Operator operator;
   @NotNull
-  private Boolean isNegative = false;
+  private Boolean isNegative;
 }

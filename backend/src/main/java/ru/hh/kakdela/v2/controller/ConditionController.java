@@ -1,5 +1,6 @@
 package ru.hh.kakdela.v2.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
@@ -13,8 +14,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import ru.hh.kakdela.v2.dto.condition.ConditionNextPageResponseDto;
 import ru.hh.kakdela.v2.dto.condition.ConditionRequestDto;
 import ru.hh.kakdela.v2.dto.condition.ConditionResponseDto;
 import ru.hh.kakdela.v2.dto.condition.atom.ConditionAtomCreateDto;
@@ -23,6 +26,7 @@ import ru.hh.kakdela.v2.dto.condition.node.ConditionNodeCreateDto;
 import ru.hh.kakdela.v2.dto.condition.node.ConditionNodeResponseDto;
 import ru.hh.kakdela.v2.dto.condition.node.ConditionNodeUpdateDto;
 import ru.hh.kakdela.v2.security.CustomUserDetails;
+import ru.hh.kakdela.v2.service.AuthCookieService;
 import ru.hh.kakdela.v2.service.ConditionNodeService;
 import ru.hh.kakdela.v2.service.ConditionService;
 
@@ -33,6 +37,7 @@ public class ConditionController {
 
   private final ConditionService conditionService;
   private final ConditionNodeService conditionNodeService;
+  private final AuthCookieService authCookieService;
 
   @GetMapping("/pages/{pageId}/conditions")
   public List<ConditionResponseDto> getAllByPageId(
@@ -50,6 +55,19 @@ public class ConditionController {
   ) {
     return conditionService.getById(
         conditionId, currentUser.getId() != null ? currentUser.getId() : null);
+  }
+
+  @GetMapping("/pages/{pageId}/verify")
+  public ConditionNextPageResponseDto verify(
+      @PathVariable UUID pageId,
+      @RequestParam UUID responseId,
+      @AuthenticationPrincipal CustomUserDetails currentUser,
+      HttpServletRequest request
+  ) {
+    String token = authCookieService.getResponseToken(request, responseId);
+
+    return conditionService.determineNextPage(
+        pageId, responseId, currentUser != null ? currentUser.getId() : null, token);
   }
 
   @PostMapping("/pages/{pageId}/conditions")

@@ -30,4 +30,5 @@ public class SurveyPublicResponseDto {
   private final String targetTimezone;
   private final List<SurveyPageShortResponseDto> pages;
   private final boolean hasCustomClosingPage;
+  private final boolean hasConditions;
 }

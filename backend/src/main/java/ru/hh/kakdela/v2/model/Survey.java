@@ -100,8 +100,11 @@ public class Survey {
   @Builder.Default
   private List<SurveyPage> pages = new ArrayList<>();
 
-  @OneToOne(mappedBy = "survey", cascade = CascadeType.ALL,
-      orphanRemoval = true, fetch = FetchType.LAZY)
+  @OneToOne(
+      mappedBy = "survey",
+      cascade = CascadeType.ALL,
+      orphanRemoval = true,
+      fetch = FetchType.LAZY)
   private ClosingPage closingPage;
 
   @OneToMany(mappedBy = "survey", cascade = CascadeType.ALL, orphanRemoval = true)

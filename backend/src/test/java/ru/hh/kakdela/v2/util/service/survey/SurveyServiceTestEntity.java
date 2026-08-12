@@ -188,7 +188,8 @@ public class SurveyServiceTestEntity {
           survey,
           false,
           null,
-          new ArrayList<>());
+          new ArrayList<>(),
+          null);
       Answer answer1 = new Answer(
           FullSurveyConstants.getQuestion1AnswerId(),
           response1,

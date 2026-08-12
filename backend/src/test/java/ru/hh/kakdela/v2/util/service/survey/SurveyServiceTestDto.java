@@ -22,7 +22,7 @@ import ru.hh.kakdela.v2.util.service.survey.SurveyServiceTestConstants.PlainSurv
 
 public class SurveyServiceTestDto {
 
-  private static final FileResponseDto fileInfo = FileResponseDto.builder()
+  private static FileResponseDto fileInfo = FileResponseDto.builder()
       .fileName("test-file.pdf")
       .fileSize(102400L)
       .build();

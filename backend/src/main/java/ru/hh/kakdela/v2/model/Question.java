@@ -16,7 +16,6 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Function;
@@ -132,10 +131,7 @@ public class Question {
   @AllArgsConstructor(access = AccessLevel.PRIVATE)
   public enum AnswerOptionOrder {
     ORIGINAL(
-        aords -> {
-          aords.sort(Comparator.comparingInt(AnswerOptionResponseDto::getSerialNumber));
-          return aords;
-        }),
+        aords -> aords),
     RANDOM(
         aords -> {
           Collections.shuffle(aords);

@@ -4,10 +4,13 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 import ru.hh.kakdela.v2.model.SurveyPage;
+import ru.hh.kakdela.v2.model.condition.ConditionNode;
 
 @Slf4j
 @Repository
@@ -21,6 +24,101 @@ public class SurveyPageDaoImpl implements SurveyPageDao {
   @Override
   public Optional<SurveyPage> findById(UUID id) {
     return Optional.ofNullable(entityManager.find(SurveyPage.class, id));
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public Optional<SurveyPage> findByIdWithAllConditionsAndParentSurveyWithRelatives(UUID id) {
+    Optional<SurveyPage> result = Optional.ofNullable(entityManager.createQuery(
+        """
+        SELECT DISTINCT sp
+        FROM SurveyPage sp
+        LEFT JOIN FETCH sp.conditions cs
+        LEFT JOIN FETCH cs.root r
+        LEFT JOIN FETCH r.atom
+        WHERE sp.id = :id
+        """, SurveyPage.class)
+        .setParameter("id", id)
+        .getSingleResultOrNull());
+
+    if (result.isEmpty()) {
+      return result;
+    }
+
+    SurveyPage surveyPage = result.get();
+
+    entityManager.createQuery(
+        """
+        SELECT DISTINCT sp
+        FROM SurveyPage sp
+        LEFT JOIN FETCH sp.survey s
+        LEFT JOIN FETCH s.pages
+        WHERE sp.id = :id
+        """, SurveyPage.class)
+        .setParameter("id", id)
+        .getSingleResultOrNull();
+
+    Set<UUID> pageIds = surveyPage.getSurvey().getPages().stream()
+        .map(SurveyPage::getId)
+        .collect(Collectors.toSet());
+
+    entityManager.createQuery(
+        """
+        SELECT DISTINCT sp
+        FROM SurveyPage sp
+        LEFT JOIN FETCH sp.questions
+        WHERE sp.id IN :pageIds
+        """, SurveyPage.class)
+        .setParameter("pageIds", pageIds)
+        .getResultList();
+
+    if (surveyPage.getConditions().isEmpty()) {
+      return result;
+    }
+
+    Set<UUID> rootNodeIds = surveyPage.getConditions().stream()
+        .filter(c -> c.getRoot() != null)
+        .map(c -> c.getRoot().getId())
+        .collect(Collectors.toSet());
+
+    if (rootNodeIds.isEmpty()) {
+      return result;
+    }
+
+    UUID[] rootNodeIdArray = rootNodeIds.toArray(UUID[]::new);
+
+    List<UUID> treeNodeIds = entityManager.createNativeQuery(
+        """
+        WITH RECURSIVE tree AS (
+            SELECT id
+            FROM unnest(CAST(:rootNodeIds AS uuid[])) AS roots(id)
+        
+            UNION ALL
+        
+            SELECT current.id
+            FROM condition_node current
+            JOIN tree
+                ON current.parent_node_id = tree.id
+        )
+        SELECT id
+        FROM tree
+        """, UUID.class)
+        .setParameter("rootNodeIds", rootNodeIdArray)
+        .getResultList();
+
+    entityManager.createQuery(
+        """
+        SELECT DISTINCT cn
+        FROM ConditionNode cn
+        LEFT JOIN FETCH cn.atom
+        LEFT JOIN FETCH cn.childNodes cns
+        LEFT JOIN FETCH cns.atom
+        WHERE cn.id IN :treeNodeIds
+        """, ConditionNode.class)
+        .setParameter("treeNodeIds", treeNodeIds)
+        .getResultList();
+
+    return result;
   }
 
   @Override

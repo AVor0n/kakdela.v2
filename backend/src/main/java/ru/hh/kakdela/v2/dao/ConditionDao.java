@@ -9,7 +9,19 @@ public interface ConditionDao {
 
   Optional<Condition> findById(UUID id);
 
+  Optional<Condition> findByIdWithWholeTree(UUID id);
+
+  Optional<Condition> findByIdWithParentPageWithAllQuestionsAndNeighbourConditions(UUID id);
+
+  UUID findParentSurveyIdById(UUID id);
+
   List<Condition> findAllByPageId(UUID pageId);
+
+  boolean existsByPageIdAndNextPageId(UUID pageId, UUID nextPageId);
+
+  boolean existsBySurveyId(UUID surveyId);
+
+  void makeConditionsConsistentByPageIdAndItsSerialNumber(UUID pageId, int serialNumber);
 
   void save(Condition condition);
 

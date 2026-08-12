@@ -2,7 +2,6 @@ package ru.hh.kakdela.v2.mapper;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.Comparator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import ru.hh.kakdela.v2.dto.survey.SurveyPublicResponseDto;
@@ -12,7 +11,6 @@ import ru.hh.kakdela.v2.dto.survey.SurveyShortResponseWithPermissionDto;
 import ru.hh.kakdela.v2.dto.survey.SurveyWithUserRoleDto;
 import ru.hh.kakdela.v2.model.Permission;
 import ru.hh.kakdela.v2.model.Survey;
-import ru.hh.kakdela.v2.model.SurveyPage;
 
 @Component
 @RequiredArgsConstructor
@@ -40,7 +38,6 @@ public class SurveyMapper {
         survey.getTargetTimezone(),
         survey.getCreatedAt(),
         survey.getPages().stream()
-            .sorted(Comparator.comparingInt(SurveyPage::getSerialNumber))
             .map(surveyPageMapper::surveyPageToDto)
             .toList(),
         survey.getClosingPage() != null
@@ -49,7 +46,7 @@ public class SurveyMapper {
     );
   }
 
-  public SurveyPublicResponseDto surveyToPublicDto(Survey survey) {
+  public SurveyPublicResponseDto surveyToPublicDto(Survey survey, boolean hasConditions) {
     return new SurveyPublicResponseDto(
         survey.getId(),
         AccountMapper.accountToDto(survey.getAuthor()),
@@ -64,10 +61,10 @@ public class SurveyMapper {
             : null,
         survey.getTargetTimezone(),
         survey.getPages().stream()
-            .sorted(Comparator.comparingInt(SurveyPage::getSerialNumber))
             .map(surveyPageMapper::surveyPageToShortDto)
             .toList(),
-        survey.getClosingPage() != null);
+        survey.getClosingPage() != null,
+        hasConditions);
   }
 
   public SurveyShortResponseDto surveyToShortDto(Survey survey) {

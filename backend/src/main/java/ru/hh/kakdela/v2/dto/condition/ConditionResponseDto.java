@@ -14,5 +14,6 @@ public class ConditionResponseDto {
   private final UUID id;
   private final UUID pageId;
   private final UUID nextPageId;
+  private final Boolean isActive;
   private final ConditionNodeResponseDto root;
 }

@@ -100,6 +100,19 @@ ON response (survey_id);
 CREATE INDEX idx_response_account_id
 ON response (account_id);
 
+CREATE TABLE response_page_status (
+    id uuid PRIMARY KEY,
+    response_id uuid REFERENCES response (id) ON DELETE CASCADE NOT NULL,
+    survey_page_id uuid REFERENCES survey_page (id) ON DELETE CASCADE NOT NULL,
+    is_included bool DEFAULT FALSE NOT NULL
+);
+
+CREATE INDEX idx_response_page_status_response_id
+ON response_page_status (response_id);
+
+CREATE INDEX idx_response_page_status_response_id_survey_page_id
+ON response_page_status (response_id, survey_page_id);
+
 CREATE TABLE answer (
     id uuid PRIMARY KEY,
     response_id uuid REFERENCES response (id) ON DELETE CASCADE,
@@ -133,7 +146,9 @@ CREATE TABLE condition (
     id uuid PRIMARY KEY,
     survey_page_id uuid REFERENCES survey_page (id) ON DELETE CASCADE NOT NULL,
     next_page_id uuid REFERENCES survey_page (id) ON DELETE CASCADE NOT NULL,
-    root_node_id uuid UNIQUE
+    root_node_id uuid UNIQUE,
+    is_active bool DEFAULT FALSE NOT NULL,
+    CONSTRAINT uk_condition_page_next_page UNIQUE (survey_page_id, next_page_id)
 );
 
 CREATE INDEX idx_condition_survey_page_id

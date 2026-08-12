@@ -42,20 +42,21 @@ public class SurveyService {
   private final PermissionService permissionService;
   private final NotificationService notificationService;
   private final ObjectStorageService objectStorageService;
-  private final ClosingPageService closingPageService;
+  private final ConditionService conditionService;
   private final SurveyMapper surveyMapper;
 
   @Transactional(readOnly = true)
   public SurveyPublicResponseDto getPublicById(UUID surveyId, UUID accountId) {
     Survey survey = surveyDao.findById(surveyId)
         .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
+            HttpStatus.NOT_FOUND, "Опрос не найден: id=" + surveyId));
 
     if (!survey.isPublished()) {
       permissionService.checkHasAnyPermission(surveyId, accountId);
     }
 
-    return surveyMapper.surveyToPublicDto(survey);
+    return surveyMapper.surveyToPublicDto(
+        survey, conditionService.doSurveyHaveConditions(surveyId));
   }
 
   @Transactional(readOnly = true)
