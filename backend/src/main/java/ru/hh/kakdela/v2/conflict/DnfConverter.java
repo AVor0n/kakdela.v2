@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import ru.hh.kakdela.v2.model.Question;
 import ru.hh.kakdela.v2.model.condition.Condition;
 import ru.hh.kakdela.v2.model.condition.ConditionAtom;
 import ru.hh.kakdela.v2.model.condition.ConditionNode;
@@ -18,10 +19,6 @@ public class DnfConverter {
 
   public static DnfExpression convert(Condition condition) {
     Objects.requireNonNull(condition, "condition не может быть null");
-    
-    if (condition.getRoot() == null) {
-        return DnfExpression.empty();
-    }
 
     if (condition.getRoot() == null) {
       return DnfExpression.empty();
@@ -108,20 +105,21 @@ public class DnfConverter {
     }
 
     UUID questionId = atom.getQuestion().getId();
+    Question.QuestionType questionType = atom.getQuestion().getType();
 
     if (atom.getRequiredAnswerOption() != null) {
       UUID optionId = atom.getRequiredAnswerOption().getId();
       return isNegated
-          ? Literal.notEquals(questionId, optionId)
-          : Literal.equals(questionId, optionId);
-    } else {
-      Boolean value = atom.getRequiredBooleanValue();
-      if (value == null) {
-        throw new IllegalStateException("Атом не содержит значения: " + node.getId());
-      }
-      return isNegated
-          ? Literal.notEquals(questionId, value)
-          : Literal.equals(questionId, value);
+          ? Literal.notEquals(questionId, questionType, optionId)
+          : Literal.equals(questionId, questionType, optionId);
     }
+
+    if (atom.getRequiredBooleanValue() != null) {
+      Boolean value = atom.getRequiredBooleanValue();
+      return isNegated
+          ? Literal.notEquals(questionId, questionType, value)
+          : Literal.equals(questionId, questionType, value);
+    }
+    throw new IllegalStateException("Атом не содержит значения: " + node.getId());
   }
 }
