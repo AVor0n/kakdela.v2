@@ -35,8 +35,10 @@ public class DnfExpression {
 
     for (Clause left : this.clauses) {
       for (Clause right : other.clauses) {
-        Clause.merge(left, right)
-            .ifPresent(result::add);
+        Clause merged = Clause.merge(left, right);
+        if (!merged.isEmpty()) {
+          result.add(merged);
+        }
       }
     }
 
@@ -47,6 +49,7 @@ public class DnfExpression {
     List<Clause> result = new ArrayList<>();
     result.addAll(this.clauses);
     result.addAll(other.clauses);
+
     return new DnfExpression(result);
   }
 
@@ -54,6 +57,7 @@ public class DnfExpression {
     List<Clause> filtered = clauses.stream()
         .filter(c -> !c.hasContradiction())
         .collect(Collectors.toList());
+
     return new DnfExpression(filtered);
   }
 
