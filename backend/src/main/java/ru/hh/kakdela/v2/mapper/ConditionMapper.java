@@ -14,6 +14,7 @@ public class ConditionMapper {
         condition.getId(),
         condition.getSurveyPage().getId(),
         condition.getNextPage().getId(),
+        condition.getIsActive(),
         condition.getRoot() != null
             ? conditionNodeToDto(condition.getRoot())
             : null);

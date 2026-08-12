@@ -30,6 +30,7 @@ public class ConditionService {
   private final SurveyPageDao surveyPageDao;
   private final PermissionService permissionService;
   private final ResponseService responseService;
+  private final ConditionConflictService conditionConflictService;
 
   @Transactional(readOnly = true)
   public ConditionResponseDto getById(UUID id, UUID accountId) {
@@ -158,7 +159,12 @@ public class ConditionService {
           HttpStatus.BAD_REQUEST, "Условия могут перенаправлять только вперёд");
     }
 
+    if (dto.getIsActive()) {
+      conditionConflictService.validatePageConditions(condition.getSurveyPage().getId());
+    }
+
     condition.setNextPage(nextPage);
+    condition.setIsActive(dto.getIsActive());
 
     conditionDao.update(condition);
 
