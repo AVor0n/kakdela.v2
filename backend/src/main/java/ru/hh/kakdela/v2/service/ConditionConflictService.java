@@ -8,8 +8,9 @@ import org.springframework.stereotype.Service;
 import ru.hh.kakdela.v2.conflict.ClauseAnalyzer;
 import ru.hh.kakdela.v2.conflict.DnfConverter;
 import ru.hh.kakdela.v2.conflict.DnfExpression;
-import ru.hh.kakdela.v2.dao.ConditionDao;
+import ru.hh.kakdela.v2.dao.SurveyPageDao;
 import ru.hh.kakdela.v2.exception.ConditionConflictException;
+import ru.hh.kakdela.v2.model.SurveyPage;
 import ru.hh.kakdela.v2.model.condition.Condition;
 
 @Slf4j
@@ -17,10 +18,10 @@ import ru.hh.kakdela.v2.model.condition.Condition;
 @RequiredArgsConstructor
 public class ConditionConflictService {
 
-  private final ConditionDao conditionDao;
+  private final SurveyPageDao surveyPageDao;
 
-  public void validatePageConditions(UUID pageId) {
-    List<Condition> conditions = conditionDao.findAllByPageId(pageId);
+  public void validatePageConditions(SurveyPage page) {
+    List<Condition> conditions = page.getConditions();
 
     if (conditions.size() < 2) {
       return;
@@ -42,6 +43,6 @@ public class ConditionConflictService {
       }
     }
 
-    log.debug("Конфликтов на странице {} не найдено", pageId);
+    log.debug("Конфликтов на странице {} не найдено", page.getId());
   }
 }

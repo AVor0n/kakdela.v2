@@ -4,10 +4,14 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
+import ru.hh.kakdela.v2.model.SurveyPage;
 import ru.hh.kakdela.v2.model.condition.Condition;
+import ru.hh.kakdela.v2.model.condition.ConditionAtom;
 import ru.hh.kakdela.v2.model.condition.ConditionNode;
 
 @Slf4j
@@ -60,6 +64,93 @@ public class ConditionDaoImpl implements ConditionDao {
         LEFT JOIN FETCH cns.atom
         WHERE cn.id IN :treeNodeIds
         """, ConditionNode.class)
+        .setParameter("treeNodeIds", treeNodeIds)
+        .getResultList();
+
+    return result;
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public Optional<Condition> findByIdWithParentPageWithAllQuestionsAndNeighbourConditions(UUID id) {
+    Optional<Condition> result = Optional.ofNullable(entityManager.createQuery(
+        """
+        FROM Condition c
+        WHERE c.id = :id
+        """, Condition.class)
+        .setParameter("id", id)
+        .getSingleResultOrNull());
+
+    if (result.isEmpty()) {
+      return result;
+    }
+
+    Condition condition = result.get();
+
+    SurveyPage surveyPage = entityManager.createQuery(
+        """
+        SELECT DISTINCT sp
+        FROM SurveyPage sp
+        LEFT JOIN FETCH sp.conditions cs
+        LEFT JOIN FETCH cs.root r
+        LEFT JOIN FETCH r.atom
+        WHERE sp.id = :id
+        """, SurveyPage.class)
+        .setParameter("id", condition.getSurveyPage().getId())
+        .getSingleResult();
+
+    if (surveyPage.getConditions().isEmpty()) {
+      return result;
+    }
+
+    Set<UUID> rootNodeIds = surveyPage.getConditions().stream()
+        .filter(c -> c.getRoot() != null)
+        .map(c -> c.getRoot().getId())
+        .collect(Collectors.toSet());
+
+    if (rootNodeIds.isEmpty()) {
+      return result;
+    }
+
+    UUID[] rootNodeIdArray = rootNodeIds.toArray(UUID[]::new);
+
+    List<UUID> treeNodeIds = entityManager.createNativeQuery(
+        """
+        WITH RECURSIVE tree AS (
+            SELECT id
+            FROM unnest(CAST(:rootNodeIds AS uuid[])) AS roots(id)
+
+            UNION ALL
+
+            SELECT current.id
+            FROM condition_node current
+            JOIN tree
+                ON current.parent_node_id = tree.id
+        )
+        SELECT id
+        FROM tree
+        """, UUID.class)
+        .setParameter("rootNodeIds", rootNodeIdArray)
+        .getResultList();
+
+    entityManager.createQuery(
+        """
+        SELECT DISTINCT cn
+        FROM ConditionNode cn
+        LEFT JOIN FETCH cn.childNodes cns
+        LEFT JOIN FETCH cns.atom
+        WHERE cn.id IN :treeNodeIds
+        """, ConditionNode.class)
+        .setParameter("treeNodeIds", treeNodeIds)
+        .getResultList();
+
+    entityManager.createQuery(
+        """
+        SELECT DISTINCT ca
+        FROM ConditionAtom ca
+        LEFT JOIN FETCH ca.question
+        WHERE ca.node.id IN :treeNodeIds
+        """, ConditionAtom.class)
         .setParameter("treeNodeIds", treeNodeIds)
         .getResultList();
 

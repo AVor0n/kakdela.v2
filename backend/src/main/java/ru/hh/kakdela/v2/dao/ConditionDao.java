@@ -11,6 +11,8 @@ public interface ConditionDao {
 
   Optional<Condition> findByIdWithWholeTree(UUID id);
 
+  Optional<Condition> findByIdWithParentPageWithAllQuestionsAndNeighbourConditions(UUID id);
+
   UUID findParentSurveyIdById(UUID id);
 
   List<Condition> findAllByPageId(UUID pageId);
