@@ -8,6 +8,7 @@ import org.springframework.web.context.request.WebRequest;
 import ru.hh.kakdela.v2.dto.error.ErrorResponse;
 import ru.hh.kakdela.v2.exception.ErrorCode;
 import ru.hh.kakdela.v2.exception.Kd2Exception;
+import ru.hh.kakdela.v2.exception.Kd2OblectRelatedException;
 
 public class ErrorMapper {
 
@@ -22,6 +23,8 @@ public class ErrorMapper {
         errorCode,
         id,
         message,
+        null,
+        null,
         getPath(request));
   }
 
@@ -31,6 +34,19 @@ public class ErrorMapper {
         ex.getErrorCode(),
         id,
         ex.getMessage(),
+        null,
+        null,
+        getPath(request));
+  }
+ 
+  public static ErrorResponse getErrorResponse(UUID id, Kd2OblectRelatedException ex, WebRequest request) {
+    return new ErrorResponse(
+        LocalDateTime.now(),
+        ex.getErrorCode(),
+        id,
+        ex.getMessage(),
+        ex.getObject1Id(),
+        ex.getObject2Id(),
         getPath(request));
   }
 

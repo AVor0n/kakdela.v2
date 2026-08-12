@@ -16,5 +16,7 @@ public class ErrorResponse {
   private final ErrorCode internalErrorCode;
   private final UUID errorId;
   private final String message;
+  private final UUID object1id;
+  private final UUID object2id;
   private final String path;
 }
