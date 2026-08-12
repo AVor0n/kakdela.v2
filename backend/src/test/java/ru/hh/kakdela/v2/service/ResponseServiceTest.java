@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
@@ -21,6 +20,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
@@ -132,7 +132,7 @@ class ResponseServiceTest {
   // ----------------------- getById tests -----------------------
   @Test
   void getById_normalInput_returnsCorrectDto() {
-    when(responseDao.findByIdWithSurvey(responseId)).thenReturn(Optional.ofNullable(testResponse));
+    when(responseDao.findById(responseId)).thenReturn(Optional.ofNullable(testResponse));
     when(jwtService.extractResponseId(testToken)).thenReturn(responseId);
 
     assertEquals(
@@ -143,7 +143,7 @@ class ResponseServiceTest {
 
   @Test
   void getById_responseNotFound_throwsException() {
-    when(responseDao.findByIdWithSurvey(responseId)).thenReturn(Optional.empty());
+    when(responseDao.findById(responseId)).thenReturn(Optional.empty());
 
     ResponseStatusException exception = assertThrows(
         ResponseStatusException.class,
@@ -155,7 +155,7 @@ class ResponseServiceTest {
   @Test
   void getById_accountAndTokenIsNull_throwsException() {
     Response responseWithNullAccount = testResponseWithNullAccount;
-    when(responseDao.findByIdWithSurvey(responseWithNullAccount.getId()))
+    when(responseDao.findById(responseWithNullAccount.getId()))
         .thenReturn(Optional.of(responseWithNullAccount));
 
     ResponseStatusException exception = assertThrows(
@@ -167,19 +167,19 @@ class ResponseServiceTest {
   }
 
   @Test
-  void getById_wrongAccount_throwsException() {
-    when(responseDao.findByIdWithSurvey(responseId)).thenReturn(Optional.ofNullable(testResponse));
+  void getById_ResponseCompletedWrongAccount_throwsException() {
+    when(responseDao.findById(responseId)).thenReturn(Optional.ofNullable(testResponse));
 
-    ResponseStatusException exception = assertThrows(
-        ResponseStatusException.class,
-        () -> responseService.getById(responseId, UUID.randomUUID(), testToken)
-    );
-    assertEquals("Вы не являетесь автором ответа", exception.getReason());
+    UUID accountId = UUID.randomUUID();
+
+    responseService.getById(responseId, accountId, testToken);
+
+    Mockito.verify(permissionService).checkCanReadResponses(surveyId, accountId);
   }
 
   @Test
   void getById_wrongToken_throwsException() {
-    when(responseDao.findByIdWithSurvey(responseId)).thenReturn(Optional.ofNullable(testResponse));
+    when(responseDao.findById(responseId)).thenReturn(Optional.ofNullable(testResponse));
     when(jwtService.extractResponseId("wrong_token")).thenReturn(UUID.randomUUID());
 
     ResponseStatusException exception = assertThrows(
@@ -192,7 +192,7 @@ class ResponseServiceTest {
   @Test
   void getById_tryGetCompletedAnonResponse_throwsException() {
     Response responseWithNullAccount = testResponseWithNullAccount;
-    when(responseDao.findByIdWithSurvey(responseWithNullAccount.getId()))
+    when(responseDao.findById(responseWithNullAccount.getId()))
         .thenReturn(Optional.of(responseWithNullAccount));
     when(jwtService.extractResponseId(testToken))
         .thenReturn(responseWithNullAccount.getId());
@@ -325,7 +325,7 @@ class ResponseServiceTest {
         .isCompleted(false)
         .build();
 
-    when(responseDao.findByIdWithSurvey(responseId)).thenReturn(Optional.of(incompletedResponse));
+    when(responseDao.findById(responseId)).thenReturn(Optional.of(incompletedResponse));
     when(jwtService.extractResponseId(testToken)).thenReturn(responseId);
     when(responseDao.areAllMandatoryQuestionsAnswered(responseId)).thenReturn(true);
     doNothing().when(responseDao).update(any(Response.class));
@@ -348,7 +348,7 @@ class ResponseServiceTest {
         .isCompleted(false)
         .build();
 
-    when(responseDao.findByIdWithSurvey(responseId)).thenReturn(Optional.of(incompleteResponse));
+    when(responseDao.findById(responseId)).thenReturn(Optional.of(incompleteResponse));
     when(jwtService.extractResponseId(testToken)).thenReturn(responseId);
     when(responseDao.areAllMandatoryQuestionsAnswered(responseId)).thenReturn(false);
 
@@ -363,7 +363,7 @@ class ResponseServiceTest {
 
   @Test
   void complete_alreadyCompleted_throwsException() {
-    when(responseDao.findByIdWithSurvey(responseId)).thenReturn(Optional.of(testResponse));
+    when(responseDao.findById(responseId)).thenReturn(Optional.of(testResponse));
     when(jwtService.extractResponseId(testToken)).thenReturn(responseId);
     when(responseDao.areAllMandatoryQuestionsAnswered(responseId)).thenReturn(true);
 
