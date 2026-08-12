@@ -14,17 +14,21 @@ import jakarta.persistence.UniqueConstraint;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import ru.hh.kakdela.v2.model.Response;
 import ru.hh.kakdela.v2.model.SurveyPage;
 
-@Data
-@Builder
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
+@Builder
+@Getter
+@Setter
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Entity
 @Table(
     name = "condition",
@@ -37,6 +41,7 @@ public class Condition {
 
   @Id
   @Column(name = "id", updatable = false, nullable = false)
+  @EqualsAndHashCode.Include
   private UUID id;
 
   @ManyToOne(fetch = FetchType.LAZY)
