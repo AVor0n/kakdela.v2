@@ -140,7 +140,8 @@ public class ConditionService {
   public ConditionResponseDto update(UUID conditionId, ConditionRequestDto dto, UUID accountId) {
     log.info("Начато изменение условия: id={}", conditionId);
 
-    Condition condition = getEntityById(conditionId);
+    Condition condition =
+        getEntityWithParentPageWithAllQuestionsAndNeighbourConditionsById(conditionId);
 
     permissionService.checkCanEdit(
         getParentSurveyId(conditionId), accountId);
@@ -160,7 +161,7 @@ public class ConditionService {
     }
 
     if (dto.getIsActive()) {
-      conditionConflictService.validatePageConditions(condition.getSurveyPage().getId());
+      conditionConflictService.validatePageConditions(condition.getSurveyPage());
     }
 
     condition.setNextPage(nextPage);
@@ -193,6 +194,12 @@ public class ConditionService {
 
   Condition getFullyInitializedEntityById(UUID id) {
     return conditionDao.findByIdWithWholeTree(id)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Условие не найдено: id=" + id));
+  }
+
+  Condition getEntityWithParentPageWithAllQuestionsAndNeighbourConditionsById(UUID id) {
+    return conditionDao.findByIdWithParentPageWithAllQuestionsAndNeighbourConditions(id)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Условие не найдено: id=" + id));
   }

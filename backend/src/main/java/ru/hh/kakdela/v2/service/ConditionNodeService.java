@@ -48,7 +48,9 @@ public class ConditionNodeService {
   ) {
     log.info("Начато добавление вершины к дереву условия: conditionId={}", conditionId);
 
-    Condition condition = conditionService.getFullyInitializedEntityById(conditionId);
+    Condition condition =
+        conditionService.getEntityWithParentPageWithAllQuestionsAndNeighbourConditionsById(
+            conditionId);
 
     permissionService.checkCanEdit(
         conditionService.getParentSurveyId(conditionId), accountId);
@@ -91,15 +93,14 @@ public class ConditionNodeService {
 
     checkConditionTreeHeight(condition);
 
+    if (condition.getIsActive()) {
+      conditionConflictService.validatePageConditions(condition.getSurveyPage());
+    }
+
     if (node.getParentNode() == null) {
       conditionDao.update(condition);
     } else {
       conditionNodeDao.save(node);
-    }
-
-    if (condition.getIsActive()) {
-      conditionConflictService.validatePageConditions(
-          condition.getSurveyPage().getId());
     }
 
     return ConditionMapper.conditionNodeToDto(node);
@@ -113,7 +114,8 @@ public class ConditionNodeService {
   ) {
     log.info("Начато изменение вершины дерева условия: id={}", nodeId);
 
-    ConditionNode node = getEntityById(nodeId);
+    ConditionNode node =
+        getEntityWithParentConditionAndParentPageWithAllQuestionsAndNeighbourConditionsById(nodeId);
 
     permissionService.checkCanEdit(
         conditionNodeDao.findParentSurveyIdById(nodeId), accountId);
@@ -125,12 +127,11 @@ public class ConditionNodeService {
 
     node.setOperator(dto.getOperator());
 
-    conditionNodeDao.update(node);
-
     if (node.getCondition().getIsActive()) {
-      conditionConflictService.validatePageConditions(
-          node.getCondition().getSurveyPage().getId());
+      conditionConflictService.validatePageConditions(node.getCondition().getSurveyPage());
     }
+
+    conditionNodeDao.update(node);
 
     return ConditionMapper.conditionNodeToDto(node);
   }
@@ -143,7 +144,9 @@ public class ConditionNodeService {
   ) {
     log.info("Начато добавление листа к дереву условия: conditionId={}", conditionId);
 
-    Condition condition = conditionService.getFullyInitializedEntityById(conditionId);
+    Condition condition =
+        conditionService.getEntityWithParentPageWithAllQuestionsAndNeighbourConditionsById(
+            conditionId);
 
     permissionService.checkCanEdit(
         conditionService.getParentSurveyId(conditionId), accountId);
@@ -226,16 +229,15 @@ public class ConditionNodeService {
 
     node.setAtom(atom);
 
+    if (condition.getIsActive()) {
+      conditionConflictService.validatePageConditions(condition.getSurveyPage());
+    }
+
     if (parentNode == null) {
       condition.setRoot(node);
       conditionDao.update(condition);
     } else {
       conditionNodeDao.save(node);
-    }
-
-    if (condition.getIsActive()) {
-      conditionConflictService.validatePageConditions(
-          condition.getSurveyPage().getId());
     }
 
     return ConditionMapper.conditionNodeToDto(node);
@@ -249,7 +251,8 @@ public class ConditionNodeService {
   ) {
     log.info("Начато изменение листа дерева условия: id={}", nodeId);
 
-    ConditionNode node = getEntityById(nodeId);
+    ConditionNode node =
+        getEntityWithParentConditionAndParentPageWithAllQuestionsAndNeighbourConditionsById(nodeId);
 
     permissionService.checkCanEdit(
         conditionNodeDao.findParentSurveyIdById(nodeId), accountId);
@@ -288,12 +291,11 @@ public class ConditionNodeService {
     node.getAtom().setRequiredAnswerOption(requiredAnswerOption);
     node.getAtom().setOperator(dto.getOperator());
 
-    conditionNodeDao.update(node);
-
     if (node.getCondition().getIsActive()) {
-      conditionConflictService.validatePageConditions(
-          node.getCondition().getSurveyPage().getId());
+      conditionConflictService.validatePageConditions(node.getCondition().getSurveyPage());
     }
+
+    conditionNodeDao.update(node);
 
     return ConditionMapper.conditionNodeToDto(node);
   }
@@ -302,7 +304,8 @@ public class ConditionNodeService {
   public void delete(UUID nodeId, UUID accountId) {
     log.info("Начато удаление вершины дерева условия: id={}", nodeId);
 
-    ConditionNode node = getEntityWithParentNodeAndParentConditionById(nodeId);
+    ConditionNode node =
+        getEntityWithParentConditionAndParentPageWithAllQuestionsAndNeighbourConditionsById(nodeId);
 
     permissionService.checkCanEdit(
         conditionNodeDao.findParentSurveyIdById(nodeId), accountId);
@@ -320,12 +323,11 @@ public class ConditionNodeService {
       nodeToDelete.getCondition().setRoot(null);
     }
 
-    conditionNodeDao.delete(nodeToDelete);
-
     if (node.getCondition().getIsActive()) {
-      conditionConflictService.validatePageConditions(
-          node.getCondition().getSurveyPage().getId());
+      conditionConflictService.validatePageConditions(node.getCondition().getSurveyPage());
     }
+
+    conditionNodeDao.delete(nodeToDelete);
   }
 
   // Вспомогательные методы
@@ -392,14 +394,10 @@ public class ConditionNodeService {
     }
   }
 
-  ConditionNode getEntityById(UUID id) {
-    return conditionNodeDao.findById(id)
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Вершина условия не найдена: id=" + id));
-  }
-
-  ConditionNode getEntityWithParentNodeAndParentConditionById(UUID id) {
-    return conditionNodeDao.findByIdWithParentAndGrandparentNodeAndParentCondition(id)
+  ConditionNode
+      getEntityWithParentConditionAndParentPageWithAllQuestionsAndNeighbourConditionsById(UUID id) {
+    return conditionNodeDao
+        .findByIdWithParentConditionAndParentPageWithAllQuestionsAndNeighbourConditions(id)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Вершина условия не найдена: id=" + id));
   }
