@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
@@ -167,14 +168,14 @@ class ResponseServiceTest {
   }
 
   @Test
-  void getById_wrongAccount_throwsException() {
+  void getById_ResponseCompletedWrongAccount_throwsException() {
     when(responseDao.findById(responseId)).thenReturn(Optional.ofNullable(testResponse));
 
-    ResponseStatusException exception = assertThrows(
-        ResponseStatusException.class,
-        () -> responseService.getById(responseId, UUID.randomUUID(), testToken)
-    );
-    assertEquals("Вы не являетесь автором ответа", exception.getReason());
+    UUID accountId = UUID.randomUUID();
+
+    responseService.getById(responseId, accountId, testToken);
+
+    Mockito.verify(permissionService).checkCanReadResponses(surveyId, accountId);
   }
 
   @Test
