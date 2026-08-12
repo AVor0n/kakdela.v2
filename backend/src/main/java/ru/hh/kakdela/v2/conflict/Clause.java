@@ -2,9 +2,9 @@ package ru.hh.kakdela.v2.conflict;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.Getter;
@@ -21,7 +21,15 @@ public class Clause {
     return new Clause(Set.of(literals));
   }
 
-  public static Optional<Clause> merge(Clause left, Clause right) {
+  public static Clause empty() {
+    return new Clause(Collections.emptySet());
+  }
+
+  public boolean isEmpty() {
+    return literals.isEmpty();
+  }
+
+  public static Clause merge(Clause left, Clause right) {
     Set<Literal> merged = new HashSet<>();
     merged.addAll(left.literals);
     merged.addAll(right.literals);
@@ -29,10 +37,10 @@ public class Clause {
     Clause result = new Clause(merged);
 
     if (result.hasContradiction()) {
-      return Optional.empty();
+      return Clause.empty();
     }
 
-    return Optional.of(result);
+    return result;
   }
 
   public boolean hasContradiction() {
