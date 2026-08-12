@@ -38,6 +38,8 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
         ErrorCode.BAD_CREDENTIALS,
         id,
         authException.getMessage(),
+        null,
+        null,
         request.getRequestURI());
 
     new ObjectMapper().writeValue(

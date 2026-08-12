@@ -39,6 +39,8 @@ public class JwtAccessDeniedHandler implements AccessDeniedHandler {
         ErrorCode.ACCESS_DENIED,
         id,
         "Доступ запрещён",
+        null,
+        null,
         request.getRequestURI());
 
     new ObjectMapper().writeValue(

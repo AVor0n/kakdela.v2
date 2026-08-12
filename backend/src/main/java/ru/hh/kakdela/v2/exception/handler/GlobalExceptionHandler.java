@@ -20,17 +20,27 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 import ru.hh.kakdela.v2.dto.error.ErrorResponse;
 import ru.hh.kakdela.v2.exception.ErrorCode;
 import ru.hh.kakdela.v2.exception.Kd2Exception;
+import ru.hh.kakdela.v2.exception.Kd2OblectRelatedException;
 import ru.hh.kakdela.v2.exception.ResetCodeException;
-import ru.hh.kakdela.v2.exception.response.NotAllMandatoryQuestionsAnsweredException;
 import ru.hh.kakdela.v2.mapper.ErrorMapper;
 
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+  @ExceptionHandler(Kd2OblectRelatedException.class)
+  public ResponseEntity<ErrorResponse> handleKd2OblectRelatedException(
+      Kd2OblectRelatedException ex, WebRequest request
+  ) {
+    UUID id = UUID.randomUUID();
+    return ResponseEntity
+        .status(ex.getHttpStatus())
+        .body(ErrorMapper.getErrorResponse(id, ex, request));
+  }
+
   @ExceptionHandler(Kd2Exception.class)
   public ResponseEntity<ErrorResponse> handleKd2Exception(
-      NotAllMandatoryQuestionsAnsweredException ex, WebRequest request
+      Kd2Exception ex, WebRequest request
   ) {
     UUID id = UUID.randomUUID();
     return ResponseEntity
