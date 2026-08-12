@@ -38,6 +38,7 @@ public class ConditionNodeService {
   private final AnswerOptionDao answerOptionDao;
   private final ConditionService conditionService;
   private final PermissionService permissionService;
+  private final ConditionConflictService conditionConflictService;
 
   @Transactional
   public ConditionNodeResponseDto addNode(
@@ -96,6 +97,9 @@ public class ConditionNodeService {
       conditionNodeDao.save(node);
     }
 
+    conditionConflictService.validatePageConditions(
+    condition.getSurveyPage().getId());
+
     return ConditionMapper.conditionNodeToDto(node);
   }
 
@@ -120,6 +124,9 @@ public class ConditionNodeService {
     node.setOperator(dto.getOperator());
 
     conditionNodeDao.update(node);
+
+    conditionConflictService.validatePageConditions(
+    node.getCondition().getSurveyPage().getId());
 
     return ConditionMapper.conditionNodeToDto(node);
   }
@@ -222,6 +229,9 @@ public class ConditionNodeService {
       conditionNodeDao.save(node);
     }
 
+    conditionConflictService.validatePageConditions(
+    condition.getSurveyPage().getId());
+
     return ConditionMapper.conditionNodeToDto(node);
   }
 
@@ -274,6 +284,9 @@ public class ConditionNodeService {
 
     conditionNodeDao.update(node);
 
+    conditionConflictService.validatePageConditions(
+    node.getCondition().getSurveyPage().getId());
+
     return ConditionMapper.conditionNodeToDto(node);
   }
 
@@ -300,6 +313,9 @@ public class ConditionNodeService {
     }
 
     conditionNodeDao.delete(nodeToDelete);
+
+    conditionConflictService.validatePageConditions(
+    node.getCondition().getSurveyPage().getId());
   }
 
   // Вспомогательные методы
