@@ -97,8 +97,10 @@ public class ConditionNodeService {
       conditionNodeDao.save(node);
     }
 
-    conditionConflictService.validatePageConditions(
-        condition.getSurveyPage().getId());
+    if (condition.getIsActive()) {
+      conditionConflictService.validatePageConditions(
+          condition.getSurveyPage().getId());
+    }
 
     return ConditionMapper.conditionNodeToDto(node);
   }
@@ -125,8 +127,10 @@ public class ConditionNodeService {
 
     conditionNodeDao.update(node);
 
-    conditionConflictService.validatePageConditions(
-        node.getCondition().getSurveyPage().getId());
+    if (node.getCondition().getIsActive()) {
+      conditionConflictService.validatePageConditions(
+          node.getCondition().getSurveyPage().getId());
+    }
 
     return ConditionMapper.conditionNodeToDto(node);
   }
@@ -229,8 +233,10 @@ public class ConditionNodeService {
       conditionNodeDao.save(node);
     }
 
-    conditionConflictService.validatePageConditions(
-        condition.getSurveyPage().getId());
+    if (condition.getIsActive()) {
+      conditionConflictService.validatePageConditions(
+          condition.getSurveyPage().getId());
+    }
 
     return ConditionMapper.conditionNodeToDto(node);
   }
@@ -284,8 +290,10 @@ public class ConditionNodeService {
 
     conditionNodeDao.update(node);
 
-    conditionConflictService.validatePageConditions(
-        node.getCondition().getSurveyPage().getId());
+    if (node.getCondition().getIsActive()) {
+      conditionConflictService.validatePageConditions(
+          node.getCondition().getSurveyPage().getId());
+    }
 
     return ConditionMapper.conditionNodeToDto(node);
   }
@@ -314,8 +322,10 @@ public class ConditionNodeService {
 
     conditionNodeDao.delete(nodeToDelete);
 
-    conditionConflictService.validatePageConditions(
-        node.getCondition().getSurveyPage().getId());
+    if (node.getCondition().getIsActive()) {
+      conditionConflictService.validatePageConditions(
+          node.getCondition().getSurveyPage().getId());
+    }
   }
 
   // Вспомогательные методы

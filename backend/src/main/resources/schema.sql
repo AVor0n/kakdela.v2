@@ -147,6 +147,7 @@ CREATE TABLE condition (
     survey_page_id uuid REFERENCES survey_page (id) ON DELETE CASCADE NOT NULL,
     next_page_id uuid REFERENCES survey_page (id) ON DELETE CASCADE NOT NULL,
     root_node_id uuid UNIQUE,
+    is_active bool DEFAULT FALSE NOT NULL,
     CONSTRAINT uk_condition_page_next_page UNIQUE (survey_page_id, next_page_id)
 );
 

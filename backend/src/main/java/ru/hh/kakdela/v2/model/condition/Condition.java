@@ -58,6 +58,10 @@ public class Condition {
   @JoinColumn(name = "root_node_id", unique = true)
   private ConditionNode root;
 
+  @Column(name = "is_active", nullable = false)
+  @Builder.Default
+  private Boolean isActive = false;
+
   public boolean evaluate(Response response) {
     return root.evaluate(response);
   }

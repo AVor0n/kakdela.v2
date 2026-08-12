@@ -15,4 +15,6 @@ public class ConditionRequestDto {
 
   @NotNull
   private UUID nextPageId;
+  @NotNull
+  private Boolean isActive = false;
 }
