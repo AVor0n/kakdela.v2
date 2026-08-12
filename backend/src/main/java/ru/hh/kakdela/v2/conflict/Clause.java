@@ -2,7 +2,6 @@ package ru.hh.kakdela.v2.conflict;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -14,16 +13,12 @@ import lombok.Getter;
 public class Clause {
   private final Set<Literal> literals;
 
-  private Clause(Set<Literal> literals) {
-    this.literals = Collections.unmodifiableSet(new HashSet<>(literals));
+  private Clause(Collection<Literal> literals) {
+    this.literals = Set.copyOf(literals);
   }
 
   public static Clause of(Literal... literals) {
     return new Clause(Set.of(literals));
-  }
-
-  public static Clause of(Collection<Literal> literals) {
-    return new Clause(Set.copyOf(literals));
   }
 
   public static Optional<Clause> merge(Clause left, Clause right) {
@@ -50,6 +45,7 @@ public class Clause {
         }
       }
     }
+
     return false;
   }
 

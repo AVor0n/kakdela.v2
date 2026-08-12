@@ -12,7 +12,6 @@ import ru.hh.kakdela.v2.dao.ConditionDao;
 import ru.hh.kakdela.v2.exception.ConditionConflictException;
 import ru.hh.kakdela.v2.model.condition.Condition;
 
-
 @Slf4j
 @Service
 @RequiredArgsConstructor

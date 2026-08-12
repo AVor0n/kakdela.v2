@@ -2,12 +2,11 @@ package ru.hh.kakdela.v2.conflict;
 
 import java.util.Objects;
 import java.util.UUID;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import ru.hh.kakdela.v2.model.Question;
+import ru.hh.kakdela.v2.model.condition.ConditionAtom;
 
 @Getter
-@EqualsAndHashCode
 public class Literal {
   private final UUID questionId;
   private final Question.QuestionType questionType;
@@ -27,36 +26,26 @@ public class Literal {
     this.booleanValue = booleanValue;
   }
 
-  public static Literal equals(UUID questionId, Question.QuestionType type, UUID answerOptionId) {
-    return new Literal(questionId, type, false, answerOptionId, null);
+  public static Literal ofPositive(ConditionAtom atom) {
+    return new Literal(
+        atom.getQuestion().getId(),
+        atom.getQuestion().getType(),
+        true,
+        atom.getRequiredAnswerOption() != null
+            ? atom.getRequiredAnswerOption().getId()
+            : null,
+        atom.getRequiredBooleanValue());
   }
 
-  public static Literal equals(UUID questionId, Question.QuestionType type, Boolean value) {
-    return new Literal(questionId, type, false, null, value);
-  }
-
-  public static Literal notEquals(UUID questionId, Question.QuestionType type, UUID answerOptionId) {
-    return new Literal(questionId, type, true, answerOptionId, null);
-  }
-
-  public static Literal notEquals(UUID questionId, Question.QuestionType type, Boolean value) {
-    return new Literal(questionId, type, true, null, value);
-  }
-
-
-  public boolean isAnswerOptionType() {
-    return answerOptionId != null;
-  }
-
-  public boolean isBooleanType() {
-    return booleanValue != null;
-  }
-
-  private boolean canHaveMultipleValues() {
-    return switch (questionType) {
-      case MULTIPLE_CHOICE, SHORT_TEXT, LONG_TEXT, DATE, TIME -> true;
-      case SINGLE_CHOICE, YES_NO -> false;
-    };
+  public static Literal ofNegative(ConditionAtom atom) {
+    return new Literal(
+        atom.getQuestion().getId(),
+        atom.getQuestion().getType(),
+        false,
+        atom.getRequiredAnswerOption() != null
+            ? atom.getRequiredAnswerOption().getId()
+            : null,
+        atom.getRequiredBooleanValue());
   }
 
   public boolean contradicts(Literal other) {
@@ -64,51 +53,41 @@ public class Literal {
       return false;
     }
 
-    if (this.questionType != other.questionType) {
-      return false;
-    }
-
-    if (this.isAnswerOptionType() != other.isAnswerOptionType()) {
-      return false;
-    }
-
-    if (this.questionType == Question.QuestionType.MULTIPLE_CHOICE) {
+    if (this.questionType.isMultipleChoiceAllowed) {
       return contradictsForMultipleChoice(other);
     }
 
-    if (this.canHaveMultipleValues()) {
-      return false;
-    }
-
-    return contradictsForSingleValue(other);
+    return contradictsForSingleChoice(other);
   }
 
   private boolean contradictsForMultipleChoice(Literal other) {
-    if (!this.isNegated && !other.isNegated) {
+    if (this.isNegated == other.isNegated) {
       return false;
     }
 
-    if (this.isNegated && other.isNegated) {
-      return false;
-    }
     return areValuesEqual(other);
   }
 
-  private boolean contradictsForSingleValue(Literal other) {
+  private boolean contradictsForSingleChoice(Literal other) {
     if (!areValuesEqual(other)) {
       return true;
     }
+
     return this.isNegated != other.isNegated;
   }
 
   private boolean areValuesEqual(Literal other) {
-    if (this.isAnswerOptionType() && other.isAnswerOptionType()) {
-      return Objects.equals(this.answerOptionId, other.answerOptionId);
+    if (this.questionType.isAnswerOptionsAllowed
+        && this.answerOptionId != other.answerOptionId) {
+      return false;
     }
-    if (this.isBooleanType() && other.isBooleanType()) {
-      return Objects.equals(this.booleanValue, other.booleanValue);
+
+    if (this.questionType.isBooleanAllowed
+        && this.booleanValue != other.booleanValue) {
+      return false;
     }
-    return false;
+
+    return true;
   }
 
   @Override
