@@ -28,7 +28,10 @@ public class ErrorMapper {
         getPath(request));
   }
 
-  public static ErrorResponse getErrorResponse(UUID id, Kd2Exception ex, WebRequest request) {
+  public static ErrorResponse getErrorResponse(
+      UUID id,
+      Kd2Exception ex,
+      WebRequest request) {
     return new ErrorResponse(
         LocalDateTime.now(),
         ex.getErrorCode(),
@@ -38,8 +41,11 @@ public class ErrorMapper {
         null,
         getPath(request));
   }
- 
-  public static ErrorResponse getErrorResponse(UUID id, Kd2OblectRelatedException ex, WebRequest request) {
+
+  public static ErrorResponse getErrorResponse(
+      UUID id,
+      Kd2OblectRelatedException ex,
+      WebRequest request) {
     return new ErrorResponse(
         LocalDateTime.now(),
         ex.getErrorCode(),
