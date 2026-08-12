@@ -10,8 +10,8 @@ public class ConditionConflictException extends RuntimeException {
   private final UUID condition2Id;
 
   public ConditionConflictException(UUID conditionId1, UUID conditionId2) {
-        super("CONDITION_CONFLICT");
-        this.condition1Id = conditionId1;
-        this.condition2Id = conditionId2;
-    }
+    super("CONDITION_CONFLICT");
+    this.condition1Id = conditionId1;
+    this.condition2Id = conditionId2;
+  }
 }

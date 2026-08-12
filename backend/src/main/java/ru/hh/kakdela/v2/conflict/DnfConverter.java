@@ -1,14 +1,9 @@
 package ru.hh.kakdela.v2.conflict;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
-import ru.hh.kakdela.v2.model.Question;
 import ru.hh.kakdela.v2.model.condition.Condition;
-import ru.hh.kakdela.v2.model.condition.ConditionAtom;
 import ru.hh.kakdela.v2.model.condition.ConditionNode;
 import ru.hh.kakdela.v2.model.condition.ConditionNode.Operator;
 
@@ -24,61 +19,48 @@ public class DnfConverter {
       return DnfExpression.empty();
     }
 
-    DnfExpression result = visitNode(condition.getRoot(), new HashSet<>());
-    DnfExpression cleaned = result.removeContradictions();
+    DnfExpression result = visitNode(condition.getRoot());
 
-    return cleaned;
+    return result.removeContradictions();
   }
 
-  private static DnfExpression visitNode(ConditionNode node, Set<UUID> visited) {
+  private static DnfExpression visitNode(ConditionNode node) {
     Objects.requireNonNull(node, "node не может быть null");
-    Objects.requireNonNull(visited, "visited не может быть null");
 
-    if (visited.contains(node.getId())) {
-      throw new IllegalStateException("Цикл в дереве условий: " + node.getId());
+    Operator operator = node.getOperator();
+
+    if (operator == Operator.ATOM) {
+      Literal literal = Literal.ofPositive(node.getAtom());
+      return DnfExpression.of(Clause.of(literal));
     }
 
-    visited.add(node.getId());
-
-    try {
-      Operator operator = node.getOperator();
-
-      if (operator == Operator.ATOM) {
-        Literal literal = createLiteralFromNode(node, false);
-        return DnfExpression.of(Clause.of(literal));
-      }
-
-      if (operator == Operator.NOT_ATOM) {
-        Literal literal = createLiteralFromNode(node, true);
-        return DnfExpression.of(Clause.of(literal));
-      }
-
-      if (operator == Operator.AND) {
-        return mergeAnd(node.getChildNodes(), visited);
-      }
-
-      if (operator == Operator.OR) {
-        return mergeOr(node.getChildNodes(), visited);
-      }
-
-      throw new IllegalStateException("Неизвестный оператор: " + operator);
-
-    } finally {
-      visited.remove(node.getId());
+    if (operator == Operator.NOT_ATOM) {
+      Literal literal = Literal.ofNegative(node.getAtom());
+      return DnfExpression.of(Clause.of(literal));
     }
+
+    if (operator == Operator.AND) {
+      return mergeAnd(node.getChildNodes());
+    }
+
+    if (operator == Operator.OR) {
+      return mergeOr(node.getChildNodes());
+    }
+
+    throw new IllegalStateException("Неизвестный оператор: " + operator);
   }
 
-  private static DnfExpression mergeAnd(List<ConditionNode> children, Set<UUID> visited) {
+  private static DnfExpression mergeAnd(List<ConditionNode> children) {
     if (children == null || children.isEmpty()) {
       return DnfExpression.empty();
     }
 
     List<DnfExpression> expressions = new ArrayList<>();
     for (ConditionNode child : children) {
-      expressions.add(visitNode(child, visited));
+      expressions.add(visitNode(child));
     }
 
-    DnfExpression result = expressions.get(0);
+    DnfExpression result = expressions.getFirst();
     for (int i = 1; i < expressions.size(); i++) {
       result = result.and(expressions.get(i));
     }
@@ -86,40 +68,16 @@ public class DnfConverter {
     return result;
   }
 
-  private static DnfExpression mergeOr(List<ConditionNode> children, Set<UUID> visited) {
+  private static DnfExpression mergeOr(List<ConditionNode> children) {
     if (children == null || children.isEmpty()) {
       return DnfExpression.empty();
     }
 
     DnfExpression result = DnfExpression.empty();
     for (ConditionNode child : children) {
-      result = result.or(visitNode(child, visited));
+      result = result.or(visitNode(child));
     }
+
     return result;
-  }
-
-  private static Literal createLiteralFromNode(ConditionNode node, boolean isNegated) {
-    ConditionAtom atom = node.getAtom();
-    if (atom == null) {
-      throw new IllegalStateException("ATOM узел не содержит атома: " + node.getId());
-    }
-
-    UUID questionId = atom.getQuestion().getId();
-    Question.QuestionType questionType = atom.getQuestion().getType();
-
-    if (atom.getRequiredAnswerOption() != null) {
-      UUID optionId = atom.getRequiredAnswerOption().getId();
-      return isNegated
-          ? Literal.notEquals(questionId, questionType, optionId)
-          : Literal.equals(questionId, questionType, optionId);
-    }
-
-    if (atom.getRequiredBooleanValue() != null) {
-      Boolean value = atom.getRequiredBooleanValue();
-      return isNegated
-          ? Literal.notEquals(questionId, questionType, value)
-          : Literal.equals(questionId, questionType, value);
-    }
-    throw new IllegalStateException("Атом не содержит значения: " + node.getId());
   }
 }

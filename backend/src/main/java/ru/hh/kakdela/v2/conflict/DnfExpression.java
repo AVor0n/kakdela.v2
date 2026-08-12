@@ -2,7 +2,6 @@ package ru.hh.kakdela.v2.conflict;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.Getter;
@@ -12,7 +11,7 @@ public class DnfExpression {
   private final List<Clause> clauses;
 
   private DnfExpression(List<Clause> clauses) {
-    this.clauses = Collections.unmodifiableList(new ArrayList<>(clauses));
+    this.clauses = List.copyOf(clauses);
   }
 
   public static DnfExpression of(Clause... clauses) {
@@ -24,7 +23,7 @@ public class DnfExpression {
   }
 
   public static DnfExpression empty() {
-    return new DnfExpression(List.of());
+    return new DnfExpression(new ArrayList<>());
   }
 
   public boolean isEmpty() {
