@@ -1,7 +1,6 @@
 package ru.hh.kakdela.v2.conflict;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -20,11 +19,11 @@ public class Clause {
   }
 
   public static Clause of(Literal... literals) {
-    return new Clause(new HashSet<>(Arrays.asList(literals)));
+    return new Clause(Set.of(literals));
   }
 
   public static Clause of(Collection<Literal> literals) {
-    return new Clause(new HashSet<>(literals));
+    return new Clause(Set.copyOf(literals));
   }
 
   public static Optional<Clause> merge(Clause left, Clause right) {
