@@ -1,5 +1,7 @@
+import { routes } from '@/app/routes';
 import { Button, Flex, Input, PasswordInput } from '@hh.ru/magritte-ui';
 import type { ComponentProps } from 'react';
+import { Link } from 'react-router-dom';
 
 type LoginFormValues = {
     login: string;
@@ -52,7 +54,7 @@ export function LoginForm({
                 />
             </div>
 
-            <div style={{ marginTop: 12 }}>
+            <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <PasswordInput
                     size='large'
                     placeholder='Пароль'
@@ -62,6 +64,9 @@ export function LoginForm({
                     onChange={onPasswordChange}
                     onBlur={onPasswordBlur}
                 />
+                <Link to={routes.resetPassword()} style={{ color: '#433dff' }}>
+                    Забыли пароль?
+                </Link>
             </div>
 
             {formError && (

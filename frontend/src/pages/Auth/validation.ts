@@ -1,8 +1,10 @@
 const LOGIN_MAX_LENGTH = 32;
 const EMAIL_MAX_LENGTH = 254;
 const PASSWORD_MIN_LENGTH = 8;
+const RESET_CODE_LENGTH = 6;
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const RESET_CODE_REGEX = /^\d{6}$/;
 const PASSWORD_LETTER_REGEX = /[a-zA-Zа-яА-Я]/;
 const PASSWORD_DIGIT_REGEX = /[0-9]/;
 const PASSWORD_SPECIAL_CHARACTER_REGEX = /[!@#&()–[{}\]:;',?/*~$^+=<>]/;
@@ -68,6 +70,18 @@ export function validatePassword(value: string): string {
 export function validateLoginPassword(value: string): string {
     if (!value) {
         return 'Введите пароль';
+    }
+
+    return '';
+}
+
+export function validateResetCode(value: string): string {
+    if (!value) {
+        return 'Введите код из письма';
+    }
+
+    if (!RESET_CODE_REGEX.test(value)) {
+        return `Код должен состоять из ${RESET_CODE_LENGTH} цифр`;
     }
 
     return '';

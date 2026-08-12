@@ -18,7 +18,13 @@ function getRefreshPromise(): Promise<void> {
     return refreshPromise;
 }
 
-const ANONYMOUS_ALLOWED_PATTERNS = [routePatterns.root, routePatterns.surveysView];
+const ANONYMOUS_ALLOWED_PATTERNS = [
+    routePatterns.root,
+    routePatterns.surveysView,
+    routePatterns.authLogin,
+    routePatterns.authRegister,
+    routePatterns.resetPassword,
+];
 
 apiClient.interceptors.response.use(
     (response) => response,

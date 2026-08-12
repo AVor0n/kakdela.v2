@@ -13,12 +13,14 @@ import { Settings } from '@/pages/Survey/SurveyModify/components/Settings/Settin
 import { NotFound } from '@/pages/Errors/NotFound';
 import { Answers } from '@/pages/Survey/SurveyModify/components/Answers/Answers';
 import { AccountBootstrap } from '@/features/auth/AccountBootstrap';
+import { ForgotPassword } from '@/pages/Auth/ForgotPassword/ForgotPassword';
 
 export function AppRouter() {
     return (
         <BrowserRouter>
             <Routes>
                 <Route path={routePatterns.root} element={<App />} />
+                <Route path={routePatterns.resetPassword} element={<ForgotPassword />} />
                 <Route path={routePatterns.authCallback} element={<Navigate to={routes.root()} />} />
                 <Route path={routePatterns.auth}>
                     <Route path={routePatterns.authLogin} element={<Login />} />
