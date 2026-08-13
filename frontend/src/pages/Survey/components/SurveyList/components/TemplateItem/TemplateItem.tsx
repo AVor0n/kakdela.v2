@@ -15,9 +15,10 @@ import { routes } from '@/app/routes';
 import { removeTemplate } from '@/entities/Template/Template.slice';
 interface Props {
     template: TemplateListItem;
+    onClick: () => void;
 }
 
-export function TemplateItem({ template }: Props) {
+export function TemplateItem({ template, onClick }: Props) {
     const [isDeleteSurvey, setIsDeleteSurvey] = useState<boolean>();
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
@@ -54,7 +55,7 @@ export function TemplateItem({ template }: Props) {
     };
     return (
         <div className={style.container}>
-            <div className={style.details}>
+            <button className={style.details} onClick={onClick}>
                 <div className={style.detail}>
                     <Text typography='title-4-semibold' style='primary'>
                         {htmlToText(template.title)}
@@ -66,7 +67,7 @@ export function TemplateItem({ template }: Props) {
                     </div>
                     {template.description && <HTMLRender html={template.description} className={style.description} />}
                 </div>
-            </div>
+            </button>
             <div className={style.actions}>
                 <Button mode='secondary' type='button' onClick={createSurveyHandler}>
                     Создать опрос

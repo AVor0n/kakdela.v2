@@ -1,6 +1,6 @@
 import { deleteSurveyPage } from '@/api/surveyPages';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { deletePage } from '@/entities/Survey/Survey.slice';
+import { deletePage } from '@/entities/Pages/Pages.slice';
 import type { Page } from '@/shared/types/Survey.type';
 import { setErrorMessage } from '@/entities/Error/Error.slice';
 import type { DraggableAttributes, DraggableSyntheticListeners } from '@dnd-kit/core';

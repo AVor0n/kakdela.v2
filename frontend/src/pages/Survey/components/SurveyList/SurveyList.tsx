@@ -6,7 +6,7 @@ import { createSurvey, getMySurveys } from '@/api/survey';
 import { routes } from '@/app/routes';
 import { SurveyCreateCard } from '@/pages/Survey/components/SurveyList/SurveyCreateCard';
 import { SurveyItem } from '@/pages/Survey/components/SurveyList/components/SurveyItem/SurveyItem';
-import type { SurveyListItem } from '@/shared/types/Survey.type';
+import type { SurveyListItem, TemplateListItem } from '@/shared/types/Survey.type';
 import styles from './SurveyList.module.css';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { clearErrorMessage, setErrorMessage } from '@/entities/Error/Error.slice';
@@ -97,6 +97,10 @@ export function SurveyList() {
         navigate(survey.userRole === 'ANALYST' ? routes.surveyAnswers(survey.id) : routes.surveyQuestions(survey.id));
     };
 
+    const handleTemplateClick = (template: TemplateListItem) => {
+        navigate(routes.templateQuestion(template.id));
+    };
+
     return (
         <div className={styles.page}>
             <div className={styles.avatar}>
@@ -134,7 +138,13 @@ export function SurveyList() {
                     ) : (
                         <div className={classNames(styles.grid, styles.templates)}>
                             {templates.length !== 0 ? (
-                                templates.map((template) => <TemplateItem key={template.id} template={template} />)
+                                templates.map((template) => (
+                                    <TemplateItem
+                                        key={template.id}
+                                        template={template}
+                                        onClick={() => handleTemplateClick(template)}
+                                    />
+                                ))
                             ) : (
                                 <div className={styles.empty}>Нет ни одного шаблона</div>
                             )}

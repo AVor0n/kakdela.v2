@@ -2,7 +2,7 @@ import { SurveyDetail } from './components/SurveyDetail/SurveyDetail';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { Sidebar } from './components/Sidebar/Sidebar';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { reorderPages, setSurveyPages } from '@/entities/Survey/Survey.slice';
+import { reorderPages, setSurveyPages } from '@/entities/Pages/Pages.slice';
 import { clonePage } from '@/entities/Survey/Survey.utils';
 import { updateSurveyPage } from '@/api/surveyPages';
 import { setErrorMessage } from '@/entities/Error/Error.slice';
@@ -20,11 +20,22 @@ import { useMemo } from 'react';
 import style from './SurveyModify.module.css';
 import { SortablePage } from './components/SortablePage/SortablePage';
 import { ClosingPageEditor } from './components/ClosingPageEditor/ClosingPageEditor';
+import { useSearchParams } from 'react-router-dom';
+
+// interface DetailValues {
+//     title: string;
+//     description: string;
+//     isTemplate: boolean;
+// }
 
 export function SurveyModify() {
     const { selectedSurvey } = useAppSelector((state) => state.survey);
+    const { pages } = useAppSelector((state) => state.pages);
+    const { selectedTemplate } = useAppSelector((state) => state.template);
+    const [searchParams] = useSearchParams();
+    const isTemplate = searchParams.get('template') === 'true';
     const dispatch = useAppDispatch();
-    const pageIds = useMemo(() => selectedSurvey?.pages.map((page) => page.id) ?? [], [selectedSurvey]);
+    const pageIds = useMemo(() => pages.map((page) => page.id) ?? [], [selectedSurvey]);
     const sensors = useSensors(
         useSensor(PointerSensor),
         useSensor(KeyboardSensor, {
@@ -33,17 +44,15 @@ export function SurveyModify() {
     );
 
     const handlePageDragEnd = (event: DragEndEvent) => {
-        if (!selectedSurvey) return;
-
         const { active, over } = event;
         if (!over || active.id === over.id) return;
 
         const activePageId = String(active.id);
         const overPageId = String(over.id);
-        const overPage = selectedSurvey.pages.find((page) => page.id === overPageId);
+        const overPage = pages.find((page) => page.id === overPageId);
         if (!overPage) return;
 
-        const previousPages = selectedSurvey.pages.map(clonePage);
+        const previousPages = pages.map(clonePage);
 
         dispatch(reorderPages({ activePageId, overPageId }));
 
@@ -53,13 +62,10 @@ export function SurveyModify() {
         });
     };
 
-    if (!selectedSurvey) {
-        return <div>Загрузка...</div>;
-    }
     return (
         <div className={style.container}>
             <div className={style.content}>
-                <SurveyDetail survey={selectedSurvey} />
+                <SurveyDetail item={isTemplate ? selectedTemplate! : selectedSurvey!} />
                 <DndContext
                     sensors={sensors}
                     collisionDetection={closestCenter}
@@ -67,12 +73,15 @@ export function SurveyModify() {
                     onDragEnd={handlePageDragEnd}
                 >
                     <SortableContext items={pageIds} strategy={verticalListSortingStrategy}>
-                        {selectedSurvey.pages.map((page, index) => (
+                        {pages.map((page, index) => (
                             <SortablePage key={page.id} page={page} pageIndex={index} />
                         ))}
                     </SortableContext>
                 </DndContext>
-                <ClosingPageEditor surveyId={selectedSurvey.id} closingPage={selectedSurvey.closingPage} />
+                <ClosingPageEditor
+                    surveyId={isTemplate ? selectedTemplate!.id : selectedSurvey!.id}
+                    closingPage={isTemplate ? selectedTemplate!.closingPage : selectedSurvey!.closingPage}
+                />
             </div>
             <Sidebar />
         </div>

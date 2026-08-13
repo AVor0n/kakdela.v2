@@ -1,6 +1,6 @@
 import { Box, Button } from '@hh.ru/magritte-ui';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { addPage, addQuestion } from '@/entities/Survey/Survey.slice';
+import { addPage, addQuestion } from '@/entities/Pages/Pages.slice';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { createSurveyPage } from '@/api/surveyPages';
 import { createQuestion } from '@/api/question';
@@ -8,12 +8,14 @@ import { setErrorMessage } from '@/entities/Error/Error.slice';
 import style from './Sidebar.module.css';
 
 export function Sidebar() {
-    const { selectedSurvey, currentQuestionPageIndex } = useAppSelector((state) => state.survey);
+    const { selectedSurvey } = useAppSelector((state) => state.survey);
+    const { pages } = useAppSelector((state) => state.pages);
+    const { currentQuestionPageIndex } = useAppSelector((state) => state.pages);
     const dispatch = useAppDispatch();
 
     const addQuestionHandler = () => {
         if (!selectedSurvey) return;
-        if (selectedSurvey.pages.length === 0) {
+        if (pages.length === 0) {
             createSurveyPage(selectedSurvey.id, 1)
                 .then((data) => {
                     dispatch(addPage({ page: data }));
@@ -29,8 +31,8 @@ export function Sidebar() {
                     }
                 });
         } else {
-            const serialNumber = selectedSurvey.pages[currentQuestionPageIndex].questions.length + 1;
-            createQuestion(selectedSurvey.pages[currentQuestionPageIndex].id, {
+            const serialNumber = pages[currentQuestionPageIndex].questions.length + 1;
+            createQuestion(pages[currentQuestionPageIndex].id, {
                 text: 'Новый вопрос',
                 serialNumber: serialNumber,
                 type: 'SHORT_TEXT',
@@ -48,10 +50,8 @@ export function Sidebar() {
 
     const addPageHandler = () => {
         if (!selectedSurvey) return;
-        let serialNumber = selectedSurvey.pages[selectedSurvey.pages.length - 1]
-            ? selectedSurvey.pages[selectedSurvey.pages.length - 1].serialNumber + 1
-            : 1;
-        if (selectedSurvey.pages.length === 0) {
+        let serialNumber = pages[pages.length - 1] ? pages[pages.length - 1].serialNumber + 1 : 1;
+        if (pages.length === 0) {
             serialNumber = 1;
         }
         createSurveyPage(selectedSurvey.id, serialNumber)
@@ -60,7 +60,7 @@ export function Sidebar() {
                 return createQuestion(data.id, { text: 'Новый вопрос', serialNumber: 1, type: 'SHORT_TEXT' });
             })
             .then((question) => {
-                dispatch(addQuestion({ question, pageIndex: selectedSurvey.pages.length }));
+                dispatch(addQuestion({ question, pageIndex: pages.length }));
             })
             .catch((err) => {
                 if (err.response) {

@@ -1,4 +1,4 @@
-import type { Survey } from '@/shared/types/Survey.type';
+import type { Survey, Template } from '@/shared/types/Survey.type';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { setSelectedSurvey } from '@/entities/Survey/Survey.slice';
 import { useEffect, useState } from 'react';
@@ -9,18 +9,18 @@ import style from './SurveyDetail.module.css';
 import { EditorInput } from '@/shared/ui/EditorInput/EditorInput';
 
 interface Props {
-    survey: Survey;
+    item: Pick<Survey | Template, 'id' | 'title' | 'description'>;
 }
 
-export function SurveyDetail({ survey }: Props) {
-    const [title, setTitle] = useState<string>(survey.title);
-    const [description, setDescription] = useState<string>(survey.description ? survey.description : '');
+export function SurveyDetail({ item }: Props) {
+    const [title, setTitle] = useState<string>(item.title);
+    const [description, setDescription] = useState<string>(item.description ? item.description : '');
 
     const dispatch = useAppDispatch();
 
     const updateTitleHandler = () => {
-        if (title !== survey.title) {
-            updateSurvey(survey.id, { title })
+        if (title !== item.title) {
+            updateSurvey(item.id, { title })
                 .then((data) => {
                     dispatch(setSelectedSurvey({ survey: data }));
                 })
@@ -28,14 +28,14 @@ export function SurveyDetail({ survey }: Props) {
                     if (error.response) {
                         dispatch(setErrorMessage({ message: `Не удалось изменить название опроса` }));
                     }
-                    setTitle(survey.title);
+                    setTitle(item.title);
                 });
         }
     };
 
     const updateDescriptionHandler = () => {
-        if (description !== survey.description) {
-            updateSurvey(survey.id, { description })
+        if (description !== item.description) {
+            updateSurvey(item.id, { description })
                 .then((data) => {
                     dispatch(setSelectedSurvey({ survey: data }));
                 })
@@ -43,7 +43,7 @@ export function SurveyDetail({ survey }: Props) {
                     if (error.response) {
                         dispatch(setErrorMessage({ message: `Не удалось изменить описание опроса` }));
                     }
-                    setTitle(survey.description ? survey.description : '');
+                    setTitle(item.description ? item.description : '');
                 });
         }
     };
