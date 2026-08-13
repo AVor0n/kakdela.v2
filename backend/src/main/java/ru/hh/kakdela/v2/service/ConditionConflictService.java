@@ -9,7 +9,7 @@ import ru.hh.kakdela.v2.conflict.ClauseAnalyzer;
 import ru.hh.kakdela.v2.conflict.DnfConverter;
 import ru.hh.kakdela.v2.conflict.DnfExpression;
 import ru.hh.kakdela.v2.dao.SurveyPageDao;
-import ru.hh.kakdela.v2.exception.ConditionConflictException;
+import ru.hh.kakdela.v2.exception.condition.ConditionConflictException;
 import ru.hh.kakdela.v2.model.SurveyPage;
 import ru.hh.kakdela.v2.model.condition.Condition;
 
@@ -37,7 +37,7 @@ public class ConditionConflictService {
           UUID id1 = conditions.get(i).getId();
           UUID id2 = conditions.get(j).getId();
 
-          log.warn("Конфликт: {} - {}", id1, id2);
+          log.warn("Конфликт: {} — {}", id1, id2);
           throw new ConditionConflictException(id1, id2);
         }
       }
