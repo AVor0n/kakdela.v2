@@ -27,6 +27,7 @@ import org.springframework.web.server.ResponseStatusException;
 import ru.hh.kakdela.v2.dao.AccountDao;
 import ru.hh.kakdela.v2.dao.ResponseDao;
 import ru.hh.kakdela.v2.dao.SurveyDao;
+import ru.hh.kakdela.v2.dao.SurveyPageDao;
 import ru.hh.kakdela.v2.dto.response.ResponseResponseDto;
 import ru.hh.kakdela.v2.dto.response.ResponseWithTokenDto;
 import ru.hh.kakdela.v2.exception.ErrorCode;
@@ -36,6 +37,7 @@ import ru.hh.kakdela.v2.mapper.ResponseMapper;
 import ru.hh.kakdela.v2.model.Account;
 import ru.hh.kakdela.v2.model.Response;
 import ru.hh.kakdela.v2.model.Survey;
+import ru.hh.kakdela.v2.model.SurveyPage;
 import ru.hh.kakdela.v2.security.JwtService;
 
 @ExtendWith(MockitoExtension.class)
@@ -44,6 +46,8 @@ class ResponseServiceTest {
   private ResponseDao responseDao;
   @Mock
   private SurveyDao surveyDao;
+  @Mock
+  private SurveyPageDao surveyPageDao;
   @Mock
   private AccountDao accountDao;
   @Mock
@@ -58,9 +62,11 @@ class ResponseServiceTest {
   private static UUID authorAccountId;
   private static UUID respondentAccountId;
   private static UUID surveyId;
+  private static UUID page1Id;
   private static Account testAuthorAccount;
   private static Account testRespondentAccount;
   private static Survey testSurvey;
+  private static SurveyPage testSurveyPage1;
   private static Survey testLimitedSurvey;
   private static Survey testUnpublishedSurvey;
   private static Response testResponse;
@@ -73,6 +79,8 @@ class ResponseServiceTest {
     authorAccountId = UUID.randomUUID();
     respondentAccountId = UUID.randomUUID();
     surveyId = UUID.randomUUID();
+    page1Id = UUID.randomUUID();
+
     testAuthorAccount = Account.builder()
         .id(authorAccountId)
         .login("test1")
@@ -80,6 +88,7 @@ class ResponseServiceTest {
         .passwordHash("$2a$10$WeEHrW1OLHk3BMFmojk94uiaO3Y62xrb.wsXRkofYdKsSsrv.jC7m")
         .registeredAt(Instant.now())
         .build();
+
     testRespondentAccount = Account.builder()
         .id(respondentAccountId)
         .login("test2")
@@ -87,6 +96,7 @@ class ResponseServiceTest {
         .passwordHash("$2a$10$zJJ6cDGCeBfzFxcXzOIl2untS9tw8GZP0HoPGf8XgIQKhgyg10PwC")
         .registeredAt(Instant.now())
         .build();
+
     testSurvey = Survey.builder()
         .id(surveyId)
         .author(testAuthorAccount)
@@ -101,6 +111,14 @@ class ResponseServiceTest {
         .targetTimezone("Europe/Moscow")
         .createdAt(Instant.now())
         .build();
+
+    testSurveyPage1 = SurveyPage.builder()
+        .id(page1Id)
+        .survey(testSurvey)
+        .title("page1")
+        .serialNumber(1)
+        .build();
+
     testResponse = Response.builder()
         .id(responseId)
         .account(testRespondentAccount)
@@ -225,6 +243,7 @@ class ResponseServiceTest {
   void create_withAccount_success() {
     when(surveyDao.findById(surveyId)).thenReturn(Optional.of(testSurvey));
     when(accountDao.findById(respondentAccountId)).thenReturn(Optional.of(testRespondentAccount));
+    when(surveyPageDao.findFirstBySurveyId(surveyId)).thenReturn(Optional.of(testSurveyPage1));
     mockResponseSave();
 
     ResponseWithTokenDto result = responseService.create(surveyId, respondentAccountId);
@@ -238,6 +257,7 @@ class ResponseServiceTest {
   @Test
   void create_withoutAccount_success() {
     when(surveyDao.findById(surveyId)).thenReturn(Optional.of(testSurvey));
+    when(surveyPageDao.findFirstBySurveyId(surveyId)).thenReturn(Optional.of(testSurveyPage1));
     mockResponseSave();
     when(jwtService.generateResponseAccessToken(any(UUID.class))).thenReturn(testToken);
 
@@ -290,6 +310,7 @@ class ResponseServiceTest {
   @Test
   void create_limitedToOneResponseButAccountIsNull_success() {
     when(surveyDao.findById(surveyId)).thenReturn(Optional.of(testLimitedSurvey));
+    when(surveyPageDao.findFirstBySurveyId(surveyId)).thenReturn(Optional.of(testSurveyPage1));
     mockResponseSave();
     when(jwtService.generateResponseAccessToken(any(UUID.class))).thenReturn(testToken);
 
@@ -305,6 +326,7 @@ class ResponseServiceTest {
   void create_accountNotFound_throwsException() {
     when(surveyDao.findById(surveyId)).thenReturn(Optional.of(testSurvey));
     when(accountDao.findById(respondentAccountId)).thenReturn(Optional.empty());
+    when(surveyPageDao.findFirstBySurveyId(surveyId)).thenReturn(Optional.of(testSurveyPage1));
 
     ResponseStatusException exception = assertThrows(
         ResponseStatusException.class,
