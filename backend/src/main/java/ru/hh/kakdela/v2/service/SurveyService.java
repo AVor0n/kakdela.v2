@@ -4,6 +4,7 @@ import java.nio.file.Paths;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -48,7 +49,7 @@ public class SurveyService {
   public SurveyResponseDto getById(UUID surveyId, UUID accountId) {
     Survey survey = surveyDao.findById(surveyId)
         .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
+            HttpStatus.NOT_FOUND, "Опрос не найден: id=" + surveyId));
 
     if (!survey.isPublished()) {
       permissionService.checkHasAnyPermission(surveyId, accountId);
@@ -67,6 +68,7 @@ public class SurveyService {
   @Transactional(readOnly = true)
   public List<SurveyShortResponseDto> getMyAssignedSurveys(UUID accountId) {
     return subscriptionDao.findSurveysBySubscriberId(accountId).stream()
+        .sorted(Comparator.comparing(Survey::getCreatedAt).reversed())
         .map(surveyMapper::surveyToShortDto)
         .toList();
   }
@@ -109,7 +111,7 @@ public class SurveyService {
 
     Survey survey = surveyDao.findById(surveyId)
         .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
+            HttpStatus.NOT_FOUND, "Опрос не найден: id=" + surveyId));
 
     if (dto.getTitle().isPresent()) {
       survey.setTitle(dto.getTitle().get());
