@@ -38,6 +38,11 @@
     background: #fff;
 }
 
+.conditionConflict {
+    border-color: #c62828;
+    box-shadow: 0 0 0 1px rgb(198 40 40 / 18%);
+}
+
 .conditionHeader,
 .groupHeader,
 .inlineActions,
@@ -75,6 +80,19 @@
 
 .targetField > :last-child {
     width: 220px;
+}
+
+.activeField {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.activeField:has(input:disabled) {
+    cursor: default;
 }
 
 .editor select {

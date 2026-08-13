@@ -5,6 +5,7 @@ import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { reorderPages, setSurveyPages } from '@/entities/Pages/Pages.slice';
 import { clonePage } from '@/entities/Survey/Survey.utils';
 import { updateSurveyPage } from '@/api/surveyPages';
+import { getSurveyForEditById } from '@/api/survey';
 import { setErrorMessage } from '@/entities/Error/Error.slice';
 import {
     closestCenter,
@@ -56,10 +57,20 @@ export function SurveyModify() {
 
         dispatch(reorderPages({ activePageId, overPageId }));
 
-        updateSurveyPage(activePageId, { serialNumber: overPage.serialNumber }).catch(() => {
-            dispatch(setErrorMessage({ message: 'Не удалось изменить порядок страниц' }));
-            dispatch(setSurveyPages({ pages: previousPages }));
-        });
+        updateSurveyPage(activePageId, { serialNumber: overPage.serialNumber })
+            .then(() =>
+                getSurveyForEditById(selectedSurvey.id)
+                    .then((survey) => dispatch(setSurveyPages({ pages: survey.pages })))
+                    .catch(() =>
+                        dispatch(
+                            setErrorMessage({ message: 'Порядок изменён, но не удалось обновить условия перехода' }),
+                        ),
+                    ),
+            )
+            .catch(() => {
+                dispatch(setErrorMessage({ message: 'Не удалось изменить порядок страниц' }));
+                dispatch(setSurveyPages({ pages: previousPages }));
+            });
     };
 
     return (

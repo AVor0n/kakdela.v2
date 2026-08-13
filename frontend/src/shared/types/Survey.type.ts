@@ -51,6 +51,7 @@ export type SurveyPublic = Pick<
 > & {
     pages: SurveyPageShort[];
     hasCustomClosingPage: boolean;
+    hasConditions: boolean;
 };
 
 export type Page = {
@@ -62,6 +63,8 @@ export type Page = {
     questions: Question[];
     conditions: Condition[];
 };
+
+export type SurveyPagePublic = Omit<Page, 'conditions'>;
 
 export type SurveyListItem = Pick<Survey, 'id' | 'title' | 'description' | 'createdAt' | 'isPublished'> & {
     userRole: SurveyRole;

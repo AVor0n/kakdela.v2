@@ -16,6 +16,7 @@ import {
     deleteQuestion as deleteQuestionState,
     duplicateQuestion,
     setMandatory as setMandatoryState,
+    setPage,
     setQuestion,
     updateAnswerOptionOrder,
     updateQuestionDescription,
@@ -34,6 +35,7 @@ import { DragHandle } from './components/QuestionControls/DragHandle/DragHandle'
 import { EditorInput } from '@/shared/ui/EditorInput/EditorInput';
 import { ImageAttachmentControl } from '@/shared/ui/ImageAttachmentControl/ImageAttachmentControl';
 import { isQuestionUsedInConditions } from '@/shared/utils/conditions';
+import { getSurveyPageForEdit } from '@/api/surveyPages';
 
 interface Props {
     question: Question;
@@ -222,6 +224,7 @@ export function Question({
 
     const deleteQuestionHandler = () => {
         if (!selectedSurvey) return;
+        const pageId = selectedSurvey.pages.find((page) => page.questions.some(({ id }) => id === question.id))?.id;
         if (
             isQuestionUsedInConditions(selectedSurvey.pages, question.id) &&
             !window.confirm('Этот вопрос используется в логике перехода. Всё равно удалить вопрос?')
@@ -231,6 +234,13 @@ export function Question({
         deleteQuestion(question.id)
             .then(() => {
                 dispatch(deleteQuestionState({ id: question.id }));
+                if (pageId) {
+                    void getSurveyPageForEdit(pageId)
+                        .then((page) => dispatch(setPage({ page })))
+                        .catch(() =>
+                            dispatch(setErrorMessage({ message: 'Вопрос удалён, но не удалось обновить условия' })),
+                        );
+                }
             })
             .catch((err) => {
                 if (err.response) {

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { Question } from '@/shared/types/Question.type';
-import type { ClosingPage, Page, Survey, SurveyPublic } from '@/shared/types/Survey.type';
+import type { ClosingPage, Survey, SurveyPublic } from '@/shared/types/Survey.type';
 import { Button, Checkbox, Input, Radio, Text, TextArea, TextAreaGrowLimiter } from '@hh.ru/magritte-ui';
 import { Link } from 'react-router-dom';
 import { routes } from '@/app/routes';
@@ -16,7 +16,9 @@ import { HTMLRender } from '@/shared/ui/HTMLRender/HTMLRender';
 import { ClosingPageView } from '../ClosingPageView/ClosingPageView';
 import { WelcomePageView } from '../WelcomePageView/WelcomePageView';
 import { getClosingPage } from '@/api/closingPage';
-import { getSurveyPage } from '@/api/surveyPages';
+import { getApiError } from '@/shared/utils/apiError';
+import { useSurveyPageFlow } from './useSurveyPageFlow';
+import { resolvePreviewNextPageId } from '@/shared/utils/conditions';
 
 const OTHER_OPTION_VALUE = '__other__';
 
@@ -83,16 +85,12 @@ function buildAnswerPayload(question: Question, value: AnswerValue | undefined, 
 }
 
 export function SurveyRunner({ survey, mode }: Props) {
-    const [currentPageIndex, setCurrentPageIndex] = useState(0);
-    const [currentPageId, setCurrentPageId] = useState<string | null>(null);
-    const [visitedPageIds, setVisitedPageIds] = useState<string[]>([]);
-    const [loadedPages, setLoadedPages] = useState<Record<string, Page>>({});
+    const [previewPageIndex, setPreviewPageIndex] = useState(0);
     const [answers, setAnswers] = useState<Answers>({});
     const [errors, setErrors] = useState<Errors>({});
     const [stage, setStage] = useState<SurveyRunnerStage>('welcome');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isStarting, setIsStarting] = useState(false);
-    const [isPageLoading, setIsPageLoading] = useState(false);
     const [otherTexts, setOtherTexts] = useState<Record<string, string>>({});
     const [submitError, setSubmitError] = useState<string | null>(null);
     const isPreview = mode === 'preview';
@@ -106,12 +104,11 @@ export function SurveyRunner({ survey, mode }: Props) {
         retryFailedAnswers,
         scheduleAnswerSave,
     } = useSurveyResponseSync(survey.id, isPreview);
+    const orderedPageSummaries = sortBySerialNumber(survey.pages);
+    const responseFlow = useSurveyPageFlow(survey.id, mode, orderedPageSummaries, ensureResponse);
 
     useEffect(() => {
-        setCurrentPageIndex(0);
-        setCurrentPageId(null);
-        setVisitedPageIds([]);
-        setLoadedPages({});
+        setPreviewPageIndex(0);
         setAnswers({});
         setOtherTexts({});
         setErrors({});
@@ -121,7 +118,6 @@ export function SurveyRunner({ survey, mode }: Props) {
     }, [mode, survey]);
 
     const refreshClosingPage = async () => {
-        if (!isPreview) return;
         try {
             setClosingPage(await getClosingPage(survey.id));
         } catch {
@@ -134,8 +130,6 @@ export function SurveyRunner({ survey, mode }: Props) {
         void refreshClosingPage();
     };
 
-    const orderedPageSummaries = sortBySerialNumber(survey.pages);
-
     const startSurvey = async () => {
         if (isPreview) {
             setStage('questions');
@@ -145,16 +139,7 @@ export function SurveyRunner({ survey, mode }: Props) {
         setIsStarting(true);
         setSubmitError(null);
         try {
-            const responseId = await ensureResponse();
-            const firstPage = orderedPageSummaries[0];
-            if (firstPage) {
-                const page = await getSurveyPage(firstPage.id, responseId);
-                setLoadedPages({ [page.id]: page });
-                setCurrentPageId(page.id);
-                setVisitedPageIds([page.id]);
-                const actualPageIndex = orderedPageSummaries.findIndex(({ id }) => id === page.id);
-                setCurrentPageIndex(actualPageIndex >= 0 ? actualPageIndex : 0);
-            }
+            await responseFlow.start();
             setStage('questions');
         } catch {
             setSubmitError('Не удалось начать прохождение опроса');
@@ -189,27 +174,6 @@ export function SurveyRunner({ survey, mode }: Props) {
         updateAnswer(question, nextValue);
     };
 
-    const validate = () => {
-        const nextErrors: Errors = {};
-
-        const pages = isPreview
-            ? survey.pages
-            : visitedPageIds.flatMap((pageId) => (loadedPages[pageId] ? [loadedPages[pageId]] : []));
-        pages.forEach((page) => {
-            page.questions.forEach((question) => {
-                if (
-                    question.isMandatory &&
-                    !isQuestionAnswered(question, answers[question.id], otherTexts[question.id])
-                ) {
-                    nextErrors[question.id] = 'Ответьте на обязательный вопрос';
-                }
-            });
-        });
-
-        setErrors(nextErrors);
-        return Object.keys(nextErrors).length === 0;
-    };
-
     const validateQuestions = (questions: Question[]) => {
         const nextErrors: Errors = {};
 
@@ -232,27 +196,6 @@ export function SurveyRunner({ survey, mode }: Props) {
         });
 
         return Object.keys(nextErrors).length === 0;
-    };
-
-    const submitHandler = async () => {
-        if (isPreview || !validate()) {
-            return;
-        }
-
-        setIsSubmitting(true);
-        setSubmitError(null);
-
-        try {
-            await flushPendingAnswers();
-            const responseId = await ensureResponse();
-            await completeSurveyResponse(responseId);
-            setStage('closing');
-            void refreshClosingPage();
-        } catch {
-            setSubmitError('Не удалось отправить ответы');
-        } finally {
-            setIsSubmitting(false);
-        }
     };
 
     const renderQuestionControl = (question: Question) => {
@@ -431,60 +374,21 @@ export function SurveyRunner({ survey, mode }: Props) {
               questions: sortBySerialNumber(page.questions),
           }))
         : [];
-    const currentPageSummary = orderedPageSummaries[currentPageIndex];
-    const currentPage = isPreview
-        ? previewPages[currentPageIndex]
-        : currentPageId
-          ? loadedPages[currentPageId]
-          : currentPageSummary
-            ? loadedPages[currentPageSummary.id]
-            : undefined;
+    const currentPageIndex = isPreview ? previewPageIndex : responseFlow.currentPageIndex;
+    const currentPage = isPreview ? previewPages[previewPageIndex] : responseFlow.currentPage;
     const totalPageCount = orderedPageSummaries.length;
-    const isFirstPage = isPreview ? currentPageIndex === 0 : visitedPageIds.length <= 1;
+    const isFirstPage = isPreview ? previewPageIndex === 0 : responseFlow.isFirstPage;
     const isLastPage = currentPageIndex === totalPageCount - 1;
-
-    const openPage = async (pageIndex: number) => {
-        if (isPreview) {
-            setCurrentPageIndex(pageIndex);
-            return;
-        }
-
-        const pageSummary = orderedPageSummaries[pageIndex];
-        if (!pageSummary) return;
-
-        setIsPageLoading(true);
-        setSubmitError(null);
-        try {
-            const responseId = await ensureResponse();
-            const page = await getSurveyPage(pageSummary.id, responseId);
-            setLoadedPages((pages) => ({ ...pages, [page.id]: page }));
-            setCurrentPageId(page.id);
-            setVisitedPageIds((pageIds) =>
-                pageIds[pageIds.length - 1] === page.id ? pageIds : [...pageIds, page.id],
-            );
-            const actualPageIndex = orderedPageSummaries.findIndex(({ id }) => id === page.id);
-            setCurrentPageIndex(actualPageIndex >= 0 ? actualPageIndex : pageIndex);
-        } catch {
-            setSubmitError('Не удалось загрузить страницу опроса');
-        } finally {
-            setIsPageLoading(false);
-        }
-    };
+    const isPageLoading = responseFlow.isPageLoading;
 
     const goToPreviousPage = async () => {
         if (isPreview) {
-            await openPage(Math.max(currentPageIndex - 1, 0));
+            setPreviewPageIndex((pageIndex) => Math.max(pageIndex - 1, 0));
             return;
         }
 
         await flushPendingAnswers().catch(() => setSubmitError('Не удалось сохранить некоторые ответы'));
-        const previousPageId = visitedPageIds[visitedPageIds.length - 2];
-        if (!previousPageId || !loadedPages[previousPageId]) return;
-
-        setVisitedPageIds((pageIds) => pageIds.slice(0, -1));
-        setCurrentPageId(previousPageId);
-        const previousPageIndex = orderedPageSummaries.findIndex(({ id }) => id === previousPageId);
-        if (previousPageIndex >= 0) setCurrentPageIndex(previousPageIndex);
+        responseFlow.openPrevious();
     };
 
     const goToNextPage = async () => {
@@ -493,8 +397,21 @@ export function SurveyRunner({ survey, mode }: Props) {
         }
 
         if (isPreview) {
+            const currentPreviewPage = previewPages[previewPageIndex];
+            if (!currentPreviewPage || !validateQuestions(currentPreviewPage.questions)) return;
             setErrors({});
-            await openPage(Math.min(currentPageIndex + 1, totalPageCount - 1));
+            const nextPageId = resolvePreviewNextPageId(currentPreviewPage, survey.pages, answers);
+            if (!nextPageId) {
+                showClosingPagePreview();
+                return;
+            }
+
+            const nextPageIndex = previewPages.findIndex(({ id }) => id === nextPageId);
+            if (nextPageIndex < 0) {
+                setSubmitError('Условие ведёт на недоступную страницу');
+                return;
+            }
+            setPreviewPageIndex(nextPageIndex);
             return;
         }
 
@@ -502,13 +419,27 @@ export function SurveyRunner({ survey, mode }: Props) {
             return;
         }
 
+        setSubmitError(null);
+        setIsSubmitting(true);
         try {
             await flushPendingAnswers();
-        } catch {
-            setSubmitError('Не удалось сохранить некоторые ответы');
-            return;
+            const hasNextPage = await responseFlow.verifyAndOpenNext(currentPage.id);
+            if (hasNextPage) return;
+
+            const responseId = await ensureResponse();
+            await completeSurveyResponse(responseId);
+            setStage('closing');
+            void refreshClosingPage();
+        } catch (requestError) {
+            const apiError = getApiError(requestError);
+            setSubmitError(
+                apiError?.internalErrorCode === 'NOT_ALL_MANDATORY_QUESTIONS_ANSWERED'
+                    ? 'Ответьте на все обязательные вопросы текущей страницы'
+                    : apiError?.message || 'Не удалось определить следующую страницу',
+            );
+        } finally {
+            setIsSubmitting(false);
         }
-        await openPage(Math.min(currentPageIndex + 1, totalPageCount - 1));
     };
 
     return (
@@ -608,31 +539,15 @@ export function SurveyRunner({ survey, mode }: Props) {
                                     <Text typography='paragraph-2-regular' style='secondary'>
                                         {currentPageIndex + 1} из {totalPageCount}
                                     </Text>
-                                    {isLastPage ? (
-                                        <Button
-                                            type='button'
-                                            mode='primary'
-                                            style='accent'
-                                            disabled={isSubmitting || isPageLoading}
-                                            onClick={isPreview ? showClosingPagePreview : submitHandler}
-                                        >
-                                            {isPreview
-                                                ? 'Завершающая страница'
-                                                : isSubmitting
-                                                  ? 'Отправляем...'
-                                                  : 'Отправить'}
-                                        </Button>
-                                    ) : (
-                                        <Button
-                                            type='button'
-                                            mode='primary'
-                                            style='accent'
-                                            disabled={isSubmitting || isPageLoading}
-                                            onClick={() => void goToNextPage()}
-                                        >
-                                            Далее
-                                        </Button>
-                                    )}
+                                    <Button
+                                        type='button'
+                                        mode='primary'
+                                        style='accent'
+                                        disabled={isSubmitting || isPageLoading}
+                                        onClick={() => void goToNextPage()}
+                                    >
+                                        {isPreview && isLastPage ? 'Завершающая страница' : 'Далее'}
+                                    </Button>
                                 </div>
                                 {failedQuestionCount > 0 && (
                                     <div className={style.syncError}>

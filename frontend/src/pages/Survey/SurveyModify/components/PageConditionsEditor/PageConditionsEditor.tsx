@@ -1,6 +1,6 @@
-import { Button, Select, createStaticDataProvider, type StaticDataFetcherItem } from '@hh.ru/magritte-ui';
+import { Button, Checkbox, Select, createStaticDataProvider, type StaticDataFetcherItem } from '@hh.ru/magritte-ui';
 import { CheckOutlinedSize24 } from '@hh.ru/magritte-ui/icon';
-import { useEffect, useId, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react';
+import { useEffect, useId, useMemo, useRef, useState, type ChangeEvent, type FormEvent, type ReactNode } from 'react';
 import {
     addConditionAtom,
     addConditionNode,
@@ -19,6 +19,7 @@ import { useAppSelector } from '@/hooks/useAppSelector';
 import type { Condition, ConditionLinkOperator, ConditionNode } from '@/shared/types/Condition.type';
 import type { Question } from '@/shared/types/Question.type';
 import type { Page } from '@/shared/types/Survey.type';
+import { getApiError } from '@/shared/utils/apiError';
 import style from './PageConditionsEditor.module.css';
 
 type Props = {
@@ -54,6 +55,11 @@ type TreeNodeEditorProps = {
     disabled: boolean;
     mutateAndRefresh: (_mutation: () => Promise<unknown>) => Promise<void>;
 };
+
+type ConditionConflictState = {
+    conditionIds: [string, string];
+    message: string;
+} | null;
 
 function getSupportedQuestions(page: Page) {
     return page.questions.filter((question) => {
@@ -382,6 +388,7 @@ export function PageConditionsEditor({ page }: Props) {
     const [isCreating, setIsCreating] = useState(false);
     const [pendingConditionId, setPendingConditionId] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [conflict, setConflict] = useState<ConditionConflictState>(null);
     const forwardPages = useMemo(
         () => surveyPages.filter(({ serialNumber }) => serialNumber > page.serialNumber),
         [page.serialNumber, surveyPages],
@@ -407,15 +414,35 @@ export function PageConditionsEditor({ page }: Props) {
         replaceCondition(await getCondition(conditionId));
     };
 
+    const handleMutationError = (requestError: unknown, fallbackMessage: string) => {
+        const apiError = getApiError(requestError);
+        if (
+            apiError?.internalErrorCode === 'CONDITIONS_OF_PAGE_HAVE_CONFLICTS' &&
+            apiError.object1Id &&
+            apiError.object2Id
+        ) {
+            setConflict({
+                conditionIds: [apiError.object1Id, apiError.object2Id],
+                message: apiError.message || 'Условия перехода конфликтуют',
+            });
+            setError(apiError.message || 'Условия перехода конфликтуют');
+            return;
+        }
+
+        setError(apiError?.message || fallbackMessage);
+    };
+
     const mutateAndRefresh = async (conditionId: string, mutation: () => Promise<unknown>) => {
         setPendingConditionId(conditionId);
         setError(null);
+        setConflict(null);
         try {
             await mutation();
             await refreshCondition(conditionId);
-        } catch {
-            setError('Не удалось сохранить логику перехода');
-            throw new Error('Condition mutation failed');
+        } catch (requestError) {
+            handleMutationError(requestError, 'Не удалось сохранить логику перехода');
+            await refreshCondition(conditionId).catch(() => undefined);
+            throw requestError;
         } finally {
             setPendingConditionId(null);
         }
@@ -427,13 +454,13 @@ export function PageConditionsEditor({ page }: Props) {
         setError(null);
         let createdCondition: Condition | null = null;
         try {
-            createdCondition = await createCondition(page.id, { nextPageId: newNextPageId });
+            createdCondition = await createCondition(page.id, { nextPageId: newNextPageId, isActive: false });
             await addConditionAtom(createdCondition.id, request);
             dispatch(addPageCondition({ pageId: page.id, condition: await getCondition(createdCondition.id) }));
             setIsCreating(false);
-        } catch {
+        } catch (requestError) {
             if (createdCondition) await deleteCondition(createdCondition.id).catch(() => undefined);
-            setError('Не удалось создать условие перехода');
+            handleMutationError(requestError, 'Не удалось создать условие перехода');
         } finally {
             setPendingConditionId(null);
         }
@@ -457,7 +484,9 @@ export function PageConditionsEditor({ page }: Props) {
             <div className={style.header}>
                 <span>Логика перехода</span>
                 <span className={style.summary}>
-                    {page.conditions.length > 0 ? `${page.conditions.length} усл.` : 'По порядку'}
+                    {page.conditions.length > 0
+                        ? `${page.conditions.filter(({ isActive }) => isActive).length} акт. из ${page.conditions.length}`
+                        : 'По порядку'}
                 </span>
             </div>
             <div className={style.content}>
@@ -467,6 +496,7 @@ export function PageConditionsEditor({ page }: Props) {
                 {page.conditions.map((condition) => {
                     const isPending = pendingConditionId === condition.id;
                     const isTargetInvalid = !forwardPages.some(({ id }) => id === condition.nextPageId);
+                    const hasConflict = conflict?.conditionIds.includes(condition.id) ?? false;
                     const targetPageOptions: StaticDataFetcherItem[] = isTargetInvalid
                         ? [
                               {
@@ -478,7 +508,10 @@ export function PageConditionsEditor({ page }: Props) {
                           ]
                         : forwardPageOptions;
                     return (
-                        <article className={style.condition} key={condition.id}>
+                        <article
+                            className={`${style.condition} ${hasConflict ? style.conditionConflict : ''}`}
+                            key={condition.id}
+                        >
                             <div className={style.conditionHeader}>
                                 <strong>Если</strong>
                                 <div className={style.targetField}>
@@ -490,15 +523,33 @@ export function PageConditionsEditor({ page }: Props) {
                                         options={targetPageOptions}
                                         disabled={isPending}
                                         onChange={(nextPageId) => {
-                                            setPendingConditionId(condition.id);
-                                            setError(null);
-                                            void updateCondition(condition.id, { nextPageId })
-                                                .then(replaceCondition)
-                                                .catch(() => setError('Не удалось изменить следующую страницу'))
-                                                .finally(() => setPendingConditionId(null));
+                                            void mutateAndRefresh(condition.id, () =>
+                                                updateCondition(condition.id, {
+                                                    nextPageId,
+                                                    isActive: condition.isActive,
+                                                }),
+                                            ).catch(() => undefined);
                                         }}
                                     />
                                 </div>
+                                <label className={style.activeField}>
+                                    <Checkbox
+                                        checked={condition.isActive}
+                                        disabled={
+                                            isPending || (!condition.isActive && (!condition.root || isTargetInvalid))
+                                        }
+                                        onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                                            const isActive = event.target.checked;
+                                            void mutateAndRefresh(condition.id, () =>
+                                                updateCondition(condition.id, {
+                                                    nextPageId: condition.nextPageId,
+                                                    isActive,
+                                                }),
+                                            ).catch(() => undefined);
+                                        }}
+                                    />
+                                    <span>Активно</span>
+                                </label>
                                 <Button
                                     mode='secondary'
                                     style='negative'
@@ -512,6 +563,7 @@ export function PageConditionsEditor({ page }: Props) {
                             {isTargetInvalid && (
                                 <p className={style.error}>После изменения порядка страниц переход ведёт назад.</p>
                             )}
+                            {hasConflict && <p className={style.error}>{conflict?.message}</p>}
                             {condition.root ? (
                                 <div className={style.treeRoot}>
                                     <TreeNodeEditor

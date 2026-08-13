@@ -8,6 +8,11 @@ import type {
 
 export type ConditionRequest = {
     nextPageId: string;
+    isActive: boolean;
+};
+
+export type VerifyPageResult = {
+    nextPageId: string | null;
 };
 
 export type ConditionAtomRequest = {
@@ -78,4 +83,11 @@ export async function updateConditionAtom(nodeId: string, request: ConditionAtom
 
 export async function deleteConditionNode(nodeId: string): Promise<void> {
     await apiClient.delete(`/api/nodes/${nodeId}`);
+}
+
+export async function verifyPageConditions(pageId: string, responseId: string): Promise<VerifyPageResult> {
+    const { data } = await apiClient.get<VerifyPageResult>(`/api/pages/${pageId}/verify`, {
+        params: { responseId },
+    });
+    return data;
 }

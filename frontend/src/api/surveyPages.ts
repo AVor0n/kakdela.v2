@@ -1,11 +1,11 @@
-import type { Page } from '@/shared/types/Survey.type';
+import type { Page, SurveyPagePublic } from '@/shared/types/Survey.type';
 import { apiClient } from '@/api/client';
 
 export type PageResponse = Page;
 export type UpdateSurveyPageRequest = Partial<Pick<Page, 'serialNumber' | 'title' | 'description'>>;
 
-export async function getSurveyPage(pageId: string, responseId: string): Promise<PageResponse> {
-    const { data } = await apiClient.get<PageResponse>(`/api/pages/${pageId}`, { params: { responseId } });
+export async function getSurveyPage(pageId: string, responseId: string): Promise<SurveyPagePublic> {
+    const { data } = await apiClient.get<SurveyPagePublic>(`/api/pages/${pageId}`, { params: { responseId } });
 
     return data;
 }

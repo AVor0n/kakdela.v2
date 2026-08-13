@@ -20,5 +20,6 @@ export type Condition = {
     id: string;
     pageId: string;
     nextPageId: string;
+    isActive: boolean;
     root: ConditionNode | null;
 };
