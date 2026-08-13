@@ -1,10 +1,18 @@
 .separator {
     position: relative;
+    display: grid;
+    grid-template-columns: 32px minmax(0, 1fr) auto minmax(0, 1fr) 32px;
+    align-items: center;
+    width: 100%;
+    min-width: 0;
     text-align: center;
+    gap: 8px;
     padding: 15px 0;
 }
 
-.separator:hover .trash {
+.separator:hover .action,
+.action:focus-visible,
+.logicActionOpen {
     opacity: 1;
 }
 
@@ -13,29 +21,51 @@
     opacity: 1;
 }
 
-.separator::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 0;
-    width: 100%;
+.line {
+    min-width: 0;
     height: 2px;
     background-color: #0000007e;
-    z-index: -1;
 }
 
-.separator span {
-    background-color: #ffffff;
-    padding: 0 15px;
+.content {
+    white-space: nowrap;
 }
 
-.trash {
-    position: absolute;
-    left: -30px;
-    bottom: 13px;
+.action {
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 0;
+    border-radius: 6px;
+    background: #fff;
+    color: #000;
     opacity: 0;
-    transition: opacity 0.3s ease;
+    transition:
+        opacity 0.3s ease,
+        color 0.2s ease,
+        background-color 0.2s ease;
     cursor: pointer;
+}
+
+.action:hover {
+    background: #f1f4f9;
+}
+
+.action img {
+    width: 24px;
+    height: 24px;
+}
+
+.deleteAction {
+    grid-column: 1;
+}
+
+.logicAction {
+    grid-column: 5;
 }
 
 .dragHandle {
@@ -67,4 +97,10 @@
 .dragHandleIcon {
     width: 16px;
     height: 8px;
+}
+
+@media (max-width: 768px) {
+    .separator {
+        gap: 4px;
+    }
 }
