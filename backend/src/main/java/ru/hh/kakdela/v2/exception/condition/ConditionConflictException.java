@@ -11,11 +11,7 @@ public class ConditionConflictException extends Kd2OblectRelatedException {
 
   public ConditionConflictException(UUID condition1Id, UUID condition2Id) {
     super(
-        ErrorCode.CONDITIONS_OF_PAGE_HAVE_CONFLICTS,
-        HttpStatus.CONFLICT,
-        "Конфликт в условиях: condition1Id=%s, condition2Id=%s"
-            .formatted(condition1Id, condition2Id),
-        condition1Id,
-        condition2Id);
+        ErrorCode.CONDITIONS_OF_PAGE_HAVE_CONFLICTS, HttpStatus.CONFLICT,
+        "Конфликт условий", condition1Id, condition2Id);
   }
 }
