@@ -2,7 +2,7 @@ import { generatePath } from 'react-router-dom';
 
 export const routePatterns = {
     root: '/',
-    resetPassword: '/reset-password',
+    forgotPassword: '/forgot-password',
     authCallback: 'auth/callback',
     notFound: '/not-found',
     auth: '/auth',
@@ -19,7 +19,7 @@ export const routes = {
     login: () => routePatterns.authLogin,
     register: () => routePatterns.authRegister,
     survey: () => routePatterns.surveys,
-    resetPassword: () => routePatterns.resetPassword,
+    forgotPassword: () => routePatterns.forgotPassword,
     surveyCreate: () => routePatterns.surveyCreate,
     surveyEdit: (id: string) => generatePath(routePatterns.surveyModify, { id }),
     surveyQuestions: (id: string) => `${generatePath(routePatterns.surveyModify, { id })}/questions`,

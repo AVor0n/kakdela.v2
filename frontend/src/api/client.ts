@@ -23,7 +23,7 @@ const ANONYMOUS_ALLOWED_PATTERNS = [
     routePatterns.surveysView,
     routePatterns.authLogin,
     routePatterns.authRegister,
-    routePatterns.resetPassword,
+    routePatterns.forgotPassword,
 ];
 
 apiClient.interceptors.response.use(

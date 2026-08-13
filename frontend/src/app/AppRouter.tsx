@@ -20,7 +20,7 @@ export function AppRouter() {
         <BrowserRouter>
             <Routes>
                 <Route path={routePatterns.root} element={<App />} />
-                <Route path={routePatterns.resetPassword} element={<ForgotPassword />} />
+                <Route path={routePatterns.forgotPassword} element={<ForgotPassword />} />
                 <Route path={routePatterns.authCallback} element={<Navigate to={routes.root()} />} />
                 <Route path={routePatterns.auth}>
                     <Route path={routePatterns.authLogin} element={<Login />} />

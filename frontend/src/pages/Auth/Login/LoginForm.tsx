@@ -64,7 +64,7 @@ export function LoginForm({
                     onChange={onPasswordChange}
                     onBlur={onPasswordBlur}
                 />
-                <Link to={routes.resetPassword()} style={{ color: '#433dff' }}>
+                <Link to={routes.forgotPassword()} style={{ color: '#433dff' }}>
                     Забыли пароль?
                 </Link>
             </div>
