@@ -9,6 +9,6 @@ public class ConditionNodeIsNotAtomException extends Kd2OblectRelatedException {
 
   public ConditionNodeIsNotAtomException(UUID id) {
     super(ErrorCode.CONDITION_NODE_IS_NOT_ATOM, HttpStatus.BAD_REQUEST,
-        "Указанная вершина не является атомарным условием: id=" + id, id, null);
+        "Указанная вершина не является атомарным условием", id, null);
   }
 }
