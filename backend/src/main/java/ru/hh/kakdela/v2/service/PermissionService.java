@@ -82,15 +82,15 @@ public class PermissionService {
   public void checkCanEdit(UUID surveyId, UUID accountId) {
     Survey survey = getSurveyOrThrow(surveyId);
 
-    if (survey.isTemplate()) {
+    if (survey.getAuthor().getId().equals(accountId)) {
+      return;
+    }
+
+    if (survey.isTemplate() && !survey.isAuthor(accountId)) {
       throw new ResponseStatusException(
           HttpStatus.NOT_FOUND,
           "Опрос не найден"
       );
-    }
-
-    if (survey.getAuthor().getId().equals(accountId)) {
-      return;
     }
 
     Permission permission = getPermissionOrThrow(surveyId, accountId);
@@ -130,8 +130,8 @@ public class PermissionService {
 
     if (survey.isTemplate()) {
       throw new ResponseStatusException(
-          HttpStatus.BAD_REQUEST,
-          "Нельзя управлять правами доступа для шаблона"
+          HttpStatus.NOT_FOUND,
+          "Опрос не найден"
       );
     }
     return permissionDao.findAllBySurveyId(surveyId).stream()

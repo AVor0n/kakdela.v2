@@ -67,6 +67,14 @@ public class TemplateController {
     return templateService.createSurveyFromTemplate(templateId, currentUser.getId());
   }
 
+  @PostMapping("/templates/{templateId}/copy")
+  @ResponseStatus(HttpStatus.CREATED)
+  public TemplateResponseDto copyTemplate(
+      @PathVariable UUID templateId,
+      @AuthenticationPrincipal CustomUserDetails currentUser) {
+    return templateService.copyTemplate(templateId, currentUser.getId());
+  }
+
   @DeleteMapping("/templates/{templateId}")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void deleteTemplate(

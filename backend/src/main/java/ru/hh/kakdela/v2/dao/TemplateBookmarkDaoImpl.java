@@ -7,7 +7,6 @@ import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
-import ru.hh.kakdela.v2.model.Survey;
 import ru.hh.kakdela.v2.model.TemplateBookmark;
 
 @Repository
@@ -32,14 +31,13 @@ public class TemplateBookmarkDaoImpl implements TemplateBookmarkDao {
   }
 
   @Override
-  public List<Survey> findTemplatesByAccountId(UUID accountId) {
+  public List<TemplateBookmark> findAllByAccountId(UUID accountId) {
     return entityManager.createQuery(
             """
-            SELECT b.template
             FROM TemplateBookmark b
             WHERE b.account.id = :accountId
             ORDER BY b.createdAt DESC
-            """, Survey.class)
+            """, TemplateBookmark.class)
         .setParameter("accountId", accountId)
         .getResultList();
   }
@@ -67,18 +65,5 @@ public class TemplateBookmarkDaoImpl implements TemplateBookmarkDao {
   @Override
   public void delete(TemplateBookmark bookmark) {
     entityManager.remove(bookmark);
-  }
-
-  @Override
-  public void deleteByAccountIdAndTemplateId(UUID accountId, UUID templateId) {
-    entityManager.createQuery(
-            """
-            DELETE FROM TemplateBookmark b
-            WHERE b.account.id = :accountId
-            AND b.template.id = :templateId
-            """)
-        .setParameter("accountId", accountId)
-        .setParameter("templateId", templateId)
-        .executeUpdate();
   }
 }

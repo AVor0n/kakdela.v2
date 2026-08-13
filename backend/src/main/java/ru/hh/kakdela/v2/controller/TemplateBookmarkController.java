@@ -13,8 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import ru.hh.kakdela.v2.dto.survey.SurveyShortResponseDto;
-import ru.hh.kakdela.v2.mapper.SurveyMapper;
+import ru.hh.kakdela.v2.dto.bookmark.TemplateBookmarkResponseDto;
 import ru.hh.kakdela.v2.security.CustomUserDetails;
 import ru.hh.kakdela.v2.service.TemplateBookmarkService;
 
@@ -25,7 +24,6 @@ import ru.hh.kakdela.v2.service.TemplateBookmarkService;
 public class TemplateBookmarkController {
 
   private final TemplateBookmarkService bookmarkService;
-  private final SurveyMapper surveyMapper;
 
   @PostMapping("/templates/{templateId}/bookmark")
   @ResponseStatus(HttpStatus.CREATED)
@@ -35,15 +33,13 @@ public class TemplateBookmarkController {
     bookmarkService.addBookmark(templateId, currentUser.getId());
   }
 
-  @GetMapping("/accounts/me/bookmarks")
-  public List<SurveyShortResponseDto> getMyBookmarks(
+  @GetMapping("me/templates/bookmarked")
+  public List<TemplateBookmarkResponseDto> getMyBookmarks(
       @AuthenticationPrincipal CustomUserDetails currentUser) {
-    return bookmarkService.getMyBookmarks(currentUser.getId()).stream()
-        .map(surveyMapper::surveyToShortDto)
-        .toList();
+    return bookmarkService.getMyBookmarks(currentUser.getId());
   }
 
-  @GetMapping("/templates/{templateId}/is-bookmarked")
+  @GetMapping("/templates/{templateId}/bookmark")
   public boolean isBookmarked(
       @PathVariable UUID templateId,
       @AuthenticationPrincipal CustomUserDetails currentUser) {

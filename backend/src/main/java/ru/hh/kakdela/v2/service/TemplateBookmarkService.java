@@ -12,6 +12,9 @@ import org.springframework.web.server.ResponseStatusException;
 import ru.hh.kakdela.v2.dao.AccountDao;
 import ru.hh.kakdela.v2.dao.SurveyDao;
 import ru.hh.kakdela.v2.dao.TemplateBookmarkDao;
+import ru.hh.kakdela.v2.dto.bookmark.TemplateBookmarkResponseDto;
+import ru.hh.kakdela.v2.mapper.TemplateBookmarkMapper;
+import ru.hh.kakdela.v2.mapper.TemplateMapper;
 import ru.hh.kakdela.v2.model.Account;
 import ru.hh.kakdela.v2.model.Survey;
 import ru.hh.kakdela.v2.model.TemplateBookmark;
@@ -24,6 +27,7 @@ public class TemplateBookmarkService {
   private final TemplateBookmarkDao bookmarkDao;
   private final SurveyDao surveyDao;
   private final AccountDao accountDao;
+  private final TemplateBookmarkMapper templateBookmarkMapper;
 
   @Transactional
   public void addBookmark(UUID templateId, UUID accountId) {
@@ -73,8 +77,10 @@ public class TemplateBookmarkService {
   }
 
   @Transactional(readOnly = true)
-  public List<Survey> getMyBookmarks(UUID accountId) {
-    return bookmarkDao.findTemplatesByAccountId(accountId);
+  public List<TemplateBookmarkResponseDto> getMyBookmarks(UUID accountId) {
+    return bookmarkDao.findAllByAccountId(accountId).stream()
+        .map(templateBookmarkMapper::toTemplateBookmarkDto)
+        .toList();
   }
 
   @Transactional(readOnly = true)

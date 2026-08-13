@@ -64,6 +64,45 @@ public class TemplateService {
     return templateMapper.templateToDto(template);
   }
 
+  @Transactional
+  public TemplateResponseDto copyTemplate(UUID templateId, UUID accountId) {
+    Survey source = surveyDao.findById(templateId)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Шаблон не найден"));
+
+    if (!source.isTemplate()) {
+      throw new ResponseStatusException(
+          HttpStatus.NOT_FOUND, "Шаблон не найден");
+    }
+
+    if (!source.isPublished()) {
+      throw new ResponseStatusException(
+          HttpStatus.NOT_FOUND,
+          "Шаблон не найден"
+      );
+    }
+
+    if (source.isAuthor(accountId)) {
+      throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST,
+          "Это ваш шаблон. Вы уже можете его редактировать."
+      );
+    }
+
+    Account account = accountDao.findById(accountId)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Аккаунт не найден"));
+
+    String newTitle = "Копия — " + source.getTitle();
+    Survey copy = cloneSurvey(source, account, true, newTitle, false);
+
+    surveyDao.save(copy);
+    log.info("Создана копия шаблона templateId={} copyId={} accountId={}",
+        templateId, copy.getId(), accountId);
+
+    return templateMapper.templateToDto(copy);
+  }
+
   @Transactional(readOnly = true)
   public TemplateResponseDto getTemplate(UUID templateId, UUID accountId) {
     Survey template = surveyDao.findById(templateId)
@@ -138,7 +177,7 @@ public class TemplateService {
           HttpStatus.BAD_REQUEST, "Указанный опрос не является шаблоном");
     }
 
-    if (!template.isPublished()) {
+    if (!template.isPublished() && !template.isAuthor(accountId)) {
       throw new ResponseStatusException(
           HttpStatus.FORBIDDEN, "Шаблон не опубликован");
     }
