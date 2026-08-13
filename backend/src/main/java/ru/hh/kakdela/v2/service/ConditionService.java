@@ -44,11 +44,11 @@ public class ConditionService {
 
   @Transactional(readOnly = true)
   public List<ConditionResponseDto> getAllByPageId(UUID pageId, UUID accountId) {
-    SurveyPage surveyPage = surveyPageDao.findById(pageId)
+    SurveyPage page = surveyPageDao.findById(pageId)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Страница не найдена: id=" + pageId));
 
-    permissionService.checkHasAnyPermission(surveyPage.getSurvey().getId(), accountId);
+    permissionService.checkHasAnyPermission(page.getSurvey().getId(), accountId);
 
     return conditionDao.findAllByPageId(pageId).stream()
         .map(ConditionMapper::conditionToDto)
@@ -64,7 +64,7 @@ public class ConditionService {
   ) {
     log.info("Начата проверка условий дла страницы: pageId={}", pageId);
 
-    final SurveyPage surveyPage =
+    final SurveyPage page =
         surveyPageDao.findByIdWithAllConditionsAndParentSurveyWithRelatives(pageId)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Страница не найдена: id=" + pageId));
@@ -80,7 +80,11 @@ public class ConditionService {
 
     responseService.checkMandatoryQuestionsOfPageAnswered(responseId, pageId);
 
-    for (Condition condition : surveyPage.getConditions()) {
+    List<Condition> activeConditions = page.getConditions().stream()
+        .filter(Condition::getIsActive)
+        .toList();
+
+    for (Condition condition : activeConditions) {
       if (condition.evaluate(response)) {
         SurveyPage nextPage = condition.getNextPage();
         responseService.setResponsePageStatus(response, nextPage, true);
@@ -89,10 +93,10 @@ public class ConditionService {
       }
     }
 
-    Optional<SurveyPage> elsePage = determineElsePage(surveyPage);
-    elsePage.ifPresent(page -> responseService.setResponsePageStatus(response, page, true));
+    Optional<SurveyPage> elsePage = determineElsePage(page);
+    elsePage.ifPresent(p -> responseService.setResponsePageStatus(response, p, true));
 
-    return elsePage.map(page -> new ConditionNextPageResponseDto(page.getId()))
+    return elsePage.map(p -> new ConditionNextPageResponseDto(p.getId()))
         .orElseGet(() -> new ConditionNextPageResponseDto(null));
   }
 
@@ -100,11 +104,11 @@ public class ConditionService {
   public ConditionResponseDto create(UUID pageId, ConditionRequestDto dto, UUID accountId) {
     log.info("Начато создание условия дла страницы: pageId={}", pageId);
 
-    SurveyPage surveyPage = surveyPageDao.findById(pageId)
+    SurveyPage page = surveyPageDao.findById(pageId)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Страница не найдена: id=" + pageId));
 
-    permissionService.checkCanEdit(surveyPage.getSurvey().getId(), accountId);
+    permissionService.checkCanEdit(page.getSurvey().getId(), accountId);
 
     SurveyPage nextPage = surveyPageDao.findById(dto.getNextPageId())
         .orElseThrow(() -> new ResponseStatusException(
@@ -115,19 +119,19 @@ public class ConditionService {
           "Для указанной страницы и указанной следующей страницы уже существует условие");
     }
 
-    if (!nextPage.getSurvey().getId().equals(surveyPage.getSurvey().getId())) {
+    if (!nextPage.getSurvey().getId().equals(page.getSurvey().getId())) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
           "Страница не найдена: id=" + dto.getNextPageId());
     }
 
-    if (nextPage.getSerialNumber() <= surveyPage.getSerialNumber()) {
+    if (nextPage.getSerialNumber() <= page.getSerialNumber()) {
       throw new ResponseStatusException(
           HttpStatus.BAD_REQUEST, "Условия могут перенаправлять только вперёд");
     }
 
     Condition condition = Condition.builder()
         .id(UUID.randomUUID())
-        .surveyPage(surveyPage)
+        .surveyPage(page)
         .nextPage(nextPage)
         .build();
 
@@ -206,6 +210,7 @@ public class ConditionService {
 
   Optional<SurveyPage> determineElsePage(SurveyPage surveyPage) {
     Set<UUID> nextPageIds = surveyPage.getConditions().stream()
+        .filter(Condition::getIsActive)
         .map(c -> c.getNextPage().getId())
         .collect(Collectors.toSet());
 
