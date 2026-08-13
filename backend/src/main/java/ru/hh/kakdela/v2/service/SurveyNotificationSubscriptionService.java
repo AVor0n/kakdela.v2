@@ -45,6 +45,13 @@ public class SurveyNotificationSubscriptionService {
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
 
+    if (survey.isTemplate()) {
+      throw new ResponseStatusException(
+          HttpStatus.NOT_FOUND,
+          "Опрос не найден"
+      );
+    }
+
     for (String email : emails) {
       try {
         Account account = findAccountByEmailOrThrow(email);
@@ -85,6 +92,17 @@ public class SurveyNotificationSubscriptionService {
 
   @Transactional
   public void unsubscribeUser(UUID surveyId, String email, UUID currentUserId) {
+    Survey survey = surveyDao.findById(surveyId)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
+
+    if (survey.isTemplate()) {
+      throw new ResponseStatusException(
+          HttpStatus.NOT_FOUND,
+          "Опрос не найден"
+      );
+    }
+
     permissionService.checkCanEdit(surveyId, currentUserId);
 
     Account account = findAccountByEmailOrThrow(email);
@@ -101,6 +119,17 @@ public class SurveyNotificationSubscriptionService {
 
   @Transactional(readOnly = true)
   public List<Account> getSubscribers(UUID surveyId, UUID currentUserId) {
+    Survey survey = surveyDao.findById(surveyId)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
+
+    if (survey.isTemplate()) {
+      throw new ResponseStatusException(
+          HttpStatus.NOT_FOUND,
+          "Опрос не найден"
+      );
+    }
+
     permissionService.checkCanEdit(surveyId, currentUserId);
 
     return subscriptionDao.findSubscribersBySurveyId(surveyId);
@@ -108,6 +137,17 @@ public class SurveyNotificationSubscriptionService {
 
   @Transactional(readOnly = true)
   public boolean isSubscribed(UUID surveyId, String email, UUID currentUserId) {
+    Survey survey = surveyDao.findById(surveyId)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
+
+    if (survey.isTemplate()) {
+      throw new ResponseStatusException(
+          HttpStatus.NOT_FOUND,
+          "Опрос не найден"
+      );
+    }
+
     permissionService.checkCanEdit(surveyId, currentUserId);
 
     Account account = findAccountByEmailOrThrow(email);

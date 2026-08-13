@@ -24,16 +24,16 @@ public class SurveyDaoImpl implements SurveyDao {
   @Override
   public List<Survey> findAllByAuthorId(UUID authorId) {
     return entityManager
-            .createQuery("FROM Survey s WHERE s.author.id = :authorId", Survey.class)
-            .setParameter("authorId", authorId)
-            .getResultList();
+        .createQuery("FROM Survey s WHERE s.author.id = :authorId", Survey.class)
+        .setParameter("authorId", authorId)
+        .getResultList();
   }
 
   @Override
   public List<Survey> findAllPublished() {
     return entityManager
-            .createQuery("FROM Survey s WHERE s.isPublished = true", Survey.class)
-            .getResultList();
+        .createQuery("FROM Survey s WHERE s.isPublished = true", Survey.class)
+        .getResultList();
   }
 
   @Override

@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
@@ -12,7 +13,6 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
@@ -205,6 +205,7 @@ class ResponseServiceTest {
   // ----------------------- GetCompletedBySurveyId tests -----------------------
   @Test
   void getCompletedBySurveyId_permissionDenied_ThrowsException() {
+    when(surveyDao.findById(surveyId)).thenReturn(Optional.of(testSurvey));
     doThrow(ResponseStatusException.class)
         .when(permissionService)
         .checkCanReadResponses(surveyId, respondentAccountId);
