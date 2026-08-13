@@ -1,5 +1,6 @@
 package ru.hh.kakdela.v2.dto.error;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -16,7 +17,9 @@ public class ErrorResponse {
   private final ErrorCode internalErrorCode;
   private final UUID errorId;
   private final String message;
+  @JsonInclude(JsonInclude.Include.NON_NULL)
   private final UUID object1id;
+  @JsonInclude(JsonInclude.Include.NON_NULL)
   private final UUID object2id;
   private final String path;
 }
