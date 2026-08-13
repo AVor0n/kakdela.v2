@@ -22,12 +22,30 @@ import style from './SurveyModify.module.css';
 import { SortablePage } from './components/SortablePage/SortablePage';
 import { ClosingPageEditor } from './components/ClosingPageEditor/ClosingPageEditor';
 import { useSearchParams } from 'react-router-dom';
+import type { Page } from '@/shared/types/Survey.type';
+import { validateActiveSurveyConditions } from '@/shared/utils/conditions';
 
-// interface DetailValues {
-//     title: string;
-//     description: string;
-//     isTemplate: boolean;
-// }
+function getReorderedPages(pages: Page[], activePageId: string, overPageId: string): Page[] {
+    const reorderedPages = pages.map(clonePage);
+    const activePageIndex = reorderedPages.findIndex(({ id }) => id === activePageId);
+    const overPageIndex = reorderedPages.findIndex(({ id }) => id === overPageId);
+    if (activePageIndex < 0 || overPageIndex < 0) return reorderedPages;
+
+    const [activePage] = reorderedPages.splice(activePageIndex, 1);
+    reorderedPages.splice(overPageIndex, 0, activePage);
+    reorderedPages.forEach((page, index) => {
+        page.serialNumber = index + 1;
+    });
+    return reorderedPages;
+}
+
+function getBackwardConditionIds(pages: Page[]): Set<string> {
+    return new Set(
+        validateActiveSurveyConditions(pages)
+            .filter(({ code }) => code === 'TARGET_PAGE_NOT_FORWARD')
+            .map(({ conditionId }) => conditionId),
+    );
+}
 
 export function SurveyModify() {
     const { selectedSurvey } = useAppSelector((state) => state.survey);
@@ -36,7 +54,7 @@ export function SurveyModify() {
     const [searchParams] = useSearchParams();
     const isTemplate = searchParams.get('template') === 'true';
     const dispatch = useAppDispatch();
-    const pageIds = useMemo(() => pages.map((page) => page.id) ?? [], [selectedSurvey]);
+    const pageIds = useMemo(() => pages.map((page) => page.id), [pages]);
     const sensors = useSensors(
         useSensor(PointerSensor),
         useSensor(KeyboardSensor, {
@@ -54,6 +72,21 @@ export function SurveyModify() {
         if (!overPage) return;
 
         const previousPages = pages.map(clonePage);
+        const reorderedPages = getReorderedPages(previousPages, activePageId, overPageId);
+        const currentBackwardConditionIds = getBackwardConditionIds(previousPages);
+        const newBackwardTransition = validateActiveSurveyConditions(reorderedPages).find(
+            ({ code, conditionId }) =>
+                code === 'TARGET_PAGE_NOT_FORWARD' && !currentBackwardConditionIds.has(conditionId),
+        );
+        if (newBackwardTransition) {
+            const targetPage = reorderedPages.find(({ id }) => id === newBackwardTransition.targetPageId);
+            dispatch(
+                setErrorMessage({
+                    message: `Нельзя изменить порядок: переход со страницы ${newBackwardTransition.pageSerialNumber} на страницу ${targetPage?.serialNumber ?? '?'} станет обратным`,
+                }),
+            );
+            return;
+        }
 
         dispatch(reorderPages({ activePageId, overPageId }));
 

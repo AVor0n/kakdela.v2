@@ -20,6 +20,7 @@ import type { Condition, ConditionLinkOperator, ConditionNode } from '@/shared/t
 import type { Question } from '@/shared/types/Question.type';
 import type { Page } from '@/shared/types/Survey.type';
 import { getApiError } from '@/shared/utils/apiError';
+import { validateCondition, type ConditionValidationIssueCode } from '@/shared/utils/conditions';
 import style from './PageConditionsEditor.module.css';
 
 type Props = {
@@ -31,6 +32,7 @@ type AtomEditorProps = {
     page: Page;
     initialNode?: ConditionNode;
     disabled?: boolean;
+    deleteDisabled?: boolean;
     onCancel?: () => void;
     onDelete?: () => void;
     onSubmit: (_request: ConditionAtomRequest) => Promise<void>;
@@ -58,7 +60,6 @@ type TreeNodeEditorProps = {
 
 type ConditionConflictState = {
     conditionIds: [string, string];
-    message: string;
 } | null;
 
 function getSupportedQuestions(page: Page) {
@@ -81,6 +82,14 @@ function getPlainText(value: string) {
 function getQuestion(page: Page, questionId?: string) {
     return page.questions.find(({ id }) => id === questionId);
 }
+
+const CONDITION_VALIDATION_MESSAGES: Record<ConditionValidationIssueCode, string> = {
+    MISSING_ROOT: 'Добавьте хотя бы одно правило.',
+    INVALID_ATOM: 'Заполните вопрос, оператор и значение.',
+    INCOMPLETE_GROUP: 'Добавьте как минимум два правила в группу.',
+    TARGET_PAGE_NOT_FOUND: 'Выберите существующую страницу перехода.',
+    TARGET_PAGE_NOT_FORWARD: 'Переход должен вести на следующую страницу.',
+};
 
 const DISPLAY_OPERATOR_OPTIONS: StaticDataFetcherItem[] = [
     { value: 'EQUALS', text: 'равно' },
@@ -142,7 +151,16 @@ function ConditionSelect({ disabled, name, options, title, value, onChange }: Co
     );
 }
 
-function AtomEditor({ additionalActions, page, initialNode, disabled, onCancel, onDelete, onSubmit }: AtomEditorProps) {
+function AtomEditor({
+    additionalActions,
+    page,
+    initialNode,
+    disabled,
+    deleteDisabled,
+    onCancel,
+    onDelete,
+    onSubmit,
+}: AtomEditorProps) {
     const fieldId = useId();
     const questions = useMemo(() => getSupportedQuestions(page), [page]);
     const initialQuestion = getQuestion(page, initialNode?.atom?.questionId) ?? questions[0];
@@ -259,7 +277,7 @@ function AtomEditor({ additionalActions, page, initialNode, disabled, onCancel, 
                         mode='secondary'
                         style='neutral'
                         type='button'
-                        disabled={disabled}
+                        disabled={disabled || deleteDisabled}
                         icon={<img className={style.trashIcon} src='/trash.svg' alt='' />}
                         aria-label='Удалить условие'
                         onClick={onDelete}
@@ -287,7 +305,7 @@ function TreeNodeEditor({ condition, node, page, depth, disabled, mutateAndRefre
                                     key={operator}
                                     mode='secondary'
                                     type='button'
-                                    disabled={disabled || depth >= 3}
+                                    disabled={disabled || condition.isActive || depth >= 3}
                                     onClick={() =>
                                         void mutateAndRefresh(() => addConditionNode(condition.id, node.id, operator))
                                     }
@@ -300,6 +318,7 @@ function TreeNodeEditor({ condition, node, page, depth, disabled, mutateAndRefre
                     page={page}
                     initialNode={node}
                     disabled={disabled}
+                    deleteDisabled={condition.isActive}
                     onDelete={() => void mutateAndRefresh(() => deleteConditionNode(node.id))}
                     onSubmit={(request) => mutateAndRefresh(() => updateConditionAtom(node.id, request))}
                 />
@@ -332,7 +351,7 @@ function TreeNodeEditor({ condition, node, page, depth, disabled, mutateAndRefre
                     <button
                         className={style.groupDeleteButton}
                         type='button'
-                        disabled={disabled}
+                        disabled={disabled || condition.isActive}
                         aria-label='Удалить группу'
                         onClick={() => void mutateAndRefresh(() => deleteConditionNode(node.id))}
                     >
@@ -369,7 +388,7 @@ function TreeNodeEditor({ condition, node, page, depth, disabled, mutateAndRefre
                             <Button
                                 mode='secondary'
                                 type='button'
-                                disabled={disabled || depth >= 3}
+                                disabled={disabled || condition.isActive || depth >= 3}
                                 onClick={() => setIsAddingAtom(true)}
                             >
                                 +
@@ -411,7 +430,15 @@ export function PageConditionsEditor({ page }: Props) {
     };
 
     const refreshCondition = async (conditionId: string) => {
-        replaceCondition(await getCondition(conditionId));
+        const refreshedCondition = await getCondition(conditionId);
+        replaceCondition(refreshedCondition);
+
+        if (refreshedCondition.isActive) {
+            const [validationIssue] = validateCondition(refreshedCondition, page, surveyPages);
+            if (validationIssue) {
+                setError(CONDITION_VALIDATION_MESSAGES[validationIssue.code]);
+            }
+        }
     };
 
     const handleMutationError = (requestError: unknown, fallbackMessage: string) => {
@@ -423,9 +450,7 @@ export function PageConditionsEditor({ page }: Props) {
         ) {
             setConflict({
                 conditionIds: [apiError.object1Id, apiError.object2Id],
-                message: apiError.message || 'Условия перехода конфликтуют',
             });
-            setError(apiError.message || 'Условия перехода конфликтуют');
             return;
         }
 
@@ -497,6 +522,10 @@ export function PageConditionsEditor({ page }: Props) {
                     const isPending = pendingConditionId === condition.id;
                     const isTargetInvalid = !forwardPages.some(({ id }) => id === condition.nextPageId);
                     const hasConflict = conflict?.conditionIds.includes(condition.id) ?? false;
+                    const [activationIssue] = condition.isActive ? [] : validateCondition(condition, page, surveyPages);
+                    const activationBlockReason = activationIssue
+                        ? CONDITION_VALIDATION_MESSAGES[activationIssue.code]
+                        : null;
                     const targetPageOptions: StaticDataFetcherItem[] = isTargetInvalid
                         ? [
                               {
@@ -535,9 +564,7 @@ export function PageConditionsEditor({ page }: Props) {
                                 <label className={style.activeField}>
                                     <Checkbox
                                         checked={condition.isActive}
-                                        disabled={
-                                            isPending || (!condition.isActive && (!condition.root || isTargetInvalid))
-                                        }
+                                        disabled={isPending || (!condition.isActive && activationBlockReason !== null)}
                                         onChange={(event: ChangeEvent<HTMLInputElement>) => {
                                             const isActive = event.target.checked;
                                             void mutateAndRefresh(condition.id, () =>
@@ -560,10 +587,17 @@ export function PageConditionsEditor({ page }: Props) {
                                     Удалить переход
                                 </Button>
                             </div>
+                            {!condition.isActive && activationBlockReason && (
+                                <p className={style.hint}>Условие нельзя активировать: {activationBlockReason}</p>
+                            )}
+                            {condition.isActive && (
+                                <p className={style.hint}>
+                                    Чтобы добавить или удалить правила, сначала отключите условие.
+                                </p>
+                            )}
                             {isTargetInvalid && (
                                 <p className={style.error}>После изменения порядка страниц переход ведёт назад.</p>
                             )}
-                            {hasConflict && <p className={style.error}>{conflict?.message}</p>}
                             {condition.root ? (
                                 <div className={style.treeRoot}>
                                     <TreeNodeEditor

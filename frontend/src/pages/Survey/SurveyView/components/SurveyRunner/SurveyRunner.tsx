@@ -94,7 +94,9 @@ export function SurveyRunner({ survey, mode }: Props) {
     const [otherTexts, setOtherTexts] = useState<Record<string, string>>({});
     const [submitError, setSubmitError] = useState<string | null>(null);
     const isPreview = mode === 'preview';
+    const hasCustomClosingPage = mode === 'respond' && survey.hasCustomClosingPage;
     const [closingPage, setClosingPage] = useState<ClosingPage | null>(isPreview ? survey.closingPage : null);
+    const [isClosingPageLoading, setIsClosingPageLoading] = useState(false);
     const {
         ensureResponse,
         failedQuestionCount,
@@ -115,19 +117,25 @@ export function SurveyRunner({ survey, mode }: Props) {
         setStage('welcome');
         setSubmitError(null);
         setClosingPage(mode === 'preview' ? survey.closingPage : null);
+        setIsClosingPageLoading(false);
     }, [mode, survey]);
 
-    const refreshClosingPage = async () => {
+    const refreshClosingPage = async (responseId: string) => {
+        setClosingPage(null);
+        setIsClosingPageLoading(hasCustomClosingPage);
+        if (!hasCustomClosingPage) return;
+
         try {
-            setClosingPage(await getClosingPage(survey.id));
+            setClosingPage(await getClosingPage(survey.id, responseId));
         } catch {
-            // The survey already contains enough data to show a fallback closing page.
+            // ClosingPageView displays the standard completion message as a fallback.
+        } finally {
+            setIsClosingPageLoading(false);
         }
     };
 
     const showClosingPagePreview = () => {
         setStage('closing');
-        void refreshClosingPage();
     };
 
     const startSurvey = async () => {
@@ -443,7 +451,7 @@ export function SurveyRunner({ survey, mode }: Props) {
             const responseId = await ensureResponse();
             await completeSurveyResponse(responseId);
             setStage('closing');
-            void refreshClosingPage();
+            await refreshClosingPage(responseId);
         } catch (requestError) {
             const apiError = getApiError(requestError);
             setSubmitError(
@@ -474,6 +482,8 @@ export function SurveyRunner({ survey, mode }: Props) {
                         isStarting={isStarting}
                         startError={submitError}
                     />
+                ) : stage === 'closing' && isClosingPageLoading ? (
+                    <div>Загрузка завершающей страницы...</div>
                 ) : stage === 'closing' ? (
                     <ClosingPageView
                         surveyId={survey.id}

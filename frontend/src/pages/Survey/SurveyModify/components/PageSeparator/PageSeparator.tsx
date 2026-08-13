@@ -7,6 +7,8 @@ import type { DraggableAttributes, DraggableSyntheticListeners } from '@dnd-kit/
 import type { MouseEventHandler, Ref } from 'react';
 import style from './PageSeparator.module.css';
 import { PageDetail } from './components/PageDetail/PageDetail';
+import { useAppSelector } from '@/hooks/useAppSelector';
+import { findPageConditionReferences } from '@/shared/utils/conditions';
 
 interface Props {
     page: Page;
@@ -41,12 +43,30 @@ export function PageSeparator({
     dragHandleRef,
 }: Props) {
     const dispatch = useAppDispatch();
+    const surveyPages = useAppSelector((state) => state.survey.selectedSurvey?.pages ?? []);
     const stopClickPropagation: MouseEventHandler<HTMLElement> = (event) => {
         event.stopPropagation();
     };
 
     const deletePageHandler: MouseEventHandler<HTMLButtonElement> = (event) => {
         event.stopPropagation();
+        const conditionReferences = findPageConditionReferences(surveyPages, page.id);
+        if (conditionReferences.length > 0) {
+            const sourcePageNumbers = [
+                ...new Set(conditionReferences.map(({ pageSerialNumber }) => pageSerialNumber)),
+            ].sort((firstPageNumber, secondPageNumber) => firstPageNumber - secondPageNumber);
+            const sourcePageLabel =
+                sourcePageNumbers.length === 1
+                    ? `странице ${sourcePageNumbers[0]}`
+                    : `страницах ${sourcePageNumbers.join(', ')}`;
+            dispatch(
+                setErrorMessage({
+                    message: `Нельзя удалить страницу: сначала удалите или измените переходы на ${sourcePageLabel}`,
+                }),
+            );
+            return;
+        }
+
         deleteSurveyPage(page.id)
             .then(() => {
                 dispatch(deletePage({ pageId: page.id }));

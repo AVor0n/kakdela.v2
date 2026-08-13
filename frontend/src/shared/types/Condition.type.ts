@@ -13,7 +13,7 @@ export type ConditionNode = {
     id: string;
     children: ConditionNode[];
     operator: ConditionNodeOperator;
-    atom: ConditionAtom | null;
+    atom?: ConditionAtom | null;
 };
 
 export type Condition = {

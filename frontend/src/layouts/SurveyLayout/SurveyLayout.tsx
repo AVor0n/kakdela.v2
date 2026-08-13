@@ -16,6 +16,7 @@ import type { SurveyNavigationItem, SurveySection } from './SurveyLayout.types';
 import { getTemplateById, saveTemplate, updateTemplate } from '@/api/template';
 import { addTemplate, setSelectedTemplate } from '@/entities/Template/Template.slice';
 import { setPages } from '@/entities/Pages/Pages.slice';
+import { validateActiveSurveyConditions } from '@/shared/utils/conditions';
 
 type SurveyAccess = {
     surveyId: string;
@@ -159,6 +160,23 @@ export function SurveyLayout() {
         if (!selectedSurvey.isPublished && pages.length === 0) {
             dispatch(setErrorMessage({ message: 'Добавьте хотя бы одну страницу перед публикацией опроса' }));
             return;
+        }
+
+        if (!selectedSurvey.isPublished) {
+            const conditionIssues = validateActiveSurveyConditions(pages);
+            if (conditionIssues.length > 0) {
+                const pageNumbers = [...new Set(conditionIssues.map(({ pageSerialNumber }) => pageSerialNumber))].sort(
+                    (firstPageNumber, secondPageNumber) => firstPageNumber - secondPageNumber,
+                );
+                const pageLabel =
+                    pageNumbers.length === 1 ? `странице ${pageNumbers[0]}` : `страницах ${pageNumbers.join(', ')}`;
+                dispatch(
+                    setErrorMessage({
+                        message: `Проверьте активные условия на ${pageLabel} перед публикацией опроса`,
+                    }),
+                );
+                return;
+            }
         }
 
         updateSurvey(id, { isPublished: !selectedSurvey.isPublished })
