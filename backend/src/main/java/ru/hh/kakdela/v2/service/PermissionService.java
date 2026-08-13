@@ -82,7 +82,7 @@ public class PermissionService {
   public void checkCanEdit(UUID surveyId, UUID accountId) {
     Survey survey = getSurveyOrThrow(surveyId);
 
-    if (survey.getAuthor().getId().equals(accountId)) {
+    if (survey.isAuthor(accountId)) {
       return;
     }
 

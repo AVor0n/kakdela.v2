@@ -93,7 +93,7 @@ public class TemplateService {
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Аккаунт не найден"));
 
-    String newTitle = "Копия — " + source.getTitle();
+    String newTitle = "Копия — " + source.getTitle() + " от " + source.getAuthor().getLogin();
     Survey copy = cloneSurvey(source, account, true, newTitle, false);
 
     surveyDao.save(copy);
