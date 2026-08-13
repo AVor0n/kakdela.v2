@@ -68,7 +68,7 @@ public class SurveyService {
   @Transactional(readOnly = true)
   public List<SurveyShortResponseDto> getMyAssignedSurveys(UUID accountId) {
     return subscriptionDao.findSurveysBySubscriberId(accountId).stream()
-        .sorted(Comparator.comparing(Survey::getCreatedAt))
+        .sorted(Comparator.comparing(Survey::getCreatedAt).reversed())
         .map(surveyMapper::surveyToShortDto)
         .toList();
   }
