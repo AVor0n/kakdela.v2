@@ -1,0 +1,14 @@
+package ru.hh.kakdela.v2.exception.condition;
+
+import java.util.UUID;
+import org.springframework.http.HttpStatus;
+import ru.hh.kakdela.v2.exception.ErrorCode;
+import ru.hh.kakdela.v2.exception.Kd2OblectRelatedException;
+
+public class ConditionNodeIsNotAtomException extends Kd2OblectRelatedException {
+
+  public ConditionNodeIsNotAtomException(UUID id) {
+    super(ErrorCode.CONDITION_NODE_IS_NOT_ATOM, HttpStatus.BAD_REQUEST,
+        "Указанная вершина не является атомарным условием: id=" + id, id, null);
+  }
+}

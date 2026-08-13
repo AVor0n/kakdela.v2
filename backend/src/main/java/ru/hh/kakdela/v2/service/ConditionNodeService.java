@@ -18,6 +18,7 @@ import ru.hh.kakdela.v2.dto.condition.atom.ConditionAtomUpdateDto;
 import ru.hh.kakdela.v2.dto.condition.node.ConditionNodeCreateDto;
 import ru.hh.kakdela.v2.dto.condition.node.ConditionNodeResponseDto;
 import ru.hh.kakdela.v2.dto.condition.node.ConditionNodeUpdateDto;
+import ru.hh.kakdela.v2.exception.condition.ConditionNodeIsNotAtomException;
 import ru.hh.kakdela.v2.mapper.ConditionMapper;
 import ru.hh.kakdela.v2.model.AnswerOption;
 import ru.hh.kakdela.v2.model.Question;
@@ -256,6 +257,10 @@ public class ConditionNodeService {
 
     permissionService.checkCanEdit(
         conditionNodeDao.findParentSurveyIdById(nodeId), accountId);
+
+    if (node.getAtom() == null) {
+      throw new ConditionNodeIsNotAtomException(nodeId);
+    }
 
     Question question = questionDao.findById(dto.getQuestionId())
         .orElseThrow(() -> new ResponseStatusException(
