@@ -13,6 +13,8 @@ public interface SurveyPageDao {
 
   List<SurveyPage> findAllBySurveyId(UUID surveyId);
 
+  Optional<SurveyPage> findFirstBySurveyId(UUID surveyId);
+
   void save(SurveyPage page);
 
   void update(SurveyPage page);

@@ -16,6 +16,7 @@ import ru.hh.kakdela.v2.constants.DefaultValues;
 import ru.hh.kakdela.v2.dao.AccountDao;
 import ru.hh.kakdela.v2.dao.SurveyDao;
 import ru.hh.kakdela.v2.dao.SurveyNotificationSubscriptionDao;
+import ru.hh.kakdela.v2.dao.SurveyPageDao;
 import ru.hh.kakdela.v2.dto.survey.SurveyCreateDto;
 import ru.hh.kakdela.v2.dto.survey.SurveyPublicResponseDto;
 import ru.hh.kakdela.v2.dto.survey.SurveyResponseDto;
@@ -37,6 +38,7 @@ import ru.hh.kakdela.v2.util.JsonNullableUtil;
 public class SurveyService {
 
   private final SurveyDao surveyDao;
+  private final SurveyPageDao surveyPageDao;
   private final AccountDao accountDao;
   private final SurveyNotificationSubscriptionDao subscriptionDao;
   private final PermissionService permissionService;

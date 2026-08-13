@@ -18,10 +18,12 @@ import ru.hh.kakdela.v2.dao.AccountDao;
 import ru.hh.kakdela.v2.dao.ResponseDao;
 import ru.hh.kakdela.v2.dao.ResponsePageStatusDao;
 import ru.hh.kakdela.v2.dao.SurveyDao;
+import ru.hh.kakdela.v2.dao.SurveyPageDao;
 import ru.hh.kakdela.v2.dto.response.ResponseExportDto;
 import ru.hh.kakdela.v2.dto.response.ResponseResponseDto;
 import ru.hh.kakdela.v2.dto.response.ResponseWithTokenDto;
 import ru.hh.kakdela.v2.exception.response.NotAllMandatoryQuestionsAnsweredException;
+import ru.hh.kakdela.v2.exception.survey.SurveyIsEmptyException;
 import ru.hh.kakdela.v2.mapper.ResponseMapper;
 import ru.hh.kakdela.v2.model.Account;
 import ru.hh.kakdela.v2.model.Answer;
@@ -39,6 +41,7 @@ public class ResponseService {
   private final ResponseDao responseDao;
   private final ResponsePageStatusDao responsePageStatusDao;
   private final SurveyDao surveyDao;
+  private final SurveyPageDao surveyPageDao;
   private final AccountDao accountDao;
   private final PermissionService permissionService;
   private final JwtService jwtService;
@@ -90,12 +93,16 @@ public class ResponseService {
             HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
 
     verifyResponseCreationRequest(survey, accountId);
+    SurveyPage firstPage = surveyPageDao.findFirstBySurveyId(surveyId)
+        .orElseThrow(() -> new SurveyIsEmptyException(surveyId));
 
-    Account account = null;
+    Account account;
     if (accountId != null) {
       account = accountDao.findById(accountId)
           .orElseThrow(() -> new ResponseStatusException(
               HttpStatus.NOT_FOUND, "Аккаунт не найден: " + accountId));
+    } else {
+      account = null;
     }
 
     Response response = Response.builder()
@@ -103,6 +110,16 @@ public class ResponseService {
         .account(account)
         .survey(survey)
         .build();
+
+
+    ResponsePageStatus firstPageStatus = ResponsePageStatus.builder()
+        .id(UUID.randomUUID())
+        .response(response)
+        .surveyPage(firstPage)
+        .isIncluded(true)
+        .build();
+
+    response.getPageStatuses().add(firstPageStatus);
 
     responseDao.save(response);
     log.info("Создан ответ на опрос id={} surveyId={} accountId={}",
