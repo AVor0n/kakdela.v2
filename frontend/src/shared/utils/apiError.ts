@@ -32,7 +32,3 @@ export function getApiError(error: unknown): ApiErrorResponse | null {
         path: nullableString(data.path),
     };
 }
-
-export function isApiErrorCode(error: unknown, code: ApiErrorCode): boolean {
-    return getApiError(error)?.internalErrorCode === code;
-}

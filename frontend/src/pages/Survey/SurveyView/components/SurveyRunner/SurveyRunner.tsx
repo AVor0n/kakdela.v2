@@ -1,15 +1,13 @@
 import { useEffect, useState } from 'react';
 import type { Question } from '@/shared/types/Question.type';
-import type { ClosingPage, Survey, SurveyPublic } from '@/shared/types/Survey.type';
-import { Button, Checkbox, Input, Radio, Text, TextArea, TextAreaGrowLimiter } from '@hh.ru/magritte-ui';
+import type { ClosingPage, Page, Survey, SurveyPageShort, SurveyPublic } from '@/shared/types/Survey.type';
+import { Button, Text } from '@hh.ru/magritte-ui';
 import { Link } from 'react-router-dom';
 import { routes } from '@/app/routes';
 import { completeSurveyResponse } from '@/api/surveyResponses';
 import surveyDetailStyle from '@/pages/Survey/SurveyModify/components/SurveyDetail/SurveyDetail.module.css';
 import questionStyle from '@/pages/Survey/SurveyModify/components/QuestionList/components/Question/Question.module.css';
 import choiceStyle from '@/pages/Survey/SurveyModify/components/QuestionList/components/Question/components/Choice/Choice.module.css';
-import optionStyle from '@/pages/Survey/SurveyModify/components/QuestionList/components/Question/components/Choice/components/Option/Option.module.css';
-import longTextStyle from '@/pages/Survey/SurveyModify/components/QuestionList/components/Question/components/LongText/LongText.module.css';
 import style from './SurveyRunner.module.css';
 import { useSurveyResponseSync } from './useSurveyResponseSync';
 import { HTMLRender } from '@/shared/ui/HTMLRender/HTMLRender';
@@ -19,14 +17,17 @@ import { getClosingPage } from '@/api/closingPage';
 import { getApiError } from '@/shared/utils/apiError';
 import { useSurveyPageFlow } from './useSurveyPageFlow';
 import { resolvePreviewNextPageId } from '@/shared/utils/conditions';
-
-const OTHER_OPTION_VALUE = '__other__';
+import { QuestionControl } from './QuestionControl';
+import {
+    buildAnswerPayload,
+    isQuestionAnswered,
+    type AnswerErrors as Errors,
+    type Answers,
+    type AnswerValue,
+} from './answerPayload';
 
 export type SurveyRunnerMode = 'preview' | 'respond';
 
-type AnswerValue = string | string[] | boolean;
-type Answers = Record<string, AnswerValue>;
-type Errors = Record<string, string>;
 type SurveyRunnerStage = 'welcome' | 'questions' | 'closing';
 
 type Props = { survey: Survey; mode: 'preview' } | { survey: SurveyPublic; mode: 'respond' };
@@ -35,57 +36,13 @@ function sortBySerialNumber<T extends { serialNumber: number }>(items: T[]) {
     return [...items].sort((firstItem, secondItem) => firstItem.serialNumber - secondItem.serialNumber);
 }
 
-function isQuestionAnswered(question: Question, value: AnswerValue | undefined, otherText: string | undefined) {
-    switch (question.type) {
-        case 'MULTIPLE_CHOICE': {
-            if (!Array.isArray(value) || value.length === 0) return false;
-            return !value.includes(OTHER_OPTION_VALUE) || Boolean((otherText ?? '').trim());
-        }
-        case 'YES_NO':
-            return typeof value === 'boolean';
-        case 'SHORT_TEXT':
-        case 'LONG_TEXT':
-        case 'DATE':
-        case 'TIME':
-            return typeof value === 'string' && value.trim().length > 0;
-        case 'SINGLE_CHOICE':
-            if (typeof value !== 'string' || !value.trim()) return false;
-            return value !== OTHER_OPTION_VALUE || Boolean((otherText ?? '').trim());
-    }
+function isEditablePage(page: Page | SurveyPageShort): page is Page {
+    return 'questions' in page && Array.isArray(page.questions) && 'conditions' in page;
 }
 
-function buildMultipleChoicePayload(selectedIds: string[], otherText: string) {
-    const normalIds = selectedIds.filter((id) => id !== OTHER_OPTION_VALUE);
-    const trimmedOtherText = otherText.trim();
-    const otherSelected = selectedIds.includes(OTHER_OPTION_VALUE) && trimmedOtherText.length > 0;
-
-    if (!otherSelected) {
-        return { selectedAnswerOptionIds: normalIds };
-    }
-    return { selectedAnswerOptionIds: normalIds, textValue: trimmedOtherText };
-}
-
-function buildAnswerPayload(question: Question, value: AnswerValue | undefined, otherText: string) {
-    switch (question.type) {
-        case 'SINGLE_CHOICE':
-            if (value === OTHER_OPTION_VALUE) return { textValue: otherText.trim() };
-            return { selectedAnswerOptionIds: typeof value === 'string' && value ? [value] : [] };
-        case 'MULTIPLE_CHOICE':
-            return buildMultipleChoicePayload(Array.isArray(value) ? value : [], otherText);
-        case 'YES_NO':
-            return { booleanValue: typeof value === 'boolean' ? value : undefined };
-        case 'DATE':
-            return { dateValue: typeof value === 'string' && value ? value : undefined };
-        case 'TIME':
-            return { timeValue: typeof value === 'string' && value ? value : undefined };
-        case 'SHORT_TEXT':
-        case 'LONG_TEXT':
-            return { textValue: typeof value === 'string' ? value.trim() : '' };
-    }
-}
-
-export function SurveyRunner({ survey, mode }: Props) {
-    const [previewPageIndex, setPreviewPageIndex] = useState(0);
+export function SurveyRunner(props: Props) {
+    const { survey, mode } = props;
+    const previewSurvey = props.mode === 'preview' ? props.survey : null;
     const [answers, setAnswers] = useState<Answers>({});
     const [errors, setErrors] = useState<Errors>({});
     const [stage, setStage] = useState<SurveyRunnerStage>('welcome');
@@ -106,11 +63,12 @@ export function SurveyRunner({ survey, mode }: Props) {
         retryFailedAnswers,
         scheduleAnswerSave,
     } = useSurveyResponseSync(survey.id, isPreview);
-    const orderedPageSummaries = sortBySerialNumber(survey.pages);
-    const responseFlow = useSurveyPageFlow(survey.id, mode, orderedPageSummaries, ensureResponse);
+    const orderedPages = sortBySerialNumber(survey.pages).map((page) =>
+        isEditablePage(page) ? { ...page, questions: sortBySerialNumber(page.questions) } : page,
+    );
+    const pageFlow = useSurveyPageFlow(survey.id, mode, orderedPages, ensureResponse);
 
     useEffect(() => {
-        setPreviewPageIndex(0);
         setAnswers({});
         setOtherTexts({});
         setErrors({});
@@ -139,20 +97,15 @@ export function SurveyRunner({ survey, mode }: Props) {
     };
 
     const startSurvey = async () => {
-        if (orderedPageSummaries.length === 0) {
+        if (orderedPages.length === 0) {
             setSubmitError('Опрос пока не содержит страниц');
-            return;
-        }
-
-        if (isPreview) {
-            setStage('questions');
             return;
         }
 
         setIsStarting(true);
         setSubmitError(null);
         try {
-            const firstPage = await responseFlow.start();
+            const firstPage = await pageFlow.start();
             if (!firstPage) {
                 setSubmitError('Опрос пока не содержит страниц');
                 return;
@@ -186,16 +139,6 @@ export function SurveyRunner({ survey, mode }: Props) {
         });
     };
 
-    const toggleMultipleChoice = (question: Question, optionId: string) => {
-        const currentValue = answers[question.id];
-        const selectedOptions = Array.isArray(currentValue) ? currentValue : [];
-        const nextValue = selectedOptions.includes(optionId)
-            ? selectedOptions.filter((selectedOptionId) => selectedOptionId !== optionId)
-            : [...selectedOptions, optionId];
-
-        updateAnswer(question, nextValue);
-    };
-
     const validateQuestions = (questions: Question[]) => {
         const nextErrors: Errors = {};
 
@@ -220,197 +163,21 @@ export function SurveyRunner({ survey, mode }: Props) {
         return Object.keys(nextErrors).length === 0;
     };
 
-    const renderQuestionControl = (question: Question) => {
-        const value = answers[question.id];
-
-        switch (question.type) {
-            case 'SHORT_TEXT':
-                return (
-                    <Input
-                        placeholder='Короткий текст'
-                        size='large'
-                        disabled={isSubmitting}
-                        value={typeof value === 'string' ? value : ''}
-                        onChange={(nextValue) => updateAnswer(question, nextValue)}
-                        onBlur={() => void flushQuestion(question.id).catch(() => undefined)}
-                    />
-                );
-            case 'LONG_TEXT':
-                return (
-                    <TextAreaGrowLimiter className={longTextStyle.content}>
-                        <TextArea
-                            placeholder='Длинный текст'
-                            disabled={isSubmitting}
-                            value={typeof value === 'string' ? value : ''}
-                            onChange={(event) => updateAnswer(question, event.target.value)}
-                            onBlur={() => void flushQuestion(question.id).catch(() => undefined)}
-                            size='large'
-                            layout='hug'
-                        />
-                    </TextAreaGrowLimiter>
-                );
-            case 'SINGLE_CHOICE':
-                return (
-                    <div className={choiceStyle.container}>
-                        {question.answerOptions.map((option) => {
-                            return (
-                                <div className={optionStyle.optionContent} key={option.id}>
-                                    <label className={optionStyle.option}>
-                                        <Radio
-                                            name={question.id}
-                                            disabled={isSubmitting}
-                                            checked={value === option.id}
-                                            onChange={() => updateAnswer(question, option.id)}
-                                        />
-                                        <Text typography='paragraph-2-regular' style='primary'>
-                                            <HTMLRender html={option.text} />
-                                        </Text>
-                                    </label>
-                                </div>
-                            );
-                        })}
-                        {question.hasOtherOption && (
-                            <div className={style.anotherOption}>
-                                <Radio
-                                    name={question.id}
-                                    disabled={isSubmitting}
-                                    checked={value === OTHER_OPTION_VALUE}
-                                    onChange={() => updateAnswer(question, OTHER_OPTION_VALUE)}
-                                />
-                                <p>Другое: </p>
-                                <input
-                                    className={style.another}
-                                    disabled={value !== OTHER_OPTION_VALUE}
-                                    value={otherTexts[question.id] ?? ''}
-                                    onChange={(e) => {
-                                        const text = e.target.value;
-                                        setOtherTexts((prev) => ({ ...prev, [question.id]: text }));
-                                        scheduleAnswerSave(question.id, buildAnswerPayload(question, value, text), {
-                                            debounce: true,
-                                        });
-                                    }}
-                                />
-                            </div>
-                        )}
-                    </div>
-                );
-            case 'MULTIPLE_CHOICE':
-                return (
-                    <div className={choiceStyle.container}>
-                        {question.answerOptions.map((option) => {
-                            const selectedOptions = Array.isArray(value) ? value : [];
-                            return (
-                                <div className={optionStyle.optionContent} key={option.id}>
-                                    <label className={optionStyle.option}>
-                                        <Checkbox
-                                            disabled={isSubmitting}
-                                            checked={selectedOptions.includes(option.id)}
-                                            onChange={() => toggleMultipleChoice(question, option.id)}
-                                        />
-                                        <Text typography='paragraph-2-regular' style='primary'>
-                                            <HTMLRender html={option.text} />
-                                        </Text>
-                                    </label>
-                                </div>
-                            );
-                        })}
-                        {question.hasOtherOption && (
-                            <div className={style.anotherOption}>
-                                <Checkbox
-                                    disabled={isSubmitting}
-                                    checked={Array.isArray(value) && value.includes(OTHER_OPTION_VALUE)}
-                                    onChange={() => toggleMultipleChoice(question, OTHER_OPTION_VALUE)}
-                                />
-                                <p>Другое: </p>
-                                <input
-                                    className={style.another}
-                                    disabled={!Array.isArray(value) || !value.includes(OTHER_OPTION_VALUE)}
-                                    value={otherTexts[question.id] ?? ''}
-                                    onChange={(e) => {
-                                        const text = e.target.value;
-                                        setOtherTexts((prev) => ({ ...prev, [question.id]: text }));
-                                        scheduleAnswerSave(question.id, buildAnswerPayload(question, value, text), {
-                                            debounce: true,
-                                        });
-                                    }}
-                                />
-                            </div>
-                        )}
-                    </div>
-                );
-            case 'YES_NO':
-                return (
-                    <div className={choiceStyle.container}>
-                        <label className={optionStyle.option}>
-                            <Radio
-                                name={question.id}
-                                disabled={isSubmitting}
-                                checked={value === true}
-                                onChange={() => updateAnswer(question, true)}
-                            />
-                            <Text typography='paragraph-2-regular' style='primary'>
-                                Да
-                            </Text>
-                        </label>
-                        <label className={optionStyle.option}>
-                            <Radio
-                                name={question.id}
-                                disabled={isSubmitting}
-                                checked={value === false}
-                                onChange={() => updateAnswer(question, false)}
-                            />
-                            <Text typography='paragraph-2-regular' style='primary'>
-                                Нет
-                            </Text>
-                        </label>
-                    </div>
-                );
-            case 'DATE':
-                return (
-                    <input
-                        className={style.temporalInput}
-                        type='date'
-                        disabled={isSubmitting}
-                        value={typeof value === 'string' ? value : ''}
-                        onChange={(event) => updateAnswer(question, event.target.value)}
-                    />
-                );
-            case 'TIME':
-                return (
-                    <input
-                        className={style.temporalInput}
-                        type='time'
-                        disabled={isSubmitting}
-                        value={typeof value === 'string' ? value : ''}
-                        onChange={(event) => updateAnswer(question, event.target.value)}
-                    />
-                );
-            default:
-                return null;
-        }
-    };
-
-    const previewPages = isPreview
-        ? sortBySerialNumber(survey.pages).map((page) => ({
-              ...page,
-              questions: sortBySerialNumber(page.questions),
-          }))
-        : [];
-    const currentPageIndex = isPreview ? previewPageIndex : responseFlow.currentPageIndex;
-    const currentPage = isPreview ? previewPages[previewPageIndex] : responseFlow.currentPage;
-    const totalPageCount = orderedPageSummaries.length;
-    const isFirstPage = isPreview ? previewPageIndex === 0 : responseFlow.isFirstPage;
+    const currentPageIndex = pageFlow.currentPageIndex;
+    const currentPage = pageFlow.currentPage;
+    const totalPageCount = orderedPages.length;
+    const isFirstPage = pageFlow.isFirstPage;
     const isLastPage = currentPageIndex === totalPageCount - 1;
-    const isPageLoading = responseFlow.isPageLoading;
+    const isPageLoading = pageFlow.isPageLoading;
 
     const goToPreviousPage = async () => {
         if (isPreview) {
-            setPreviewPageIndex((pageIndex) => Math.max(pageIndex - 1, 0));
+            pageFlow.openPrevious();
             return;
         }
 
         await flushPendingAnswers().catch(() => setSubmitError('Не удалось сохранить некоторые ответы'));
-        responseFlow.openPrevious();
+        pageFlow.openPrevious();
     };
 
     const goToNextPage = async () => {
@@ -419,21 +186,24 @@ export function SurveyRunner({ survey, mode }: Props) {
         }
 
         if (isPreview) {
-            const currentPreviewPage = previewPages[previewPageIndex];
-            if (!currentPreviewPage || !validateQuestions(currentPreviewPage.questions)) return;
+            const currentPreviewPage = currentPage;
+            if (
+                !currentPreviewPage ||
+                !isEditablePage(currentPreviewPage) ||
+                !validateQuestions(currentPreviewPage.questions)
+            )
+                return;
             setErrors({});
-            const nextPageId = resolvePreviewNextPageId(currentPreviewPage, survey.pages, answers);
+            const nextPageId = resolvePreviewNextPageId(currentPreviewPage, previewSurvey?.pages ?? [], answers);
             if (!nextPageId) {
                 showClosingPagePreview();
                 return;
             }
-
-            const nextPageIndex = previewPages.findIndex(({ id }) => id === nextPageId);
-            if (nextPageIndex < 0) {
+            if (!orderedPages.some(({ id }) => id === nextPageId)) {
                 setSubmitError('Условие ведёт на недоступную страницу');
                 return;
             }
-            setPreviewPageIndex(nextPageIndex);
+            await pageFlow.openNext(nextPageId);
             return;
         }
 
@@ -445,7 +215,7 @@ export function SurveyRunner({ survey, mode }: Props) {
         setIsSubmitting(true);
         try {
             await flushPendingAnswers();
-            const hasNextPage = await responseFlow.verifyAndOpenNext(currentPage.id);
+            const hasNextPage = await pageFlow.openNext();
             if (hasNextPage) return;
 
             const responseId = await ensureResponse();
@@ -537,7 +307,29 @@ export function SurveyRunner({ survey, mode }: Props) {
                                             </div>
                                         )}
                                         <section className={questionStyle.actions}>
-                                            <div>{renderQuestionControl(question)}</div>
+                                            <div>
+                                                <QuestionControl
+                                                    question={question}
+                                                    value={answers[question.id]}
+                                                    otherText={otherTexts[question.id] ?? ''}
+                                                    disabled={isSubmitting}
+                                                    onChange={(value) => updateAnswer(question, value)}
+                                                    onOtherTextChange={(text) => {
+                                                        setOtherTexts((current) => ({
+                                                            ...current,
+                                                            [question.id]: text,
+                                                        }));
+                                                        scheduleAnswerSave(
+                                                            question.id,
+                                                            buildAnswerPayload(question, answers[question.id], text),
+                                                            { debounce: true },
+                                                        );
+                                                    }}
+                                                    onBlur={() =>
+                                                        void flushQuestion(question.id).catch(() => undefined)
+                                                    }
+                                                />
+                                            </div>
                                             <div className={questionStyle.hidden} />
                                         </section>
                                         {errors[question.id] && (

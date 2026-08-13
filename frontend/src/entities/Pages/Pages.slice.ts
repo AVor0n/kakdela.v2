@@ -354,19 +354,12 @@ const pagesSlice = createSlice({
                     questions.find((question) => question.id === selectedQuestionId) ?? state.selectedQuestion;
             }
         },
-        setPageConditions: (state, action: PayloadAction<{ pageId: string; conditions: Condition[] }>) => {
-            const page = state.pages.find(({ id }) => id === action.payload.pageId);
-            if (page) page.conditions = action.payload.conditions;
-        },
-        addPageCondition: (state, action: PayloadAction<{ pageId: string; condition: Condition }>) => {
-            const page = state.pages.find(({ id }) => id === action.payload.pageId);
-            if (page) page.conditions.push(action.payload.condition);
-        },
-        replacePageCondition: (state, action: PayloadAction<{ pageId: string; condition: Condition }>) => {
+        upsertPageCondition: (state, action: PayloadAction<{ pageId: string; condition: Condition }>) => {
             const page = state.pages.find(({ id }) => id === action.payload.pageId);
             if (!page) return;
             const conditionIndex = page.conditions.findIndex(({ id }) => id === action.payload.condition.id);
             if (conditionIndex >= 0) page.conditions[conditionIndex] = action.payload.condition;
+            else page.conditions.push(action.payload.condition);
         },
         deletePageCondition: (state, action: PayloadAction<{ pageId: string; conditionId: string }>) => {
             const page = state.pages.find(({ id }) => id === action.payload.pageId);
@@ -444,9 +437,7 @@ export const {
     setPage,
     reorderQuestions,
     setPageQuestions,
-    setPageConditions,
-    addPageCondition,
-    replacePageCondition,
+    upsertPageCondition,
     deletePageCondition,
     reorderAnswerOptions,
     setQuestionAnswerOptions,

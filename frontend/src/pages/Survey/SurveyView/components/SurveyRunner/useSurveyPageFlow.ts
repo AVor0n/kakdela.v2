@@ -1,14 +1,15 @@
 import { useCallback, useEffect, useState } from 'react';
 import { verifyPageConditions } from '@/api/conditions';
 import { getSurveyPage } from '@/api/surveyPages';
-import type { SurveyPagePublic, SurveyPageShort } from '@/shared/types/Survey.type';
+import type { Page, SurveyPagePublic, SurveyPageShort } from '@/shared/types/Survey.type';
 
 type EnsureResponse = () => Promise<string>;
+type FlowPage = Page | SurveyPagePublic;
 
 export function useSurveyPageFlow(
     surveyId: string,
     mode: 'preview' | 'respond',
-    orderedPages: SurveyPageShort[],
+    orderedPages: Array<Page | SurveyPageShort>,
     ensureResponse: EnsureResponse,
 ) {
     const [currentPageId, setCurrentPageId] = useState<string | null>(null);
@@ -23,16 +24,27 @@ export function useSurveyPageFlow(
         setIsPageLoading(false);
     }, [mode, surveyId]);
 
+    const selectPage = useCallback((pageId: string) => {
+        setCurrentPageId(pageId);
+        setVisitedPageIds((pageIds) => (pageIds[pageIds.length - 1] === pageId ? pageIds : [...pageIds, pageId]));
+    }, []);
+
     const openPageById = useCallback(
-        async (pageId: string) => {
+        async (pageId: string): Promise<FlowPage> => {
+            if (mode === 'preview') {
+                const page = orderedPages.find((item): item is Page => item.id === pageId && 'questions' in item);
+                if (!page) throw new Error('Страница предпросмотра не найдена');
+                selectPage(page.id);
+                return page;
+            }
+
             const responseId = await ensureResponse();
             const page = await getSurveyPage(pageId, responseId);
             setLoadedPages((pages) => ({ ...pages, [page.id]: page }));
-            setCurrentPageId(page.id);
-            setVisitedPageIds((pageIds) => (pageIds[pageIds.length - 1] === page.id ? pageIds : [...pageIds, page.id]));
+            selectPage(page.id);
             return page;
         },
-        [ensureResponse],
+        [ensureResponse, mode, orderedPages, selectPage],
     );
 
     const start = useCallback(async () => {
@@ -47,12 +59,19 @@ export function useSurveyPageFlow(
         }
     }, [openPageById, orderedPages]);
 
-    const verifyAndOpenNext = useCallback(
-        async (pageId: string) => {
+    const openNext = useCallback(
+        async (previewNextPageId?: string | null) => {
             setIsPageLoading(true);
             try {
+                if (mode === 'preview') {
+                    if (!previewNextPageId) return false;
+                    await openPageById(previewNextPageId);
+                    return true;
+                }
+
+                if (!currentPageId) return false;
                 const responseId = await ensureResponse();
-                const { nextPageId } = await verifyPageConditions(pageId, responseId);
+                const { nextPageId } = await verifyPageConditions(currentPageId, responseId);
                 if (!nextPageId) return false;
 
                 await openPageById(nextPageId);
@@ -61,18 +80,22 @@ export function useSurveyPageFlow(
                 setIsPageLoading(false);
             }
         },
-        [ensureResponse, openPageById],
+        [currentPageId, ensureResponse, mode, openPageById],
     );
 
     const openPrevious = useCallback(() => {
-        const previousPageId = visitedPageIds[visitedPageIds.length - 2];
+        const previousPageIds = visitedPageIds.slice(0, -1);
+        const previousPageId = previousPageIds[previousPageIds.length - 1];
         if (!previousPageId) return;
-
-        setVisitedPageIds((pageIds) => pageIds.slice(0, -1));
+        setVisitedPageIds(previousPageIds);
         setCurrentPageId(previousPageId);
     }, [visitedPageIds]);
 
-    const currentPage = currentPageId ? loadedPages[currentPageId] : undefined;
+    const previewPage =
+        mode === 'preview' && currentPageId
+            ? orderedPages.find((item): item is Page => item.id === currentPageId && 'questions' in item)
+            : undefined;
+    const currentPage = mode === 'preview' ? previewPage : currentPageId ? loadedPages[currentPageId] : undefined;
     const currentPageIndex = currentPageId ? orderedPages.findIndex(({ id }) => id === currentPageId) : 0;
 
     return {
@@ -80,8 +103,8 @@ export function useSurveyPageFlow(
         currentPageIndex: currentPageIndex >= 0 ? currentPageIndex : 0,
         isFirstPage: visitedPageIds.length <= 1,
         isPageLoading,
+        openNext,
         openPrevious,
         start,
-        verifyAndOpenNext,
     };
 }

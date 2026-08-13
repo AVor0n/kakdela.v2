@@ -6,6 +6,8 @@ import {
     upsertSurveyAnswer,
     type SurveyAnswerRequest,
 } from '@/api/surveyResponses';
+import { createRequestSemaphore } from './requestSemaphore';
+import { isEmptyAnswerPayload } from './responsePayload';
 
 const TEXT_ANSWER_DEBOUNCE_MS = 600;
 const MAX_PARALLEL_REQUESTS = 3;
@@ -23,8 +25,7 @@ export function useSurveyResponseSync(surveyId: string, disabled: boolean) {
     const debounceTimersRef = useRef(new Map<string, ReturnType<typeof setTimeout>>());
     const failedQuestionIdsRef = useRef(new Set<string>());
     const flushPromiseRef = useRef<Promise<void> | null>(null);
-    const activeRequestCountRef = useRef(0);
-    const requestWaitersRef = useRef<Array<() => void>>([]);
+    const withRequestSlotRef = useRef(createRequestSemaphore(MAX_PARALLEL_REQUESTS));
     const generationRef = useRef(0);
     const [savingQuestionCount, setSavingQuestionCount] = useState(0);
     const [failedQuestionCount, setFailedQuestionCount] = useState(0);
@@ -41,39 +42,6 @@ export function useSurveyResponseSync(surveyId: string, disabled: boolean) {
         failedQuestionIdsRef.current.add(questionId);
         setFailedQuestionCount(failedQuestionIdsRef.current.size);
     }, []);
-
-    const acquireRequestSlot = useCallback(async () => {
-        if (activeRequestCountRef.current < MAX_PARALLEL_REQUESTS) {
-            activeRequestCountRef.current += 1;
-            return;
-        }
-
-        await new Promise<void>((resolve) => {
-            requestWaitersRef.current.push(resolve);
-        });
-    }, []);
-
-    const releaseRequestSlot = useCallback(() => {
-        const nextWaiter = requestWaitersRef.current.shift();
-        if (nextWaiter) {
-            nextWaiter();
-            return;
-        }
-
-        activeRequestCountRef.current = Math.max(0, activeRequestCountRef.current - 1);
-    }, []);
-
-    const withRequestSlot = useCallback(
-        async <T>(request: () => Promise<T>) => {
-            await acquireRequestSlot();
-            try {
-                return await request();
-            } finally {
-                releaseRequestSlot();
-            }
-        },
-        [acquireRequestSlot, releaseRequestSlot],
-    );
 
     const ensureResponse = useCallback(async () => {
         if (responseIdRef.current) {
@@ -99,28 +67,18 @@ export function useSurveyResponseSync(surveyId: string, disabled: boolean) {
         }
 
         return responsePromiseRef.current;
-    }, [surveyId]);
-
-    function isEmptyPayload(payload: SurveyAnswerRequest) {
-        const hasIds = (payload.selectedAnswerOptionIds?.length ?? 0) > 0;
-        const hasText = (payload.textValue?.trim().length ?? 0) > 0;
-        const hasBoolean = payload.booleanValue !== undefined;
-        const hasDate = (payload.dateValue?.trim().length ?? 0) > 0;
-        const hasTime = (payload.timeValue?.trim().length ?? 0) > 0;
-
-        return !hasIds && !hasText && !hasBoolean && !hasDate && !hasTime;
-    }
+    }, [disabled, surveyId]);
 
     const persistAnswer = useCallback(
         async (questionId: string, answerPayload: SurveyAnswerRequest, generation: number) => {
-            await withRequestSlot(async () => {
+            await withRequestSlotRef.current(async () => {
                 if (generation !== generationRef.current) {
                     return;
                 }
 
                 const isPersisted = persistedQuestionIdsRef.current.has(questionId);
 
-                if (isEmptyPayload(answerPayload)) {
+                if (isEmptyAnswerPayload(answerPayload)) {
                     if (isPersisted) {
                         const responseId = await ensureResponse();
                         try {
@@ -147,7 +105,7 @@ export function useSurveyResponseSync(surveyId: string, disabled: boolean) {
                 }
             });
         },
-        [ensureResponse, withRequestSlot],
+        [ensureResponse],
     );
 
     const startQuestionQueue = useCallback(

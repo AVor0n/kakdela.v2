@@ -51,7 +51,6 @@ export type SurveyPublic = Pick<
 > & {
     pages: SurveyPageShort[];
     hasCustomClosingPage: boolean;
-    hasConditions: boolean;
 };
 
 export type Page = {

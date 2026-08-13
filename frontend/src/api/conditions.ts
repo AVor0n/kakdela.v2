@@ -27,11 +27,6 @@ export type ConditionAtomCreateRequest = ConditionAtomRequest & {
     parentNodeId?: string;
 };
 
-export async function getPageConditions(pageId: string): Promise<Condition[]> {
-    const { data } = await apiClient.get<Condition[]>(`/api/pages/${pageId}/conditions`);
-    return data;
-}
-
 export async function getCondition(conditionId: string): Promise<Condition> {
     const { data } = await apiClient.get<Condition>(`/api/conditions/${conditionId}`);
     return data;
