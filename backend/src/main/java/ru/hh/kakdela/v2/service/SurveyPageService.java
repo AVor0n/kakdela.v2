@@ -52,7 +52,7 @@ public class SurveyPageService {
           HttpStatus.FORBIDDEN, "Доступ к странице запрещён");
     }
 
-    if (surveyPage.getSerialNumber() != 1 && !responseService.isPageIncluded(response, pageId)) {
+    if (!responseService.isPageIncluded(response, pageId)) {
       throw new ResponseStatusException(
           HttpStatus.FORBIDDEN, "Доступ к странице запрещён");
     }

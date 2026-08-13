@@ -79,8 +79,7 @@ public class AnswerService {
           HttpStatus.NOT_FOUND, "Вопрос не найден: " + questionId);
     }
 
-    if (question.getSurveyPage().getSerialNumber() != 1
-        && !responseService.isPageIncluded(response, question.getSurveyPage().getId())) {
+    if (!responseService.isPageIncluded(response, question.getSurveyPage().getId())) {
       throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Ветка с вопросом закрыта");
     }
 
