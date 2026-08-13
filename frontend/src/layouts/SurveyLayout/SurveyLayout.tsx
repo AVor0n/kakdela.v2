@@ -36,6 +36,7 @@ export function SurveyLayout() {
     const { selectedSurvey } = useAppSelector((state) => state.survey);
     const { selectedTemplate } = useAppSelector((state) => state.template);
     const { account } = useAppSelector((state) => state.account);
+    const { pages } = useAppSelector((state) => state.pages);
     const [searchParams] = useSearchParams();
     const [isLoading, setIsLoading] = useState<boolean>(true);
 
@@ -153,12 +154,20 @@ export function SurveyLayout() {
     }, [id, isAnalystRestrictedRoute, navigate]);
 
     const publishingHandler = () => {
-        if (id && selectedSurvey)
-            updateSurvey(id, { isPublished: !selectedSurvey.isPublished })
-                .then((data) => {
-                    dispatch(setSelectedSurvey({ survey: data }));
-                })
-                .catch(() => dispatch(setErrorMessage({ message: 'Не удалось опубликовать опрос' })));
+        if (!id || !selectedSurvey) return;
+
+        if (!selectedSurvey.isPublished && pages.length === 0) {
+            dispatch(setErrorMessage({ message: 'Добавьте хотя бы одну страницу перед публикацией опроса' }));
+            return;
+        }
+
+        updateSurvey(id, { isPublished: !selectedSurvey.isPublished })
+            .then((data) => {
+                dispatch(setSelectedSurvey({ survey: data }));
+            })
+            .catch(() => {
+                dispatch(setErrorMessage({ message: 'Не удалось изменить статус публикации опроса' }));
+            });
     };
 
     const publishingTemplateHandler = () => {

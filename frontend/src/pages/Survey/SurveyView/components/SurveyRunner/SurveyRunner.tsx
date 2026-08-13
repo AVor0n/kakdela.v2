@@ -131,6 +131,11 @@ export function SurveyRunner({ survey, mode }: Props) {
     };
 
     const startSurvey = async () => {
+        if (orderedPageSummaries.length === 0) {
+            setSubmitError('Опрос пока не содержит страниц');
+            return;
+        }
+
         if (isPreview) {
             setStage('questions');
             return;
@@ -139,10 +144,19 @@ export function SurveyRunner({ survey, mode }: Props) {
         setIsStarting(true);
         setSubmitError(null);
         try {
-            await responseFlow.start();
+            const firstPage = await responseFlow.start();
+            if (!firstPage) {
+                setSubmitError('Опрос пока не содержит страниц');
+                return;
+            }
             setStage('questions');
-        } catch {
-            setSubmitError('Не удалось начать прохождение опроса');
+        } catch (requestError) {
+            const apiError = getApiError(requestError);
+            setSubmitError(
+                apiError?.internalErrorCode === 'SURVEY_IS_EMPTY'
+                    ? 'Опрос пока не содержит страниц'
+                    : apiError?.message || 'Не удалось начать прохождение опроса',
+            );
         } finally {
             setIsStarting(false);
         }
