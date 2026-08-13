@@ -203,10 +203,10 @@ public class AttachmentController {
         currentUser != null ? currentUser.getId() : null);
   }
 
-  // Hello-page attachment
+  // Opening-page attachment
 
   @PostMapping(
-      value = "/surveys/{surveyId}/hello-page/media-attachment",
+      value = "/surveys/{surveyId}/opening-page/media-attachment",
       consumes = MediaType.MULTIPART_FORM_DATA_VALUE
   )
   @ResponseStatus(HttpStatus.CREATED)
@@ -219,7 +219,7 @@ public class AttachmentController {
   }
 
   @PatchMapping(
-      value = "/surveys/{surveyId}/hello-page/media-attachment",
+      value = "/surveys/{surveyId}/opening-page/media-attachment",
       consumes = MediaType.MULTIPART_FORM_DATA_VALUE
   )
   public ObjectUrlResponseDto updatePreviewAttachment(
@@ -230,7 +230,7 @@ public class AttachmentController {
     return surveyService.updateAttachment(surveyId, currentUser.getId(), file);
   }
 
-  @DeleteMapping("/surveys/{surveyId}/hello-page/media-attachment")
+  @DeleteMapping("/surveys/{surveyId}/opening-page/media-attachment")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void deletePreviewAttachment(
       @PathVariable UUID surveyId,
