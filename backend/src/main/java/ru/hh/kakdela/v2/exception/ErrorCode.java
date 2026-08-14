@@ -1,10 +1,22 @@
 package ru.hh.kakdela.v2.exception;
 
 public enum ErrorCode {
+  // Responses and answers
+
   NOT_ALL_MANDATORY_QUESTIONS_ANSWERED,
+
+  // Surveys
+
+  SURVEY_IS_EMPTY,
+
+  // Conditions
+
   CONDITIONS_OF_PAGE_HAVE_CONFLICTS,
   CONDITION_NODE_IS_NOT_ATOM,
-  SURVEY_IS_EMPTY,
+  CONDITION_FOR_THESE_PAGE_AND_NEXT_PAGE_ALREADY_EXISTS,
+
+  // Common
+
   ACCESS_DENIED,
   BAD_CREDENTIALS,
   ACCOUNT_DELETED,

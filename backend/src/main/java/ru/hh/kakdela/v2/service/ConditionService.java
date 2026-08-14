@@ -16,6 +16,7 @@ import ru.hh.kakdela.v2.dao.SurveyPageDao;
 import ru.hh.kakdela.v2.dto.condition.ConditionNextPageResponseDto;
 import ru.hh.kakdela.v2.dto.condition.ConditionRequestDto;
 import ru.hh.kakdela.v2.dto.condition.ConditionResponseDto;
+import ru.hh.kakdela.v2.exception.condition.ConditionDubbingException;
 import ru.hh.kakdela.v2.mapper.ConditionMapper;
 import ru.hh.kakdela.v2.model.Response;
 import ru.hh.kakdela.v2.model.SurveyPage;
@@ -111,23 +112,23 @@ public class ConditionService {
     permissionService.checkCanEdit(page.getSurvey().getId(), accountId);
 
     SurveyPage nextPage = surveyPageDao.findById(dto.getNextPageId())
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Указанная страница не найдена: id=" + dto.getNextPageId()));
-
-    if (conditionDao.existsByPageIdAndNextPageId(pageId, dto.getNextPageId())) {
-      throw new ResponseStatusException(HttpStatus.CONFLICT,
-          "Для указанной страницы и указанной следующей страницы уже существует условие");
-    }
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+            "Указанная страница перехода не найдена: id=" + dto.getNextPageId()));
 
     if (!nextPage.getSurvey().getId().equals(page.getSurvey().getId())) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-          "Страница не найдена: id=" + dto.getNextPageId());
+         "Указанная страница перехода не найдена: id=" + dto.getNextPageId());
     }
 
     if (nextPage.getSerialNumber() <= page.getSerialNumber()) {
       throw new ResponseStatusException(
           HttpStatus.BAD_REQUEST, "Условия могут перенаправлять только вперёд");
     }
+
+    getOptionalByPageIdAndNextPageId(pageId, dto.getNextPageId())
+        .ifPresent(dc -> {
+          throw new ConditionDubbingException(dc.getId());
+        });
 
     Condition condition = Condition.builder()
         .id(UUID.randomUUID())
@@ -151,12 +152,12 @@ public class ConditionService {
         getParentSurveyId(conditionId), accountId);
 
     SurveyPage nextPage = surveyPageDao.findById(dto.getNextPageId())
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Страница не найдена: conditionId=" + dto.getNextPageId()));
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+            "Указанная страница перехода не найдена: id=" + dto.getNextPageId()));
 
     if (!nextPage.getSurvey().getId().equals(condition.getSurveyPage().getSurvey().getId())) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-          "Страница не найдена: conditionId=" + dto.getNextPageId());
+          "Указанная страница перехода не найдена: id=" + dto.getNextPageId());
     }
 
     if (nextPage.getSerialNumber() <= condition.getSurveyPage().getSerialNumber()) {
@@ -165,6 +166,11 @@ public class ConditionService {
     }
 
     if (dto.getIsActive()) {
+      getOptionalByPageIdAndNextPageId(condition.getSurveyPage().getId(), dto.getNextPageId())
+          .ifPresent(dc -> {
+            throw new ConditionDubbingException(dc.getId());
+          });
+
       conditionConflictService.validatePageConditions(condition.getSurveyPage());
     }
 
@@ -206,6 +212,10 @@ public class ConditionService {
     return conditionDao.findByIdWithParentPageWithAllQuestionsAndNeighbourConditions(id)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Условие не найдено: id=" + id));
+  }
+
+  Optional<Condition> getOptionalByPageIdAndNextPageId(UUID pageId, UUID nextPageId) {
+    return conditionDao.findByPageIdAndNextPageId(pageId, nextPageId);
   }
 
   Optional<SurveyPage> determineElsePage(SurveyPage surveyPage) {
