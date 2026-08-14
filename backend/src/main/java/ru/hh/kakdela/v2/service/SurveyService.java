@@ -373,7 +373,7 @@ public class SurveyService {
 
     ProcessedImage image = imageProcessingService.process(file);
 
-    String objectKey = "hello-pages/%s/%s".formatted(surveyId, UUID.randomUUID());
+    String objectKey = "opening-pages/%s/%s".formatted(surveyId, UUID.randomUUID());
     objectStorageService.putObject(
         objectKey,
         image.getContent(),
@@ -402,7 +402,7 @@ public class SurveyService {
           survey.getAttachmentObjectKey());
     }
 
-    String objectKey = "hello-pages/%s/%s".formatted(surveyId, UUID.randomUUID());
+    String objectKey = "opening-pages/%s/%s".formatted(surveyId, UUID.randomUUID());
     objectStorageService.putObject(
         objectKey,
         image.getContent(),
