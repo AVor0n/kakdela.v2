@@ -42,3 +42,6 @@ CREATE TABLE condition_atom (
 ALTER TABLE question
     DROP COLUMN is_visible,
     DROP COLUMN condition;
+
+ALTER TABLE survey
+    ADD COLUMN attachment_object_key varchar(1024);
