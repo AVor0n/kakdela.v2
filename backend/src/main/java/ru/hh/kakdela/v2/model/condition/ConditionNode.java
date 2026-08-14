@@ -58,13 +58,17 @@ public class ConditionNode {
 
   @OneToOne(
       mappedBy = "node",
-      cascade = CascadeType.ALL,
+      cascade = {
+          CascadeType.PERSIST,
+          CascadeType.MERGE},
       fetch = FetchType.EAGER)
   private ConditionAtom atom;
 
   @OneToMany(
       mappedBy = "parentNode",
-      cascade = CascadeType.ALL)
+      cascade = {
+          CascadeType.PERSIST,
+          CascadeType.MERGE})
   @Builder.Default
   private List<ConditionNode> childNodes = new ArrayList<>();
 

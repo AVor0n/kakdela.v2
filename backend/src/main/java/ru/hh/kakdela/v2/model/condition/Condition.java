@@ -54,7 +54,10 @@ public class Condition {
   @OnDelete(action = OnDeleteAction.CASCADE)
   private SurveyPage nextPage;
 
-  @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+  @OneToOne(fetch = FetchType.LAZY,
+      cascade = {
+          CascadeType.PERSIST,
+          CascadeType.MERGE})
   @JoinColumn(name = "root_node_id", unique = true)
   private ConditionNode root;
 
