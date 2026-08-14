@@ -324,7 +324,17 @@ public class QuestionService {
 
   // Вспомогательные методы
 
+  Question getEntityById(UUID id) {
+    return questionDao.findById(id)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Вопрос не найден: " + id));
+  }
+
   UUID getParentSurveyIdById(UUID id) {
     return questionDao.findParentSurveyIdById(id);
+  }
+
+  UUID getParentPageIdById(UUID id) {
+    return questionDao.findParentPageIdById(id);
   }
 }
