@@ -6,8 +6,12 @@ CREATE TABLE condition (
     survey_page_id uuid REFERENCES survey_page (id) ON DELETE CASCADE NOT NULL,
     next_page_id uuid REFERENCES survey_page (id) ON DELETE CASCADE NOT NULL,
     root_node_id uuid UNIQUE,
-    CONSTRAINT uk_condition_page_next_page UNIQUE (survey_page_id, next_page_id)
+    is_active bool DEFAULT FALSE NOT NULL
 );
+
+CREATE UNIQUE INDEX idx_condition_page_next_page_active
+ON condition (survey_page_id, next_page_id)
+WHERE is_active = TRUE;
 
 CREATE INDEX idx_condition_survey_page_id
 ON condition (survey_page_id);

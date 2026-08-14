@@ -180,12 +180,13 @@ public class ConditionDaoImpl implements ConditionDao {
         .getResultList();
   }
 
-  public Optional<Condition> findByPageIdAndNextPageId(UUID pageId, UUID nextPageId) {
+  public Optional<Condition> findActiveByPageIdAndNextPageId(UUID pageId, UUID nextPageId) {
     return Optional.ofNullable(entityManager.createQuery(
         """
         FROM Condition c
         WHERE c.surveyPage.id = :pageId
         AND c.nextPage.id = :nextPageId
+        AND c.isActive = TRUE
         """, Condition.class)
         .setParameter("pageId", pageId)
         .setParameter("nextPageId", nextPageId)

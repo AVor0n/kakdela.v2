@@ -125,10 +125,9 @@ public class ConditionService {
           HttpStatus.BAD_REQUEST, "Условия могут перенаправлять только вперёд");
     }
 
-    getOptionalByPageIdAndNextPageId(pageId, dto.getNextPageId())
-        .ifPresent(dc -> {
-          throw new ConditionDubbingException(dc.getId());
-        });
+    if (dto.getIsActive()) {
+      checkNoDubbingCondition(pageId, dto.getNextPageId());
+    }
 
     Condition condition = Condition.builder()
         .id(UUID.randomUUID())
@@ -166,10 +165,7 @@ public class ConditionService {
     }
 
     if (dto.getIsActive()) {
-      getOptionalByPageIdAndNextPageId(condition.getSurveyPage().getId(), dto.getNextPageId())
-          .ifPresent(dc -> {
-            throw new ConditionDubbingException(dc.getId());
-          });
+      checkNoDubbingCondition(condition.getSurveyPage().getId(), dto.getNextPageId());
 
       conditionConflictService.validatePageConditions(condition.getSurveyPage());
     }
@@ -214,8 +210,11 @@ public class ConditionService {
             HttpStatus.NOT_FOUND, "Условие не найдено: id=" + id));
   }
 
-  Optional<Condition> getOptionalByPageIdAndNextPageId(UUID pageId, UUID nextPageId) {
-    return conditionDao.findByPageIdAndNextPageId(pageId, nextPageId);
+  void checkNoDubbingCondition(UUID pageId, UUID nextPageId) {
+    conditionDao.findActiveByPageIdAndNextPageId(pageId, nextPageId)
+        .ifPresent(dc -> {
+          throw new ConditionDubbingException(dc.getId());
+        });
   }
 
   Optional<SurveyPage> determineElsePage(SurveyPage surveyPage) {
