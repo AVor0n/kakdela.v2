@@ -75,7 +75,12 @@ public class Answer {
   @Column(name = "time_value")
   private LocalTime timeValue;
 
-  @OneToMany(mappedBy = "answer", cascade = CascadeType.ALL, orphanRemoval = true)
+  @OneToMany(
+      mappedBy = "answer",
+      cascade = {
+          CascadeType.PERSIST,
+          CascadeType.MERGE},
+      orphanRemoval = true)
   @OrderBy("serialNumber ASC")
   @Builder.Default
   private List<SelectedAnswerOption> selectedAnswerOptions = new ArrayList<>();

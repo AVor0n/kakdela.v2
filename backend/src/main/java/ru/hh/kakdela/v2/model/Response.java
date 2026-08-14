@@ -61,12 +61,22 @@ public class Response {
   @Column(name = "received_at")
   private Instant receivedAt;
 
-  @OneToMany(mappedBy = "response", cascade = CascadeType.ALL, orphanRemoval = true)
+  @OneToMany(
+      mappedBy = "response",
+      cascade = {
+          CascadeType.PERSIST,
+          CascadeType.MERGE},
+      orphanRemoval = true)
   @OrderBy("serialNumber ASC")
   @Builder.Default
   private List<Answer> answers = new ArrayList<>();
 
-  @OneToMany(mappedBy = "response", cascade = CascadeType.ALL, orphanRemoval = true)
+  @OneToMany(
+      mappedBy = "response",
+      cascade = {
+          CascadeType.PERSIST,
+          CascadeType.MERGE},
+      orphanRemoval = true)
   @Builder.Default
   private List<ResponsePageStatus> pageStatuses = new ArrayList<>();
 }

@@ -61,12 +61,22 @@ public class SurveyPage {
   @Column(name = "description", columnDefinition = "text")
   private String description;
 
-  @OneToMany(mappedBy = "surveyPage", cascade = CascadeType.ALL, orphanRemoval = true)
+  @OneToMany(
+      mappedBy = "surveyPage",
+      cascade = {
+          CascadeType.PERSIST,
+          CascadeType.MERGE},
+      orphanRemoval = true)
   @OrderBy("serialNumber ASC")
   @Builder.Default
   private List<Question> questions = new ArrayList<>();
 
-  @OneToMany(mappedBy = "surveyPage", cascade = CascadeType.ALL, orphanRemoval = true)
+  @OneToMany(
+      mappedBy = "surveyPage",
+      cascade = {
+          CascadeType.PERSIST,
+          CascadeType.MERGE},
+      orphanRemoval = true)
   @Builder.Default
   private List<Condition> conditions = new ArrayList<>();
 
