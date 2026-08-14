@@ -7,6 +7,7 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
@@ -34,7 +35,10 @@ import ru.hh.kakdela.v2.model.Response;
 @Setter
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Entity
-@Table(name = "condition_node")
+@Table(
+    name = "condition_node",
+    indexes = {
+        @Index(name = "idx_condition_node_parent_node_id", columnList = "parent_node_id")})
 public class ConditionNode {
 
   @Id
