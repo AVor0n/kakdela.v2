@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import ru.hh.kakdela.v2.dao.AnswerDao;
-import ru.hh.kakdela.v2.dao.QuestionDao;
 import ru.hh.kakdela.v2.dto.answer.AnswerRequestDto;
 import ru.hh.kakdela.v2.dto.answer.AnswerResponseDto;
 import ru.hh.kakdela.v2.dto.answer.AnswerResponseDtoWithStatusDto;
@@ -29,8 +28,6 @@ import ru.hh.kakdela.v2.status.ObjectStatus;
 public class AnswerService {
 
   private final AnswerDao answerDao;
-  private final QuestionService questionService;
-  private final QuestionDao questionDao;
   private final QuestionService questionService;
   private final ResponseService responseService;
   private final AnswerOptionService answerOptionService;
@@ -69,9 +66,7 @@ public class AnswerService {
           HttpStatus.CONFLICT, "Прохождение уже завершено");
     }
 
-    Question question = questionDao.findById(questionId)
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Вопрос не найден: " + questionId));
+    Question question = questionService.getEntityById(questionId);
 
     if (!questionService.getParentSurveyIdById(questionId)
         .equals(response.getSurvey().getId())) {
@@ -97,6 +92,8 @@ public class AnswerService {
             .map(a -> update(a, response, question, dto, selectedAnswerOptions))
             .orElseGet(() -> create(response, question, dto, selectedAnswerOptions));
 
+    responseService.resetResponsePageStatuses(responseId, question.getSurveyPage().getId());
+
     return new AnswerResponseDtoWithStatusDto(
         AnswerMapper.answerToDto(answerWithStatusDto.getAnswer()),
         answerWithStatusDto.getStatus());
@@ -119,6 +116,9 @@ public class AnswerService {
 
     answerDao.delete(answer);
     log.info("Удалён ответ на вопрос: responseId={} questionId={}", responseId, questionId);
+
+    responseService.resetResponsePageStatuses(
+        responseId, questionService.getParentPageIdById(questionId));
   }
 
   // Вспомогательные методы

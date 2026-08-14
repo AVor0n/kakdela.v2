@@ -24,6 +24,18 @@ public class QuestionDaoImpl implements QuestionDao {
   }
 
   @Override
+  public UUID findParentPageIdById(UUID id) {
+    return entityManager.createQuery(
+            """
+            SELECT q.surveyPage.id
+            FROM Question q
+            WHERE q.id = :id
+            """, UUID.class)
+        .setParameter("id", id)
+        .getSingleResult();
+  }
+
+  @Override
   public UUID findParentSurveyIdById(UUID id) {
     return entityManager.createQuery(
         """
