@@ -14,6 +14,8 @@ import { NotFound } from '@/pages/Errors/NotFound';
 import { Answers } from '@/pages/Survey/SurveyModify/components/Answers/Answers';
 import { AccountBootstrap } from '@/features/auth/AccountBootstrap';
 import { ForgotPassword } from '@/pages/Auth/ForgotPassword/ForgotPassword';
+import { VerifyCode } from '@/pages/Auth/VerifyCode/VerifyCode';
+import { ResetPassword } from '@/pages/Auth/ResetPassword/ResetPassword';
 
 export function AppRouter() {
     return (
@@ -21,6 +23,8 @@ export function AppRouter() {
             <Routes>
                 <Route path={routePatterns.root} element={<App />} />
                 <Route path={routePatterns.forgotPassword} element={<ForgotPassword />} />
+                <Route path={routePatterns.resetPassword} element={<ResetPassword />} />
+                <Route path={routePatterns.verifyCode} element={<VerifyCode />} />
                 <Route path={routePatterns.authCallback} element={<Navigate to={routes.root()} />} />
                 <Route path={routePatterns.auth}>
                     <Route path={routePatterns.authLogin} element={<Login />} />
