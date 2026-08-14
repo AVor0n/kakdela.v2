@@ -63,6 +63,6 @@ public class Condition {
   private Boolean isActive = false;
 
   public boolean evaluate(Response response) {
-    return root.evaluate(response);
+    return root != null && root.evaluate(response);
   }
 }
