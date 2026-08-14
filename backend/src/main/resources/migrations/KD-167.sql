@@ -23,6 +23,9 @@ CREATE TABLE condition_node (
     operator varchar(255) NOT NULL
 );
 
+CREATE INDEX idx_condition_node_parent_node_id
+ON condition_node (parent_node_id);
+
 ALTER TABLE condition
 ADD CONSTRAINT fk_condition_root_node
 FOREIGN KEY (root_node_id)
