@@ -69,6 +69,7 @@ public class ConditionNodeService {
     ConditionNode childNode = conditionNodeDao.findById(dto.getChildNodeToLinkId())
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Дочерняя вершина не найдена: id=" + dto.getChildNodeToLinkId()));
+    ConditionNode parentNode = childNode.getParentNode();
 
     if (!childNode.getCondition().getId().equals(conditionId)) {
       throw new ResponseStatusException(
@@ -82,11 +83,11 @@ public class ConditionNodeService {
         .operator(dto.getOperator())
         .build();
 
-    if (node.getParentNode() == null) {
+    if (parentNode == null) {
       condition.setRoot(node);
     } else {
-      childNode.getParentNode().getChildNodes().remove(childNode);
-      childNode.getParentNode().getChildNodes().add(node);
+      parentNode.getChildNodes().remove(childNode);
+      parentNode.getChildNodes().add(node);
     }
 
     childNode.setParentNode(node);
@@ -326,6 +327,8 @@ public class ConditionNodeService {
 
     if (nodeToDelete.getParentNode() == null) {
       nodeToDelete.getCondition().setRoot(null);
+    } else {
+      nodeToDelete.getParentNode().getChildNodes().remove(nodeToDelete);
     }
 
     if (node.getCondition().getIsActive()) {
