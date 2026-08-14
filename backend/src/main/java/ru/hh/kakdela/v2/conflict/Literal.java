@@ -78,12 +78,12 @@ public class Literal {
 
   private boolean areValuesEqual(Literal other) {
     if (this.questionType.isAnswerOptionsAllowed
-        && this.answerOptionId != other.answerOptionId) {
+        && !this.answerOptionId.equals(other.answerOptionId)) {
       return false;
     }
 
     if (this.questionType.isBooleanAllowed
-        && this.booleanValue != other.booleanValue) {
+        && !this.booleanValue.equals(other.booleanValue)) {
       return false;
     }
 
