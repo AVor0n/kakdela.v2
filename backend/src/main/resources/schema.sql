@@ -14,6 +14,7 @@ CREATE TABLE survey (
     author_id uuid REFERENCES account (id) ON DELETE CASCADE NOT NULL,
     title varchar(200) NOT NULL,
     description text,
+    attachment_object_key varchar(1024),
     is_authorized_only bool DEFAULT FALSE NOT NULL,
     is_limited_to_one_response bool DEFAULT FALSE NOT NULL,
     is_published bool DEFAULT FALSE NOT NULL,

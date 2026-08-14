@@ -56,6 +56,10 @@ public class Survey {
   @Column(name = "description", columnDefinition = "text")
   private String description;
 
+  // для изображения на превью опроса
+  @Column(name = "attachment_object_key", length = 1024)
+  private String attachmentObjectKey;
+
   @Column(name = "is_authorized_only", nullable = false)
   @Builder.Default
   private boolean isAuthorizedOnly = DefaultValues.IS_AUTHORIZED_ONLY_DEFAULT;

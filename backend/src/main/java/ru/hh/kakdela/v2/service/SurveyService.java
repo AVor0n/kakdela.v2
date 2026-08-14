@@ -9,14 +9,18 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import ru.hh.kakdela.v2.constants.DefaultValues;
 import ru.hh.kakdela.v2.dao.AccountDao;
 import ru.hh.kakdela.v2.dao.SurveyDao;
 import ru.hh.kakdela.v2.dao.SurveyNotificationSubscriptionDao;
+import ru.hh.kakdela.v2.dto.image.ProcessedImage;
+import ru.hh.kakdela.v2.dto.object.ObjectUrlResponseDto;
 import ru.hh.kakdela.v2.dto.survey.SurveyCreateDto;
 import ru.hh.kakdela.v2.dto.survey.SurveyPublicResponseDto;
 import ru.hh.kakdela.v2.dto.survey.SurveyResponseDto;
@@ -37,6 +41,9 @@ import ru.hh.kakdela.v2.util.JsonNullableUtil;
 @RequiredArgsConstructor
 public class SurveyService {
 
+  @Value("${app.attachments.url-max-age}")
+  private long attachmentUrlMaxAge;
+
   private final SurveyDao surveyDao;
   private final AccountDao accountDao;
   private final SurveyNotificationSubscriptionDao subscriptionDao;
@@ -44,6 +51,7 @@ public class SurveyService {
   private final NotificationService notificationService;
   private final ObjectStorageService objectStorageService;
   private final ConditionService conditionService;
+  private final ImageProcessingService imageProcessingService;
   private final SurveyMapper surveyMapper;
 
   @Transactional(readOnly = true)
@@ -348,6 +356,83 @@ public class SurveyService {
             () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Опрос не найден: " + id));
     surveyDao.delete(survey);
     log.info("Удален опрос id={} accountId={}", id, accountId);
+  }
+
+  // Attachment management
+
+  @Transactional
+  public ObjectUrlResponseDto addAttachment(UUID surveyId, UUID accountId, MultipartFile file) {
+    Survey survey = surveyDao.findById(surveyId)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
+
+    permissionService.checkCanEdit(survey.getId(), accountId);
+
+    if (survey.getAttachmentObjectKey() != null) {
+      throw new ResponseStatusException(
+          HttpStatus.CONFLICT, "К опросу уже прикреплено вложение");
+    }
+
+    ProcessedImage image = imageProcessingService.process(file);
+
+    String objectKey = "opening-pages/%s/%s".formatted(surveyId, UUID.randomUUID());
+    objectStorageService.putObject(
+        objectKey,
+        image.getContent(),
+        image.getContentType());
+
+    survey.setAttachmentObjectKey(objectKey);
+    surveyDao.update(survey);
+    return new ObjectUrlResponseDto(
+        objectStorageService.generateObjectUrl(objectKey, attachmentUrlMaxAge).toString());
+  }
+
+  @Transactional
+  public ObjectUrlResponseDto updateAttachment(UUID surveyId,
+                                               UUID accountId,
+                                               MultipartFile file) {
+    Survey survey = surveyDao.findById(surveyId)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
+
+    permissionService.checkCanEdit(survey.getId(), accountId);
+
+    ProcessedImage image = imageProcessingService.process(file);
+
+    if (survey.getAttachmentObjectKey() != null) {
+      objectStorageService.deleteObject(
+          survey.getAttachmentObjectKey());
+    }
+
+    String objectKey = "opening-pages/%s/%s".formatted(surveyId, UUID.randomUUID());
+    objectStorageService.putObject(
+        objectKey,
+        image.getContent(),
+        image.getContentType());
+
+    survey.setAttachmentObjectKey(objectKey);
+    surveyDao.update(survey);
+    return new ObjectUrlResponseDto(
+        objectStorageService.generateObjectUrl(objectKey, attachmentUrlMaxAge).toString());
+  }
+
+  @Transactional
+  public void deleteAttachment(UUID surveyId, UUID accountId) {
+    Survey survey = surveyDao.findById(surveyId)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
+
+    permissionService.checkCanEdit(survey.getId(), accountId);
+
+    if (survey.getAttachmentObjectKey() == null) {
+      throw new ResponseStatusException(
+          HttpStatus.NOT_FOUND, "Опрос не содержит вложения");
+    }
+
+    objectStorageService.deleteObject(survey.getAttachmentObjectKey());
+
+    survey.setAttachmentObjectKey(null);
+    surveyDao.update(survey);
   }
 
   // Вспомогательные методы
