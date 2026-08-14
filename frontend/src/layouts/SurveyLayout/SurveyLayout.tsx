@@ -172,7 +172,7 @@ export function SurveyLayout() {
                     pageNumbers.length === 1 ? `странице ${pageNumbers[0]}` : `страницах ${pageNumbers.join(', ')}`;
                 dispatch(
                     setErrorMessage({
-                        message: `Проверьте активные условия на ${pageLabel} перед публикацией опроса`,
+                        message: `Проверьте активные правила на ${pageLabel} перед публикацией опроса`,
                     }),
                 );
                 return;

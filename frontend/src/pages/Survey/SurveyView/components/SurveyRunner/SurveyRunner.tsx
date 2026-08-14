@@ -43,6 +43,10 @@ function isEditablePage(page: Page | SurveyPageShort): page is Page {
 export function SurveyRunner(props: Props) {
     const { survey, mode } = props;
     const previewSurvey = props.mode === 'preview' ? props.survey : null;
+    const hasConditions =
+        props.mode === 'respond'
+            ? props.survey.hasConditions
+            : props.survey.pages.some((page) => page.conditions.length > 0);
     const [answers, setAnswers] = useState<Answers>({});
     const [errors, setErrors] = useState<Errors>({});
     const [stage, setStage] = useState<SurveyRunnerStage>('welcome');
@@ -352,9 +356,11 @@ export function SurveyRunner(props: Props) {
                                     >
                                         Назад
                                     </Button>
-                                    <Text typography='paragraph-2-regular' style='secondary'>
-                                        {currentPageIndex + 1} из {totalPageCount}
-                                    </Text>
+                                    {!hasConditions && (
+                                        <Text typography='paragraph-2-regular' style='secondary'>
+                                            {currentPageIndex + 1} из {totalPageCount}
+                                        </Text>
+                                    )}
                                     <Button
                                         type='button'
                                         mode='primary'

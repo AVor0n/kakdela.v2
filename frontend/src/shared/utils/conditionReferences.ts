@@ -1,3 +1,4 @@
+import type { Condition } from '@/shared/types/Condition.type';
 import type { Page } from '@/shared/types/Survey.type';
 import { someConditionNode } from './conditionTree';
 
@@ -7,6 +8,17 @@ export type PageConditionReference = {
     conditionId: string;
     isActive: boolean;
 };
+
+export function findActiveConditionWithTarget(
+    conditions: Condition[],
+    nextPageId: string,
+    excludedConditionId?: string,
+) {
+    return conditions.find(
+        (condition) =>
+            condition.isActive && condition.nextPageId === nextPageId && condition.id !== excludedConditionId,
+    );
+}
 
 export function findPageConditionReferences(pages: Page[], targetPageId: string): PageConditionReference[] {
     return pages.flatMap((page) =>

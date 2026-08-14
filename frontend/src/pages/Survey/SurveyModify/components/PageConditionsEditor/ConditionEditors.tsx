@@ -265,13 +265,13 @@ export function TreeNodeEditor({
                 <AtomEditor
                     additionalActions={
                         <div className={style.wrapActions}>
-                            <span className={style.wrapActionsLabel}>Объединить с новым правилом:</span>
+                            <span className={style.wrapActionsLabel}>Объединить с новым условием:</span>
                             {(['AND', 'OR'] as const).map((operator) => (
                                 <Button
                                     key={operator}
                                     mode='secondary'
                                     type='button'
-                                    disabled={disabled || condition.isActive || depth >= 3}
+                                    disabled={disabled || depth >= 3}
                                     onClick={() =>
                                         void mutateAndRefresh(() => addConditionNode(condition.id, node.id, operator))
                                     }
@@ -284,7 +284,6 @@ export function TreeNodeEditor({
                     page={page}
                     initialNode={node}
                     disabled={disabled}
-                    deleteDisabled={condition.isActive}
                     onDelete={() => void mutateAndRefresh(() => deleteConditionNode(node.id))}
                     onSubmit={(request) => mutateAndRefresh(() => updateConditionAtom(node.id, request))}
                 />
@@ -305,8 +304,8 @@ export function TreeNodeEditor({
                         )
                     }
                 >
-                    <option value='AND'>AND</option>
-                    <option value='OR'>OR</option>
+                    <option value='AND'>И</option>
+                    <option value='OR'>ИЛИ</option>
                 </select>
             </div>
             <div className={style.groupBranch}>
@@ -315,7 +314,7 @@ export function TreeNodeEditor({
                     <button
                         className={style.groupDeleteButton}
                         type='button'
-                        disabled={disabled || condition.isActive}
+                        disabled={disabled}
                         aria-label='Удалить группу'
                         onClick={() => void mutateAndRefresh(() => deleteConditionNode(node.id))}
                     >
@@ -352,7 +351,7 @@ export function TreeNodeEditor({
                             <Button
                                 mode='secondary'
                                 type='button'
-                                disabled={disabled || condition.isActive || depth >= 3}
+                                disabled={disabled || depth >= 3}
                                 onClick={() => setIsAddingAtom(true)}
                             >
                                 +

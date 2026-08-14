@@ -301,6 +301,11 @@
         flex-direction: column;
     }
 
+    .inlineActions {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
     .atomForm {
         grid-template-columns: minmax(0, 1fr) auto;
         width: 100%;
