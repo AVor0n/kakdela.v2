@@ -93,12 +93,17 @@ public class Question {
   @Builder.Default
   private boolean isMandatory = true;
 
-  @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
+  @OneToMany(
+      mappedBy = "question",
+      cascade = {
+          CascadeType.PERSIST,
+          CascadeType.MERGE},
+      orphanRemoval = true)
   @OrderBy("serialNumber ASC")
   @Builder.Default
   private List<AnswerOption> answerOptions = new ArrayList<>();
 
-  @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
+  @OneToMany(mappedBy = "question")
   @Builder.Default
   private List<Answer> answers = new ArrayList<>();
 
