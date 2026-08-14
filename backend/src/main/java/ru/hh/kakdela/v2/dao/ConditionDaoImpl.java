@@ -180,20 +180,16 @@ public class ConditionDaoImpl implements ConditionDao {
         .getResultList();
   }
 
-  public boolean existsByPageIdAndNextPageId(UUID pageId, UUID nextPageId) {
-    List<UUID> results = entityManager.createQuery(
+  public Optional<Condition> findByPageIdAndNextPageId(UUID pageId, UUID nextPageId) {
+    return Optional.ofNullable(entityManager.createQuery(
         """
-        SELECT c.id
         FROM Condition c
         WHERE c.surveyPage.id = :pageId
         AND c.nextPage.id = :nextPageId
-        """, UUID.class)
+        """, Condition.class)
         .setParameter("pageId", pageId)
         .setParameter("nextPageId", nextPageId)
-        .setMaxResults(1)
-        .getResultList();
-
-    return !results.isEmpty();
+        .getSingleResultOrNull());
   }
 
   @Override
