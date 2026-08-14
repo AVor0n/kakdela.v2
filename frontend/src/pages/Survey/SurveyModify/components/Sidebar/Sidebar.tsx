@@ -9,14 +9,22 @@ import style from './Sidebar.module.css';
 
 export function Sidebar() {
     const { selectedSurvey } = useAppSelector((state) => state.survey);
+    const { selectedTemplate } = useAppSelector((state) => state.template);
     const { pages } = useAppSelector((state) => state.pages);
     const { currentQuestionPageIndex } = useAppSelector((state) => state.pages);
     const dispatch = useAppDispatch();
 
     const addQuestionHandler = () => {
-        if (!selectedSurvey) return;
+        let id;
+        if (selectedSurvey) {
+            id = selectedSurvey.id;
+        } else if (selectedTemplate) {
+            id = selectedTemplate.id;
+        } else {
+            return;
+        }
         if (pages.length === 0) {
-            createSurveyPage(selectedSurvey.id, 1)
+            createSurveyPage(id, 1)
                 .then((data) => {
                     dispatch(addPage({ page: data }));
 
@@ -49,12 +57,19 @@ export function Sidebar() {
     };
 
     const addPageHandler = () => {
-        if (!selectedSurvey) return;
+        let id;
+        if (selectedSurvey) {
+            id = selectedSurvey.id;
+        } else if (selectedTemplate) {
+            id = selectedTemplate.id;
+        } else {
+            return;
+        }
         let serialNumber = pages[pages.length - 1] ? pages[pages.length - 1].serialNumber + 1 : 1;
         if (pages.length === 0) {
             serialNumber = 1;
         }
-        createSurveyPage(selectedSurvey.id, serialNumber)
+        createSurveyPage(id, serialNumber)
             .then((data) => {
                 dispatch(addPage({ page: data }));
                 return createQuestion(data.id, { text: 'Новый вопрос', serialNumber: 1, type: 'SHORT_TEXT' });

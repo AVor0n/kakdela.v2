@@ -13,8 +13,8 @@ import { AccountDetail } from '@/shared/ui/AccountDetail/AccountDetail';
 import type { SurveyRole } from '@/shared/types/Survey.type';
 import { SurveyMobileMenu } from './components/SurveyMobileMenu/SurveyMobileMenu';
 import type { SurveyNavigationItem, SurveySection } from './SurveyLayout.types';
-import { getMyTemplates, getTemplateById } from '@/api/template';
-import { setSelectedTemplate } from '@/entities/Template/Template.slice';
+import { getTemplateById, saveTemplate, updateTemplate } from '@/api/template';
+import { addTemplate, setSelectedTemplate } from '@/entities/Template/Template.slice';
 import { setPages } from '@/entities/Pages/Pages.slice';
 
 type SurveyAccess = {
@@ -35,11 +35,13 @@ export function SurveyLayout() {
     const { pathname } = useLocation();
     const { selectedSurvey } = useAppSelector((state) => state.survey);
     const { selectedTemplate } = useAppSelector((state) => state.template);
+    const { account } = useAppSelector((state) => state.account);
     const [searchParams] = useSearchParams();
     const [isLoading, setIsLoading] = useState<boolean>(true);
 
     const [isCopied, setIsCopied] = useState(false);
     const [surveyAccess, setSurveyAccess] = useState<SurveyAccess | null>(null);
+    const [isSaveTemplate, setIsSaveTemplate] = useState<boolean>(false);
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
     const userRole = id && surveyAccess?.surveyId === id ? surveyAccess.role : null;
@@ -118,25 +120,7 @@ export function SurveyLayout() {
         if (!id) return;
 
         let isActive = true;
-        if (isTemplate) {
-            getMyTemplates()
-                .then((templates) => {
-                    if (!isActive) return;
-
-                    const currentTemplate = templates.find((template) => template.id === id);
-                    if (!currentTemplate) {
-                        dispatch(setErrorMessage({ message: 'У вас нет доступа к этому опросу' }));
-                        navigate(routes.survey(), { replace: true });
-                        return;
-                    }
-                })
-                .catch(() => {
-                    if (isActive) {
-                        dispatch(setErrorMessage({ message: 'Не удалось проверить права доступа к шаблону' }));
-                        navigate(routes.survey(), { replace: true });
-                    }
-                });
-        } else {
+        if (!isTemplate)
             getMySurveys()
                 .then((surveys) => {
                     if (!isActive) return;
@@ -156,7 +140,6 @@ export function SurveyLayout() {
                         navigate(routes.survey(), { replace: true });
                     }
                 });
-        }
 
         return () => {
             isActive = false;
@@ -171,9 +154,42 @@ export function SurveyLayout() {
 
     const publishingHandler = () => {
         if (id && selectedSurvey)
-            updateSurvey(id, { isPublished: !selectedSurvey.isPublished }).then((data) => {
-                dispatch(setSelectedSurvey({ survey: data }));
-            });
+            updateSurvey(id, { isPublished: !selectedSurvey.isPublished })
+                .then((data) => {
+                    dispatch(setSelectedSurvey({ survey: data }));
+                })
+                .catch(() => dispatch(setErrorMessage({ message: 'Не удалось опубликовать опрос' })));
+    };
+
+    const publishingTemplateHandler = () => {
+        if (id && selectedTemplate) {
+            updateTemplate(id, { isPublished: !selectedTemplate.published })
+                .then((data) => {
+                    dispatch(setSelectedTemplate({ template: data }));
+                })
+                .catch(() => dispatch(setErrorMessage({ message: 'Не удалось опубликовать шаблон' })));
+        }
+    };
+
+    useEffect(() => {
+        if (!isSaveTemplate) return;
+        const handle = setTimeout(() => {
+            setIsSaveTemplate(false);
+        }, 2000);
+
+        return () => {
+            clearTimeout(handle);
+        };
+    }, [isSaveTemplate]);
+
+    const saveTemplateHandler = () => {
+        if (id && selectedTemplate)
+            saveTemplate(selectedTemplate.id)
+                .then((data) => {
+                    dispatch(addTemplate(data));
+                    setIsSaveTemplate(true);
+                })
+                .catch(() => dispatch(setErrorMessage({ message: 'Не удалось сохранить шаблон' })));
     };
 
     const handleCopyClick = async (valueForCopy: string) => {
@@ -244,9 +260,34 @@ export function SurveyLayout() {
                         </Button>
                     )}
 
-                    {canEditSurvey && (
-                        <Button mode='tertiary' style='accent' onClick={publishingHandler} disabled={!selectedSurvey}>
-                            {selectedSurvey?.isPublished ? 'Снять с публикации' : 'Опубликовать'}
+                    {canEditSurvey || account?.id === selectedTemplate?.authorId ? (
+                        !isTemplate ? (
+                            <Button
+                                mode='tertiary'
+                                style='accent'
+                                onClick={publishingHandler}
+                                disabled={!selectedSurvey}
+                            >
+                                {selectedSurvey?.isPublished ? 'Снять с публикации' : 'Опубликовать'}
+                            </Button>
+                        ) : (
+                            <Button
+                                mode='tertiary'
+                                style='accent'
+                                onClick={publishingTemplateHandler}
+                                disabled={!selectedTemplate}
+                            >
+                                {selectedTemplate?.published ? 'Снять с публикации' : 'Опубликовать'}
+                            </Button>
+                        )
+                    ) : (
+                        <Button
+                            mode='primary'
+                            style={isSaveTemplate ? 'positive' : 'accent'}
+                            onClick={saveTemplateHandler}
+                            disabled={!selectedTemplate}
+                        >
+                            {isSaveTemplate ? 'Шаблон сохранён' : 'Сохранить шаблон'}
                         </Button>
                     )}
                     <AccountDetail />

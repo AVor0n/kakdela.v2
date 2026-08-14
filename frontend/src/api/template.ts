@@ -3,13 +3,9 @@ import { apiClient } from './client';
 import type { Template } from '@/shared/types/Survey.type';
 type TemplateResponse = Template;
 
-type UpdateTemplateRequest = Partial<Pick<TemplateResponse, 'title' | 'description' | 'published'>>;
-
-export async function getPublicTemplates(): Promise<TemplateResponse[]> {
-    const { data } = await apiClient.get<TemplateResponse[]>('/api/templates');
-
-    return data;
-}
+type UpdateTemplateRequest = Partial<Pick<TemplateResponse, 'title' | 'description'>> & {
+    isPublished?: boolean;
+};
 
 export async function getMyTemplates(): Promise<TemplateResponse[]> {
     const { data } = await apiClient.get<TemplateResponse[]>('/api/accounts/me/templates');
@@ -43,4 +39,10 @@ export async function updateTemplate(templateId: string, request: UpdateTemplate
 
 export async function deleteTemplate(templateId: string): Promise<void> {
     await apiClient.delete(`/api/templates/${templateId}`);
+}
+
+export async function saveTemplate(templateId: string): Promise<TemplateResponse> {
+    const { data } = await apiClient.post<TemplateResponse>(`/api/templates/${templateId}/copy`);
+
+    return data;
 }

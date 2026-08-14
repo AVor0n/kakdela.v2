@@ -43,7 +43,7 @@ export function SurveyDetail({ item }: Props) {
                     if (error.response) {
                         dispatch(setErrorMessage({ message: `Не удалось изменить описание опроса` }));
                     }
-                    setTitle(item.description ? item.description : '');
+                    setDescription(item.description ? item.description : '');
                 });
         }
     };

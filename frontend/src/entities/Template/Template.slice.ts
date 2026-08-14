@@ -18,6 +18,9 @@ export const templateSlice = createSlice({
         setTemplates: (state, action: PayloadAction<TemplateListItem[]>) => {
             state.templates = action.payload;
         },
+        addTemplate: (state, action: PayloadAction<TemplateListItem>) => {
+            state.templates.push(action.payload);
+        },
         removeTemplate: (state, action: PayloadAction<{ templateId: string }>) => {
             const { templateId } = action.payload;
             state.templates = state.templates.filter((template) => template.id !== templateId);
@@ -29,5 +32,5 @@ export const templateSlice = createSlice({
     },
 });
 
-export const { setTemplates, setSelectedTemplate, removeTemplate } = templateSlice.actions;
+export const { setTemplates, setSelectedTemplate, removeTemplate, addTemplate } = templateSlice.actions;
 export default templateSlice.reducer;
