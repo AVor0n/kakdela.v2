@@ -19,6 +19,7 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 import ru.hh.kakdela.v2.dto.error.ErrorResponse;
 import ru.hh.kakdela.v2.exception.ErrorCode;
+import ru.hh.kakdela.v2.exception.Kd2AuthenticationException;
 import ru.hh.kakdela.v2.exception.Kd2Exception;
 import ru.hh.kakdela.v2.exception.Kd2ObjectRelatedException;
 import ru.hh.kakdela.v2.exception.ResetCodeException;
@@ -30,6 +31,7 @@ import ru.hh.kakdela.v2.security.CustomDisabledException;
 public class GlobalExceptionHandler {
 
   private static final String AUTHENTICATION_ERROR_MESSAGE = "Ошибка аутентификации";
+  private static final String WRONG_LOGIN_OR_PASSWORD_MESSAGE = "Неверный логин или пароль";
 
   @ExceptionHandler(Kd2ObjectRelatedException.class)
   public ResponseEntity<ErrorResponse> handleKd2ObjectRelatedException(
@@ -48,6 +50,16 @@ public class GlobalExceptionHandler {
     UUID id = UUID.randomUUID();
     return ResponseEntity
         .status(ex.getHttpStatus())
+        .body(ErrorMapper.getErrorResponse(id, ex, request));
+  }
+
+  @ExceptionHandler(Kd2AuthenticationException.class)
+  public ResponseEntity<ErrorResponse> handleKd2AuthenticationException(
+      Kd2AuthenticationException ex, WebRequest request
+  ) {
+    UUID id = UUID.randomUUID();
+    return ResponseEntity
+        .status(HttpStatus.UNAUTHORIZED)
         .body(ErrorMapper.getErrorResponse(id, ex, request));
   }
 
@@ -91,18 +103,6 @@ public class GlobalExceptionHandler {
             id, ErrorCode.ENTITY_NOT_FOUND, ex.getMessage(), request));
   }
 
-  @ExceptionHandler(BadCredentialsException.class)
-  public ResponseEntity<ErrorResponse> handleBadCredentials(
-      BadCredentialsException ex, WebRequest request
-  ) {
-    UUID id = UUID.randomUUID();
-    logError(AUTHENTICATION_ERROR_MESSAGE, id, ex);
-    return ResponseEntity
-        .status(HttpStatus.UNAUTHORIZED)
-        .body(ErrorMapper.getErrorResponse(
-            id, ErrorCode.BAD_CREDENTIALS, "Неправильный логин или пароль", request));
-  }
-
   @ExceptionHandler(UsernameNotFoundException.class)
   public ResponseEntity<ErrorResponse> handleUsernameNotFound(
       UsernameNotFoundException ex, WebRequest request
@@ -118,29 +118,41 @@ public class GlobalExceptionHandler {
     return ResponseEntity
         .status(HttpStatus.UNAUTHORIZED)
         .body(ErrorMapper.getErrorResponse(
-            id, ErrorCode.BAD_CREDENTIALS, "Неправильный логин или пароль", request));
+            id, ErrorCode.BAD_CREDENTIALS, WRONG_LOGIN_OR_PASSWORD_MESSAGE, request));
+  }
+
+
+  @ExceptionHandler(BadCredentialsException.class)
+  public ResponseEntity<ErrorResponse> handleBadCredentials(
+      BadCredentialsException ex, WebRequest request
+  ) {
+    UUID id = UUID.randomUUID();
+    logError(AUTHENTICATION_ERROR_MESSAGE, id, ex);
+    return ResponseEntity
+        .status(HttpStatus.UNAUTHORIZED)
+        .body(ErrorMapper.getErrorResponse(
+            id, ErrorCode.BAD_CREDENTIALS, WRONG_LOGIN_OR_PASSWORD_MESSAGE, request));
   }
 
   @ExceptionHandler({DisabledException.class, CustomDisabledException.class})
-  public ResponseEntity<ErrorResponse> handleDisabled(Exception ex, WebRequest request) {
+  public ResponseEntity<ErrorResponse> handleDisabled(DisabledException ex, WebRequest request) {
     UUID id = UUID.randomUUID();
     String login;
 
     if (ex instanceof CustomDisabledException) {
       login = ((CustomDisabledException) ex).getName();
+      logError(AUTHENTICATION_ERROR_MESSAGE, id, login, ex);
     } else {
       login = null;
+      logError(AUTHENTICATION_ERROR_MESSAGE, id, ex);
     }
 
-    logError(AUTHENTICATION_ERROR_MESSAGE, id, login, ex);
     return ResponseEntity
         .status(HttpStatus.UNAUTHORIZED)
         .body(ErrorMapper.getErrorResponse(
             id,
             ErrorCode.ACCOUNT_DELETED,
             "Аккаунт удалён",
-            null,
-            null,
             login,
             request));
   }
