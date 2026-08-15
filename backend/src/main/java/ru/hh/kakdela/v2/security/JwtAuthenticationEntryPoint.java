@@ -9,6 +9,7 @@ import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.AuthenticationEntryPoint;
@@ -60,16 +61,25 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
           authException.getMessage(),
           null,
           null,
-          ((Kd2AuthenticationException) authException).getObjectDetails() != null
-              ? ((Kd2AuthenticationException) authException).getObjectDetails()
-              : null,
+          ((Kd2AuthenticationException) authException).getObjectDetails(),
           request.getRequestURI());
     } else {
+      ErrorCode errorCode;
+      String message;
+
+      if (authException instanceof InsufficientAuthenticationException) {
+        errorCode = ErrorCode.AUTHENTICATION_REQUIRED;
+        message = "Для доступа к ресурсу необходимо авторизоваться";
+      } else {
+        errorCode = ErrorCode.AUTHENTICATION_ERROR;
+        message = authException.getMessage();
+      }
+
       errorResponse = new ErrorResponse(
           now,
-          ErrorCode.AUTHENTICATION_ERROR,
+          errorCode,
           id,
-          authException.getMessage(),
+          message,
           null,
           null,
           null,

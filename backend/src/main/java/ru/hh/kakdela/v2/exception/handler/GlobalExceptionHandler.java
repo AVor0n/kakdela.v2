@@ -121,7 +121,6 @@ public class GlobalExceptionHandler {
             id, ErrorCode.BAD_CREDENTIALS, WRONG_LOGIN_OR_PASSWORD_MESSAGE, request));
   }
 
-
   @ExceptionHandler(BadCredentialsException.class)
   public ResponseEntity<ErrorResponse> handleBadCredentials(
       BadCredentialsException ex, WebRequest request

@@ -105,7 +105,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
       SecurityContextHolder.clearContext();
       authenticationEntryPoint.commence(request, response,
           new InternalAuthenticationServiceException(
-              "Неожиданная внутренняя ошибка обработки access token"));
+              "Неожиданная внутренняя ошибка обработки access token", ex));
     }
   }
 }
