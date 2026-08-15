@@ -33,7 +33,7 @@ export function formatHM(value: string): string {
 
     const date = new Date();
     date.setHours(hh, mm, 0, 0);
-    return `${date.getHours()}:${date.getMinutes() > 9 ? date.getMinutes() : '0' + date.getMinutes()}`;
+    return `${date.getHours() > 9 ? date.getHours() : '0' + date.getHours()}:${date.getMinutes() > 9 ? date.getMinutes() : '0' + date.getMinutes()}`;
 }
 
 export function getBinNumber(n: number): string {

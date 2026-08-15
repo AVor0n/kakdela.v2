@@ -16,9 +16,12 @@
     flex-direction: column;
     gap: 8px;
 }
+.timeInput {
+    width: 90px;
+}
 
 .dayOfMonthInput {
-    width: 300px;
+    max-width: 300px;
     display: flex;
     align-items: center;
     gap: 4px;
@@ -45,4 +48,19 @@
 .day.active {
     background: #0070ff;
     color: white;
+}
+
+@media (max-width: 768px) {
+    .container {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .content {
+        flex-direction: column;
+    }
+
+    .days {
+        flex-wrap: wrap;
+    }
 }

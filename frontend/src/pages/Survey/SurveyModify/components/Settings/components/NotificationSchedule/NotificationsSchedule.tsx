@@ -1,7 +1,7 @@
 import { createNotificationSchedule, getNotificationBySurveyId } from '@/api/notification';
 import { setErrorMessage } from '@/entities/Error/Error.slice';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { Button, Flex, FormLabel } from '@hh.ru/magritte-ui';
+import { Button, Flex, Text } from '@hh.ru/magritte-ui';
 import { useEffect } from 'react';
 import { NotificationItem } from './components/NotificationItem';
 import { useAppSelector } from '@/hooks/useAppSelector';
@@ -60,7 +60,7 @@ export function NotificationsSchedule({ surveyId }: Props) {
             ) : (
                 <>
                     <div className={style.header}>
-                        <FormLabel>Настройка переодических уведомлений</FormLabel>
+                        <Text typography='title-4-semibold'>Настройка напоминаний о прохождении</Text>
                     </div>
                     <div className={style.content}>
                         {notificationsSchedule.map((notification) => {

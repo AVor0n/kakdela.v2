@@ -17,9 +17,10 @@ function convertDateFromISO(isoStr: string): string {
     if (!isoStr) return '';
     const date = new Date(isoStr);
 
-    const result = date.toLocaleDateString('ru-RU');
+    const datePart = date.toLocaleDateString('ru-RU');
+    const timePart = date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
 
-    return result;
+    return `${datePart}, ${timePart}`;
 }
 
 export function Settings() {
@@ -41,9 +42,6 @@ export function Settings() {
 
         return null;
     });
-
-    // Состояние для отслеживания успешного копирования
-    const [isCopied, setIsCopied] = useState(false);
 
     const skipSaveOnUnmountRef = useRef<boolean>(false);
     const expireAtRef = useRef<HTMLInputElement>(null);
@@ -135,11 +133,14 @@ export function Settings() {
             let isoString = '';
             const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
             if (expireAt) {
-                const [day, month, year] = expireAt.split('.').map(Number);
+                const [datePart, timePart] = expireAt.split(',').map((part) => part.trim());
+                const [day, month, year] = datePart.split('.').map(Number);
                 if (!day || !month || !year) {
                     return;
                 }
-                isoString = new Date(year, month - 1, day, 10, 0, 0).toISOString();
+                const [hours, minutes] = timePart ? timePart.split(':').map(Number) : [10, 0];
+                const pad = (value: number) => String(value).padStart(2, '0');
+                isoString = `${year}-${pad(month)}-${pad(day)}T${pad(hours || 0)}:${pad(minutes || 0)}:00`;
             }
             updateSurvey(selectedSurvey.id, {
                 expireAtAtTargetTimezone: isoString,
@@ -215,21 +216,6 @@ export function Settings() {
             });
     };
 
-    const handleCopyClick = async (valueForCopy: string) => {
-        try {
-            // Копируем значение в буфер обмена
-            await navigator.clipboard.writeText(valueForCopy);
-            setIsCopied(true);
-
-            // Возвращаем исходный текст кнопки через 2 секунды
-            setTimeout(() => {
-                setIsCopied(false);
-            }, 2000);
-        } catch (err) {
-            dispatch(setErrorMessage({ message: 'Ошибка при копировании: ' + err }));
-        }
-    };
-
     return (
         <section className={style.container}>
             <div className={style.content}>
@@ -259,7 +245,7 @@ export function Settings() {
                             updateDoNotifyHandler(!doNotify);
                         }}
                     />
-                    <span>Присылать сообщение о прохождении опроса</span>
+                    <span>Присылать уведомления о новых ответах</span>
                 </div>
 
                 <div className={classNames(style.option, style.dateOption)}>
@@ -270,6 +256,7 @@ export function Settings() {
                         elevatePlaceholder
                         placeholder='Дата окончания прохождения опроса'
                         dateMask='dd.mm.yyyy'
+                        timeMask
                         onBlur={() => {
                             changeExpireAt();
                         }}
@@ -303,17 +290,6 @@ export function Settings() {
                             Удалить опрос
                         </Button>
                     )}
-                    <Button
-                        mode='secondary'
-                        style='neutral'
-                        onClick={() =>
-                            handleCopyClick(
-                                `https://${window.location.hostname}:${window.location.port}/surveys/${selectedSurvey.id}?responde=true`,
-                            )
-                        }
-                    >
-                        {isCopied ? 'Ссылка скопирована' : 'Скопировать ссылку на опрос'}
-                    </Button>
                 </div>
             </div>
         </section>

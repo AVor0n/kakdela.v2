@@ -21,6 +21,11 @@
 .mobileHeader {
     display: none;
 }
+.copyLink {
+    width: 300px;
+    display: flex;
+    justify-content: end;
+}
 
 @media (max-width: 768px) {
     .header {
