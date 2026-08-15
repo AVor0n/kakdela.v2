@@ -28,7 +28,8 @@ public class SurveyPageDaoImpl implements SurveyPageDao {
 
   @Override
   @SuppressWarnings("unchecked")
-  public Optional<SurveyPage> findByIdWithAllConditionsAndParentSurveyWithRelatives(UUID id) {
+  public Optional<SurveyPage>
+      findByIdWithAllConditionsAndParentSurveyWithPagesAndQuestions(UUID id) {
     Optional<SurveyPage> result = Optional.ofNullable(entityManager.createQuery(
         """
         SELECT DISTINCT sp

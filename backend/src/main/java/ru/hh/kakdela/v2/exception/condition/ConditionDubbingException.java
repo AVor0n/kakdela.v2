@@ -9,7 +9,7 @@ public class ConditionDubbingException extends Kd2OblectRelatedException {
   public ConditionDubbingException(UUID dubbedId) {
     super(ErrorCode.CONDITION_FOR_THESE_PAGE_AND_NEXT_PAGE_ALREADY_EXISTS,
         HttpStatus.CONFLICT,
-        "На данной странице уже существует условие для указанной страницы перехода",
+        "Для данной страницы уже существует правило с указанной страницей перехода",
         dubbedId,
         null);
   }

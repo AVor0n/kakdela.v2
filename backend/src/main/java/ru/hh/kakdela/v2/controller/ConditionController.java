@@ -1,5 +1,6 @@
 package ru.hh.kakdela.v2.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -33,6 +34,7 @@ import ru.hh.kakdela.v2.service.ConditionService;
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
+@Tag(name = "Conditions", description = "Управление условиями ветвления")
 public class ConditionController {
 
   private final ConditionService conditionService;

@@ -1,6 +1,7 @@
 package ru.hh.kakdela.v2.service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +15,9 @@ import ru.hh.kakdela.v2.dto.survey.page.SurveyPageCreateDto;
 import ru.hh.kakdela.v2.dto.survey.page.SurveyPagePublicResponseDto;
 import ru.hh.kakdela.v2.dto.survey.page.SurveyPageResponseDto;
 import ru.hh.kakdela.v2.dto.survey.page.SurveyPageUpdateDto;
+import ru.hh.kakdela.v2.exception.response.ResponseBranchClosedException;
+import ru.hh.kakdela.v2.exception.response.ResponseNotFoundOrCompletedException;
+import ru.hh.kakdela.v2.exception.survey.page.SurveyPageNotFoundException;
 import ru.hh.kakdela.v2.mapper.SurveyPageMapper;
 import ru.hh.kakdela.v2.model.Response;
 import ru.hh.kakdela.v2.model.Survey;
@@ -28,7 +32,7 @@ public class SurveyPageService {
   private final SurveyDao surveyDao;
   private final PermissionService permissionService;
   private final ResponseService responseService;
-  private final ConditionService conditionService;
+  private final ConditionConflictService conditionConflictService;
   private final SurveyPageMapper surveyPageMapper;
 
   @Transactional(readOnly = true)
@@ -38,37 +42,31 @@ public class SurveyPageService {
       UUID accountId,
       String token
   ) {
-    SurveyPage surveyPage = surveyPageDao.findById(pageId)
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Страница не найдена: id=" + pageId));
+    SurveyPage page = getEntityById(pageId);
 
     Response response =
         responseService.getEntityWithPageStatusesByIdWithOwnerAccessCheck(
             responseId, accountId, token);
 
-    if (!response.getSurvey().getId().equals(surveyPage.getSurvey().getId())
+    if (!response.getSurvey().getId().equals(page.getSurvey().getId())
         || response.isCompleted()) {
-      throw new ResponseStatusException(
-          HttpStatus.FORBIDDEN, "Доступ к странице запрещён");
+      throw new ResponseNotFoundOrCompletedException(responseId);
     }
 
     if (!responseService.isPageIncluded(response, pageId)) {
-      throw new ResponseStatusException(
-          HttpStatus.FORBIDDEN, "Доступ к странице запрещён");
+      throw new ResponseBranchClosedException();
     }
 
-    return surveyPageMapper.surveyPageToPublicDto(surveyPage);
+    return surveyPageMapper.surveyPageToPublicDto(page);
   }
 
   @Transactional(readOnly = true)
   public SurveyPageResponseDto getById(UUID pageId, UUID accountId) {
-    SurveyPage surveyPage = surveyPageDao.findById(pageId)
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Страница не найдена: id=" + pageId));
+    SurveyPage page = getEntityById(pageId);
 
-    permissionService.checkHasAnyPermission(surveyPage.getSurvey().getId(), accountId);
+    permissionService.checkHasAnyPermission(page.getSurvey().getId(), accountId);
 
-    return surveyPageMapper.surveyPageToDto(surveyPage);
+    return surveyPageMapper.surveyPageToDto(page);
   }
 
   @Transactional(readOnly = true)
@@ -105,7 +103,7 @@ public class SurveyPageService {
       surveyPageDao.increaseSerialNumbers(surveyId, dto.getSerialNumber());
     }
 
-    SurveyPage surveyPage = SurveyPage.builder()
+    SurveyPage page = SurveyPage.builder()
         .id(UUID.randomUUID())
         .survey(survey)
         .serialNumber(dto.getSerialNumber() != null
@@ -115,21 +113,19 @@ public class SurveyPageService {
         .description(dto.getDescription())
         .build();
 
-    surveyPageDao.save(surveyPage);
-    log.info("Создана страница id={} surveyId={}", surveyPage.getId(), surveyId);
-    return surveyPageMapper.surveyPageToDto(surveyPage);
+    surveyPageDao.save(page);
+    log.info("Создана страница id={} surveyId={}", page.getId(), surveyId);
+    return surveyPageMapper.surveyPageToDto(page);
   }
 
   @Transactional
   public SurveyPageResponseDto update(UUID pageId, SurveyPageUpdateDto dto, UUID accountId) {
-    SurveyPage surveyPage = surveyPageDao.findById(pageId)
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Страница не найдена: " + pageId));
+    SurveyPage page = getEntityById(pageId);
 
-    permissionService.checkCanEdit(surveyPage.getSurvey().getId(), accountId);
+    permissionService.checkCanEdit(page.getSurvey().getId(), accountId);
 
-    UUID surveyId = surveyPage.getSurvey().getId();
-    int oldSerial = surveyPage.getSerialNumber();
+    UUID surveyId = page.getSurvey().getId();
+    int oldSerial = page.getSerialNumber();
 
     if (dto.getSerialNumber() != null && !dto.getSerialNumber().equals(oldSerial)) {
       int newSerial = dto.getSerialNumber();
@@ -145,37 +141,50 @@ public class SurveyPageService {
         surveyPageDao.decreaseSerialNumbers(surveyId, oldSerial + 1, newSerial);
       }
 
-      surveyPage.setSerialNumber(newSerial);
+      page.setSerialNumber(newSerial);
 
-      conditionService.makeConditionsConsistent(pageId, newSerial);
+      conditionConflictService.makeConditionsConsistent(pageId, newSerial);
     }
 
     if (dto.getTitle() != null) {
-      surveyPage.setTitle(dto.getTitle());
+      page.setTitle(dto.getTitle());
     }
     if (dto.getDescription() != null) {
-      surveyPage.setDescription(dto.getDescription());
+      page.setDescription(dto.getDescription());
     }
 
-    surveyPageDao.update(surveyPage);
+    surveyPageDao.update(page);
     log.info("Изменена страница id={}", pageId);
-    return surveyPageMapper.surveyPageToDto(surveyPage);
+    return surveyPageMapper.surveyPageToDto(page);
   }
 
   @Transactional
   public void delete(UUID pageId, UUID accountId) {
-    SurveyPage surveyPage = surveyPageDao.findById(pageId)
-        .orElseThrow(
-            () -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-                "Страница не найдена: " + pageId));
+    SurveyPage page = getEntityById(pageId);
 
-    permissionService.checkCanEdit(surveyPage.getSurvey().getId(), accountId);
+    permissionService.checkCanEdit(page.getSurvey().getId(), accountId);
 
-    UUID surveyId = surveyPage.getSurvey().getId();
-    int deletedSerial = surveyPage.getSerialNumber();
+    UUID surveyId = page.getSurvey().getId();
+    int deletedSerial = page.getSerialNumber();
 
-    surveyPageDao.delete(surveyPage);
+    surveyPageDao.delete(page);
     surveyPageDao.decreaseSerialNumbers(surveyId, deletedSerial + 1);
     log.info("Удалена страница pageId={}", pageId);
+  }
+
+  // Вспомогательные методы
+
+  SurveyPage getEntityById(UUID id) {
+    return surveyPageDao.findById(id)
+        .orElseThrow(() -> new SurveyPageNotFoundException(id));
+  }
+
+  SurveyPage getEntityWithAllConditionsAndParentSurveyWithPagesAndQuestionsById(UUID id) {
+    return surveyPageDao.findByIdWithAllConditionsAndParentSurveyWithPagesAndQuestions(id)
+        .orElseThrow(() -> new SurveyPageNotFoundException(id));
+  }
+
+  Optional<SurveyPage> getOptionalById(UUID id) {
+    return surveyPageDao.findById(id);
   }
 }

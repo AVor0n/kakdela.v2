@@ -7,16 +7,17 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 import ru.hh.kakdela.v2.dao.ConditionDao;
-import ru.hh.kakdela.v2.dao.SurveyPageDao;
 import ru.hh.kakdela.v2.dto.condition.ConditionNextPageResponseDto;
 import ru.hh.kakdela.v2.dto.condition.ConditionRequestDto;
 import ru.hh.kakdela.v2.dto.condition.ConditionResponseDto;
 import ru.hh.kakdela.v2.exception.condition.ConditionDubbingException;
+import ru.hh.kakdela.v2.exception.condition.ConditionNextPageNotFound;
+import ru.hh.kakdela.v2.exception.condition.ConditionNotFoundException;
+import ru.hh.kakdela.v2.exception.condition.ConditionShouldNavigateForwardException;
+import ru.hh.kakdela.v2.exception.response.ResponseBranchClosedException;
 import ru.hh.kakdela.v2.mapper.ConditionMapper;
 import ru.hh.kakdela.v2.model.Response;
 import ru.hh.kakdela.v2.model.SurveyPage;
@@ -28,10 +29,10 @@ import ru.hh.kakdela.v2.model.condition.Condition;
 public class ConditionService {
 
   private final ConditionDao conditionDao;
-  private final SurveyPageDao surveyPageDao;
+  private final ConditionConflictService conditionConflictService;
+  private final SurveyPageService surveyPageService;
   private final PermissionService permissionService;
   private final ResponseService responseService;
-  private final ConditionConflictService conditionConflictService;
 
   @Transactional(readOnly = true)
   public ConditionResponseDto getById(UUID id, UUID accountId) {
@@ -45,9 +46,7 @@ public class ConditionService {
 
   @Transactional(readOnly = true)
   public List<ConditionResponseDto> getAllByPageId(UUID pageId, UUID accountId) {
-    SurveyPage page = surveyPageDao.findById(pageId)
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Страница не найдена: id=" + pageId));
+    SurveyPage page = surveyPageService.getEntityById(pageId);
 
     permissionService.checkHasAnyPermission(page.getSurvey().getId(), accountId);
 
@@ -66,17 +65,15 @@ public class ConditionService {
     log.info("Начата проверка условий дла страницы: pageId={}", pageId);
 
     final SurveyPage page =
-        surveyPageDao.findByIdWithAllConditionsAndParentSurveyWithRelatives(pageId)
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Страница не найдена: id=" + pageId));
+        surveyPageService.getEntityWithAllConditionsAndParentSurveyWithPagesAndQuestionsById(
+            pageId);
 
     final Response response =
         responseService.getFullyInitializedEntityByIdWithOwnerAccessCheck(
             responseId, accountId, token);
 
     if (!responseService.isPageIncluded(response, pageId)) {
-      throw new ResponseStatusException(
-          HttpStatus.FORBIDDEN, "Доступ к странице запрещён");
+      throw new ResponseBranchClosedException();
     }
 
     responseService.checkMandatoryQuestionsOfPageAnswered(responseId, pageId);
@@ -105,24 +102,19 @@ public class ConditionService {
   public ConditionResponseDto create(UUID pageId, ConditionRequestDto dto, UUID accountId) {
     log.info("Начато создание условия дла страницы: pageId={}", pageId);
 
-    SurveyPage page = surveyPageDao.findById(pageId)
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Страница не найдена: id=" + pageId));
+    SurveyPage page = surveyPageService.getEntityById(pageId);
 
     permissionService.checkCanEdit(page.getSurvey().getId(), accountId);
 
-    SurveyPage nextPage = surveyPageDao.findById(dto.getNextPageId())
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-            "Указанная страница перехода не найдена: id=" + dto.getNextPageId()));
+    SurveyPage nextPage = surveyPageService.getOptionalById(dto.getNextPageId())
+        .orElseThrow(() -> new ConditionNextPageNotFound(dto.getNextPageId()));
 
     if (!nextPage.getSurvey().getId().equals(page.getSurvey().getId())) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-         "Указанная страница перехода не найдена: id=" + dto.getNextPageId());
+      throw new ConditionNextPageNotFound(dto.getNextPageId());
     }
 
     if (nextPage.getSerialNumber() <= page.getSerialNumber()) {
-      throw new ResponseStatusException(
-          HttpStatus.BAD_REQUEST, "Условия могут перенаправлять только вперёд");
+      throw new ConditionShouldNavigateForwardException();
     }
 
     if (dto.getIsActive()) {
@@ -150,18 +142,15 @@ public class ConditionService {
     permissionService.checkCanEdit(
         getParentSurveyId(conditionId), accountId);
 
-    SurveyPage nextPage = surveyPageDao.findById(dto.getNextPageId())
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-            "Указанная страница перехода не найдена: id=" + dto.getNextPageId()));
+    SurveyPage nextPage = surveyPageService.getOptionalById(dto.getNextPageId())
+        .orElseThrow(() -> new ConditionNextPageNotFound(dto.getNextPageId()));
 
     if (!nextPage.getSurvey().getId().equals(condition.getSurveyPage().getSurvey().getId())) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-          "Указанная страница перехода не найдена: id=" + dto.getNextPageId());
+      throw new ConditionNextPageNotFound(dto.getNextPageId());
     }
 
     if (nextPage.getSerialNumber() <= condition.getSurveyPage().getSerialNumber()) {
-      throw new ResponseStatusException(
-          HttpStatus.BAD_REQUEST, "Условия могут перенаправлять только вперёд");
+      throw new ConditionShouldNavigateForwardException();
     }
 
     if (dto.getIsActive()) {
@@ -194,20 +183,17 @@ public class ConditionService {
 
   Condition getEntityById(UUID id) {
     return conditionDao.findById(id)
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Условие не найдено: id=" + id));
+        .orElseThrow(() -> new ConditionNotFoundException(id));
   }
 
   Condition getFullyInitializedEntityById(UUID id) {
     return conditionDao.findByIdWithWholeTree(id)
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Условие не найдено: id=" + id));
+        .orElseThrow(() -> new ConditionNotFoundException(id));
   }
 
   Condition getEntityWithParentPageWithAllQuestionsAndNeighbourConditionsById(UUID id) {
     return conditionDao.findByIdWithParentPageWithAllQuestionsAndNeighbourConditions(id)
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Условие не найдено: id=" + id));
+        .orElseThrow(() -> new ConditionNotFoundException(id));
   }
 
   void checkNoDubbingCondition(UUID pageId, UUID nextPageId) {
@@ -231,10 +217,6 @@ public class ConditionService {
 
   UUID getParentSurveyId(UUID conditionId) {
     return conditionDao.findParentSurveyIdById(conditionId);
-  }
-
-  void makeConditionsConsistent(UUID pageId, int serialNumber) {
-    conditionDao.makeConditionsConsistentByPageIdAndItsSerialNumber(pageId, serialNumber);
   }
 
   boolean doSurveyHaveConditions(UUID surveyId) {

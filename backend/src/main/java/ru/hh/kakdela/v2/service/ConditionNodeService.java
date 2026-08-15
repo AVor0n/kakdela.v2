@@ -1,24 +1,32 @@
 package ru.hh.kakdela.v2.service;
 
 import java.util.ArrayDeque;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
-import ru.hh.kakdela.v2.dao.AnswerOptionDao;
 import ru.hh.kakdela.v2.dao.ConditionDao;
 import ru.hh.kakdela.v2.dao.ConditionNodeDao;
-import ru.hh.kakdela.v2.dao.QuestionDao;
 import ru.hh.kakdela.v2.dto.condition.atom.ConditionAtomCreateDto;
 import ru.hh.kakdela.v2.dto.condition.atom.ConditionAtomUpdateDto;
 import ru.hh.kakdela.v2.dto.condition.node.ConditionNodeCreateDto;
 import ru.hh.kakdela.v2.dto.condition.node.ConditionNodeResponseDto;
 import ru.hh.kakdela.v2.dto.condition.node.ConditionNodeUpdateDto;
+import ru.hh.kakdela.v2.exception.BadRequestDataException;
+import ru.hh.kakdela.v2.exception.condition.ConditionChildNodeNotFoundException;
+import ru.hh.kakdela.v2.exception.condition.ConditionLinkNodesOnlyShouldBeModifiedException;
 import ru.hh.kakdela.v2.exception.condition.ConditionNodeIsNotAtomException;
+import ru.hh.kakdela.v2.exception.condition.ConditionNodeNotFoundException;
+import ru.hh.kakdela.v2.exception.condition.ConditionNodeOperatorIsNotLinkException;
+import ru.hh.kakdela.v2.exception.condition.ConditionParentNodeNotFoundException;
+import ru.hh.kakdela.v2.exception.condition.ConditionTreeHeightLimitReachedException;
+import ru.hh.kakdela.v2.exception.condition.ConditionTreeIsEmptyException;
+import ru.hh.kakdela.v2.exception.condition.ConditionTreeIsNotEmptyException;
+import ru.hh.kakdela.v2.exception.question.AnswerOptionNotFoundException;
+import ru.hh.kakdela.v2.exception.question.QuestionNotFoundException;
 import ru.hh.kakdela.v2.mapper.ConditionMapper;
 import ru.hh.kakdela.v2.model.AnswerOption;
 import ru.hh.kakdela.v2.model.Question;
@@ -33,13 +41,13 @@ public class ConditionNodeService {
 
   private static final int MAX_CONDITION_TREE_HEIGHT = 3;
 
+  private final ConditionService conditionService;
+  private final ConditionConflictService conditionConflictService;
   private final ConditionDao conditionDao;
   private final ConditionNodeDao conditionNodeDao;
-  private final QuestionDao questionDao;
-  private final AnswerOptionDao answerOptionDao;
-  private final ConditionService conditionService;
+  private final QuestionService questionService;
+  private final AnswerOptionService answerOptionService;
   private final PermissionService permissionService;
-  private final ConditionConflictService conditionConflictService;
 
   @Transactional
   public ConditionNodeResponseDto addNode(
@@ -57,23 +65,19 @@ public class ConditionNodeService {
         conditionService.getParentSurveyId(conditionId), accountId);
 
     if (!dto.getOperator().isLink) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-          "Указанный оператор вершины не является соединительным");
+      throw new ConditionNodeOperatorIsNotLinkException();
     }
 
     if (condition.getRoot() == null) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-          "Дерево условия пусто. Добавление соединительных вершин не допускается");
+      throw new ConditionTreeIsEmptyException();
     }
 
-    ConditionNode childNode = conditionNodeDao.findById(dto.getChildNodeToLinkId())
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Дочерняя вершина не найдена: id=" + dto.getChildNodeToLinkId()));
+    ConditionNode childNode = getOptionalById(dto.getChildNodeToLinkId())
+        .orElseThrow(() -> new ConditionChildNodeNotFoundException(dto.getChildNodeToLinkId()));
     ConditionNode parentNode = childNode.getParentNode();
 
     if (!childNode.getCondition().getId().equals(conditionId)) {
-      throw new ResponseStatusException(
-          HttpStatus.NOT_FOUND, "Дочерняя вершина не найдена: id=" + dto.getChildNodeToLinkId());
+      throw new ConditionChildNodeNotFoundException(dto.getChildNodeToLinkId());
     }
 
     ConditionNode node = ConditionNode.builder()
@@ -123,8 +127,7 @@ public class ConditionNodeService {
         conditionNodeDao.findParentSurveyIdById(nodeId), accountId);
 
     if (!node.getOperator().isLink) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-          "Изменять можно только соединительные вершины");
+      throw new ConditionLinkNodesOnlyShouldBeModifiedException();
     }
 
     node.setOperator(dto.getOperator());
@@ -157,56 +160,41 @@ public class ConditionNodeService {
 
     if (condition.getRoot() != null) {
       if (dto.getParentNodeId() == null) {
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-            "Дерево условия не пусто. Для новых атомарных условий "
-                + "необходимо указывать родительскую вершину");
+        throw new ConditionTreeIsNotEmptyException();
       }
 
-      parentNode = conditionNodeDao.findById(dto.getParentNodeId())
-          .orElseThrow(() -> new ResponseStatusException(
-              HttpStatus.NOT_FOUND, "Родительская вершина не найдена: id="
-              + dto.getParentNodeId()));
+      parentNode = getOptionalById(dto.getParentNodeId())
+          .orElseThrow(() -> new ConditionParentNodeNotFoundException(dto.getParentNodeId()));
 
       if (!parentNode.getCondition().getId().equals(conditionId)) {
-        throw new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Родительская вершина не найдена: id=" + dto.getParentNodeId());
+        throw new ConditionParentNodeNotFoundException(dto.getParentNodeId());
       }
 
       if (!parentNode.getOperator().isLink) {
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-            "Указанная родительская вершина не является соединительной");
+        throw new ConditionNodeOperatorIsNotLinkException();
       }
     } else {
       if (dto.getParentNodeId() != null) {
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-            "Дерево условия пусто. У нового атомарного условия"
-                + " не может быть родительской вершины");
+        throw new ConditionTreeIsEmptyException();
       }
 
       parentNode = null;
     }
 
-    Question question = questionDao.findById(dto.getQuestionId())
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Вопрос не найден: id=" + dto.getQuestionId()));
+    Question question = questionService.getEntityById(dto.getQuestionId());
 
     if (!question.getSurveyPage().getId().equals(condition.getSurveyPage().getId())) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-          "Вопрос не найден: id=" + dto.getQuestionId());
+      throw new QuestionNotFoundException(dto.getQuestionId());
     }
 
     verifyAtomRequestDto(dto, question);
 
     AnswerOption requiredAnswerOption;
     if (dto.getRequiredAnswerOptionId() != null) {
-      requiredAnswerOption = answerOptionDao.findById(dto.getRequiredAnswerOptionId())
-          .orElseThrow(() -> new ResponseStatusException(
-              HttpStatus.NOT_FOUND, "Вариант ответа не найден: id="
-              + dto.getRequiredAnswerOptionId()));
+      requiredAnswerOption = answerOptionService.getEntityById(dto.getRequiredAnswerOptionId());
 
       if (!requiredAnswerOption.getQuestion().getId().equals(question.getId())) {
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-            "Вариант ответа не найден: id=" + dto.getQuestionId());
+        throw new AnswerOptionNotFoundException(dto.getRequiredAnswerOptionId());
       }
     } else {
       requiredAnswerOption = null;
@@ -263,27 +251,20 @@ public class ConditionNodeService {
       throw new ConditionNodeIsNotAtomException(nodeId);
     }
 
-    Question question = questionDao.findById(dto.getQuestionId())
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Вопрос не найден: id=" + dto.getQuestionId()));
+    Question question = questionService.getEntityById(dto.getQuestionId());
 
     if (!question.getSurveyPage().getId().equals(node.getCondition().getSurveyPage().getId())) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-          "Вопрос не найден: id=" + dto.getQuestionId());
+      throw new QuestionNotFoundException(dto.getQuestionId());
     }
 
     verifyAtomRequestDto(dto, question);
 
     AnswerOption requiredAnswerOption;
     if (dto.getRequiredAnswerOptionId() != null) {
-      requiredAnswerOption = answerOptionDao.findById(dto.getRequiredAnswerOptionId())
-          .orElseThrow(() -> new ResponseStatusException(
-              HttpStatus.NOT_FOUND, "Вариант ответа не найден: id="
-              + dto.getRequiredAnswerOptionId()));
+      requiredAnswerOption = answerOptionService.getEntityById(dto.getRequiredAnswerOptionId());
 
       if (!requiredAnswerOption.getQuestion().getId().equals(question.getId())) {
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-            "Вариант ответа не найден: id=" + dto.getQuestionId());
+        throw new AnswerOptionNotFoundException(dto.getRequiredAnswerOptionId());
       }
     } else {
       requiredAnswerOption = null;
@@ -344,20 +325,20 @@ public class ConditionNodeService {
     final Question.QuestionType questionType = question.getType();
 
     if (!dto.getOperator().allowedQuestionTypes.contains(question.getType())) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+      throw new BadRequestDataException(
           "Оператор %s несовместим с вопросом типа %s"
               .formatted(dto.getOperator(), question.getType()));
     }
 
     if (questionType.isBooleanAllowed) {
       if (dto.getRequiredBooleanValue() == null) {
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+        throw new BadRequestDataException(
             "Для вопроса типа %s в атомарном условии должно быть указано булевое значение"
                 .formatted(questionType));
       }
     } else {
       if (dto.getRequiredBooleanValue() != null) {
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+        throw new BadRequestDataException(
             "Для вопроса типа %s в атомарном условии не должно быть указано булевое значение"
                 .formatted(questionType));
       }
@@ -365,13 +346,13 @@ public class ConditionNodeService {
 
     if (questionType.isAnswerOptionsAllowed) {
       if (dto.getRequiredAnswerOptionId() == null) {
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+        throw new BadRequestDataException(
             "Для вопроса типа %s в атомарном условии должен быть указан вариант ответа"
                 .formatted(questionType));
       }
     } else {
       if (dto.getRequiredAnswerOptionId() != null) {
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+        throw new BadRequestDataException(
             "Для вопроса типа %s в атомарном условии не должен быть указан вариант ответа"
                 .formatted(questionType));
       }
@@ -392,8 +373,7 @@ public class ConditionNodeService {
       NodeWithHeight current = queue.poll();
 
       if (current.height() > MAX_CONDITION_TREE_HEIGHT) {
-        throw new ResponseStatusException(
-            HttpStatus.CONFLICT, "Превышена максимальная высота дерева условия");
+        throw new ConditionTreeHeightLimitReachedException();
       }
 
       for (ConditionNode child : current.node().getChildNodes()) {
@@ -406,7 +386,10 @@ public class ConditionNodeService {
       getEntityWithParentConditionAndParentPageWithAllQuestionsAndNeighbourConditionsById(UUID id) {
     return conditionNodeDao
         .findByIdWithParentConditionAndParentPageWithAllQuestionsAndNeighbourConditions(id)
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Вершина условия не найдена: id=" + id));
+        .orElseThrow(() -> new ConditionNodeNotFoundException(id));
+  }
+
+  Optional<ConditionNode> getOptionalById(UUID id) {
+    return conditionNodeDao.findById(id);
   }
 }
