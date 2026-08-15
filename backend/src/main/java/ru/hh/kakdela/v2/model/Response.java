@@ -63,7 +63,7 @@ public class Response {
   private Instant receivedAt;
 
   @OneToMany(mappedBy = "response", cascade = CascadeType.ALL, orphanRemoval = true)
-  @OrderBy("serialNumber ASC")
+  @OrderBy("pageSerialNumber ASC, questionSerialNumber ASC")
   @Builder.Default
   private List<Answer> answers = new ArrayList<>();
 }

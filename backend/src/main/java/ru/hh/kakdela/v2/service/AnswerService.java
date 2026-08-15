@@ -32,6 +32,7 @@ import ru.hh.kakdela.v2.status.ObjectStatus;
 public class AnswerService {
 
   private final AnswerDao answerDao;
+  private final QuestionService questionService;
   private final ResponseDao responseDao;
   private final QuestionDao questionDao;
   private final AnswerOptionService answerOptionService;
@@ -123,7 +124,8 @@ public class AnswerService {
       AnswerRequestDto dto,
       List<AnswerOption> selectedAnswerOptions
   ) {
-    answer.setSerialNumber(question.getSerialNumber());
+    answer.setPageSerialNumber(questionService.getParentPageSerialNumberById(question.getId()));
+    answer.setQuestionSerialNumber(question.getSerialNumber());
     answer.setQuestionTextSnapshot(question.getTextAsPlainString());
     answer.setTextValue(dto.getTextValue());
     answer.setBooleanValue(dto.getBooleanValue());
@@ -158,7 +160,8 @@ public class AnswerService {
         .id(UUID.randomUUID())
         .response(response)
         .question(question)
-        .serialNumber(question.getSerialNumber())
+        .pageSerialNumber(questionService.getParentPageSerialNumberById(question.getId()))
+        .questionSerialNumber(question.getSerialNumber())
         .questionTextSnapshot(question.getTextAsPlainString())
         .textValue(dto.getTextValue())
         .booleanValue(dto.getBooleanValue())

@@ -11,6 +11,8 @@ public interface QuestionDao {
 
   List<Question> findAllByPageId(UUID pageId);
 
+  int findParentPageSerialNumberById(UUID id);
+
   void save(Question question);
 
   void update(Question question);
