@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Button, Card, Text, Title } from '@hh.ru/magritte-ui';
+import { Button, Text, Title } from '@hh.ru/magritte-ui';
 import { routes } from '@/app/routes';
 import style from './App.module.css';
 import { createSurvey } from '@/api/survey';
@@ -8,22 +8,64 @@ import { setErrorMessage } from '@/entities/Error/Error.slice';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { AccountDetail } from '@/shared/ui/AccountDetail/AccountDetail';
 import { ProductLogo } from '@/shared/ui/ProductLogo/ProductLogo';
+import { InfoSlider } from './components/Info/InfoSlider';
 
-const FEATURES = [
+interface InfoItem {
+    title: string;
+    description: string;
+    imageSrc: string;
+    serialNumber: number;
+}
+
+const INFO: InfoItem[] = [
     {
-        icon: '⚡',
-        title: 'Быстрое создание',
-        description: 'Соберите опрос за пару минут с помощью гибкого конструктора вопросов.',
+        title: 'Конструктор опросов',
+        description:
+            'Добавляйте вопросы простым перетаскиванием, настраивайте порядок и оформление без единой строчки кода.',
+        imageSrc: '/images/info/constructor.png',
+        serialNumber: 1,
     },
     {
-        icon: '📊',
-        title: 'Наглядная аналитика',
-        description: 'Следите за ответами в реальном времени и делайте выводы без лишних таблиц.',
+        title: 'Ветвление и логика переходов',
+        description:
+            'Показывайте разным респондентам разные вопросы в зависимости от их ответов — стройте гибкие сценарии прохождения опроса.',
+        imageSrc: '/images/info/branching.png',
+        serialNumber: 2,
     },
     {
-        icon: '🤝',
-        title: 'Для команд',
-        description: 'Делитесь опросами с коллегами и собирайте обратную связь сообща.',
+        title: 'Роли и права доступа',
+        description:
+            'Разграничивайте доступ между владельцами, редакторами и наблюдателями, чтобы команда работала над опросом безопасно и слаженно.',
+        imageSrc: '/images/info/roles.png',
+        serialNumber: 3,
+    },
+    {
+        title: 'Библиотека шаблонов',
+        description:
+            'Используйте готовые шаблоны опросов под разные задачи — от обратной связи по продукту до оценки удовлетворённости сотрудников.',
+        imageSrc: '/images/info/templates.png',
+        serialNumber: 4,
+    },
+    {
+        title: 'Разные типы вопросов',
+        description:
+            'Одиночный и множественный выбор, шкалы, свободный текст, рейтинги и другие форматы — выбирайте подходящий под каждую задачу.',
+        imageSrc: '/images/info/question-types.png',
+        serialNumber: 5,
+    },
+    {
+        title: 'Аналитика в реальном времени',
+        description:
+            'Следите за ответами по мере их поступления, стройте графики и выгружайте результаты для дальнейшего анализа.',
+        imageSrc: '/images/info/analytics.png',
+        serialNumber: 6,
+    },
+    {
+        title: 'Публикация и распространение',
+        description:
+            'Публикуйте опрос по ссылке или встраивайте на сайт — собирайте ответы там, где удобно вашей аудитории.',
+        imageSrc: '/images/info/publishing.png',
+        serialNumber: 7,
     },
 ];
 
@@ -75,7 +117,7 @@ function App() {
             <main className={style.main}>
                 <div className={style.blobOne} />
                 <div className={style.blobTwo} />
-
+                <InfoSlider items={INFO} />
                 <section className={style.hero}>
                     <div className={style.heroCard}>
                         <div className={style.heroAccent} />
@@ -107,20 +149,6 @@ function App() {
                             </div>
                         </div>
                     </div>
-                </section>
-
-                <section className={style.features}>
-                    {FEATURES.map((feature) => (
-                        <Card key={feature.title} padding={24} borderRadius={24} className={style.featureCard}>
-                            <Text Element='h3' typography='subtitle-1-semibold'>
-                                <span className={style.featureIcon}>{feature.icon} </span>
-                                {feature.title}
-                            </Text>
-                            <Text Element='p' style='secondary' typography='paragraph-3-regular'>
-                                {feature.description}
-                            </Text>
-                        </Card>
-                    ))}
                 </section>
             </main>
         </>
