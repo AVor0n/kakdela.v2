@@ -288,9 +288,9 @@ export function Settings() {
                     )}
                 </div>
 
-                <SubscribersInput />
-
                 <NotificationsSchedule surveyId={selectedSurvey.id} />
+
+                <SubscribersInput />
 
                 {isAuthor && <Permissions surveyId={selectedSurvey.id} />}
 
