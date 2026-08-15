@@ -178,7 +178,7 @@ public class GlobalExceptionHandler {
     return ResponseEntity
         .status(ex.getStatusCode())
         .body(ErrorMapper.getErrorResponse(
-            id, ErrorCode.UNDEFINED, ex.getMessage(), request));
+            id, ErrorCode.UNCLASSIFIED, ex.getMessage(), request));
   }
 
   @ExceptionHandler(ResetCodeException.class)
@@ -190,7 +190,7 @@ public class GlobalExceptionHandler {
     return ResponseEntity
         .status(HttpStatus.TOO_MANY_REQUESTS)
         .body(ErrorMapper.getErrorResponse(
-            id, ErrorCode.UNDEFINED, "Осталось попыток: " + ex.getRemainingAttempts(), request));
+            id, ErrorCode.UNCLASSIFIED, "Осталось попыток: " + ex.getRemainingAttempts(), request));
   }
 
   @ExceptionHandler(Exception.class)
