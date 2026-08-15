@@ -123,7 +123,8 @@ public class AnswerService {
       AnswerRequestDto dto,
       List<AnswerOption> selectedAnswerOptions
   ) {
-    answer.setSerialNumber(question.getSerialNumber());
+    answer.setPageSerialNumber(question.getSurveyPage().getSerialNumber());
+    answer.setQuestionSerialNumber(question.getSerialNumber());
     answer.setQuestionTextSnapshot(question.getTextAsPlainString());
     answer.setTextValue(dto.getTextValue());
     answer.setBooleanValue(dto.getBooleanValue());
@@ -158,7 +159,8 @@ public class AnswerService {
         .id(UUID.randomUUID())
         .response(response)
         .question(question)
-        .serialNumber(question.getSerialNumber())
+        .pageSerialNumber(question.getSurveyPage().getSerialNumber())
+        .questionSerialNumber(question.getSerialNumber())
         .questionTextSnapshot(question.getTextAsPlainString())
         .textValue(dto.getTextValue())
         .booleanValue(dto.getBooleanValue())

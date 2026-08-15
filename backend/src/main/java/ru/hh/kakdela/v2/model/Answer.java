@@ -57,8 +57,11 @@ public class Answer {
   @ToString.Exclude
   private Question question;
 
-  @Column(name = "serial_number", nullable = false)
-  private Integer serialNumber;
+  @Column(name = "page_serial_number", nullable = false)
+  private Integer pageSerialNumber;
+
+  @Column(name = "question_serial_number", nullable = false)
+  private Integer questionSerialNumber;
 
   @Column(name = "question_text_snapshot", length = 200, nullable = false)
   private String questionTextSnapshot;
