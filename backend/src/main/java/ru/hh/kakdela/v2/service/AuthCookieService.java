@@ -19,9 +19,6 @@ public class AuthCookieService {
   public static final String MAIN_PATH = "/api";
   public static final String REFRESH_PATH = "/api/auth/refresh";
 
-  @Value("${app.tokens.access.max-age}")
-  private long accessTokenMaxAge;
-
   @Value("${app.tokens.refresh.max-age}")
   private long refreshTokenMaxAge;
 
@@ -50,7 +47,7 @@ public class AuthCookieService {
 
   public void setAccessTokenCookie(HttpServletResponse response, String token) {
     ResponseCookie cookie = CookieUtil.buildHttpOnlyStrictCookie(
-        ACCESS_TOKEN_COOKIE_NAME, token, MAIN_PATH, accessTokenMaxAge
+        ACCESS_TOKEN_COOKIE_NAME, token, MAIN_PATH, refreshTokenMaxAge
     );
     CookieUtil.addCookie(response, cookie);
   }
