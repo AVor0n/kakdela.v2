@@ -73,7 +73,7 @@ public class GlobalExceptionHandler {
     return ResponseEntity
         .status(HttpStatus.BAD_REQUEST)
         .body(ErrorMapper.getErrorResponse(
-            id, ErrorCode.BAD_REQUEST_BODY, ex.getMessage(), request));
+            id, ErrorCode.BAD_REQUEST_DATA, ex.getMessage(), request));
   }
 
   @ExceptionHandler(jakarta.persistence.EntityNotFoundException.class)

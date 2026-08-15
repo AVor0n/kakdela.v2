@@ -13,12 +13,12 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import ru.hh.kakdela.v2.dao.AnswerOptionDao;
-import ru.hh.kakdela.v2.dao.QuestionDao;
 import ru.hh.kakdela.v2.dto.answer.option.AnswerOptionCreateDto;
 import ru.hh.kakdela.v2.dto.answer.option.AnswerOptionResponseDto;
 import ru.hh.kakdela.v2.dto.answer.option.AnswerOptionUpdateDto;
 import ru.hh.kakdela.v2.dto.image.ProcessedImage;
 import ru.hh.kakdela.v2.dto.object.ObjectUrlResponseDto;
+import ru.hh.kakdela.v2.exception.question.AnswerOptionNotFoundException;
 import ru.hh.kakdela.v2.mapper.AnswerOptionMapper;
 import ru.hh.kakdela.v2.model.AnswerOption;
 import ru.hh.kakdela.v2.model.Question;
@@ -32,29 +32,25 @@ public class AnswerOptionService {
   private long attachmentUrlMaxAge;
 
   private final AnswerOptionDao answerOptionDao;
+  private final QuestionService questionService;
   private final PermissionService permissionService;
-  private final QuestionDao questionDao;
   private final ObjectStorageService objectStorageService;
   private final AnswerOptionMapper answerOptionMapper;
   private final ImageProcessingService imageProcessingService;
 
   @Transactional(readOnly = true)
-  public AnswerOptionResponseDto getById(UUID id, UUID currentUserId) {
-    AnswerOption answerOption = answerOptionDao.findById(id)
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Вариант ответа не найден: id=" + id));
+  public AnswerOptionResponseDto getById(UUID optionId, UUID currentUserId) {
+    AnswerOption option = getEntityById(optionId);
 
     permissionService.checkHasAnyPermission(
-        answerOption.getQuestion().getSurveyPage().getSurvey().getId(), currentUserId);
+        option.getQuestion().getSurveyPage().getSurvey().getId(), currentUserId);
 
-    return answerOptionMapper.answerOptionToDto(answerOption);
+    return answerOptionMapper.answerOptionToDto(option);
   }
 
   @Transactional(readOnly = true)
   public List<AnswerOptionResponseDto> getAllByQuestionId(UUID questionId, UUID currentUserId) {
-    Question question = questionDao.findById(questionId)
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Вопрос не найден: id=" + questionId));
+    Question question = questionService.getEntityById(questionId);
 
     permissionService.checkHasAnyPermission(
         question.getSurveyPage().getSurvey().getId(), currentUserId);
@@ -65,12 +61,12 @@ public class AnswerOptionService {
   }
 
   @Transactional
-  public AnswerOptionResponseDto create(UUID questionId,
-                                        AnswerOptionCreateDto dto,
-                                        UUID accountId) {
-    Question question = questionDao.findById(questionId)
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Вопрос не найден: " + questionId));
+  public AnswerOptionResponseDto create(
+      UUID questionId,
+      AnswerOptionCreateDto dto,
+      UUID accountId
+  ) {
+    Question question = questionService.getEntityById(questionId);
 
     permissionService.checkCanEdit(question.getSurveyPage().getSurvey().getId(), accountId);
 
@@ -86,7 +82,7 @@ public class AnswerOptionService {
       answerOptionDao.increaseSerialNumbers(questionId, dto.getSerialNumber());
     }
 
-    AnswerOption answerOption = AnswerOption.builder()
+    AnswerOption option = AnswerOption.builder()
         .id(UUID.randomUUID())
         .question(question)
         .serialNumber(dto.getSerialNumber() != null
@@ -95,22 +91,24 @@ public class AnswerOptionService {
         .text(dto.getText())
         .build();
 
-    answerOptionDao.save(answerOption);
-    log.info("Создан вариант ответа id={} questionId={}", answerOption.getId(), questionId);
-    return answerOptionMapper.answerOptionToDto(answerOption);
+    answerOptionDao.save(option);
+    log.info("Создан вариант ответа id={} questionId={}", option.getId(), questionId);
+    return answerOptionMapper.answerOptionToDto(option);
   }
 
   @Transactional
-  public AnswerOptionResponseDto update(UUID id, AnswerOptionUpdateDto dto, UUID accountId) {
-    AnswerOption answerOption = answerOptionDao.findById(id)
-        .orElseThrow(
-            () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Вопрос не найден: " + id));
+  public AnswerOptionResponseDto update(
+      UUID optionId,
+      AnswerOptionUpdateDto dto,
+      UUID accountId
+  ) {
+    AnswerOption option = getEntityById(optionId);
 
     permissionService.checkCanEdit(
-        answerOption.getQuestion().getSurveyPage().getSurvey().getId(), accountId);
+        option.getQuestion().getSurveyPage().getSurvey().getId(), accountId);
 
-    UUID questionId = answerOption.getQuestion().getId();
-    int oldSerial = answerOption.getSerialNumber();
+    UUID questionId = option.getQuestion().getId();
+    int oldSerial = option.getSerialNumber();
 
     if (dto.getSerialNumber() != null && !dto.getSerialNumber().equals(oldSerial)) {
       int newSerial = dto.getSerialNumber();
@@ -126,137 +124,133 @@ public class AnswerOptionService {
         answerOptionDao.decreaseSerialNumbers(questionId, oldSerial + 1, newSerial);
       }
 
-      answerOption.setSerialNumber(newSerial);
+      option.setSerialNumber(newSerial);
     }
 
     if (dto.getText() != null) {
-      answerOption.setText(dto.getText());
+      option.setText(dto.getText());
     }
-    answerOptionDao.update(answerOption);
-    log.info("Изменен вариант ответа id={}", id);
-    return answerOptionMapper.answerOptionToDto(answerOption);
+    answerOptionDao.update(option);
+    log.info("Изменен вариант ответа optionId={}", optionId);
+    return answerOptionMapper.answerOptionToDto(option);
   }
 
   @Transactional
-  public void delete(UUID id, UUID accountId) {
-    AnswerOption answerOption = answerOptionDao.findById(id)
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-            "Вариант ответа не найден: " + id));
+  public void delete(UUID optionId, UUID accountId) {
+    AnswerOption option = getEntityById(optionId);
 
-    Question question = answerOption.getQuestion();
+    Question question = option.getQuestion();
 
     permissionService.checkCanEdit(
-        answerOption.getQuestion().getSurveyPage().getSurvey().getId(), accountId);
+        option.getQuestion().getSurveyPage().getSurvey().getId(), accountId);
     UUID questionId = question.getId();
-    int deletedSerial = answerOption.getSerialNumber();
+    int deletedSerial = option.getSerialNumber();
 
-    answerOptionDao.delete(answerOption);
+    answerOptionDao.delete(option);
 
     answerOptionDao.decreaseSerialNumbers(questionId, deletedSerial + 1);
-    log.info("Удален вариант ответа id={}", id);
+    log.info("Удален вариант ответа id={}", optionId);
   }
 
   // Attachment management
 
   @Transactional
-  public ObjectUrlResponseDto addAttachment(UUID answerOptionId, UUID accountId,
-                                            MultipartFile file) {
-    AnswerOption answerOption = answerOptionDao.findById(answerOptionId)
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Вариант ответа не найден: " + answerOptionId));
+  public ObjectUrlResponseDto addAttachment(
+      UUID optionId,
+      UUID accountId,
+      MultipartFile file
+  ) {
+    AnswerOption option = getEntityById(optionId);
 
     permissionService.checkCanEdit(
-        answerOption.getQuestion().getSurveyPage().getSurvey().getId(), accountId);
+        option.getQuestion().getSurveyPage().getSurvey().getId(), accountId);
 
-    if (answerOption.getAttachmentObjectKey() != null) {
+    if (option.getAttachmentObjectKey() != null) {
       throw new ResponseStatusException(
           HttpStatus.CONFLICT, "Вариант ответа уже содержит вложение");
     }
 
     ProcessedImage image = imageProcessingService.process(file);
 
-    String objectKey = "answer-options/%s/%s".formatted(answerOption.getId(), UUID.randomUUID());
+    String objectKey = "answer-options/%s/%s".formatted(option.getId(), UUID.randomUUID());
     objectStorageService.putObject(
         objectKey,
         image.getContent(),
         image.getContentType());
 
-    answerOption.setAttachmentObjectKey(objectKey);
-    answerOptionDao.update(answerOption);
-    log.info("Добавлено вложение к варианту ответа id={} objectKey={}", answerOptionId, objectKey);
+    option.setAttachmentObjectKey(objectKey);
+    answerOptionDao.update(option);
+    log.info("Добавлено вложение к варианту ответа id={} objectKey={}", optionId, objectKey);
 
     return new ObjectUrlResponseDto(
         objectStorageService.generateObjectUrl(objectKey, attachmentUrlMaxAge).toString());
   }
 
   @Transactional
-  public ObjectUrlResponseDto updateAttachment(UUID answerOptionId,
-                                               UUID accountId,
-                                               MultipartFile file) {
-    AnswerOption answerOption = answerOptionDao.findById(answerOptionId)
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Вариант ответа не найден: " + answerOptionId));
+  public ObjectUrlResponseDto updateAttachment(
+      UUID optionId,
+      UUID accountId,
+      MultipartFile file
+  ) {
+    AnswerOption option = getEntityById(optionId);
 
     permissionService.checkCanEdit(
-        answerOption.getQuestion().getSurveyPage().getSurvey().getId(), accountId);
+        option.getQuestion().getSurveyPage().getSurvey().getId(), accountId);
 
     ProcessedImage image = imageProcessingService.process(file);
 
-    if (answerOption.getAttachmentObjectKey() != null) {
+    if (option.getAttachmentObjectKey() != null) {
       objectStorageService.deleteObject(
-          answerOption.getAttachmentObjectKey());
+          option.getAttachmentObjectKey());
     }
 
-    String objectKey = "answer-options/%s/%s".formatted(answerOption.getId(), UUID.randomUUID());
+    String objectKey = "answer-options/%s/%s".formatted(option.getId(), UUID.randomUUID());
     objectStorageService.putObject(
         objectKey,
         image.getContent(),
         image.getContentType());
 
-    answerOption.setAttachmentObjectKey(objectKey);
-    answerOptionDao.update(answerOption);
-    log.info("Изменено вложение варианта ответа id={} objectKey={}", answerOptionId, objectKey);
+    option.setAttachmentObjectKey(objectKey);
+    answerOptionDao.update(option);
+    log.info("Изменено вложение варианта ответа id={} objectKey={}", optionId, objectKey);
 
     return new ObjectUrlResponseDto(
         objectStorageService.generateObjectUrl(objectKey, attachmentUrlMaxAge).toString());
   }
 
   @Transactional
-  public void deleteAttachment(UUID answerOptionId, UUID accountId) {
-    AnswerOption answerOption = answerOptionDao.findById(answerOptionId)
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Вариант ответа не найден: " + answerOptionId));
+  public void deleteAttachment(UUID optionId, UUID accountId) {
+    AnswerOption option = getEntityById(optionId);
 
     permissionService.checkCanEdit(
-        answerOption.getQuestion().getSurveyPage().getSurvey().getId(), accountId);
+        option.getQuestion().getSurveyPage().getSurvey().getId(), accountId);
 
-    if (answerOption.getAttachmentObjectKey() == null) {
+    if (option.getAttachmentObjectKey() == null) {
       throw new ResponseStatusException(
           HttpStatus.NOT_FOUND, "Вариант ответа не содержит вложения");
     }
 
-    objectStorageService.deleteObject(answerOption.getAttachmentObjectKey());
+    objectStorageService.deleteObject(option.getAttachmentObjectKey());
 
-    answerOption.setAttachmentObjectKey(null);
-    answerOptionDao.update(answerOption);
-    log.info("Удалено вложение варианта ответа id={}", answerOptionId);
+    option.setAttachmentObjectKey(null);
+    answerOptionDao.update(option);
+    log.info("Удалено вложение варианта ответа id={}", optionId);
   }
 
   // Вспомогательные методы
 
-  @Transactional(readOnly = true)
-  public List<AnswerOption> getByIdsAndVerifyByQuestionId(
-      Set<UUID> answerOptionIds,
+  List<AnswerOption> getByIdsAndVerifyByQuestionId(
+      Set<UUID> optionIds,
       UUID questionId
   ) {
-    List<AnswerOption> result = answerOptionDao.findByIds(answerOptionIds);
+    List<AnswerOption> result = answerOptionDao.findByIds(optionIds);
 
-    if (result.size() != answerOptionIds.size()) {
+    if (result.size() != optionIds.size()) {
       Set<UUID> foundIds = result.stream()
           .map(AnswerOption::getId)
           .collect(Collectors.toSet());
 
-      Set<UUID> missingIds = answerOptionIds.stream()
+      Set<UUID> missingIds = optionIds.stream()
           .filter(id -> !foundIds.contains(id))
           .collect(Collectors.toSet());
 
@@ -276,5 +270,10 @@ public class AnswerOptionService {
     }
 
     return result;
+  }
+
+  AnswerOption getEntityById(UUID id) {
+    return answerOptionDao.findById(id)
+        .orElseThrow(() -> new AnswerOptionNotFoundException(id));
   }
 }

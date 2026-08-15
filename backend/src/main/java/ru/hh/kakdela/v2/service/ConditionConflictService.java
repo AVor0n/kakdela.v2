@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import ru.hh.kakdela.v2.conflict.ClauseAnalyzer;
 import ru.hh.kakdela.v2.conflict.DnfConverter;
 import ru.hh.kakdela.v2.conflict.DnfExpression;
+import ru.hh.kakdela.v2.dao.ConditionDao;
 import ru.hh.kakdela.v2.exception.condition.ConditionConflictException;
 import ru.hh.kakdela.v2.model.SurveyPage;
 import ru.hh.kakdela.v2.model.condition.Condition;
@@ -16,6 +17,8 @@ import ru.hh.kakdela.v2.model.condition.Condition;
 @Service
 @RequiredArgsConstructor
 public class ConditionConflictService {
+
+  private final ConditionDao conditionDao;
 
   public void validatePageConditions(SurveyPage page) {
     List<Condition> activeConditions = page.getConditions().stream()
@@ -44,4 +47,9 @@ public class ConditionConflictService {
 
     log.debug("Конфликтов на странице {} не найдено", page.getId());
   }
+
+  void makeConditionsConsistent(UUID pageId, int serialNumber) {
+    conditionDao.makeConditionsConsistentByPageIdAndItsSerialNumber(pageId, serialNumber);
+  }
+
 }
