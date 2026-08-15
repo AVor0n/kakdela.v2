@@ -75,16 +75,10 @@ public class ResponseController {
   ) {
     String token = authCookieService.getResponseToken(request, responseId);
 
-    ResponseResponseDto responseDto = responseService.complete(
+    return responseService.complete(
         responseId,
         currentUser != null ? currentUser.getId() : null,
-        token
-    );
-
-    if (token != null) {
-      authCookieService.clearResponseTokenCookie(response, responseId);
-    }
-    return responseDto;
+        token);
   }
 
   @GetMapping("/responses/{responseId}")
