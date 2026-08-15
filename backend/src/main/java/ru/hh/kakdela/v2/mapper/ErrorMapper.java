@@ -34,6 +34,24 @@ public class ErrorMapper {
       UUID id,
       ErrorCode errorCode,
       String message,
+      String objectDetails,
+      WebRequest request
+  ) {
+    return new ErrorResponse(
+        LocalDateTime.now(),
+        errorCode,
+        id,
+        message,
+        null,
+        null,
+        objectDetails,
+        getPath(request));
+  }
+
+  public static ErrorResponse getErrorResponse(
+      UUID id,
+      ErrorCode errorCode,
+      String message,
       UUID object1Id,
       UUID object2Id,
       String objectDetails,
@@ -76,7 +94,7 @@ public class ErrorMapper {
         ex.getMessage(),
         null,
         null,
-        null,
+        ex.getObjectDetails(),
         getPath(request));
   }
 
