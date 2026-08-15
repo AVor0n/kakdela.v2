@@ -1,7 +1,7 @@
 import { createNotificationSchedule, getNotificationBySurveyId } from '@/api/notification';
 import { setErrorMessage } from '@/entities/Error/Error.slice';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { Button, FormLabel } from '@hh.ru/magritte-ui';
+import { Button, Flex, FormLabel } from '@hh.ru/magritte-ui';
 import { useEffect } from 'react';
 import { NotificationItem } from './components/NotificationItem';
 import { useAppSelector } from '@/hooks/useAppSelector';
@@ -61,21 +61,26 @@ export function NotificationsSchedule({ surveyId }: Props) {
                 <>
                     <div className={style.header}>
                         <FormLabel>Настройка переодических уведомлений</FormLabel>
-                        {notificationsSchedule.length < 3 && (
-                            <Button
-                                type='button'
-                                mode='secondary'
-                                style='accent'
-                                onClick={createNotificationScheduleHandler}
-                                icon={<img src='/add.svg' alt='+' />}
-                            ></Button>
-                        )}
                     </div>
                     <div className={style.content}>
                         {notificationsSchedule.map((notification) => {
                             return <NotificationItem key={notification.id} notificationSchedule={notification} />;
                         })}
                     </div>
+                    {notificationsSchedule.length < 3 && (
+                        <Flex gap={10} direction={'column'}>
+                            <Button
+                                type='button'
+                                size='small'
+                                mode='secondary'
+                                style='accent'
+                                onClick={createNotificationScheduleHandler}
+                                icon={<img src='/add.svg' alt='+' />}
+                            >
+                                Добавить{' '}
+                            </Button>
+                        </Flex>
+                    )}
                 </>
             )}
         </div>

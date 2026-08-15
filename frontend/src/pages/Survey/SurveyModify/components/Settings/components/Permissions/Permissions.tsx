@@ -151,7 +151,7 @@ export function Permissions({ surveyId }: Props) {
 
     return (
         <section className={style.content}>
-            <FormLabel>Наделение правами</FormLabel>
+            <FormLabel>Управление правами</FormLabel>
             <form className={style.formRow} onSubmit={createPermissionHandler}>
                 <Select
                     type='label'

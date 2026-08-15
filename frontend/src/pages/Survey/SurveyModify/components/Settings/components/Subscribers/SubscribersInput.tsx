@@ -92,7 +92,7 @@ export function SubscribersInput() {
 
     return (
         <div className={style.content}>
-            <FormLabel>Пользователи для обязательного прохождения</FormLabel>
+            <FormLabel>Управление участниками</FormLabel>
             <Input
                 value={subscribersInput}
                 onChange={(e) => setSubscribersInput(e)}

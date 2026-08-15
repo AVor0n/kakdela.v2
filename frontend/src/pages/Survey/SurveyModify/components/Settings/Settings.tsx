@@ -233,7 +233,6 @@ export function Settings() {
     return (
         <section className={style.container}>
             <div className={style.content}>
-                <p className={style.title}>Настройки</p>
                 <div className={style.option}>
                     <Checkbox
                         checked={isAuthorizedOnly}
@@ -291,9 +290,9 @@ export function Settings() {
 
                 <SubscribersInput />
 
-                {isAuthor && <Permissions surveyId={selectedSurvey.id} />}
-
                 <NotificationsSchedule surveyId={selectedSurvey.id} />
+
+                {isAuthor && <Permissions surveyId={selectedSurvey.id} />}
 
                 <div className={style.buttons}>
                     <Button mode='secondary' style='neutral' onClick={resetSettings}>

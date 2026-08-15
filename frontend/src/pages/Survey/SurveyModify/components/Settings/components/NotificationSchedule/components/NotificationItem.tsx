@@ -173,7 +173,7 @@ export function NotificationItem({ notificationSchedule }: Props) {
                     style={isActive ? 'accent' : 'negative'}
                     onClick={() => updateScheduleActiveHandler(!isActive)}
                 >
-                    {isActive ? 'Активное' : 'Не активно'}
+                    {isActive ? 'Активно' : 'Не активно'}
                 </Button>
                 <Button
                     mode='secondary'

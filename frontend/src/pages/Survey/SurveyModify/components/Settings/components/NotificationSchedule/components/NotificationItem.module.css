@@ -33,15 +33,16 @@
 .day {
     padding: 3px 5px;
     border-radius: 6px;
-    background: #eeeeee;
+    background: #edf6ff;
     transition: background 200ms ease-out;
+    color: #0070ff;
 }
 
 .day:hover {
-    background: #cccccc;
+    background: #f3f9ff;
 }
 
 .day.active {
-    background: #666666;
+    background: #0070ff;
     color: white;
 }
