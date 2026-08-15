@@ -5,15 +5,18 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 import ru.hh.kakdela.v2.dao.AnswerDao;
 import ru.hh.kakdela.v2.dto.answer.AnswerRequestDto;
 import ru.hh.kakdela.v2.dto.answer.AnswerResponseDto;
 import ru.hh.kakdela.v2.dto.answer.AnswerResponseDtoWithStatusDto;
 import ru.hh.kakdela.v2.dto.answer.AnswerWithStatusDto;
+import ru.hh.kakdela.v2.exception.BadRequestDataException;
+import ru.hh.kakdela.v2.exception.question.QuestionNotFoundException;
+import ru.hh.kakdela.v2.exception.response.AnswerNotFoundException;
+import ru.hh.kakdela.v2.exception.response.ResponseBranchClosedException;
+import ru.hh.kakdela.v2.exception.response.ResponseNotFoundOrCompletedException;
 import ru.hh.kakdela.v2.mapper.AnswerMapper;
 import ru.hh.kakdela.v2.model.Answer;
 import ru.hh.kakdela.v2.model.AnswerOption;
@@ -40,8 +43,7 @@ public class AnswerService {
 
     if (response.getAccount() == null && response.isCompleted()
         && !response.getSurvey().isAuthor(accountId)) {
-      throw new ResponseStatusException(
-          HttpStatus.FORBIDDEN, "Просмотр завершённых анонимных ответов запрещён");
+      throw new ResponseNotFoundOrCompletedException(responseId);
     }
 
     return response.getAnswers().stream()
@@ -62,20 +64,18 @@ public class AnswerService {
             responseId, accountId, token);
 
     if (response.isCompleted()) {
-      throw new ResponseStatusException(
-          HttpStatus.CONFLICT, "Прохождение уже завершено");
+      throw new ResponseNotFoundOrCompletedException(responseId);
     }
 
     Question question = questionService.getEntityById(questionId);
 
     if (!questionService.getParentSurveyIdById(questionId)
         .equals(response.getSurvey().getId())) {
-      throw new ResponseStatusException(
-          HttpStatus.NOT_FOUND, "Вопрос не найден: " + questionId);
+      throw new QuestionNotFoundException(questionId);
     }
 
     if (!responseService.isPageIncluded(response, question.getSurveyPage().getId())) {
-      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Ветка с вопросом закрыта");
+      throw new ResponseBranchClosedException();
     }
 
     verifyAnswerRequestDto(dto, question);
@@ -105,14 +105,11 @@ public class AnswerService {
         responseService.getEntityByIdWithOwnerAccessCheck(responseId, accountId, token);
 
     if (response.isCompleted()) {
-      throw new ResponseStatusException(
-          HttpStatus.CONFLICT, "Нельзя удалить ответ — прохождение уже завершено");
+      throw new ResponseNotFoundOrCompletedException(responseId);
     }
 
     Answer answer = answerDao.findByResponseIdAndQuestion(responseId, questionId)
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND,
-            "Ответ не найден: responseId=%s, questionId=%s".formatted(responseId, questionId)));
+        .orElseThrow(() -> new AnswerNotFoundException(responseId, questionId));
 
     answerDao.delete(answer);
     log.info("Удалён ответ на вопрос: responseId={} questionId={}", responseId, questionId);
@@ -202,19 +199,19 @@ public class AnswerService {
     if (questionType.isTextAllowed) {
       if (questionType.isOtherOptionAllowed) {
         if (!question.hasOtherOption() && dto.getTextValue() != null) {
-          throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+          throw new BadRequestDataException(
               "Для данного вопроса не допускается вариант ответа \"Другое\"");
         }
       } else {
         if (dto.getTextValue() == null) {
-          throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+          throw new BadRequestDataException(
               "Ответ на вопрос типа %s должен иметь текстовое значение"
                   .formatted(questionType));
         }
       }
     } else {
       if (dto.getTextValue() != null) {
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+        throw new BadRequestDataException(
             "Ответ на вопрос типа %s не должен иметь текстового значения"
                 .formatted(questionType));
       }
@@ -222,13 +219,13 @@ public class AnswerService {
 
     if (questionType.isBooleanAllowed) {
       if (dto.getBooleanValue() == null) {
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+        throw new BadRequestDataException(
             "Ответ на вопрос типа %s должен иметь булевое значение"
                 .formatted(questionType));
       }
     } else {
       if (dto.getBooleanValue() != null) {
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+        throw new BadRequestDataException(
             "Ответ на вопрос типа %s не должен иметь булевого значения"
                 .formatted(questionType));
       }
@@ -236,13 +233,13 @@ public class AnswerService {
 
     if (questionType.isDateAllowed) {
       if (dto.getDateValue() == null) {
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+        throw new BadRequestDataException(
             "Ответ на вопрос типа %s должен иметь значение даты"
                 .formatted(questionType));
       }
     } else {
       if (dto.getDateValue() != null) {
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+        throw new BadRequestDataException(
             "Ответ на вопрос типа %s не должен иметь значения даты"
                 .formatted(questionType));
       }
@@ -250,13 +247,13 @@ public class AnswerService {
 
     if (questionType.isTimeAllowed) {
       if (dto.getTimeValue() == null) {
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+        throw new BadRequestDataException(
             "Ответ на вопрос типа %s должен иметь значение времени"
                 .formatted(questionType));
       }
     } else {
       if (dto.getTimeValue() != null) {
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+        throw new BadRequestDataException(
             "Ответ на вопрос типа %s не должен иметь значения времени"
                 .formatted(questionType));
       }
@@ -268,12 +265,12 @@ public class AnswerService {
         if (isOtherOptionAllowedForThisQuestion) {
           if (dto.getTextValue() == null) {
             if (questionType.isMultipleChoiceAllowed) {
-              throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+              throw new BadRequestDataException(
                   ("Ответ на вопрос типа %s должен ссылаться на варианты ответа "
                       + "или иметь текстовое значение для варианта ответа \"Другое\"")
                       .formatted(questionType));
             } else {
-              throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+              throw new BadRequestDataException(
                   ("Ответ на вопрос типа %s должен ссылаться ровно на один вариант ответа "
                       + "или иметь текстовое значение для варианта ответа \"Другое\"")
                       .formatted(questionType));
@@ -281,11 +278,11 @@ public class AnswerService {
           }
         } else {
           if (questionType.isMultipleChoiceAllowed) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+            throw new BadRequestDataException(
                 "Ответ на вопрос типа %s должен ссылаться на варианты ответа"
                     .formatted(questionType));
           } else {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+            throw new BadRequestDataException(
                 ("Ответ на вопрос типа %s должен ссылаться ровно на один вариант ответа")
                     .formatted(questionType));
           }
@@ -294,13 +291,13 @@ public class AnswerService {
       if (dto.getSelectedAnswerOptionIds() != null
           && dto.getSelectedAnswerOptionIds().size() > 1
           && !questionType.isMultipleChoiceAllowed) {
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+        throw new BadRequestDataException(
             ("Ответ на вопрос типа %s должен ссылаться ровно на один вариант ответа")
                 .formatted(questionType));
       }
     } else {
       if (dto.getSelectedAnswerOptionIds() != null) {
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+        throw new BadRequestDataException(
             "Ответ на вопрос типа %s не должен ссылаться на варианты ответа"
                 .formatted(questionType));
       }
