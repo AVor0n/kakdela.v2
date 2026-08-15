@@ -36,6 +36,18 @@ public class QuestionDaoImpl implements QuestionDao {
   }
 
   @Override
+  public int findParentPageSerialNumberById(UUID id) {
+    return entityManager.createQuery(
+        """
+        SELECT q.surveyPage.serialNumber
+        FROM Question q
+        WHERE q.id = :id
+        """, Integer.class)
+        .setParameter("id", id)
+        .getSingleResult();
+  }
+
+  @Override
   public void save(Question question) {
     log.debug("Сохранен вопрос id={}", question.getId());
     entityManager.persist(question);

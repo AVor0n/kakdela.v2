@@ -320,4 +320,10 @@ public class QuestionService {
     questionDao.update(question);
     log.info("Удалено вложение вопроса id={}", questionId);
   }
+
+  // Вспомогательные методы
+
+  int getParentPageSerialNumberById(UUID id) {
+    return questionDao.findParentPageSerialNumberById(id);
+  }
 }
