@@ -71,8 +71,8 @@ public class SurveyServiceTestEntity {
         "Europe/Moscow",
         null,
         new ArrayList<>(),
-        new ArrayList<>(),
         null,
+        new ArrayList<>(),
         new ArrayList<>());
 
     if (!isClone) {
@@ -290,8 +290,8 @@ public class SurveyServiceTestEntity {
         targetTimezone,
         null,
         Collections.emptyList(),
-        Collections.emptyList(),
         null,
+        Collections.emptyList(),
         Collections.emptyList()
     );
   }
