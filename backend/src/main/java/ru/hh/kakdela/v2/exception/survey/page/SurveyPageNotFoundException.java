@@ -8,6 +8,6 @@ import ru.hh.kakdela.v2.exception.Kd2ObjectRelatedException;
 public class SurveyPageNotFoundException extends Kd2ObjectRelatedException {
   public SurveyPageNotFoundException(UUID id) {
     super(ErrorCode.SURVEY_PAGE_NOT_FOUND, HttpStatus.NOT_FOUND,
-        "Страница не найдена", id, null);
+        "Страница не найдена", id, null, null);
   }
 }

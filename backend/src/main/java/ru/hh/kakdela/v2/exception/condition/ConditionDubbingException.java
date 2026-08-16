@@ -11,6 +11,7 @@ public class ConditionDubbingException extends Kd2ObjectRelatedException {
         HttpStatus.CONFLICT,
         "Для данной страницы уже существует правило с указанной страницей перехода",
         dubbedId,
+        null,
         null);
   }
 }

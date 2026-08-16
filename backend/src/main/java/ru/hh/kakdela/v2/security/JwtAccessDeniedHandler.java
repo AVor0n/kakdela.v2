@@ -41,6 +41,7 @@ public class JwtAccessDeniedHandler implements AccessDeniedHandler {
         "Доступ запрещён",
         null,
         null,
+        null,
         request.getRequestURI());
 
     new ObjectMapper().writeValue(

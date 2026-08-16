@@ -21,5 +21,7 @@ public class ErrorResponse {
   private final UUID object1Id;
   @JsonInclude(JsonInclude.Include.NON_NULL)
   private final UUID object2Id;
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  private final String objectDetails;
   private final String path;
 }
