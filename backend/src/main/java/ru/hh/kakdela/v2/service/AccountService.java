@@ -77,17 +77,19 @@ public class AccountService {
   // Возвращает существующий аккаунт, привязанный к данному пользователю hh.ru,
   // либо создает новый (с автосгенерированными login и паролем), если это первый вход
   @Transactional
-  public Account findOrCreateByHhSso(String email) {
-    return accountDao.findByEmail(email)
-        .map(this::requireHhSsoAccount)
-        .orElseGet(() -> createFromHhSso(email));
+  public Account findOrCreateByHhSso(String hhUserId, String email) {
+    return accountDao.findByHhUserId(hhUserId)
+        .map(this::requireActiveAccount)
+        .orElseGet(() -> {
+          if (accountDao.existsByEmail(email)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                "Такой email уже зарегистрирован: " + email);
+          }
+          return createFromHhSso(hhUserId, email);
+        });
   }
 
-  private Account requireHhSsoAccount(Account account) {
-    if (!account.isHhSso()) {
-      throw new ResponseStatusException(HttpStatus.CONFLICT,
-          "Такой email уже зарегистрирован: " + account.getEmail());
-    }
+  private Account requireActiveAccount(Account account) {
     if (Boolean.TRUE.equals(account.getIsDeleted())) {
       throw new ResponseStatusException(HttpStatus.FORBIDDEN,
           "Аккаунт удалён: login=" + account.getLogin());
@@ -95,7 +97,7 @@ public class AccountService {
     return account;
   }
 
-  private Account createFromHhSso(String email) {
+  private Account createFromHhSso(String hhUserId, String email) {
     String login = generateUniqueLoginFromEmail(email);
     String randomPassword = UUID.randomUUID().toString();
 
@@ -104,15 +106,38 @@ public class AccountService {
         .login(login)
         .email(email)
         .passwordHash(passwordEncoder.encode(randomPassword))
-        .isHhSso(true)
+        .hhUserId(hhUserId)
         .tokenVersion(1)
         .isDeleted(false)
-        .registeredAt(Instant.now())
+        .registeredAt(Instant.now(clock))
         .build();
 
     accountDao.save(account);
     log.info("Создан аккаунт через hh.ru SSO id={} login={}", account.getId(), account.getLogin());
     return account;
+  }
+
+  @Transactional
+  public void linkHhSso(UUID accountId, String hhUserId) {
+    if (accountDao.findByHhUserId(hhUserId).isPresent()) {
+      throw new ResponseStatusException(HttpStatus.CONFLICT,
+          "Этот аккаунт hh.ru уже привязан к другому пользователю");
+    }
+
+    Account account = accountDao.findById(accountId)
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+            "Аккаунт не найден: " + accountId));
+
+    if (Boolean.TRUE.equals(account.getIsDeleted())) {
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Аккаунт удалён");
+    }
+    if (account.isHhSso()) {
+      throw new ResponseStatusException(HttpStatus.CONFLICT, "Аккаунт уже привязан к HH.ru");
+    }
+
+    account.setHhUserId(hhUserId);
+    accountDao.update(account);
+    log.info("Аккаунт id={} привязан к hh.ru", accountId);
   }
 
   private String generateUniqueLoginFromEmail(String email) {
@@ -207,12 +232,6 @@ public class AccountService {
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Пароли не совпадают");
       }
       account.setPasswordHash(passwordEncoder.encode(accountPatchDto.getNewPassword()));
-    }
-    if (accountPatchDto.getLinkHh() != null) {
-      if (accountPatchDto.getLinkHh() && account.isHhSso()) {
-        throw new ResponseStatusException(HttpStatus.CONFLICT, "Аккаунт уже привязан к HH.ru");
-      }
-      account.setHhSso(accountPatchDto.getLinkHh());
     }
 
     accountDao.update(account);
