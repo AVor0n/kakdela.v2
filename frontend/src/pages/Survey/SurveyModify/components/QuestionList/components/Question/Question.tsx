@@ -1,6 +1,13 @@
 import type { AnswerOptionOrder, Question, QuestionType } from '@/shared/types/Question.type';
 import type { DraggableAttributes, DraggableSyntheticListeners } from '@dnd-kit/core';
-import { Button, Checkbox, createStaticDataProvider, Select, type StaticDataFetcherItem } from '@hh.ru/magritte-ui';
+import {
+    Button,
+    Checkbox,
+    createStaticDataProvider,
+    Radio,
+    Select,
+    type StaticDataFetcherItem,
+} from '@hh.ru/magritte-ui';
 import { useCallback, useEffect, useMemo, useState, type ChangeEvent, type Ref } from 'react';
 import { ShortText } from './components/ShortText/ShortText';
 import { LongText } from './components/LongText/LongText';
@@ -9,6 +16,7 @@ import {
     deleteQuestion as deleteQuestionState,
     duplicateQuestion,
     setMandatory as setMandatoryState,
+    setPage,
     setQuestion,
     updateAnswerOptionOrder,
     updateQuestionDescription,
@@ -26,6 +34,8 @@ import style from './Question.module.css';
 import { DragHandle } from './components/QuestionControls/DragHandle/DragHandle';
 import { EditorInput } from '@/shared/ui/EditorInput/EditorInput';
 import { ImageAttachmentControl } from '@/shared/ui/ImageAttachmentControl/ImageAttachmentControl';
+import { isQuestionUsedInConditions } from '@/shared/utils/conditions';
+import { getSurveyPageForEdit } from '@/api/surveyPages';
 
 interface Props {
     question: Question;
@@ -43,6 +53,9 @@ const OPTIONS: StaticDataFetcherItem[] = [
     { value: 'LONG_TEXT', text: 'Длинный текст' },
     { value: 'SINGLE_CHOICE', text: 'Один из списка' },
     { value: 'MULTIPLE_CHOICE', text: 'Несколько из списка' },
+    { value: 'YES_NO', text: 'Да / Нет' },
+    { value: 'DATE', text: 'Дата' },
+    { value: 'TIME', text: 'Время' },
 ];
 
 const ANSWER_OPTION_ORDER: StaticDataFetcherItem[] = [
@@ -60,7 +73,7 @@ export function Question({
     isDragging = false,
     isDragOverlay = false,
 }: Props) {
-    const { selectedSurvey } = useAppSelector((state) => state.survey);
+    const { pages } = useAppSelector((state) => state.pages);
     const [text, setText] = useState<string>(question.text);
     const [typeQuestion, setTypeQuestion] = useState<QuestionType>(question.type);
     const [mandatory, setMandatory] = useState<boolean>(question.isMandatory);
@@ -210,10 +223,23 @@ export function Question({
     }, [debouncedMandatory]);
 
     const deleteQuestionHandler = () => {
-        if (!selectedSurvey) return;
+        const pageId = pages.find((page) => page.questions.some(({ id }) => id === question.id))?.id;
+        if (
+            isQuestionUsedInConditions(pages, question.id) &&
+            !window.confirm('Этот вопрос используется в логике перехода. Всё равно удалить вопрос?')
+        ) {
+            return;
+        }
         deleteQuestion(question.id)
             .then(() => {
                 dispatch(deleteQuestionState({ id: question.id }));
+                if (pageId) {
+                    void getSurveyPageForEdit(pageId)
+                        .then((page) => dispatch(setPage({ page })))
+                        .catch(() =>
+                            dispatch(setErrorMessage({ message: 'Вопрос удалён, но не удалось обновить условия' })),
+                        );
+                }
             })
             .catch((err) => {
                 if (err.response) {
@@ -244,6 +270,33 @@ export function Question({
                 return (
                     <Choice options={question.answerOptions!} isEdit={isEditMode} type='checkbox' question={question} />
                 );
+            case 'YES_NO':
+                return (
+                    <div className={style.yesNoPreview}>
+                        <label>
+                            <Radio
+                                name={`yes-no-preview-${question.id}`}
+                                checked={false}
+                                onChange={() => {}}
+                                disabled
+                            />
+                            Да
+                        </label>
+                        <label>
+                            <Radio
+                                name={`yes-no-preview-${question.id}`}
+                                checked={false}
+                                onChange={() => {}}
+                                disabled
+                            />
+                            Нет
+                        </label>
+                    </div>
+                );
+            case 'DATE':
+                return <input className={style.temporalInput} type='date' disabled />;
+            case 'TIME':
+                return <input className={style.temporalInput} type='time' disabled />;
             default:
                 return null;
         }

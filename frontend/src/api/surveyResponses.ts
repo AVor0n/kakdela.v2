@@ -66,20 +66,7 @@ export async function exportSurveyResponses(surveyId: string): Promise<SurveyRes
     };
 }
 
-export async function createSurveyAnswer(
-    responseId: string,
-    questionId: string,
-    body: SurveyAnswerRequest,
-): Promise<SurveyAnswerResponse> {
-    const { data } = await apiClient.post<SurveyAnswerResponse>(`/api/responses/${responseId}/answers`, body, {
-        params: { questionId },
-        timeout: SURVEY_RESPONSE_REQUEST_TIMEOUT_MS,
-    });
-
-    return data;
-}
-
-export async function updateSurveyAnswer(
+export async function upsertSurveyAnswer(
     responseId: string,
     questionId: string,
     body: SurveyAnswerRequest,

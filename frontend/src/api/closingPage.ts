@@ -27,8 +27,10 @@ export async function updateClosingPage(surveyId: string, payload: ClosingPagePa
     return data;
 }
 
-export async function getClosingPage(surveyId: string): Promise<ClosingPage> {
-    const { data } = await apiClient.get<ClosingPage>(`/api/surveys/${surveyId}/closing-page`);
+export async function getClosingPage(surveyId: string, responseId: string): Promise<ClosingPage> {
+    const { data } = await apiClient.get<ClosingPage>(`/api/surveys/${surveyId}/closing-page`, {
+        params: { responseId },
+    });
     return data;
 }
 
