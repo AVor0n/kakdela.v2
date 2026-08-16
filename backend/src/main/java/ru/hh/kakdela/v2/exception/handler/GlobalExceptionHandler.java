@@ -23,13 +23,16 @@ import ru.hh.kakdela.v2.exception.Kd2Exception;
 import ru.hh.kakdela.v2.exception.Kd2ObjectRelatedException;
 import ru.hh.kakdela.v2.exception.ResetCodeException;
 import ru.hh.kakdela.v2.mapper.ErrorMapper;
+import ru.hh.kakdela.v2.security.CustomDisabledException;
 
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+  private static final String AUTHENTICATION_ERROR_MESSAGE = "Ошибка аутентификации";
+
   @ExceptionHandler(Kd2ObjectRelatedException.class)
-  public ResponseEntity<ErrorResponse> handleKd2OblectRelatedException(
+  public ResponseEntity<ErrorResponse> handleKd2ObjectRelatedException(
       Kd2ObjectRelatedException ex, WebRequest request
   ) {
     UUID id = UUID.randomUUID();
@@ -60,7 +63,7 @@ public class GlobalExceptionHandler {
       errors.put(fieldName, errorMessage);
     });
 
-    logErrorMessage("Нарушение ограничений в данных", id, ex.getMessage());
+    logError("Нарушение ограничений в данных", id, ex);
     return errors;
   }
 
@@ -69,7 +72,7 @@ public class GlobalExceptionHandler {
       ConstraintViolationException ex, WebRequest request
   ) {
     UUID id = UUID.randomUUID();
-    logErrorMessage("Нарушение ограничений в данных", id, ex.getMessage());
+    logError("Нарушение ограничений в данных", id, ex);
     return ResponseEntity
         .status(HttpStatus.BAD_REQUEST)
         .body(ErrorMapper.getErrorResponse(
@@ -81,7 +84,7 @@ public class GlobalExceptionHandler {
       jakarta.persistence.EntityNotFoundException ex, WebRequest request
   ) {
     UUID id = UUID.randomUUID();
-    logErrorMessage("Сущность не найдена", id, ex.getMessage());
+    logError("Сущность не найдена", id, ex);
     return ResponseEntity
         .status(HttpStatus.NOT_FOUND)
         .body(ErrorMapper.getErrorResponse(
@@ -93,7 +96,7 @@ public class GlobalExceptionHandler {
       BadCredentialsException ex, WebRequest request
   ) {
     UUID id = UUID.randomUUID();
-    logError("Неправильный логин или пароль", id, ex);
+    logError(AUTHENTICATION_ERROR_MESSAGE, id, ex);
     return ResponseEntity
         .status(HttpStatus.UNAUTHORIZED)
         .body(ErrorMapper.getErrorResponse(
@@ -105,23 +108,41 @@ public class GlobalExceptionHandler {
       UsernameNotFoundException ex, WebRequest request
   ) {
     UUID id = UUID.randomUUID();
-    logError("Аккаунт не найден", id, ex);
+
+    if (ex.getName() != null) {
+      logError(AUTHENTICATION_ERROR_MESSAGE, id, ex.getName(), ex);
+    } else {
+      logError(AUTHENTICATION_ERROR_MESSAGE, id, ex);
+    }
+
     return ResponseEntity
         .status(HttpStatus.UNAUTHORIZED)
         .body(ErrorMapper.getErrorResponse(
             id, ErrorCode.BAD_CREDENTIALS, "Неправильный логин или пароль", request));
   }
 
-  @ExceptionHandler(DisabledException.class)
-  public ResponseEntity<ErrorResponse> handleDisabled(
-      DisabledException ex, WebRequest request
-  ) {
+  @ExceptionHandler({DisabledException.class, CustomDisabledException.class})
+  public ResponseEntity<ErrorResponse> handleDisabled(Exception ex, WebRequest request) {
     UUID id = UUID.randomUUID();
-    logError("Аккаунт удалён", id, ex);
+    String login;
+
+    if (ex instanceof CustomDisabledException) {
+      login = ((CustomDisabledException) ex).getName();
+    } else {
+      login = null;
+    }
+
+    logError(AUTHENTICATION_ERROR_MESSAGE, id, login, ex);
     return ResponseEntity
         .status(HttpStatus.UNAUTHORIZED)
         .body(ErrorMapper.getErrorResponse(
-            id, ErrorCode.ACCOUNT_DELETED, "Аккаунт удалён", request));
+            id,
+            ErrorCode.ACCOUNT_DELETED,
+            "Аккаунт удалён",
+            null,
+            null,
+            login,
+            request));
   }
 
   @ExceptionHandler(NoResourceFoundException.class)
@@ -169,7 +190,7 @@ public class GlobalExceptionHandler {
     return ResponseEntity
         .status(HttpStatus.INTERNAL_SERVER_ERROR)
         .body(ErrorMapper.getErrorResponse(
-            id, ErrorCode.INTERNAL_SERVER, "Неожиданная внутренняя ошибка", request));
+            id, ErrorCode.INTERNAL_SERVER_ERROR, "Неожиданная внутренняя ошибка", request));
   }
 
   private void logError(String message, UUID id, Exception ex) {
@@ -177,8 +198,9 @@ public class GlobalExceptionHandler {
     log.error(logMessage, ex);
   }
 
-  private void logErrorMessage(String message, UUID id, String details) {
-    final String logMessage = "%s (errorId=%s): %s".formatted(message, id, details);
-    log.error(logMessage);
+  private void logError(String message, UUID id, String objectDetails, Exception ex) {
+    final String logMessage = "%s (errorId=%s, objectDetails=%s): "
+        .formatted(message, id, objectDetails);
+    log.error(logMessage, ex);
   }
 }

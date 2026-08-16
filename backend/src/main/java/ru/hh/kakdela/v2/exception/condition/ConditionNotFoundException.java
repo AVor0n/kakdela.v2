@@ -8,6 +8,6 @@ import ru.hh.kakdela.v2.exception.Kd2ObjectRelatedException;
 public class ConditionNotFoundException extends Kd2ObjectRelatedException {
   public ConditionNotFoundException(UUID id) {
     super(ErrorCode.CONDITION_NOT_FOUND, HttpStatus.NOT_FOUND,
-        "Правило перехода не найдено", id, null);
+        "Правило перехода не найдено", id, null, null);
   }
 }

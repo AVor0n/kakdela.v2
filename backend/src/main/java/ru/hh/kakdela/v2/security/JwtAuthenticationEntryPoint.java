@@ -10,15 +10,20 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 import ru.hh.kakdela.v2.dto.error.ErrorResponse;
 import ru.hh.kakdela.v2.exception.ErrorCode;
+import ru.hh.kakdela.v2.exception.Kd2AuthenticationException;
 import tools.jackson.databind.ObjectMapper;
 
 @Slf4j
 @Component
 public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
+
+  private static final String JWT_AUTHENTICATION_ERROR_MESSAGE = "Ошибка аутентификации по JWT";
+
   @Override
   public void commence(
       HttpServletRequest request,
@@ -30,17 +35,46 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
     UUID id = UUID.randomUUID();
+    LocalDateTime now = LocalDateTime.now();
 
-    log.error("Ошибка аутентификации (errorId={}):", id, authException);
+    if (authException instanceof Kd2AuthenticationException
+        && ((Kd2AuthenticationException) authException).getObjectDetails() != null) {
+      log.error(JWT_AUTHENTICATION_ERROR_MESSAGE + " (errorId={}, objectDetails={}):",
+          id, ((Kd2AuthenticationException) authException).getObjectDetails(), authException);
+    } else if (authException.getCause() != null
+        && authException.getCause() instanceof UsernameNotFoundException
+        && ((UsernameNotFoundException) authException.getCause()).getName() != null) {
+      log.error(JWT_AUTHENTICATION_ERROR_MESSAGE + " (errorId={}, objectDetails={}):",
+          id, ((UsernameNotFoundException) authException.getCause()).getName(), authException);
+    } else {
+      log.error(JWT_AUTHENTICATION_ERROR_MESSAGE + " (errorId={}):", id, authException);
+    }
 
-    ErrorResponse errorResponse = new ErrorResponse(
-        LocalDateTime.now(),
-        ErrorCode.BAD_CREDENTIALS,
-        id,
-        authException.getMessage(),
-        null,
-        null,
-        request.getRequestURI());
+    ErrorResponse errorResponse;
+
+    if (authException instanceof Kd2AuthenticationException) {
+      errorResponse = new ErrorResponse(
+          now,
+          ((Kd2AuthenticationException) authException).getErrorCode(),
+          id,
+          authException.getMessage(),
+          null,
+          null,
+          ((Kd2AuthenticationException) authException).getObjectDetails() != null
+              ? ((Kd2AuthenticationException) authException).getObjectDetails()
+              : null,
+          request.getRequestURI());
+    } else {
+      errorResponse = new ErrorResponse(
+          now,
+          ErrorCode.AUTHENTICATION_ERROR,
+          id,
+          authException.getMessage(),
+          null,
+          null,
+          null,
+          request.getRequestURI());
+    }
 
     new ObjectMapper().writeValue(
         response.getOutputStream(),

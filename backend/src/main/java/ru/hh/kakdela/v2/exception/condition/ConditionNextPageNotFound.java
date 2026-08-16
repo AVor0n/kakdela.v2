@@ -8,6 +8,6 @@ import ru.hh.kakdela.v2.exception.Kd2ObjectRelatedException;
 public class ConditionNextPageNotFound extends Kd2ObjectRelatedException {
   public ConditionNextPageNotFound(UUID id) {
     super(ErrorCode.CONDITION_NEXT_PAGE_NOT_FOUND, HttpStatus.NOT_FOUND,
-        "Указанная страница перехода не найдена", id, null);
+        "Указанная страница перехода не найдена", id, null, null);
   }
 }

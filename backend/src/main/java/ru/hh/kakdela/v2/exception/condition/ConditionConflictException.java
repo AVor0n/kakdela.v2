@@ -9,6 +9,6 @@ public class ConditionConflictException extends Kd2ObjectRelatedException {
   public ConditionConflictException(UUID condition1Id, UUID condition2Id) {
     super(
         ErrorCode.CONDITIONS_OF_PAGE_HAVE_CONFLICTS, HttpStatus.CONFLICT,
-        "Конфликт правил перехода", condition1Id, condition2Id);
+        "Конфликт правил перехода", condition1Id, condition2Id, null);
   }
 }
