@@ -1,6 +1,10 @@
 package ru.hh.kakdela.v2.service;
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
+import jakarta.servlet.http.HttpServletRequest;
 import java.security.SecureRandom;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +37,7 @@ public class AuthService {
   private final VerificationCodeService verificationCodeService;
   private final JwtService jwtService;
   private final RefreshTokenService refreshTokenService;
+  private final AuthCookieService authCookieService;
 
   @Transactional
   public AuthTokensDto issueTokens(
@@ -68,9 +73,9 @@ public class AuthService {
         new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Неверный логин или пароль"));
 
     authenticationManagerProvider.getObject().authenticate(
-            new UsernamePasswordAuthenticationToken(
-                loginDto.getLogin(),
-                loginDto.getPassword()));
+        new UsernamePasswordAuthenticationToken(
+            loginDto.getLogin(),
+            loginDto.getPassword()));
 
     log.info("Успешная аутентификация: login={}", loginDto.getLogin());
 
@@ -193,6 +198,29 @@ public class AuthService {
 
     account.setPasswordHash(passwordEncoder.encode(dto.getNewPassword()));
     accountDao.update(account);
+  }
+
+  // Пытается определить аккаунт по access-токену из куки, ничего не бросая и не трогая
+  // SecurityContext. Возвращает empty, если куки нет, токен невалиден/просрочен,
+  // версия токена устарела или аккаунт удален/не найден
+  public Optional<UUID> resolveAuthenticatedAccountId(HttpServletRequest request) {
+    String token = authCookieService.getAccessToken(request);
+    if (token == null) {
+      return Optional.empty();
+    }
+    try {
+      Claims claims = jwtService.extractAllClaims(token);
+      UUID accountId = UUID.fromString(claims.get("accountId", String.class));
+      Integer tokenVersionFromToken = claims.get("tokenVersion", Integer.class);
+
+      return accountDao.findById(accountId)
+          .filter(account -> !Boolean.TRUE.equals(account.getIsDeleted()))
+          .filter(account -> account.getTokenVersion().equals(tokenVersionFromToken))
+          .map(Account::getId);
+    } catch (JwtException | IllegalArgumentException ex) {
+      log.debug("Не удалось определить аккаунт по access-токену: {}", ex.getMessage());
+      return Optional.empty();
+    }
   }
 
   private static String generateNumericCode(int codeLength) {
