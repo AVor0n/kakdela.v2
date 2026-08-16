@@ -22,6 +22,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 import ru.hh.kakdela.v2.exception.security.AccountDeletedException;
 import ru.hh.kakdela.v2.exception.security.ExpiredAccessTokenException;
@@ -39,6 +40,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
   private final CustomUserDetailsService customUserDetailsService;
   private final AuthenticationEntryPoint authenticationEntryPoint;
   private final AuthCookieService authCookieService;
+  private final AntPathMatcher pathMatcher;
 
   @Override
   protected void doFilterInternal(
@@ -107,5 +109,12 @@ public class JwtRequestFilter extends OncePerRequestFilter {
           new InternalAuthenticationServiceException(
               "Неожиданная внутренняя ошибка обработки access token", ex));
     }
+  }
+
+  @Override
+  protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+    String requestUri = request.getRequestURI();
+
+    return pathMatcher.match("/api/auth/**", requestUri);
   }
 }
