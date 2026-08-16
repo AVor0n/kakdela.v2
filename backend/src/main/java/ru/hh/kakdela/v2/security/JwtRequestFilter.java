@@ -89,12 +89,12 @@ public class JwtRequestFilter extends OncePerRequestFilter {
       SecurityContextHolder.clearContext();
       authenticationEntryPoint.commence(request, response,
           new AccountDeletedException(login));
-    } catch (InvalidAccessTokenVersionException | ExpiredJwtException ex) {
+    } catch (ExpiredJwtException ex) {
       SecurityContextHolder.clearContext();
       authenticationEntryPoint.commence(request, response,
           new ExpiredAccessTokenException(ex));
-    } catch (UsernameNotFoundException | InvalidAccessTokenAccountIdException
-             | MalformedJwtException | SignatureException ex) {
+    } catch (InvalidAccessTokenVersionException | InvalidAccessTokenAccountIdException
+             | UsernameNotFoundException | MalformedJwtException | SignatureException ex) {
       SecurityContextHolder.clearContext();
       authenticationEntryPoint.commence(request, response,
           new InvalidAccessTokenException(ex));
