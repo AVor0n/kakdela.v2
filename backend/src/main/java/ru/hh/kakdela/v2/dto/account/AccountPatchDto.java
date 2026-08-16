@@ -32,5 +32,4 @@ public class AccountPatchDto {
   @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
   @NotBlank(message = "Операция должна быть подтверждена вводом текущего пароля")
   private String password;
-  private Boolean linkHh;
 }

@@ -3,7 +3,9 @@ package ru.hh.kakdela.v2.controller;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import java.io.IOException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,6 +32,8 @@ public class AccountController {
 
   private final AccountService accountService;
   private final AuthCookieService authCookieService;
+  @Value("${app.oauth2.authorization-base-uri:/api/auth/oauth2/authorization}")
+  private String oauth2AuthorizationBaseUri;
 
 
   @GetMapping("/accounts/me")
@@ -60,5 +64,11 @@ public class AccountController {
 
     accountService.softDelete(currentUser, accountDeleteDto);
     authCookieService.clearAllAuthCookies(response);
+  }
+
+  @GetMapping("/accounts/me/link-hh-sso/init")
+  public void initLinkHhSso(HttpServletResponse response) throws IOException {
+    authCookieService.setHhLinkIntentCookie(response);
+    response.sendRedirect(oauth2AuthorizationBaseUri + "/hh");
   }
 }
