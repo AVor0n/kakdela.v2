@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.CredentialsExpiredException;
 import org.springframework.security.authentication.DisabledException;
@@ -23,6 +24,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 import ru.hh.kakdela.v2.service.AuthCookieService;
 
@@ -35,6 +37,8 @@ public class JwtRequestFilter extends OncePerRequestFilter {
   private final CustomUserDetailsService customUserDetailsService;
   private final AuthenticationEntryPoint authenticationEntryPoint;
   private final AuthCookieService authCookieService;
+  @Value("${app.oauth2.callback-base-uri:/api/auth/oauth2/callback/*}")
+  private String oauth2CallbackBaseUri;
 
   @Override
   protected void doFilterInternal(
@@ -107,5 +111,10 @@ public class JwtRequestFilter extends OncePerRequestFilter {
       authenticationEntryPoint.commence(request, response,
           new InternalAuthenticationServiceException("Unexpected JWT processing error"));
     }
+  }
+
+  @Override
+  protected boolean shouldNotFilter(HttpServletRequest request) {
+    return new AntPathMatcher().match(oauth2CallbackBaseUri, request.getRequestURI());
   }
 }

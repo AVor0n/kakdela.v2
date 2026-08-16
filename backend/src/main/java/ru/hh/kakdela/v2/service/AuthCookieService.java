@@ -15,10 +15,14 @@ public class AuthCookieService {
   public static final String REFRESH_TOKEN_COOKIE_NAME = "refreshToken";
   public static final String DEVICE_ID_COOKIE_NAME = "deviceId";
   public static final String RESPONSE_TOKEN_PREFIX = "responseAccessToken_";
+  public static final String HH_LINK_INTENT_COOKIE_NAME = "hhLinkIntent";
 
   public static final String MAIN_PATH = "/api";
   public static final String REFRESH_PATH = "/api/auth/refresh";
   public static final String RESPONSES_PATH = "/api/responses";
+  public static final String HH_LINK_INTENT_PATH = "/api/auth/oauth2";
+
+  private static final long HH_LINK_INTENT_MAX_AGE = 300;
 
   @Value("${app.tokens.access.max-age}")
   private long accessTokenMaxAge;
@@ -74,6 +78,19 @@ public class AuthCookieService {
     ResponseCookie cookie = CookieUtil.buildHttpOnlyStrictCookie(
         cookieName, token, RESPONSES_PATH, responseTokenMaxAge);
     CookieUtil.addCookie(response, cookie);
+  }
+
+  public void setHhLinkIntentCookie(HttpServletResponse response) {
+    ResponseCookie cookie = CookieUtil.buildHttpOnlyLaxCookie(
+        HH_LINK_INTENT_COOKIE_NAME, "1", HH_LINK_INTENT_PATH, HH_LINK_INTENT_MAX_AGE);
+    CookieUtil.addCookie(response, cookie);
+  }
+
+  public boolean consumeHhLinkIntentCookie(HttpServletRequest request, HttpServletResponse response) {
+    boolean present = CookieUtil.getCookieValueByName(request, HH_LINK_INTENT_COOKIE_NAME) != null;
+    CookieUtil.addCookie(response,
+        CookieUtil.buildExpiredCookie(HH_LINK_INTENT_COOKIE_NAME, HH_LINK_INTENT_PATH));
+    return present;
   }
 
   public void clearAccessTokenCookie(HttpServletResponse response) {
