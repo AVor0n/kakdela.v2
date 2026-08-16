@@ -109,11 +109,11 @@
 
 @media (max-width: 768px) {
     .slider {
-        margin-top: 48px;
+        margin: 12px;
     }
 
     .controls {
+        margin: 0;
         gap: 12px;
-        margin-top: 16px;
     }
 }

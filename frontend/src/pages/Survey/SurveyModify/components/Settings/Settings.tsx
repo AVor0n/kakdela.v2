@@ -12,6 +12,7 @@ import style from './Settings.module.css';
 import { Button, Checkbox, DateTimeInput } from '@hh.ru/magritte-ui';
 import classNames from 'classnames';
 import { NotificationsSchedule } from './components/NotificationSchedule/NotificationsSchedule';
+import { createTemplateFromSurvey } from '@/api/template';
 
 function convertDateFromISO(isoStr: string): string {
     if (!isoStr) return '';
@@ -29,6 +30,7 @@ export function Settings() {
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
     const isAuthor = account?.id === selectedSurvey?.author.id;
+    const [isTemplateCreated, setIsTemplateCreated] = useState(false);
 
     const [isAuthorizedOnly, setIsAuthorizedOnly] = useState<boolean>(selectedSurvey?.isAuthorizedOnly ?? false);
     const [isLimitedToOneResponse, setIsLimitedToOneResponse] = useState<boolean>(
@@ -216,8 +218,6 @@ export function Settings() {
             });
     };
 
-<<<<<<< HEAD
-=======
     const makeTemplateHandler = () => {
         if (!selectedSurvey) return;
         createTemplateFromSurvey(selectedSurvey.id)
@@ -225,21 +225,6 @@ export function Settings() {
                 setIsTemplateCreated(true);
             })
             .catch(() => dispatch(setErrorMessage({ message: 'Не удалось создать шаблон из этого опроса' })));
-    };
-
-    const handleCopyClick = async (valueForCopy: string) => {
-        try {
-            // Копируем значение в буфер обмена
-            await navigator.clipboard.writeText(valueForCopy);
-            setIsCopied(true);
-
-            // Возвращаем исходный текст кнопки через 2 секунды
-            setTimeout(() => {
-                setIsCopied(false);
-            }, 2000);
-        } catch (err) {
-            dispatch(setErrorMessage({ message: 'Ошибка при копировании: ' + err }));
-        }
     };
 
     useEffect(() => {
@@ -253,7 +238,6 @@ export function Settings() {
         };
     }, [isTemplateCreated]);
 
->>>>>>> 33655226 (Added simple works with template)
     return (
         <section className={style.container}>
             <div className={style.content}>
@@ -328,19 +312,6 @@ export function Settings() {
                             Удалить опрос
                         </Button>
                     )}
-<<<<<<< HEAD
-=======
-                    <Button
-                        mode='secondary'
-                        style='neutral'
-                        onClick={() =>
-                            handleCopyClick(
-                                `https://${window.location.hostname}:${window.location.port}/surveys/${selectedSurvey.id}?responde=true`,
-                            )
-                        }
-                    >
-                        {isCopied ? 'Ссылка скопирована' : 'Скопировать ссылку на опрос'}
-                    </Button>
                     <Button
                         mode='secondary'
                         style={isTemplateCreated ? 'positive' : 'neutral'}
@@ -348,7 +319,6 @@ export function Settings() {
                     >
                         {!isTemplateCreated ? 'Создать шаблон из этого опроса' : 'Шаблон создан'}
                     </Button>
->>>>>>> 33655226 (Added simple works with template)
                 </div>
             </div>
         </section>
