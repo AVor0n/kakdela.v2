@@ -125,12 +125,10 @@ public class AccountService {
     }
 
     Account account = accountDao.findById(accountId)
+        .map(this::requireActiveAccount)
         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
             "Аккаунт не найден: " + accountId));
 
-    if (Boolean.TRUE.equals(account.getIsDeleted())) {
-      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Аккаунт удалён");
-    }
     if (account.isHhSso()) {
       throw new ResponseStatusException(HttpStatus.CONFLICT, "Аккаунт уже привязан к HH.ru");
     }
