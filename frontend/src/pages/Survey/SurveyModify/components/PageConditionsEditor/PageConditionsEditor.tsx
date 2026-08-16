@@ -36,6 +36,7 @@ const CONDITION_VALIDATION_MESSAGES: Record<ConditionValidationIssueCode, string
     TARGET_PAGE_NOT_FORWARD: 'Переход должен вести на следующую страницу.',
 };
 const LOGICAL_CONFLICT_MESSAGE = 'Обнаружен конфликт правил. Измените выделенные правила.';
+const DUPLICATE_TARGET_REASON = 'Для выбранной страницы перехода уже существует активное правило.';
 const DUPLICATE_TARGET_MESSAGE =
     'Для выбранной страницы перехода уже существует активное правило. Сначала измените или отключите выделенное правило.';
 
@@ -202,7 +203,7 @@ export function PageConditionsEditor({ page }: Props) {
                     const activationBlockReason = activationIssue
                         ? CONDITION_VALIDATION_MESSAGES[activationIssue.code]
                         : duplicateActiveCondition
-                          ? DUPLICATE_TARGET_MESSAGE
+                          ? DUPLICATE_TARGET_REASON
                           : null;
                     const availableTargetOptions = forwardPageOptions.map((option) =>
                         findActiveConditionWithTarget(page.conditions, option.value, condition.id)
@@ -229,7 +230,7 @@ export function PageConditionsEditor({ page }: Props) {
                         >
                             <div className={style.conditionHeader}>
                                 <div className={style.targetField}>
-                                    <span>перейти к</span>
+                                    <span>Перейти к</span>
                                     <ConditionSelect
                                         name={`condition-target-${condition.id}`}
                                         title='Страница перехода'
@@ -288,7 +289,7 @@ export function PageConditionsEditor({ page }: Props) {
                                 <p className={style.hint}>Правило нельзя активировать: {activationBlockReason}</p>
                             )}
                             {!condition.isActive && (
-                                <p className={style.hint}>Снова активируйте правило, когда закончите изменения.</p>
+                                <p className={style.hint}>Активируйте правило, когда закончите изменения.</p>
                             )}
                             {isTargetInvalid && (
                                 <p className={style.error}>После изменения порядка страниц переход ведёт назад.</p>
@@ -321,7 +322,7 @@ export function PageConditionsEditor({ page }: Props) {
                         <div className={style.conditionHeader}>
                             <strong>Новое правило</strong>
                             <div className={style.targetField}>
-                                <span>перейти к</span>
+                                <span>Перейти к</span>
                                 <ConditionSelect
                                     name={`new-condition-target-${page.id}`}
                                     title='Страница перехода'

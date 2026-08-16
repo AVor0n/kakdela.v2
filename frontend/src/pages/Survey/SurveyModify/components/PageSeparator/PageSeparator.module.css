@@ -10,12 +10,6 @@
     padding: 15px 0;
 }
 
-.separator:hover .action,
-.action:focus-visible,
-.logicActionOpen {
-    opacity: 1;
-}
-
 .separator:hover .dragHandle,
 .dragHandle:hover {
     opacity: 1;
@@ -43,9 +37,8 @@
     border-radius: 6px;
     background: #fff;
     color: #000;
-    opacity: 0;
+    opacity: 1;
     transition:
-        opacity 0.3s ease,
         color 0.2s ease,
         background-color 0.2s ease;
     cursor: pointer;

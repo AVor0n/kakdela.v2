@@ -73,7 +73,7 @@ export function Question({
     isDragging = false,
     isDragOverlay = false,
 }: Props) {
-    const { selectedSurvey } = useAppSelector((state) => state.survey);
+    const { pages } = useAppSelector((state) => state.pages);
     const [text, setText] = useState<string>(question.text);
     const [typeQuestion, setTypeQuestion] = useState<QuestionType>(question.type);
     const [mandatory, setMandatory] = useState<boolean>(question.isMandatory);
@@ -223,10 +223,9 @@ export function Question({
     }, [debouncedMandatory]);
 
     const deleteQuestionHandler = () => {
-        if (!selectedSurvey) return;
-        const pageId = selectedSurvey.pages.find((page) => page.questions.some(({ id }) => id === question.id))?.id;
+        const pageId = pages.find((page) => page.questions.some(({ id }) => id === question.id))?.id;
         if (
-            isQuestionUsedInConditions(selectedSurvey.pages, question.id) &&
+            isQuestionUsedInConditions(pages, question.id) &&
             !window.confirm('Этот вопрос используется в логике перехода. Всё равно удалить вопрос?')
         ) {
             return;

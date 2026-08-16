@@ -6,6 +6,7 @@ import { reorderPages, setSurveyPages } from '@/entities/Pages/Pages.slice';
 import { clonePage } from '@/entities/Survey/Survey.utils';
 import { updateSurveyPage } from '@/api/surveyPages';
 import { getSurveyForEditById } from '@/api/survey';
+import { getTemplateById } from '@/api/template';
 import { setErrorMessage } from '@/entities/Error/Error.slice';
 import {
     closestCenter,
@@ -69,7 +70,8 @@ export function SurveyModify() {
         const activePageId = String(active.id);
         const overPageId = String(over.id);
         const overPage = pages.find((page) => page.id === overPageId);
-        if (!overPage) return;
+        const editedEntityId = isTemplate ? selectedTemplate?.id : selectedSurvey?.id;
+        if (!overPage || !editedEntityId) return;
 
         const previousPages = pages.map(clonePage);
         const reorderedPages = getReorderedPages(previousPages, activePageId, overPageId);
@@ -92,8 +94,8 @@ export function SurveyModify() {
 
         updateSurveyPage(activePageId, { serialNumber: overPage.serialNumber })
             .then(() =>
-                getSurveyForEditById(selectedSurvey.id)
-                    .then((survey) => dispatch(setSurveyPages({ pages: survey.pages })))
+                (isTemplate ? getTemplateById(editedEntityId) : getSurveyForEditById(editedEntityId))
+                    .then((entity) => dispatch(setSurveyPages({ pages: entity.pages })))
                     .catch(() =>
                         dispatch(
                             setErrorMessage({ message: 'Порядок изменён, но не удалось обновить условия перехода' }),

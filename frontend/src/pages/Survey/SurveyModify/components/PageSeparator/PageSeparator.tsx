@@ -43,7 +43,7 @@ export function PageSeparator({
     dragHandleRef,
 }: Props) {
     const dispatch = useAppDispatch();
-    const surveyPages = useAppSelector((state) => state.survey.selectedSurvey?.pages ?? []);
+    const surveyPages = useAppSelector((state) => state.pages.pages);
     const stopClickPropagation: MouseEventHandler<HTMLElement> = (event) => {
         event.stopPropagation();
     };
@@ -109,9 +109,7 @@ export function PageSeparator({
                 <span className={style.content}>Страница {page.serialNumber}</span>
                 <span className={style.line} aria-hidden='true' />
                 <button
-                    className={`${style.action} ${style.logicAction} ${
-                        isConditionsEditorOpen ? style.logicActionOpen : ''
-                    }`}
+                    className={`${style.action} ${style.logicAction}`}
                     type='button'
                     aria-label={`${isConditionsEditorOpen ? 'Закрыть' : 'Открыть'} логику перехода`}
                     aria-expanded={isConditionsEditorOpen}
