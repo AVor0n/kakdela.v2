@@ -1,0 +1,86 @@
+.container {
+    padding: 20px;
+    border: solid 1px var(--color-border);
+    border-radius: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+}
+
+.actions {
+    display: flex;
+    justify-content: end;
+    gap: 10px;
+    align-self: center;
+}
+
+.details {
+    text-align: start;
+    width: 100%;
+    flex: 1 1 0;
+    min-width: 0;
+}
+
+.deleteButtons {
+    display: flex;
+    gap: 5px;
+}
+
+.description {
+    max-width: 80%;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    line-clamp: 3;
+    -webkit-line-clamp: 3;
+
+    color: rgba(0, 0, 0, 0.5);
+}
+
+.description p {
+    white-space: pre-line;
+}
+
+.info {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 5px;
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 16px;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .details {
+        flex: none;
+    }
+
+    .info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+        margin-top: 8px;
+    }
+
+    .info > svg {
+        display: none;
+    }
+
+    .description {
+        max-width: 100%;
+        margin-top: 8px;
+        overflow-wrap: anywhere;
+    }
+
+    .actions {
+        width: 100%;
+        flex-direction: row;
+        align-self: auto;
+        align-items: center;
+        justify-content: flex-end;
+    }
+}

@@ -14,7 +14,7 @@ import {
     updateQuestionDescription,
     updateQuestionText,
     updateQuestionType,
-} from '@/entities/Survey/Survey.slice';
+} from '@/entities/Pages/Pages.slice';
 import { Choice } from './components/Choice/Choice';
 import classNames from 'classnames';
 import { useDebounce } from '@/hooks/useDebounce';

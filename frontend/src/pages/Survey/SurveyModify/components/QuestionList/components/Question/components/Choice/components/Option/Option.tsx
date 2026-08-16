@@ -3,7 +3,7 @@ import type { DraggableAttributes, DraggableSyntheticListeners } from '@dnd-kit/
 import { useState, type MouseEventHandler, type ReactNode, type Ref } from 'react';
 import { deleteAnswerOption, updateAnswerOption } from '@/api/answer-option';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { deleteOption, setOptionValue } from '@/entities/Survey/Survey.slice';
+import { deleteOption, setOptionValue } from '@/entities/Pages/Pages.slice';
 
 import { Button } from '@hh.ru/magritte-ui';
 import { setErrorMessage } from '@/entities/Error/Error.slice';

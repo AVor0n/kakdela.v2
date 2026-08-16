@@ -1,4 +1,4 @@
-import { Link, Outlet, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { Link, Outlet, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { routePatterns, routes } from '@/app/routes';
 import { Link as LinkHH, Button } from '@hh.ru/magritte-ui';
 import style from './SurveyLayout.module.css';
@@ -13,6 +13,9 @@ import { AccountDetail } from '@/shared/ui/AccountDetail/AccountDetail';
 import type { SurveyRole } from '@/shared/types/Survey.type';
 import { SurveyMobileMenu } from './components/SurveyMobileMenu/SurveyMobileMenu';
 import type { SurveyNavigationItem, SurveySection } from './SurveyLayout.types';
+import { getTemplateById, saveTemplate, updateTemplate } from '@/api/template';
+import { addTemplate, setSelectedTemplate } from '@/entities/Template/Template.slice';
+import { setPages } from '@/entities/Pages/Pages.slice';
 
 type SurveyAccess = {
     surveyId: string;
@@ -31,14 +34,19 @@ export function SurveyLayout() {
     const basePath = id ? routes.surveyEdit(id) : routes.surveyCreate();
     const { pathname } = useLocation();
     const { selectedSurvey } = useAppSelector((state) => state.survey);
+    const { selectedTemplate } = useAppSelector((state) => state.template);
+    const { account } = useAppSelector((state) => state.account);
+    const [searchParams] = useSearchParams();
     const [isLoading, setIsLoading] = useState<boolean>(true);
 
     const [isCopied, setIsCopied] = useState(false);
     const [surveyAccess, setSurveyAccess] = useState<SurveyAccess | null>(null);
+    const [isSaveTemplate, setIsSaveTemplate] = useState<boolean>(false);
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
     const userRole = id && surveyAccess?.surveyId === id ? surveyAccess.role : null;
     const isAccessLoading = Boolean(id) && userRole === null;
+    const isTemplate = searchParams.get('template') === 'true';
     const canEditSurvey = !id || userRole === 'AUTHOR' || userRole === 'EDITOR';
     const isAnalystRestrictedRoute =
         userRole === 'ANALYST' &&
@@ -75,43 +83,63 @@ export function SurveyLayout() {
         }
 
         setIsLoading(true);
-        getSurveyById(id)
-            .then((data) => {
-                dispatch(setSelectedSurvey({ survey: data }));
-                setIsLoading(false);
-            })
-            .catch((err) => {
-                if (err.response) {
-                    dispatch(setErrorMessage({ message: 'Такого опроса не существует' }));
-                    navigate(routePatterns.notFound);
-                }
-            });
+        if (isTemplate) {
+            getTemplateById(id)
+                .then((data) => {
+                    dispatch(setSelectedTemplate({ template: data }));
+                    dispatch(setPages({ pages: data.pages }));
+                    setIsLoading(false);
+                })
+                .catch((err) => {
+                    if (err.response) {
+                        dispatch(setErrorMessage({ message: 'Такого шаблона не существует' }));
+                        navigate(routePatterns.notFound);
+                    }
+                });
+            return;
+        } else {
+            getSurveyById(id)
+                .then((data) => {
+                    dispatch(setSelectedSurvey({ survey: data }));
+                    dispatch(setPages({ pages: data.pages }));
+                    setIsLoading(false);
+                })
+                .catch((err) => {
+                    if (err.response) {
+                        dispatch(setErrorMessage({ message: 'Такого опроса не существует' }));
+                        navigate(routePatterns.notFound);
+                    }
+                });
+            return;
+        }
+
+        navigate(routePatterns.notFound);
     }, [dispatch, id]);
 
     useEffect(() => {
         if (!id) return;
 
         let isActive = true;
+        if (!isTemplate)
+            getMySurveys()
+                .then((surveys) => {
+                    if (!isActive) return;
 
-        getMySurveys()
-            .then((surveys) => {
-                if (!isActive) return;
+                    const currentSurvey = surveys.find((survey) => survey.id === id);
+                    if (!currentSurvey) {
+                        dispatch(setErrorMessage({ message: 'У вас нет доступа к этому опросу' }));
+                        navigate(routes.survey(), { replace: true });
+                        return;
+                    }
 
-                const currentSurvey = surveys.find((survey) => survey.id === id);
-                if (!currentSurvey) {
-                    dispatch(setErrorMessage({ message: 'У вас нет доступа к этому опросу' }));
-                    navigate(routes.survey(), { replace: true });
-                    return;
-                }
-
-                setSurveyAccess({ surveyId: id, role: currentSurvey.userRole });
-            })
-            .catch(() => {
-                if (isActive) {
-                    dispatch(setErrorMessage({ message: 'Не удалось проверить права доступа к опросу' }));
-                    navigate(routes.survey(), { replace: true });
-                }
-            });
+                    setSurveyAccess({ surveyId: id, role: currentSurvey.userRole });
+                })
+                .catch(() => {
+                    if (isActive) {
+                        dispatch(setErrorMessage({ message: 'Не удалось проверить права доступа к опросу' }));
+                        navigate(routes.survey(), { replace: true });
+                    }
+                });
 
         return () => {
             isActive = false;
@@ -126,9 +154,42 @@ export function SurveyLayout() {
 
     const publishingHandler = () => {
         if (id && selectedSurvey)
-            updateSurvey(id, { isPublished: !selectedSurvey.isPublished }).then((data) => {
-                dispatch(setSelectedSurvey({ survey: data }));
-            });
+            updateSurvey(id, { isPublished: !selectedSurvey.isPublished })
+                .then((data) => {
+                    dispatch(setSelectedSurvey({ survey: data }));
+                })
+                .catch(() => dispatch(setErrorMessage({ message: 'Не удалось опубликовать опрос' })));
+    };
+
+    const publishingTemplateHandler = () => {
+        if (id && selectedTemplate) {
+            updateTemplate(id, { isPublished: !selectedTemplate.published })
+                .then((data) => {
+                    dispatch(setSelectedTemplate({ template: data }));
+                })
+                .catch(() => dispatch(setErrorMessage({ message: 'Не удалось опубликовать шаблон' })));
+        }
+    };
+
+    useEffect(() => {
+        if (!isSaveTemplate) return;
+        const handle = setTimeout(() => {
+            setIsSaveTemplate(false);
+        }, 2000);
+
+        return () => {
+            clearTimeout(handle);
+        };
+    }, [isSaveTemplate]);
+
+    const saveTemplateHandler = () => {
+        if (id && selectedTemplate)
+            saveTemplate(selectedTemplate.id)
+                .then((data) => {
+                    dispatch(addTemplate(data));
+                    setIsSaveTemplate(true);
+                })
+                .catch(() => dispatch(setErrorMessage({ message: 'Не удалось сохранить шаблон' })));
     };
 
     const handleCopyClick = async (valueForCopy: string) => {
@@ -155,22 +216,24 @@ export function SurveyLayout() {
                     </LinkHH>
                 </div>
 
-                <nav className={style.navbar}>
-                    {navigationItems.map((item) => (
-                        <Button
-                            key={item.section}
-                            mode={activeSection === item.section ? 'primary' : 'secondary'}
-                            style='accent'
-                            Element={Link}
-                            to={item.path}
-                            disabled={item.disabled}
-                            title={item.disabled ? item.disabledTitle : undefined}
-                            aria-label={item.disabled ? item.disabledAriaLabel : item.label}
-                        >
-                            {item.label}
-                        </Button>
-                    ))}
-                </nav>
+                {!isTemplate && (
+                    <nav className={style.navbar}>
+                        {navigationItems.map((item) => (
+                            <Button
+                                key={item.section}
+                                mode={activeSection === item.section ? 'primary' : 'secondary'}
+                                style='accent'
+                                Element={Link}
+                                to={item.path}
+                                disabled={item.disabled}
+                                title={item.disabled ? item.disabledTitle : undefined}
+                                aria-label={item.disabled ? item.disabledAriaLabel : item.label}
+                            >
+                                {item.label}
+                            </Button>
+                        ))}
+                    </nav>
+                )}
                 <div className={style.actions}>
                     <div className={style.copyLink}>
                         <Button
@@ -197,9 +260,34 @@ export function SurveyLayout() {
                         </Button>
                     )}
 
-                    {canEditSurvey && (
-                        <Button mode='tertiary' style='accent' onClick={publishingHandler} disabled={!selectedSurvey}>
-                            {selectedSurvey?.isPublished ? 'Снять с публикации' : 'Опубликовать'}
+                    {canEditSurvey || account?.id === selectedTemplate?.authorId ? (
+                        !isTemplate ? (
+                            <Button
+                                mode='tertiary'
+                                style='accent'
+                                onClick={publishingHandler}
+                                disabled={!selectedSurvey}
+                            >
+                                {selectedSurvey?.isPublished ? 'Снять с публикации' : 'Опубликовать'}
+                            </Button>
+                        ) : (
+                            <Button
+                                mode='tertiary'
+                                style='accent'
+                                onClick={publishingTemplateHandler}
+                                disabled={!selectedTemplate}
+                            >
+                                {selectedTemplate?.published ? 'Снять с публикации' : 'Опубликовать'}
+                            </Button>
+                        )
+                    ) : (
+                        <Button
+                            mode='primary'
+                            style={isSaveTemplate ? 'positive' : 'accent'}
+                            onClick={saveTemplateHandler}
+                            disabled={!selectedTemplate}
+                        >
+                            {isSaveTemplate ? 'Шаблон сохранён' : 'Сохранить шаблон'}
                         </Button>
                     )}
                     <AccountDetail />
@@ -221,12 +309,14 @@ export function SurveyLayout() {
                         hasSelectedSurvey={Boolean(selectedSurvey)}
                         isPublished={selectedSurvey?.isPublished}
                         onPublish={publishingHandler}
+                        isTemplate={isTemplate}
                     />
                     <AccountDetail />
                 </div>
             </header>
 
-            {(Boolean(id) && (isLoading || selectedSurvey?.id !== id || isAccessLoading)) ||
+            {(Boolean(id) &&
+                (isLoading || ((selectedSurvey?.id !== id || isAccessLoading) && selectedTemplate?.id !== id))) ||
             isAnalystRestrictedRoute ? (
                 <LoadingContent />
             ) : (

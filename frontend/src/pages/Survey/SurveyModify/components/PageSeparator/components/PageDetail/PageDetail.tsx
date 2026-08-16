@@ -1,6 +1,6 @@
 import type { Page } from '@/shared/types/Survey.type';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { setPage } from '@/entities/Survey/Survey.slice';
+import { setPage } from '@/entities/Pages/Pages.slice';
 import { useEffect, useState } from 'react';
 import style from './PageDetail.module.css';
 import { updateSurveyPage } from '@/api/surveyPages';

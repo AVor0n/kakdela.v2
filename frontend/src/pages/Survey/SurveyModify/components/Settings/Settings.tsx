@@ -12,6 +12,7 @@ import style from './Settings.module.css';
 import { Button, Checkbox, DateTimeInput } from '@hh.ru/magritte-ui';
 import classNames from 'classnames';
 import { NotificationsSchedule } from './components/NotificationSchedule/NotificationsSchedule';
+import { createTemplateFromSurvey } from '@/api/template';
 
 function convertDateFromISO(isoStr: string): string {
     if (!isoStr) return '';
@@ -29,6 +30,7 @@ export function Settings() {
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
     const isAuthor = account?.id === selectedSurvey?.author.id;
+    const [isTemplateCreated, setIsTemplateCreated] = useState(false);
 
     const [isAuthorizedOnly, setIsAuthorizedOnly] = useState<boolean>(selectedSurvey?.isAuthorizedOnly ?? false);
     const [isLimitedToOneResponse, setIsLimitedToOneResponse] = useState<boolean>(
@@ -216,6 +218,26 @@ export function Settings() {
             });
     };
 
+    const makeTemplateHandler = () => {
+        if (!selectedSurvey) return;
+        createTemplateFromSurvey(selectedSurvey.id)
+            .then(() => {
+                setIsTemplateCreated(true);
+            })
+            .catch(() => dispatch(setErrorMessage({ message: 'Не удалось создать шаблон из этого опроса' })));
+    };
+
+    useEffect(() => {
+        if (!isTemplateCreated) return;
+        const handler = setTimeout(() => {
+            setIsTemplateCreated(false);
+        }, 2000);
+
+        return () => {
+            clearTimeout(handler);
+        };
+    }, [isTemplateCreated]);
+
     return (
         <section className={style.container}>
             <div className={style.content}>
@@ -290,6 +312,13 @@ export function Settings() {
                             Удалить опрос
                         </Button>
                     )}
+                    <Button
+                        mode='secondary'
+                        style={isTemplateCreated ? 'positive' : 'neutral'}
+                        onClick={!isTemplateCreated ? makeTemplateHandler : () => {}}
+                    >
+                        {!isTemplateCreated ? 'Создать шаблон из этого опроса' : 'Шаблон создан'}
+                    </Button>
                 </div>
             </div>
         </section>

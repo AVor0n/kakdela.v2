@@ -31,4 +31,5 @@ export const routes = {
     verifyCode: (email: string) => generatePath(routePatterns.verifyCode, { email }),
     resetPassword: (email: string, code: string) =>
         routePatterns.resetPassword + '?email=' + encodeURIComponent(email) + '&code=' + encodeURIComponent(code),
+    templateQuestion: (id: string) => `${generatePath(routePatterns.surveyModify, { id })}/questions?template=true`,
 };
