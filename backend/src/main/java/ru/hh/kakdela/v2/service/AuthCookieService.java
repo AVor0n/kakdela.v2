@@ -86,7 +86,8 @@ public class AuthCookieService {
     CookieUtil.addCookie(response, cookie);
   }
 
-  public boolean consumeHhLinkIntentCookie(HttpServletRequest request, HttpServletResponse response) {
+  public boolean consumeHhLinkIntentCookie(HttpServletRequest request,
+                                           HttpServletResponse response) {
     boolean present = CookieUtil.getCookieValueByName(request, HH_LINK_INTENT_COOKIE_NAME) != null;
     CookieUtil.addCookie(response,
         CookieUtil.buildExpiredCookie(HH_LINK_INTENT_COOKIE_NAME, HH_LINK_INTENT_PATH));
