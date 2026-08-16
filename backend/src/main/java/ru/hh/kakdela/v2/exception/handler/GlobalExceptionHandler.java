@@ -2,6 +2,7 @@ package ru.hh.kakdela.v2.exception.handler;
 
 import jakarta.validation.ConstraintViolationException;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +21,7 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 import ru.hh.kakdela.v2.dto.error.ErrorResponse;
 import ru.hh.kakdela.v2.exception.ErrorCode;
 import ru.hh.kakdela.v2.exception.Kd2AuthenticationException;
+import ru.hh.kakdela.v2.exception.Kd2DataValidationException;
 import ru.hh.kakdela.v2.exception.Kd2Exception;
 import ru.hh.kakdela.v2.exception.Kd2ObjectRelatedException;
 import ru.hh.kakdela.v2.exception.ResetCodeException;
@@ -69,32 +71,57 @@ public class GlobalExceptionHandler {
         .body(ErrorMapper.getErrorResponse(id, ex, request));
   }
 
-  @ExceptionHandler(MethodArgumentNotValidException.class)
-  public Map<String, String> handleValidationExceptions(
-      MethodArgumentNotValidException ex
-  ) {
+  @ExceptionHandler(Kd2DataValidationException.class)
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  public Map<String, String> handleKd2DataValidationException(
+      Kd2DataValidationException ex, WebRequest request) {
     UUID id = UUID.randomUUID();
-    Map<String, String> errors = new HashMap<>();
-    ex.getBindingResult().getAllErrors().forEach((error) -> {
-      String fieldName = ((FieldError) error).getField();
-      String errorMessage = error.getDefaultMessage();
-      errors.put(fieldName, errorMessage);
-    });
 
     logError("Нарушение ограничений в данных", id, ex);
-    return errors;
+    return getErrorResponseAsHashMap(
+        ErrorCode.DATA_CONSTRAINT_VIOLATION,
+        id,
+        "Нарушение ограничений в данных",
+        Map.of(ex.getFieldName(), ex.getConstraintMessage()),
+        getPath(request));
+  }
+
+  @ExceptionHandler(MethodArgumentNotValidException.class)
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  public Map<String, String> handleValidationExceptions(
+      MethodArgumentNotValidException ex, WebRequest request) {
+    UUID id = UUID.randomUUID();
+
+    Map<String, String> errors = new HashMap<>();
+    ex.getBindingResult().getAllErrors()
+        .forEach(e -> errors.put(((FieldError) e).getField(), e.getDefaultMessage()));
+
+    logError("Нарушение ограничений в данных", id, ex);
+    return getErrorResponseAsHashMap(
+        ErrorCode.DATA_CONSTRAINT_VIOLATION,
+        id,
+        "Нарушение ограничений в данных",
+        errors,
+        getPath(request));
   }
 
   @ExceptionHandler(ConstraintViolationException.class)
-  public ResponseEntity<ErrorResponse> handleConstraintViolation(
-      ConstraintViolationException ex, WebRequest request
-  ) {
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  public Map<String, String> handleConstraintViolation(
+      ConstraintViolationException ex, WebRequest request) {
     UUID id = UUID.randomUUID();
+
+    Map<String, String> errors = new HashMap<>();
+    ex.getConstraintViolations()
+        .forEach(cv -> errors.put(cv.getPropertyPath().toString(), cv.getMessage()));
+
     logError("Нарушение ограничений в данных", id, ex);
-    return ResponseEntity
-        .status(HttpStatus.BAD_REQUEST)
-        .body(ErrorMapper.getErrorResponse(
-            id, ErrorCode.BAD_REQUEST_DATA, ex.getMessage(), request));
+    return getErrorResponseAsHashMap(
+        ErrorCode.DATA_CONSTRAINT_VIOLATION,
+        id,
+        "Нарушение ограничений в данных",
+        errors,
+        getPath(request));
   }
 
   @ExceptionHandler(jakarta.persistence.EntityNotFoundException.class)
@@ -219,5 +246,24 @@ public class GlobalExceptionHandler {
     final String logMessage = "%s (errorId=%s, objectDetails=%s): "
         .formatted(message, id, objectDetails);
     log.error(logMessage, ex);
+  }
+
+  private LinkedHashMap<String, String> getErrorResponseAsHashMap(
+      ErrorCode errorCode,
+      UUID id,
+      String message,
+      Map<String, String> details,
+      String path
+  ) {
+    LinkedHashMap<String, String> result = new LinkedHashMap<>();
+
+    result.put("timestamp", LocalDateTime.now().toString());
+    result.put("internalErrorCode", errorCode.name());
+    result.put("errorId", id.toString());
+    result.put("message", message);
+    result.putAll(details);
+    result.put("path", path);
+
+    return result;
   }
 }

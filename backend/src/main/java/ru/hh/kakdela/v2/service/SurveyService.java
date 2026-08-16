@@ -39,6 +39,7 @@ import ru.hh.kakdela.v2.model.Question;
 import ru.hh.kakdela.v2.model.Survey;
 import ru.hh.kakdela.v2.model.SurveyPage;
 import ru.hh.kakdela.v2.model.condition.Condition;
+import ru.hh.kakdela.v2.util.DataConstraintUtil;
 import ru.hh.kakdela.v2.util.JsonNullableUtil;
 
 @Slf4j
@@ -105,6 +106,9 @@ public class SurveyService {
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Аккаунт не найден: " + authorId));
 
+    DataConstraintUtil.checkTitleLength(dto.getTitle());
+    DataConstraintUtil.checkDescriptionLength(dto.getDescription());
+
     Survey survey = Survey.builder()
         .id(UUID.randomUUID())
         .author(author)
@@ -140,10 +144,17 @@ public class SurveyService {
             HttpStatus.NOT_FOUND, "Опрос не найден: id=" + surveyId));
 
     if (dto.getTitle().isPresent()) {
-      survey.setTitle(dto.getTitle().get());
+      String title = dto.getTitle().get();
+
+      DataConstraintUtil.checkTitleLength(title);
+      survey.setTitle(title);
     }
+
     if (dto.getDescription().isPresent()) {
-      survey.setDescription(dto.getDescription().get());
+      String description = dto.getDescription().get();
+
+      DataConstraintUtil.checkDescriptionLength(description);
+      survey.setDescription(description);
     }
 
     if (dto.getIsAuthorizedOnly().isPresent()) {

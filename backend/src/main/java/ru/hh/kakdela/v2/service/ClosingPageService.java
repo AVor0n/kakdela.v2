@@ -22,6 +22,7 @@ import ru.hh.kakdela.v2.mapper.ClosingPageMapper;
 import ru.hh.kakdela.v2.model.ClosingPage;
 import ru.hh.kakdela.v2.model.Response;
 import ru.hh.kakdela.v2.model.Survey;
+import ru.hh.kakdela.v2.util.DataConstraintUtil;
 
 @Slf4j
 @Service
@@ -104,6 +105,9 @@ public class ClosingPageService {
           HttpStatus.CONFLICT, "Завершающая страница уже существует для опроса: " + surveyId);
     }
 
+    DataConstraintUtil.checkTitleLength(dto.getTitle());
+    DataConstraintUtil.checkDescriptionLength(dto.getDescription());
+
     ClosingPage closingPage = ClosingPage.builder()
         .id(surveyId)
         .survey(survey)
@@ -129,9 +133,11 @@ public class ClosingPageService {
             HttpStatus.NOT_FOUND, "Завершающая страница не найдена для опроса: " + surveyId));
 
     if (dto.getTitle() != null) {
+      DataConstraintUtil.checkTitleLength(dto.getTitle());
       closingPage.setTitle(dto.getTitle());
     }
     if (dto.getDescription() != null) {
+      DataConstraintUtil.checkDescriptionLength(dto.getDescription());
       closingPage.setDescription(dto.getDescription());
     }
     if (dto.getWebsiteUrl() != null) {

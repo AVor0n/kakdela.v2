@@ -22,6 +22,7 @@ import ru.hh.kakdela.v2.mapper.SurveyPageMapper;
 import ru.hh.kakdela.v2.model.Response;
 import ru.hh.kakdela.v2.model.Survey;
 import ru.hh.kakdela.v2.model.SurveyPage;
+import ru.hh.kakdela.v2.util.DataConstraintUtil;
 
 @Slf4j
 @Service
@@ -95,13 +96,13 @@ public class SurveyPageService {
 
     if (dto.getSerialNumber() != null
         && !dto.getSerialNumber().equals(maxAvailableSerial)) {
-      if (dto.getSerialNumber() > maxAvailableSerial) {
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-            "Порядковый номер должен быть не больше " + maxAvailableSerial);
-      }
+      DataConstraintUtil.checkSerialNumberUpperLimit(dto.getSerialNumber(), maxAvailableSerial);
 
       surveyPageDao.increaseSerialNumbers(surveyId, dto.getSerialNumber());
     }
+
+    DataConstraintUtil.checkTitleLength(dto.getTitle());
+    DataConstraintUtil.checkDescriptionLength(dto.getDescription());
 
     SurveyPage page = SurveyPage.builder()
         .id(UUID.randomUUID())
@@ -130,10 +131,8 @@ public class SurveyPageService {
     if (dto.getSerialNumber() != null && !dto.getSerialNumber().equals(oldSerial)) {
       int newSerial = dto.getSerialNumber();
       int maxAvailableSerial = surveyPageDao.findMaxSerialNumber(surveyId);
-      if (newSerial > maxAvailableSerial) {
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-            "Новый номер должен быть не больше " + maxAvailableSerial);
-      }
+
+      DataConstraintUtil.checkSerialNumberUpperLimit(newSerial, maxAvailableSerial);
 
       if (oldSerial > newSerial) {
         surveyPageDao.increaseSerialNumbers(surveyId, newSerial, oldSerial - 1);
@@ -147,9 +146,11 @@ public class SurveyPageService {
     }
 
     if (dto.getTitle() != null) {
+      DataConstraintUtil.checkTitleLength(dto.getTitle());
       page.setTitle(dto.getTitle());
     }
     if (dto.getDescription() != null) {
+      DataConstraintUtil.checkDescriptionLength(dto.getDescription());
       page.setDescription(dto.getDescription());
     }
 

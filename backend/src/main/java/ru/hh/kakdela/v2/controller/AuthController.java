@@ -44,9 +44,10 @@ public class AuthController {
   @PostMapping("/auth/login")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void login(
-      @RequestBody LoginRequestDto dto,
+      @Valid @RequestBody LoginRequestDto dto,
       HttpServletRequest request,
-      HttpServletResponse response) {
+      HttpServletResponse response
+  ) {
 
     String deviceId = authCookieService.getOrCreateDeviceId(request, response);
 

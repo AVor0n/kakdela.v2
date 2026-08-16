@@ -17,6 +17,7 @@ import ru.hh.kakdela.v2.mapper.SurveyMapper;
 import ru.hh.kakdela.v2.mapper.TemplateMapper;
 import ru.hh.kakdela.v2.model.Account;
 import ru.hh.kakdela.v2.model.Survey;
+import ru.hh.kakdela.v2.util.DataConstraintUtil;
 
 @Slf4j
 @Service
@@ -137,9 +138,11 @@ public class TemplateService {
     }
 
     if (dto.getTitle() != null) {
+      DataConstraintUtil.checkTitleLength(dto.getTitle());
       template.setTitle(dto.getTitle());
     }
     if (dto.getDescription() != null) {
+      DataConstraintUtil.checkDescriptionLength(dto.getDescription());
       template.setDescription(dto.getDescription());
     }
     if (dto.getIsPublished() != null) {
