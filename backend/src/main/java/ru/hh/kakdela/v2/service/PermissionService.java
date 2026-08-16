@@ -183,7 +183,8 @@ public class PermissionService {
             surveyMapper.surveyToSurveyWithRoleDto(survey, SurveyRole.AUTHOR))
         .toList();
 
-    List<SurveyWithUserRoleDto> shared = permissionDao.findAllByAccountId(accountId).stream()
+    List<SurveyWithUserRoleDto> shared =
+        permissionDao.findAllWithSurveysBySurveyId(accountId).stream()
         .filter(permission -> !permission.getSurvey().isTemplate())
         .map(permission ->
             surveyMapper.surveyToSurveyWithRoleDto(permission.getSurvey(), permission.getRole()))

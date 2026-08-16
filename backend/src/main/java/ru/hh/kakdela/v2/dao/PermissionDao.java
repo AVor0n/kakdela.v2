@@ -15,6 +15,8 @@ public interface PermissionDao {
 
   List<Permission> findAllBySurveyId(UUID surveyId);
 
+  List<Permission> findAllWithSurveysBySurveyId(UUID surveyId);
+
   List<Permission> findAllByAccountId(UUID accountId);
 
   boolean existsById(Permission.PermissionId id);

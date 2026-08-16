@@ -12,6 +12,7 @@ public enum ErrorCode {
   // Surveys
 
   SURVEY_IS_EMPTY,
+  SURVEY_NOT_FOUND,
 
   // Pages
 

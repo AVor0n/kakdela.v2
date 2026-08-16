@@ -1,5 +1,6 @@
 package ru.hh.kakdela.v2.mapper;
 
+import java.util.Collections;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import ru.hh.kakdela.v2.dto.survey.page.SurveyPagePublicResponseDto;
@@ -22,7 +23,8 @@ public class SurveyPageMapper {
         surveyPage.getDescription(),
         surveyPage.getQuestions().stream()
             .map(questionMapper::questionToDto)
-            .toList());
+            .toList(),
+        Collections.emptyList());
   }
 
   public SurveyPagePublicResponseDto surveyPageToPublicDto(SurveyPage surveyPage) {

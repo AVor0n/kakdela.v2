@@ -52,4 +52,7 @@ public class ConditionConflictService {
     conditionDao.makeConditionsConsistentByPageIdAndItsSerialNumber(pageId, serialNumber);
   }
 
+  boolean doSurveyHaveConditions(UUID surveyId) {
+    return conditionDao.existsBySurveyId(surveyId);
+  }
 }

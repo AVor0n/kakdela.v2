@@ -86,7 +86,6 @@ public class ResponseDaoImpl implements ResponseDao {
         .getSingleResultOrNull());
   }
 
-
   @Override
   public List<Response> findCompletedBySurveyId(UUID surveyId) {
     List<Response> result = entityManager.createQuery(
@@ -126,6 +125,7 @@ public class ResponseDaoImpl implements ResponseDao {
         SELECT DISTINCT r
         FROM Response r
         LEFT JOIN FETCH r.account
+        LEFT JOIN FETCH r.survey
         LEFT JOIN FETCH r.answers a
         WHERE r.account.id = :accountId
         """, Response.class)

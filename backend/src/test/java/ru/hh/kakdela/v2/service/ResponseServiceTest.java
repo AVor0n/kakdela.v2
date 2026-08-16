@@ -8,7 +8,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -26,7 +25,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 import ru.hh.kakdela.v2.dao.AccountDao;
 import ru.hh.kakdela.v2.dao.ResponseDao;
-import ru.hh.kakdela.v2.dao.SurveyDao;
 import ru.hh.kakdela.v2.dao.SurveyPageDao;
 import ru.hh.kakdela.v2.dto.response.ResponseResponseDto;
 import ru.hh.kakdela.v2.dto.response.ResponseWithTokenDto;
@@ -45,7 +43,7 @@ class ResponseServiceTest {
   @Mock
   private ResponseDao responseDao;
   @Mock
-  private SurveyDao surveyDao;
+  private SurveyService surveyService;
   @Mock
   private SurveyPageDao surveyPageDao;
   @Mock
@@ -222,26 +220,10 @@ class ResponseServiceTest {
     assertEquals("Просмотр завершённых анонимных ответов запрещён", exception.getReason());
   }
 
-
-  // ----------------------- GetCompletedBySurveyId tests -----------------------
-  @Test
-  void getCompletedBySurveyId_permissionDenied_ThrowsException() {
-    when(surveyDao.findById(surveyId)).thenReturn(Optional.of(testSurvey));
-    doThrow(ResponseStatusException.class)
-        .when(permissionService)
-        .checkCanReadResponses(surveyId, respondentAccountId);
-
-    assertThrows(
-        ResponseStatusException.class,
-        () -> responseService.getCompletedBySurveyId(surveyId, respondentAccountId)
-    );
-  }
-
-
   // ----------------------- create tests -----------------------
   @Test
   void create_withAccount_success() {
-    when(surveyDao.findById(surveyId)).thenReturn(Optional.of(testSurvey));
+    when(surveyService.getEntityById(surveyId)).thenReturn(testSurvey);
     when(accountDao.findById(respondentAccountId)).thenReturn(Optional.of(testRespondentAccount));
     when(surveyPageDao.findFirstBySurveyId(surveyId)).thenReturn(Optional.of(testSurveyPage1));
     mockResponseSave();
@@ -256,7 +238,7 @@ class ResponseServiceTest {
 
   @Test
   void create_withoutAccount_success() {
-    when(surveyDao.findById(surveyId)).thenReturn(Optional.of(testSurvey));
+    when(surveyService.getEntityById(surveyId)).thenReturn(testSurvey);
     when(surveyPageDao.findFirstBySurveyId(surveyId)).thenReturn(Optional.of(testSurveyPage1));
     mockResponseSave();
     when(jwtService.generateResponseAccessToken(any(UUID.class))).thenReturn(testToken);
@@ -271,20 +253,8 @@ class ResponseServiceTest {
   }
 
   @Test
-  void create_surveyNotFound_throwsException() {
-    when(surveyDao.findById(surveyId)).thenReturn(Optional.empty());
-
-    ResponseStatusException exception = assertThrows(
-        ResponseStatusException.class,
-        () -> responseService.create(surveyId, respondentAccountId)
-    );
-    assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
-    assertEquals("Опрос не найден: " + surveyId, exception.getReason());
-  }
-
-  @Test
   void create_surveyNotPublished_throwsException() {
-    when(surveyDao.findById(surveyId)).thenReturn(Optional.of(testUnpublishedSurvey));
+    when(surveyService.getEntityById(surveyId)).thenReturn(testUnpublishedSurvey);
 
     ResponseStatusException exception = assertThrows(
         ResponseStatusException.class,
@@ -296,7 +266,7 @@ class ResponseServiceTest {
 
   @Test
   void create_limitedToOneResponseAndAlreadyExists_throwsException() {
-    when(surveyDao.findById(surveyId)).thenReturn(Optional.of(testLimitedSurvey));
+    when(surveyService.getEntityById(surveyId)).thenReturn(testLimitedSurvey);
     when(responseDao.existsBySurveyIdAndAccountId(surveyId, respondentAccountId)).thenReturn(true);
 
     ResponseStatusException exception = assertThrows(
@@ -309,7 +279,7 @@ class ResponseServiceTest {
 
   @Test
   void create_limitedToOneResponseButAccountIsNull_success() {
-    when(surveyDao.findById(surveyId)).thenReturn(Optional.of(testLimitedSurvey));
+    when(surveyService.getEntityById(surveyId)).thenReturn(testLimitedSurvey);
     when(surveyPageDao.findFirstBySurveyId(surveyId)).thenReturn(Optional.of(testSurveyPage1));
     mockResponseSave();
     when(jwtService.generateResponseAccessToken(any(UUID.class))).thenReturn(testToken);
@@ -324,7 +294,7 @@ class ResponseServiceTest {
 
   @Test
   void create_accountNotFound_throwsException() {
-    when(surveyDao.findById(surveyId)).thenReturn(Optional.of(testSurvey));
+    when(surveyService.getEntityById(surveyId)).thenReturn(testSurvey);
     when(accountDao.findById(respondentAccountId)).thenReturn(Optional.empty());
     when(surveyPageDao.findFirstBySurveyId(surveyId)).thenReturn(Optional.of(testSurveyPage1));
 

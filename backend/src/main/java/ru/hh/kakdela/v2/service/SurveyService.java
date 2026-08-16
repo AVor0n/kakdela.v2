@@ -27,6 +27,7 @@ import ru.hh.kakdela.v2.dto.survey.SurveyResponseDto;
 import ru.hh.kakdela.v2.dto.survey.SurveyShortResponseDto;
 import ru.hh.kakdela.v2.dto.survey.SurveyShortResponseWithPermissionDto;
 import ru.hh.kakdela.v2.dto.survey.SurveyUpdateDto;
+import ru.hh.kakdela.v2.exception.survey.SurveyNotFoundException;
 import ru.hh.kakdela.v2.mapper.SurveyMapper;
 import ru.hh.kakdela.v2.model.Account;
 import ru.hh.kakdela.v2.model.AnswerOption;
@@ -50,7 +51,7 @@ public class SurveyService {
   private final PermissionService permissionService;
   private final NotificationService notificationService;
   private final ObjectStorageService objectStorageService;
-  private final ConditionService conditionService;
+  private final ConditionConflictService conditionConflictService;
   private final ImageProcessingService imageProcessingService;
   private final SurveyMapper surveyMapper;
 
@@ -65,14 +66,14 @@ public class SurveyService {
     }
 
     return surveyMapper.surveyToPublicDto(
-        survey, conditionService.doSurveyHaveConditions(surveyId));
+        survey, conditionConflictService.doSurveyHaveConditions(surveyId));
   }
 
   @Transactional(readOnly = true)
   public SurveyResponseDto getById(UUID surveyId, UUID accountId) {
     Survey survey = surveyDao.findById(surveyId)
         .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
+            HttpStatus.NOT_FOUND, "Опрос не найден: id=" + surveyId));
 
     permissionService.checkHasAnyPermission(surveyId, accountId);
 
@@ -456,6 +457,18 @@ public class SurveyService {
     if (expireAt.isBefore(Instant.now())) {
       throw new ResponseStatusException(
           HttpStatus.BAD_REQUEST, "Дедлайн в указанном часовом поясе уже прошёл");
+    }
+  }
+
+  Survey getEntityById(UUID id) {
+    return surveyDao.findById(id)
+        .orElseThrow(() -> new SurveyNotFoundException(id));
+  }
+
+  void checkSurveyExistsAndIsNotTemplate(UUID id) {
+    if (surveyDao.findIsTemplateById(id)
+        .orElseThrow(() -> new SurveyNotFoundException(id))) {
+      throw new SurveyNotFoundException(id);
     }
   }
 }

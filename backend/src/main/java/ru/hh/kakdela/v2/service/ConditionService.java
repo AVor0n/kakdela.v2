@@ -218,8 +218,4 @@ public class ConditionService {
   UUID getParentSurveyId(UUID conditionId) {
     return conditionDao.findParentSurveyIdById(conditionId);
   }
-
-  boolean doSurveyHaveConditions(UUID surveyId) {
-    return conditionDao.existsBySurveyId(surveyId);
-  }
 }

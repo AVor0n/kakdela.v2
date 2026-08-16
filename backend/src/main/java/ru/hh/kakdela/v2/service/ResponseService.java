@@ -17,13 +17,13 @@ import org.springframework.web.server.ResponseStatusException;
 import ru.hh.kakdela.v2.dao.AccountDao;
 import ru.hh.kakdela.v2.dao.ResponseDao;
 import ru.hh.kakdela.v2.dao.ResponsePageStatusDao;
-import ru.hh.kakdela.v2.dao.SurveyDao;
 import ru.hh.kakdela.v2.dao.SurveyPageDao;
 import ru.hh.kakdela.v2.dto.response.ResponseExportDto;
 import ru.hh.kakdela.v2.dto.response.ResponseResponseDto;
 import ru.hh.kakdela.v2.dto.response.ResponseWithTokenDto;
 import ru.hh.kakdela.v2.exception.response.NotAllMandatoryQuestionsAnsweredException;
 import ru.hh.kakdela.v2.exception.survey.SurveyIsEmptyException;
+import ru.hh.kakdela.v2.exception.survey.SurveyNotFoundException;
 import ru.hh.kakdela.v2.mapper.ResponseMapper;
 import ru.hh.kakdela.v2.model.Account;
 import ru.hh.kakdela.v2.model.Answer;
@@ -40,7 +40,7 @@ public class ResponseService {
 
   private final ResponseDao responseDao;
   private final ResponsePageStatusDao responsePageStatusDao;
-  private final SurveyDao surveyDao;
+  private final SurveyService surveyService;
   private final SurveyPageDao surveyPageDao;
   private final AccountDao accountDao;
   private final PermissionService permissionService;
@@ -51,12 +51,7 @@ public class ResponseService {
   public ResponseResponseDto getById(UUID id, UUID accountId, String token) {
     Response response = getEntityByIdWithOwnerOrSurveyTeamAccessCheck(id, accountId, token);
 
-    if (response.getSurvey().isTemplate()) {
-      throw new ResponseStatusException(
-          HttpStatus.NOT_FOUND,
-          "Опрос не найден"
-      );
-    }
+    surveyService.checkSurveyExistsAndIsNotTemplate(response.getSurvey().getId());
 
     if (response.getAccount() == null && response.isCompleted()
         && !response.getSurvey().isAuthor(accountId)) {
@@ -69,16 +64,7 @@ public class ResponseService {
 
   @Transactional(readOnly = true)
   public List<ResponseResponseDto> getCompletedBySurveyId(UUID surveyId, UUID accountId) {
-    Survey survey = surveyDao.findById(surveyId)
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Опрос не найден: id=" + surveyId));
-
-    if (survey.isTemplate()) {
-      throw new ResponseStatusException(
-          HttpStatus.NOT_FOUND,
-          "Опрос не найден"
-      );
-    }
+    surveyService.checkSurveyExistsAndIsNotTemplate(surveyId);
 
     permissionService.checkCanReadResponses(surveyId, accountId);
 
@@ -100,16 +86,7 @@ public class ResponseService {
       UUID surveyId,
       UUID accountId
   ) {
-    Survey survey = surveyDao.findById(surveyId)
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Опрос не найден: id=" + surveyId));
-
-    if (survey.isTemplate()) {
-      throw new ResponseStatusException(
-          HttpStatus.NOT_FOUND,
-          "Опрос не найден"
-      );
-    }
+    surveyService.checkSurveyExistsAndIsNotTemplate(surveyId);
 
     return responseDao.findIncompletedBySurveyIdAndAccountId(surveyId, accountId).stream()
         .map(ResponseMapper::responseToDto)
@@ -118,9 +95,7 @@ public class ResponseService {
 
   @Transactional
   public ResponseWithTokenDto create(UUID surveyId, UUID accountId) {
-    Survey survey = surveyDao.findById(surveyId)
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
+    Survey survey = surveyService.getEntityById(surveyId);
 
     verifyResponseCreationRequest(survey, accountId);
     SurveyPage firstPage = surveyPageDao.findFirstBySurveyId(surveyId)
@@ -166,13 +141,6 @@ public class ResponseService {
   public ResponseResponseDto complete(UUID id, UUID accountId, String token) {
     Response response = getEntityByIdWithOwnerAccessCheck(id, accountId, token);
 
-    if (response.getSurvey().isTemplate()) {
-      throw new ResponseStatusException(
-          HttpStatus.NOT_FOUND,
-          "Опрос не найден"
-      );
-    }
-
     checkMandatoryQuestionsAnswered(id);
 
     if (response.isCompleted()) {
@@ -202,16 +170,7 @@ public class ResponseService {
 
   @Transactional
   public ResponseExportDto export(UUID surveyId, UUID accountId) {
-    Survey survey = surveyDao.findById(surveyId)
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Опрос не найден: id=" + surveyId));
-
-    if (survey.isTemplate()) {
-      throw new ResponseStatusException(
-          HttpStatus.NOT_FOUND,
-          "Опрос не найден"
-      );
-    }
+    surveyService.checkSurveyExistsAndIsNotTemplate(surveyId);
 
     permissionService.checkCanReadResponses(surveyId, accountId);
 
@@ -237,10 +196,7 @@ public class ResponseService {
 
   private void verifyResponseCreationRequest(Survey survey, UUID accountId) {
     if (survey.isTemplate()) {
-      throw new ResponseStatusException(
-          HttpStatus.NOT_FOUND,
-          "Опрос не найден"
-      );
+      throw new SurveyNotFoundException(survey.getId());
     }
 
     if (!survey.isPublished()) {

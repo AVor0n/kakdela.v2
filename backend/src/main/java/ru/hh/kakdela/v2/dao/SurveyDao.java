@@ -11,11 +11,11 @@ public interface SurveyDao {
 
   Optional<UUID> findAuthorIdById(UUID id);
 
+  Optional<Boolean> findIsTemplateById(UUID id);
+
   boolean existsById(UUID id);
 
   List<Survey> findAllByAuthorId(UUID authorId);
-
-  List<Survey> findAllPublished();
 
   void save(Survey survey);
 

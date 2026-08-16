@@ -49,11 +49,4 @@ public class QuestionCreateDto {
   @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED)
   @NotNull(message = "Опция \"Обязательный вопрос\" не может быть null")
   private Boolean isMandatory = true;
-
-  @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @NotNull(message = "Опция \"Видимость\" не может быть null")
-  private Boolean isVisible = true;
-
-  @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  private String condition;
 }

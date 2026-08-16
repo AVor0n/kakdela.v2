@@ -57,6 +57,19 @@ public class PermissionDaoImpl implements PermissionDao {
   }
 
   @Override
+  public List<Permission> findAllWithSurveysBySurveyId(UUID surveyId) {
+    return entityManager.createQuery(
+        """
+        SELECT DISTINCT p
+        FROM Permission p
+        LEFT JOIN FETCH p.survey
+        WHERE p.id.surveyId = :surveyId
+        """, Permission.class)
+        .setParameter("surveyId", surveyId)
+        .getResultList();
+  }
+
+  @Override
   public List<Permission> findAllByAccountId(UUID accountId) {
     return entityManager
             .createQuery("FROM Permission p WHERE p.id.accountId = :accountId", Permission.class)
