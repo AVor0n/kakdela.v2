@@ -36,10 +36,12 @@ public class Account {
   @Column(name = "password_hash", columnDefinition = "text", nullable = false)
   private String passwordHash;
 
-  // true - аккаунт создан и логинится через hh.ru SSO, пароль сгенерирован случайно
-  @Builder.Default
-  @Column(name = "is_hh_sso", nullable = false)
-  private boolean isHhSso = false;
+  @Column(name = "hh_user_id", unique = true)
+  private String hhUserId;
+
+  public boolean isHhSso() {
+    return hhUserId != null;
+  }
 
   @Column(name = "registered_at", updatable = false, nullable = false)
   private Instant registeredAt;
