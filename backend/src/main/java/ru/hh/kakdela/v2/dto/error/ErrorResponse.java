@@ -18,8 +18,8 @@ public class ErrorResponse {
   private final UUID errorId;
   private final String message;
   @JsonInclude(JsonInclude.Include.NON_NULL)
-  private final UUID object1id;
+  private final UUID object1Id;
   @JsonInclude(JsonInclude.Include.NON_NULL)
-  private final UUID object2id;
+  private final UUID object2Id;
   private final String path;
 }

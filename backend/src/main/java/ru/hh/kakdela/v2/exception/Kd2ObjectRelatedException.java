@@ -5,11 +5,11 @@ import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
 @Getter
-public class Kd2OblectRelatedException extends Kd2Exception {
+public class Kd2ObjectRelatedException extends Kd2Exception {
   private final UUID object1Id;
   private final UUID object2Id;
 
-  public Kd2OblectRelatedException(
+  public Kd2ObjectRelatedException(
       ErrorCode errorCode,
       HttpStatus httpStatus,
       String message,

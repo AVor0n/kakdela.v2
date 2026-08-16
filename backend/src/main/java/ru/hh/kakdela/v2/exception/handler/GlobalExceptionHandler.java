@@ -20,7 +20,7 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 import ru.hh.kakdela.v2.dto.error.ErrorResponse;
 import ru.hh.kakdela.v2.exception.ErrorCode;
 import ru.hh.kakdela.v2.exception.Kd2Exception;
-import ru.hh.kakdela.v2.exception.Kd2OblectRelatedException;
+import ru.hh.kakdela.v2.exception.Kd2ObjectRelatedException;
 import ru.hh.kakdela.v2.exception.ResetCodeException;
 import ru.hh.kakdela.v2.mapper.ErrorMapper;
 
@@ -28,9 +28,9 @@ import ru.hh.kakdela.v2.mapper.ErrorMapper;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-  @ExceptionHandler(Kd2OblectRelatedException.class)
+  @ExceptionHandler(Kd2ObjectRelatedException.class)
   public ResponseEntity<ErrorResponse> handleKd2OblectRelatedException(
-      Kd2OblectRelatedException ex, WebRequest request
+      Kd2ObjectRelatedException ex, WebRequest request
   ) {
     UUID id = UUID.randomUUID();
     return ResponseEntity
