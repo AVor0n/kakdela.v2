@@ -2,7 +2,6 @@ package ru.hh.kakdela.v2.service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,7 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import ru.hh.kakdela.v2.dao.AnswerDao;
 import ru.hh.kakdela.v2.dao.QuestionDao;
-import ru.hh.kakdela.v2.dao.ResponseDao;
 import ru.hh.kakdela.v2.dto.answer.AnswerRequestDto;
 import ru.hh.kakdela.v2.dto.answer.AnswerResponseDto;
 import ru.hh.kakdela.v2.dto.answer.AnswerResponseDtoWithStatusDto;
@@ -23,7 +21,6 @@ import ru.hh.kakdela.v2.model.AnswerOption;
 import ru.hh.kakdela.v2.model.Question;
 import ru.hh.kakdela.v2.model.Response;
 import ru.hh.kakdela.v2.model.SelectedAnswerOption;
-import ru.hh.kakdela.v2.security.JwtService;
 import ru.hh.kakdela.v2.status.ObjectStatus;
 
 @Slf4j
@@ -33,14 +30,13 @@ public class AnswerService {
 
   private final AnswerDao answerDao;
   private final QuestionService questionService;
-  private final ResponseDao responseDao;
   private final QuestionDao questionDao;
+  private final ResponseService responseService;
   private final AnswerOptionService answerOptionService;
-  private final JwtService jwtService;
 
   @Transactional(readOnly = true)
   public List<AnswerResponseDto> getAllByResponseId(UUID responseId, UUID accountId, String token) {
-    Response response = loadResponseAndCheckAccess(responseId, accountId, token);
+    Response response = responseService.loadResponseAndCheckAccess(responseId, accountId, token);
 
     if (response.getAccount() == null && response.isCompleted()
         && !response.getSurvey().isAuthor(accountId)) {
@@ -61,7 +57,7 @@ public class AnswerService {
       UUID accountId,
       String token
   ) {
-    Response response = loadResponseAndCheckAccess(responseId, accountId, token);
+    Response response = responseService.loadResponseAndCheckAccess(responseId, accountId, token);
 
     if (response.isCompleted()) {
       throw new ResponseStatusException(
@@ -99,7 +95,7 @@ public class AnswerService {
 
   @Transactional
   public void delete(UUID responseId, UUID questionId, UUID accountId, String token) {
-    Response response = loadResponseAndCheckAccess(responseId, accountId, token);
+    Response response = responseService.loadResponseAndCheckAccess(responseId, accountId, token);
 
     if (response.isCompleted()) {
       throw new ResponseStatusException(
@@ -301,28 +297,5 @@ public class AnswerService {
                 .formatted(questionType));
       }
     }
-  }
-
-  private Response loadResponseAndCheckAccess(UUID responseId, UUID accountId, String token) {
-    Response response = responseDao.findByIdWithSurvey(responseId)
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Прохождение не найдено: " + responseId));
-
-    if (response.isCompleted() && response.getSurvey().isAuthor(accountId)) {
-      return response;
-    }
-
-    if (response.getAccount() == null && token == null) {
-      throw new ResponseStatusException(
-          HttpStatus.UNAUTHORIZED, "Не предоставлены учётные данные для доступа к прохождению");
-    }
-
-    if (response.getAccount() != null && !response.getAccount().getId().equals(accountId)
-        || token != null && !Objects.equals(jwtService.extractResponseId(token), responseId)) {
-      throw new ResponseStatusException(
-          HttpStatus.FORBIDDEN, "Вы не являетесь автором ответа");
-    }
-
-    return response;
   }
 }

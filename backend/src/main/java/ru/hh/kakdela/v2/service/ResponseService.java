@@ -228,8 +228,8 @@ public class ResponseService {
 
   // Вспомогательные методы
 
-  private Response loadResponseAndCheckAccess(UUID responseId, UUID accountId, String token) {
-    Response response = responseDao.findByIdWithSurvey(responseId)
+  Response loadResponseAndCheckAccess(UUID responseId, UUID accountId, String token) {
+    Response response = responseDao.findById(responseId)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Ответ не найден: " + responseId));
 
