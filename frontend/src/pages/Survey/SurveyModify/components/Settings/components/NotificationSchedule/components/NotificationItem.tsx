@@ -110,23 +110,27 @@ export function NotificationItem({ notificationSchedule }: Props) {
         <div className={style.container}>
             <section className={style.section}>
                 <div className={style.content}>
-                    <DateTimeInput
-                        value={excutionTime}
-                        onChange={(value) => setExecutionTime(value)}
-                        timeMask={true}
-                        onBlur={(e) => updateScheduleExcutionTime(e.target.value)}
-                    />
-                    <Select
-                        type='label'
-                        value={getScheduleTypeByValue(scheduleType)}
-                        dataProvider={createStaticDataProvider(NOTIFICATION_TYPE_SELECT_DATA, 'тип')}
-                        widthEqualToActivator={false}
-                        dropWidth={170}
-                        name='notificationType'
-                        onChange={(e) => {
-                            updateScheduleType(e.value as ScheduleType);
-                        }}
-                    />
+                    <div className={style.timeInput}>
+                        <DateTimeInput
+                            value={excutionTime}
+                            onChange={(value) => setExecutionTime(value)}
+                            timeMask={true}
+                            onBlur={(e) => updateScheduleExcutionTime(e.target.value)}
+                        />
+                    </div>
+                    <div className={style.typeSelect}>
+                        <Select
+                            type='label'
+                            value={getScheduleTypeByValue(scheduleType)}
+                            dataProvider={createStaticDataProvider(NOTIFICATION_TYPE_SELECT_DATA, 'тип')}
+                            widthEqualToActivator={false}
+                            dropWidth={170}
+                            name='notificationType'
+                            onChange={(e) => {
+                                updateScheduleType(e.value as ScheduleType);
+                            }}
+                        />
+                    </div>
                 </div>
                 {notificationSchedule.scheduleType === 'MONTHLY' && (
                     <div className={style.dayOfMonthInput}>
@@ -151,7 +155,7 @@ export function NotificationItem({ notificationSchedule }: Props) {
                 )}
                 {notificationSchedule.scheduleType === 'WEEKLY' && (
                     <section className={style.daysSection}>
-                        <Text typography='label-3-regular'>Дни отправки уведомлений</Text>
+                        <Text typography='label-3-regular'>Дни отправки напоминаний</Text>
                         <div className={style.days}>
                             {DAYS.map((day) => (
                                 <button
@@ -173,7 +177,7 @@ export function NotificationItem({ notificationSchedule }: Props) {
                     style={isActive ? 'accent' : 'negative'}
                     onClick={() => updateScheduleActiveHandler(!isActive)}
                 >
-                    {isActive ? 'Активное' : 'Не активно'}
+                    {isActive ? 'Активно' : 'Не активно'}
                 </Button>
                 <Button
                     mode='secondary'

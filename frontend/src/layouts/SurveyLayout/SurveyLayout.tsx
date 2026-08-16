@@ -32,6 +32,8 @@ export function SurveyLayout() {
     const { pathname } = useLocation();
     const { selectedSurvey } = useAppSelector((state) => state.survey);
     const [isLoading, setIsLoading] = useState<boolean>(true);
+
+    const [isCopied, setIsCopied] = useState(false);
     const [surveyAccess, setSurveyAccess] = useState<SurveyAccess | null>(null);
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
@@ -129,6 +131,21 @@ export function SurveyLayout() {
             });
     };
 
+    const handleCopyClick = async (valueForCopy: string) => {
+        try {
+            // Копируем значение в буфер обмена
+            await navigator.clipboard.writeText(valueForCopy);
+            setIsCopied(true);
+
+            // Возвращаем исходный текст кнопки через 2 секунды
+            setTimeout(() => {
+                setIsCopied(false);
+            }, 2000);
+        } catch (err) {
+            dispatch(setErrorMessage({ message: 'Ошибка при копировании: ' + err }));
+        }
+    };
+
     return (
         <>
             <header className={style.header}>
@@ -155,6 +172,19 @@ export function SurveyLayout() {
                     ))}
                 </nav>
                 <div className={style.actions}>
+                    <div className={style.copyLink}>
+                        <Button
+                            mode='secondary'
+                            style='neutral'
+                            onClick={() =>
+                                handleCopyClick(
+                                    `https://${window.location.hostname}:${window.location.port}/surveys/${selectedSurvey?.id}?responde=true`,
+                                )
+                            }
+                        >
+                            {isCopied ? 'Ссылка скопирована' : 'Скопировать ссылку на опрос'}
+                        </Button>
+                    </div>
                     {id && (
                         <Button
                             mode='secondary'
@@ -178,6 +208,12 @@ export function SurveyLayout() {
                 <div className={style.mobileHeader}>
                     <SurveyMobileMenu
                         surveyId={id}
+                        copyClick={() =>
+                            handleCopyClick(
+                                `https://${window.location.hostname}:${window.location.port}/surveys/${selectedSurvey?.id}?responde=true`,
+                            )
+                        }
+                        isCopied={isCopied}
                         navigationItems={navigationItems}
                         activeSection={activeSection}
                         canEditSurvey={canEditSurvey}

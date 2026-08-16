@@ -16,9 +16,12 @@
     flex-direction: column;
     gap: 8px;
 }
+.timeInput {
+    width: 90px;
+}
 
 .dayOfMonthInput {
-    width: 300px;
+    max-width: 300px;
     display: flex;
     align-items: center;
     gap: 4px;
@@ -33,15 +36,31 @@
 .day {
     padding: 3px 5px;
     border-radius: 6px;
-    background: #eeeeee;
+    background: #edf6ff;
     transition: background 200ms ease-out;
+    color: #0070ff;
 }
 
 .day:hover {
-    background: #cccccc;
+    background: #f3f9ff;
 }
 
 .day.active {
-    background: #666666;
+    background: #0070ff;
     color: white;
+}
+
+@media (max-width: 768px) {
+    .container {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .content {
+        flex-direction: column;
+    }
+
+    .days {
+        flex-wrap: wrap;
+    }
 }

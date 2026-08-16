@@ -12,10 +12,10 @@ import { validateEmail } from '@/pages/Auth/validation';
 import {
     Button,
     createStaticDataProvider,
-    FormLabel,
     Input,
     Loader,
     Select,
+    Text,
     type StaticDataFetcherItem,
 } from '@hh.ru/magritte-ui';
 import axios from 'axios';
@@ -151,7 +151,7 @@ export function Permissions({ surveyId }: Props) {
 
     return (
         <section className={style.content}>
-            <FormLabel>Наделение правами</FormLabel>
+            <Text typography='title-4-semibold'>Управление правами</Text>
             <form className={style.formRow} onSubmit={createPermissionHandler}>
                 <Select
                     type='label'
@@ -160,6 +160,7 @@ export function Permissions({ surveyId }: Props) {
                     name='permissionRole'
                     onChange={(option) => setRole(option.value as SurveyPermissionRole)}
                 />
+
                 <Input
                     value={email}
                     onChange={(value) => {
