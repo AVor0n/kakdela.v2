@@ -4,6 +4,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,8 +26,8 @@ import ru.hh.kakdela.v2.service.AuthService;
 @Component
 public class Oauth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
-  // Подтверждено реальным ответом GET /me для соискателя (auth_type=applicant).
   private static final String ATTR_EMAIL = "email";
+  private static final String ATTR_HH_USER_ID = "id";
 
   private final AccountService accountService;
   private final AuthService authService;
@@ -43,38 +44,68 @@ public class Oauth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
     OAuth2User oauth2User = (OAuth2User) authentication.getPrincipal();
     String email = oauth2User.getAttribute(ATTR_EMAIL);
+    Object rawHhUserId = oauth2User.getAttributes().get(ATTR_HH_USER_ID);
+    String hhUserId = rawHhUserId == null ? null : String.valueOf(rawHhUserId);
+
+    boolean isLinkFlow = authCookieService.consumeHhLinkIntentCookie(request, response);
 
     try {
-      if (email == null || email.isBlank()) {
-        throw new ResponseStatusException(
-            HttpStatus.BAD_REQUEST,
-            "hh.ru не передал email в ответе");
+      if (hhUserId == null || hhUserId.isBlank()) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+            "hh.ru не передал id пользователя");
       }
 
-      Account account = accountService.findOrCreateByHhSso(email);
-
-      String deviceId = authCookieService.getOrCreateDeviceId(request, response);
-      String userAgent = request.getHeader("User-Agent");
-      String ipAddress = request.getRemoteAddr();
-
-      AuthTokensDto tokens = authService.issueTokens(account, deviceId, userAgent, ipAddress);
-      authCookieService.setAccessTokenCookie(response, tokens.getAccessToken());
-      authCookieService.setRefreshTokenCookie(response, tokens.getRefreshToken());
-
-      log.info("Выполнен вход через hh.ru login={}", account.getLogin());
-
-      response.sendRedirect(frontendRedirectUri);
-
+      if (isLinkFlow) {
+        handleLink(request, hhUserId);
+        response.sendRedirect(buildRedirect("hh_link", "success"));
+      } else {
+        handleLogin(request, response, hhUserId, email);
+      }
     } catch (ResponseStatusException ex) {
-      log.warn("Не удалось войти через hh.ru: {}", ex.getReason());
-      response.sendRedirect(buildErrorRedirect());
+      log.warn("Ошибка при обработке {} через hh.ru: {}",
+          isLinkFlow ? "привязки" : "входа", ex.getReason());
+      response.sendRedirect(buildErrorRedirect(isLinkFlow));
     }
   }
 
-  private String buildErrorRedirect() {
+  private void handleLogin(HttpServletRequest request, HttpServletResponse response,
+                           String hhUserId, String email) throws IOException {
+    if (email == null || email.isBlank()) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+          "hh.ru не передал email в ответе");
+    }
+
+    Account account = accountService.findOrCreateByHhSso(hhUserId, email);
+
+    String deviceId = authCookieService.getOrCreateDeviceId(request, response);
+    String userAgent = request.getHeader("User-Agent");
+    String ipAddress = request.getRemoteAddr();
+
+    AuthTokensDto tokens = authService.issueTokens(account, deviceId, userAgent, ipAddress);
+    authCookieService.setAccessTokenCookie(response, tokens.getAccessToken());
+    authCookieService.setRefreshTokenCookie(response, tokens.getRefreshToken());
+
+    log.info("Выполнен вход через hh.ru login={}", account.getLogin());
+    response.sendRedirect(frontendRedirectUri);
+  }
+
+  private void handleLink(HttpServletRequest request, String hhUserId) {
+    UUID accountId = authService.resolveAuthenticatedAccountId(request)
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED,
+            "Сессия истекла, повторите привязку"));
+
+    accountService.linkHhSso(accountId, hhUserId);
+    log.info("Аккаунт id={} привязан к hh.ru через колбэк", accountId);
+  }
+
+  private String buildRedirect(String paramName, String paramValue) {
     return UriComponentsBuilder.fromUriString(frontendRedirectUri)
-        .queryParam("error", "hh_login_failed")
+        .queryParam(paramName, paramValue)
         .build()
         .toUriString();
+  }
+
+  private String buildErrorRedirect(boolean isLinkFlow) {
+    return buildRedirect("error", isLinkFlow ? "hh_link_failed" : "hh_login_failed");
   }
 }
