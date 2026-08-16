@@ -58,14 +58,7 @@ export function InfoSlider({ items }: Props) {
     };
 
     return (
-        <div
-            className={style.slider}
-            role='region'
-            aria-roledescription='slider'
-            aria-label='Возможности сервиса'
-            tabIndex={0}
-            onKeyDown={handleKeyDown}
-        >
+        <div className={style.slider} tabIndex={0} onKeyDown={handleKeyDown}>
             <div
                 className={style.viewport}
                 onPointerDown={handlePointerDown}
@@ -76,11 +69,7 @@ export function InfoSlider({ items }: Props) {
             >
                 <div className={style.track} style={{ transform: `translateX(-${activeIndex * 100}%)` }}>
                     {items.map((item) => (
-                        <div
-                            className={style.slide}
-                            key={item.serialNumber}
-                            aria-hidden={item.serialNumber - 1 !== activeIndex}
-                        >
+                        <div className={style.slide} key={item.serialNumber}>
                             <Info item={item} />
                         </div>
                     ))}
@@ -98,8 +87,6 @@ export function InfoSlider({ items }: Props) {
                             key={item.serialNumber}
                             type='button'
                             className={index === activeIndex ? `${style.dot} ${style.dotActive}` : style.dot}
-                            aria-label={`Перейти к слайду ${index + 1}`}
-                            aria-current={index === activeIndex}
                             onClick={() => goTo(index)}
                         />
                     ))}
