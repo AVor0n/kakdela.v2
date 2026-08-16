@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Button, Card, Text, Title } from '@hh.ru/magritte-ui';
+import { Button } from '@hh.ru/magritte-ui';
 import { routes } from '@/app/routes';
 import style from './App.module.css';
 import { createSurvey } from '@/api/survey';
@@ -8,22 +8,73 @@ import { setErrorMessage } from '@/entities/Error/Error.slice';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { AccountDetail } from '@/shared/ui/AccountDetail/AccountDetail';
 import { ProductLogo } from '@/shared/ui/ProductLogo/ProductLogo';
+import { InfoSlider } from './components/Info/InfoSlider';
+import { HowItWorks } from './components/HowItWorks/HowItWorks';
+import { UseCases } from './components/UseCases/UseCases';
+import { Cta } from './components/Cta/Cta';
+import { Footer } from './components/Footer/Footer';
 
-const FEATURES = [
+interface InfoItem {
+    title: string;
+    description: string;
+    imageSrc: string;
+    serialNumber: number;
+}
+
+const INFO: InfoItem[] = [
     {
-        icon: '⚡',
-        title: 'Быстрое создание',
-        description: 'Соберите опрос за пару минут с помощью гибкого конструктора вопросов.',
+        title: 'Конструктор опросов',
+        description: 'Добавляйте вопросы простым перетаскиванием, настраивайте порядок и внешний вид без лишних усилий',
+        imageSrc: '/images/info/constructor.png',
+        serialNumber: 1,
     },
     {
-        icon: '📊',
-        title: 'Наглядная аналитика',
-        description: 'Следите за ответами в реальном времени и делайте выводы без лишних таблиц.',
+        title: 'Ветвление и логика переходов',
+        description:
+            'Показывайте разным респондентам разные вопросы в зависимости от их ответов — стройте гибкие сценарии прохождения опроса.',
+        imageSrc: '/images/info/branching.png',
+        serialNumber: 2,
     },
     {
-        icon: '🤝',
-        title: 'Для команд',
-        description: 'Делитесь опросами с коллегами и собирайте обратную связь сообща.',
+        title: 'Роли и права доступа',
+        description:
+            'Разграничивайте доступ между владельцами, редакторами и аналитиками, чтобы команда работала над опросом безопасно и слаженно.',
+        imageSrc: '/images/info/roles.png',
+        serialNumber: 3,
+    },
+    {
+        title: 'Библиотека шаблонов',
+        description:
+            'Используйте шаблоны опросов под разные задачи — от обратной связи по продукту до оценки удовлетворённости сотрудников.',
+        imageSrc: '/images/info/templates.png',
+        serialNumber: 4,
+    },
+    {
+        title: 'Разные типы вопросов',
+        description:
+            'Одиночный и множественный выбор, краткий ответ, свободный текст, дата и другие форматы — выбирайте подходящий под каждую задачу.',
+        imageSrc: '/images/info/question-types.png',
+        serialNumber: 5,
+    },
+    {
+        title: 'Аналитика в реальном времени',
+        description: 'Следите за ответами по мере их поступления и выгружайте результаты для дальнейшего анализа.',
+        imageSrc: '/images/info/analytics.png',
+        serialNumber: 6,
+    },
+    {
+        title: 'Публикация и распространение',
+        description:
+            'Публикуйте опрос по ссылке или встраивайте на сайт — собирайте ответы там, где удобно вашей аудитории.',
+        imageSrc: '/images/info/publishing.png',
+        serialNumber: 7,
+    },
+    {
+        title: 'Уведомления',
+        description:
+            'Отправляйте пользователям уведомления и настраивайте их как обязательные для прохождения, а также подключайте периодические напоминания о новых опросах.',
+        imageSrc: '/images/info/notifications.png',
+        serialNumber: 8,
     },
 ];
 
@@ -75,54 +126,12 @@ function App() {
             <main className={style.main}>
                 <div className={style.blobOne} />
                 <div className={style.blobTwo} />
-
-                <section className={style.hero}>
-                    <div className={style.heroCard}>
-                        <div className={style.heroAccent} />
-                        <div className={style.heroBody}>
-                            <Title Element='h2' size='extra-large' alignment='center'>
-                                Опросы, которые приятно проходить
-                            </Title>
-                            <Text
-                                Element='p'
-                                style='secondary'
-                                typography='paragraph-1-regular'
-                                className={style.heroDescription}
-                            >
-                                KakDela помогает создавать красивые опросы, собирать ответы и превращать их в понятные
-                                выводы — без лишних усилий.
-                            </Text>
-                            <div className={style.heroActions}>
-                                <Button mode='primary' style='accent' size='large' onClick={handleCreateClick}>
-                                    Создать опрос
-                                </Button>
-                                <Button
-                                    mode='secondary'
-                                    style='neutral'
-                                    size='large'
-                                    onClick={() => navigate(routes.survey())}
-                                >
-                                    Смотреть опросы
-                                </Button>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <section className={style.features}>
-                    {FEATURES.map((feature) => (
-                        <Card key={feature.title} padding={24} borderRadius={24} className={style.featureCard}>
-                            <Text Element='h3' typography='subtitle-1-semibold'>
-                                <span className={style.featureIcon}>{feature.icon} </span>
-                                {feature.title}
-                            </Text>
-                            <Text Element='p' style='secondary' typography='paragraph-3-regular'>
-                                {feature.description}
-                            </Text>
-                        </Card>
-                    ))}
-                </section>
+                <InfoSlider items={INFO} />
+                <HowItWorks />
+                <UseCases />
+                <Cta onCreateClick={handleCreateClick} />
             </main>
+            <Footer />
         </>
     );
 }
