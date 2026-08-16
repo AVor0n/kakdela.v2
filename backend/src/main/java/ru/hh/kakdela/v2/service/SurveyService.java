@@ -9,19 +9,25 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import ru.hh.kakdela.v2.constants.DefaultValues;
 import ru.hh.kakdela.v2.dao.AccountDao;
 import ru.hh.kakdela.v2.dao.SurveyDao;
 import ru.hh.kakdela.v2.dao.SurveyNotificationSubscriptionDao;
+import ru.hh.kakdela.v2.dto.image.ProcessedImage;
+import ru.hh.kakdela.v2.dto.object.ObjectUrlResponseDto;
 import ru.hh.kakdela.v2.dto.survey.SurveyCreateDto;
+import ru.hh.kakdela.v2.dto.survey.SurveyPublicResponseDto;
 import ru.hh.kakdela.v2.dto.survey.SurveyResponseDto;
 import ru.hh.kakdela.v2.dto.survey.SurveyShortResponseDto;
 import ru.hh.kakdela.v2.dto.survey.SurveyShortResponseWithPermissionDto;
 import ru.hh.kakdela.v2.dto.survey.SurveyUpdateDto;
+import ru.hh.kakdela.v2.exception.survey.SurveyNotFoundException;
 import ru.hh.kakdela.v2.mapper.SurveyMapper;
 import ru.hh.kakdela.v2.model.Account;
 import ru.hh.kakdela.v2.model.AnswerOption;
@@ -36,17 +42,21 @@ import ru.hh.kakdela.v2.util.JsonNullableUtil;
 @RequiredArgsConstructor
 public class SurveyService {
 
+  @Value("${app.attachments.url-max-age}")
+  private long attachmentUrlMaxAge;
+
   private final SurveyDao surveyDao;
   private final AccountDao accountDao;
   private final SurveyNotificationSubscriptionDao subscriptionDao;
   private final PermissionService permissionService;
   private final NotificationService notificationService;
   private final ObjectStorageService objectStorageService;
-  private final ClosingPageService closingPageService;
+  private final ConditionConflictService conditionConflictService;
+  private final ImageProcessingService imageProcessingService;
   private final SurveyMapper surveyMapper;
 
   @Transactional(readOnly = true)
-  public SurveyResponseDto getById(UUID surveyId, UUID accountId) {
+  public SurveyPublicResponseDto getPublicById(UUID surveyId, UUID accountId) {
     Survey survey = surveyDao.findById(surveyId)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Опрос не найден: id=" + surveyId));
@@ -54,6 +64,18 @@ public class SurveyService {
     if (!survey.isPublished()) {
       permissionService.checkHasAnyPermission(surveyId, accountId);
     }
+
+    return surveyMapper.surveyToPublicDto(
+        survey, conditionConflictService.doSurveyHaveConditions(surveyId));
+  }
+
+  @Transactional(readOnly = true)
+  public SurveyResponseDto getById(UUID surveyId, UUID accountId) {
+    Survey survey = surveyDao.findById(surveyId)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Опрос не найден: id=" + surveyId));
+
+    permissionService.checkHasAnyPermission(surveyId, accountId);
 
     return surveyMapper.surveyToDto(survey);
   }
@@ -244,8 +266,6 @@ public class SurveyService {
             .answerOptionOrder(originalQuestion.getAnswerOptionOrder())
             .hasOtherOption(originalQuestion.hasOtherOption())
             .isMandatory(originalQuestion.isMandatory())
-            .isVisible(originalQuestion.isVisible())
-            .condition(originalQuestion.getCondition())
             .build();
 
         if (originalQuestion.getAttachmentObjectKey() != null) {
@@ -339,6 +359,83 @@ public class SurveyService {
     log.info("Удален опрос id={} accountId={}", id, accountId);
   }
 
+  // Attachment management
+
+  @Transactional
+  public ObjectUrlResponseDto addAttachment(UUID surveyId, UUID accountId, MultipartFile file) {
+    Survey survey = surveyDao.findById(surveyId)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
+
+    permissionService.checkCanEdit(survey.getId(), accountId);
+
+    if (survey.getAttachmentObjectKey() != null) {
+      throw new ResponseStatusException(
+          HttpStatus.CONFLICT, "К опросу уже прикреплено вложение");
+    }
+
+    ProcessedImage image = imageProcessingService.process(file);
+
+    String objectKey = "opening-pages/%s/%s".formatted(surveyId, UUID.randomUUID());
+    objectStorageService.putObject(
+        objectKey,
+        image.getContent(),
+        image.getContentType());
+
+    survey.setAttachmentObjectKey(objectKey);
+    surveyDao.update(survey);
+    return new ObjectUrlResponseDto(
+        objectStorageService.generateObjectUrl(objectKey, attachmentUrlMaxAge).toString());
+  }
+
+  @Transactional
+  public ObjectUrlResponseDto updateAttachment(UUID surveyId,
+                                               UUID accountId,
+                                               MultipartFile file) {
+    Survey survey = surveyDao.findById(surveyId)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
+
+    permissionService.checkCanEdit(survey.getId(), accountId);
+
+    ProcessedImage image = imageProcessingService.process(file);
+
+    if (survey.getAttachmentObjectKey() != null) {
+      objectStorageService.deleteObject(
+          survey.getAttachmentObjectKey());
+    }
+
+    String objectKey = "opening-pages/%s/%s".formatted(surveyId, UUID.randomUUID());
+    objectStorageService.putObject(
+        objectKey,
+        image.getContent(),
+        image.getContentType());
+
+    survey.setAttachmentObjectKey(objectKey);
+    surveyDao.update(survey);
+    return new ObjectUrlResponseDto(
+        objectStorageService.generateObjectUrl(objectKey, attachmentUrlMaxAge).toString());
+  }
+
+  @Transactional
+  public void deleteAttachment(UUID surveyId, UUID accountId) {
+    Survey survey = surveyDao.findById(surveyId)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
+
+    permissionService.checkCanEdit(survey.getId(), accountId);
+
+    if (survey.getAttachmentObjectKey() == null) {
+      throw new ResponseStatusException(
+          HttpStatus.NOT_FOUND, "Опрос не содержит вложения");
+    }
+
+    objectStorageService.deleteObject(survey.getAttachmentObjectKey());
+
+    survey.setAttachmentObjectKey(null);
+    surveyDao.update(survey);
+  }
+
   // Вспомогательные методы
 
   private void validateAuthorizationConsistency(Survey survey) {
@@ -360,6 +457,18 @@ public class SurveyService {
     if (expireAt.isBefore(Instant.now())) {
       throw new ResponseStatusException(
           HttpStatus.BAD_REQUEST, "Дедлайн в указанном часовом поясе уже прошёл");
+    }
+  }
+
+  Survey getEntityById(UUID id) {
+    return surveyDao.findById(id)
+        .orElseThrow(() -> new SurveyNotFoundException(id));
+  }
+
+  void checkSurveyExistsAndIsNotTemplate(UUID id) {
+    if (surveyDao.findIsTemplateById(id)
+        .orElseThrow(() -> new SurveyNotFoundException(id))) {
+      throw new SurveyNotFoundException(id);
     }
   }
 }

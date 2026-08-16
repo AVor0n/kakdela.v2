@@ -25,7 +25,6 @@ import ru.hh.kakdela.v2.model.ClosingPage;
 import ru.hh.kakdela.v2.model.Question;
 import ru.hh.kakdela.v2.model.Survey;
 import ru.hh.kakdela.v2.model.SurveyPage;
-import ru.hh.kakdela.v2.service.ObjectStorageService;
 
 @Slf4j
 @Service
@@ -285,8 +284,6 @@ public class TemplateService {
         .answerOptionOrder(originalQuestion.getAnswerOptionOrder())
         .hasOtherOption(originalQuestion.hasOtherOption())
         .isMandatory(originalQuestion.isMandatory())
-        .isVisible(originalQuestion.isVisible())
-        .condition(originalQuestion.getCondition())
         .build();
 
     if (originalQuestion.getAttachmentObjectKey() != null) {

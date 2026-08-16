@@ -29,12 +29,11 @@ import org.hibernate.annotations.OnDeleteAction;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "response",
+@Table(
+    name = "response",
     indexes = {
         @Index(name = "idx_response_survey_id", columnList = "survey_id"),
-        @Index(name = "idx_response_account_id", columnList = "account_id")
-    }
-)
+        @Index(name = "idx_response_account_id", columnList = "account_id")})
 public class Response {
 
   @Id
@@ -62,8 +61,22 @@ public class Response {
   @Column(name = "received_at")
   private Instant receivedAt;
 
-  @OneToMany(mappedBy = "response", cascade = CascadeType.ALL, orphanRemoval = true)
+  @OneToMany(
+      mappedBy = "response",
+      cascade = {
+          CascadeType.PERSIST,
+          CascadeType.MERGE},
+      orphanRemoval = true)
   @OrderBy("pageSerialNumber ASC, questionSerialNumber ASC")
   @Builder.Default
   private List<Answer> answers = new ArrayList<>();
+
+  @OneToMany(
+      mappedBy = "response",
+      cascade = {
+          CascadeType.PERSIST,
+          CascadeType.MERGE},
+      orphanRemoval = true)
+  @Builder.Default
+  private List<ResponsePageStatus> pageStatuses = new ArrayList<>();
 }

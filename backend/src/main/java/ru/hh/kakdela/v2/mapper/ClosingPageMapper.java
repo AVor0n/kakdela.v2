@@ -21,9 +21,8 @@ public class ClosingPageMapper {
   public ClosingPageResponseDto closingPageToDto(ClosingPage closingPage) {
     String attachmentUrl = closingPage.getAttachmentObjectKey() != null
         ? objectStorageService.generateObjectUrl(
-        closingPage.getAttachmentObjectKey(),
-        attachmentUrlMaxAge
-    ).toString()
+            closingPage.getAttachmentObjectKey(),
+            attachmentUrlMaxAge).toString()
         : null;
 
     FileResponseDto fileInfo = null;
@@ -47,7 +46,6 @@ public class ClosingPageMapper {
         closingPage.getDescription(),
         attachmentUrl,
         closingPage.getWebsiteUrl(),
-        fileInfo
-    );
+        fileInfo);
   }
 }

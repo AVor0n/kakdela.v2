@@ -22,17 +22,48 @@ public class SurveyDaoImpl implements SurveyDao {
   }
 
   @Override
+  public Optional<UUID> findAuthorIdById(UUID id) {
+    return Optional.ofNullable(entityManager.createQuery(
+          """
+          SELECT s.author.id
+          FROM Survey s
+          WHERE s.id = :id
+          """, UUID.class)
+        .setParameter("id", id)
+        .getSingleResultOrNull());
+  }
+
+  @Override
+  public Optional<Boolean> findIsTemplateById(UUID id) {
+    return Optional.ofNullable(entityManager.createQuery(
+        """
+        SELECT s.isTemplate
+        FROM Survey s
+        WHERE s.id = :id
+        """, Boolean.class)
+        .setParameter("id", id)
+        .getSingleResultOrNull());
+  }
+
+  @Override
+  public boolean existsById(UUID id) {
+    return entityManager
+        .createQuery(
+        """
+        SELECT COUNT(s)
+        FROM Survey s
+        WHERE s.id = :id
+        """, Long.class)
+        .setParameter("id", id)
+        .getSingleResult()
+        .equals(1L);
+  }
+
+  @Override
   public List<Survey> findAllByAuthorId(UUID authorId) {
     return entityManager
         .createQuery("FROM Survey s WHERE s.author.id = :authorId", Survey.class)
         .setParameter("authorId", authorId)
-        .getResultList();
-  }
-
-  @Override
-  public List<Survey> findAllPublished() {
-    return entityManager
-        .createQuery("FROM Survey s WHERE s.isPublished = true", Survey.class)
         .getResultList();
   }
 

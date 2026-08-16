@@ -1,5 +1,5 @@
 import { apiClient } from '@/api/client';
-import type { Survey, SurveyListItem } from '@/shared/types/Survey.type';
+import type { Survey, SurveyListItem, SurveyPublic } from '@/shared/types/Survey.type';
 
 export type SurveyResponse = Survey;
 export type UpdateSurveyRequest = Partial<
@@ -31,8 +31,14 @@ export async function cloneSurvey(surveyId: string): Promise<SurveyResponse> {
     return data;
 }
 
-export async function getSurveyById(surveyId: string): Promise<SurveyResponse> {
-    const { data } = await apiClient.get<SurveyResponse>(`/api/surveys/${surveyId}`);
+export async function getPublicSurveyById(surveyId: string): Promise<SurveyPublic> {
+    const { data } = await apiClient.get<SurveyPublic>(`/api/surveys/${surveyId}`);
+
+    return data;
+}
+
+export async function getSurveyForEditById(surveyId: string): Promise<SurveyResponse> {
+    const { data } = await apiClient.get<SurveyResponse>(`/api/surveys/${surveyId}/edit`);
 
     return data;
 }

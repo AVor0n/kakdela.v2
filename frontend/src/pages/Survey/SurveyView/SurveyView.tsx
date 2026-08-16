@@ -1,9 +1,9 @@
-import { getSurveyById } from '@/api/survey';
-import type { Survey } from '@/shared/types/Survey.type';
+import { getPublicSurveyById, getSurveyForEditById } from '@/api/survey';
+import type { Survey, SurveyPublic } from '@/shared/types/Survey.type';
 import { getAccountDetails } from '@/api/account';
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { routePatterns, routes } from '@/app/routes';
+import { routes } from '@/app/routes';
 import { SurveyRunner, type SurveyRunnerMode } from './components/SurveyRunner/SurveyRunner';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
@@ -12,10 +12,13 @@ import { AccountDetail } from '@/shared/ui/AccountDetail/AccountDetail';
 import { ProductLogo } from '@/shared/ui/ProductLogo/ProductLogo';
 import { setAccount, clearAccount, setLoading } from '@/entities/Account/Account.slice';
 import style from './SurveyView.module.css';
+
+type LoadedSurvey = { mode: 'preview'; survey: Survey } | { mode: 'respond'; survey: SurveyPublic };
+
 export function SurveyView() {
     const { id } = useParams();
     const [searchParams] = useSearchParams();
-    const [survey, setSurvey] = useState<Survey | null>(null);
+    const [loadedSurvey, setLoadedSurvey] = useState<LoadedSurvey | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const mode: SurveyRunnerMode = searchParams.get('preview') === 'true' ? 'preview' : 'respond';
@@ -31,25 +34,34 @@ export function SurveyView() {
             return;
         }
 
+        let isActive = true;
         setIsLoading(true);
-        getSurveyById(id)
+        setLoadedSurvey(null);
+        const surveyRequest: Promise<LoadedSurvey> =
+            mode === 'preview'
+                ? getSurveyForEditById(id).then((survey) => ({ mode, survey }))
+                : getPublicSurveyById(id).then((survey) => ({ mode, survey }));
+        surveyRequest
             .then((data) => {
-                setSurvey(data);
+                if (!isActive) return;
+                setLoadedSurvey(data);
                 setError(null);
             })
             .catch(() => {
-                setError('Не удалось загрузить опрос');
+                if (isActive) setError('Не удалось загрузить опрос');
             })
             .finally(() => {
-                setIsLoading(false);
+                if (isActive) setIsLoading(false);
             });
-    }, [id]);
+
+        return () => {
+            isActive = false;
+        };
+    }, [id, mode]);
+
+    const survey = loadedSurvey?.survey ?? null;
 
     useEffect(() => {
-        if (survey && !survey.isPublished && mode !== 'preview') {
-            dispatch(setErrorMessage({ message: 'Опрос не существует или ещё не опубликован' }));
-            navigate(routePatterns.notFound);
-        }
         if (isAccountChecked && !account && survey && survey.isAuthorizedOnly) {
             dispatch(setErrorMessage({ message: 'Этот опрос только для зарегистрированных пользователей' }));
             navigate(routes.login(), { state: { from: location } });
@@ -77,7 +89,7 @@ export function SurveyView() {
         return <div>Загрузка...</div>;
     }
 
-    if (error || !survey) {
+    if (error || !loadedSurvey) {
         return (
             <div>
                 <p>{error ?? 'Опрос не найден'}</p>
@@ -98,7 +110,11 @@ export function SurveyView() {
                     )}
                 </div>
             </header>
-            <SurveyRunner survey={survey} mode={mode} />
+            {loadedSurvey.mode === 'preview' ? (
+                <SurveyRunner key={`${loadedSurvey.survey.id}-preview`} survey={loadedSurvey.survey} mode='preview' />
+            ) : (
+                <SurveyRunner key={`${loadedSurvey.survey.id}-respond`} survey={loadedSurvey.survey} mode='respond' />
+            )}
         </div>
     );
 }

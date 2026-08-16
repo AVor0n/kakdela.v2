@@ -24,6 +24,7 @@ import lombok.ToString;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.jsoup.Jsoup;
+import ru.hh.kakdela.v2.model.condition.Condition;
 
 @Data
 @Builder
@@ -32,13 +33,12 @@ import org.jsoup.Jsoup;
 @Entity
 @Table(name = "survey_page",
     indexes = {
-        @Index(name = "idx_survey_page_survey_id", columnList = "survey_id")
-    },
+        @Index(name = "idx_survey_page_survey_id", columnList = "survey_id"),
+        @Index(name = "idx_survey_page_survey_id_survey_serial_number",
+            columnList = "survey_id, serial_number")},
     uniqueConstraints = {
-        @UniqueConstraint(name = "uk_page_survey_serial",
-            columnNames = {"survey_id", "serial_number"})
-    }
-)
+        @UniqueConstraint(name = "uq_page_survey_serial",
+            columnNames = {"survey_id", "serial_number"})})
 public class SurveyPage {
 
   @Id
@@ -61,10 +61,24 @@ public class SurveyPage {
   @Column(name = "description", columnDefinition = "text")
   private String description;
 
-  @OneToMany(mappedBy = "surveyPage", cascade = CascadeType.ALL, orphanRemoval = true)
+  @OneToMany(
+      mappedBy = "surveyPage",
+      cascade = {
+          CascadeType.PERSIST,
+          CascadeType.MERGE},
+      orphanRemoval = true)
   @OrderBy("serialNumber ASC")
   @Builder.Default
   private List<Question> questions = new ArrayList<>();
+
+  @OneToMany(
+      mappedBy = "surveyPage",
+      cascade = {
+          CascadeType.PERSIST,
+          CascadeType.MERGE},
+      orphanRemoval = true)
+  @Builder.Default
+  private List<Condition> conditions = new ArrayList<>();
 
   public String getTitleAsPlainString() {
     return Jsoup.parseBodyFragment(title).text();

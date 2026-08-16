@@ -15,6 +15,8 @@ public interface PermissionDao {
 
   List<Permission> findAllBySurveyId(UUID surveyId);
 
+  List<Permission> findAllWithSurveysBySurveyId(UUID surveyId);
+
   List<Permission> findAllByAccountId(UUID accountId);
 
   boolean existsById(Permission.PermissionId id);
@@ -26,6 +28,4 @@ public interface PermissionDao {
   void update(Permission permission);
 
   void delete(Permission permission);
-
-  void deleteBySurveyIdAndAccountId(UUID surveyId, UUID accountId);
 }

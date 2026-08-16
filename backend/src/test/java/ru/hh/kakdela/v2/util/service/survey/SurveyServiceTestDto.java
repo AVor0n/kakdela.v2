@@ -37,6 +37,7 @@ public class SurveyServiceTestDto {
         ),
         FullSurveyConstants.getTitle(isClone),
         "description",
+        null,
         false,
         false,
         !isClone,
@@ -62,8 +63,6 @@ public class SurveyServiceTestDto {
                     Question.AnswerOptionOrder.ORIGINAL.name(),
                     false,
                     true,
-                    true,
-                    "condition",
                     Collections.emptyList()),
                 new QuestionResponseDto(
                     FullSurveyConstants.QUESTION2.getId(isClone),
@@ -75,8 +74,6 @@ public class SurveyServiceTestDto {
                     Question.AnswerOptionOrder.ORIGINAL.name(),
                     false,
                     true,
-                    true,
-                    "condition",
                     List.of(
                         new AnswerOptionResponseDto(
                             FullSurveyConstants.ANSWER_OPTION1_OF_QUESTION2.getId(isClone),
@@ -98,8 +95,6 @@ public class SurveyServiceTestDto {
                     Question.AnswerOptionOrder.ORIGINAL.name(),
                     false,
                     true,
-                    true,
-                    "condition",
                     List.of(
                         new AnswerOptionResponseDto(
                             FullSurveyConstants.ANSWER_OPTION1_OF_QUESTION3.getId(isClone),
@@ -110,7 +105,8 @@ public class SurveyServiceTestDto {
                             FullSurveyConstants.ANSWER_OPTION2_OF_QUESTION3.getId(isClone),
                             2,
                             "answerOption2",
-                            SurveyServiceTestConstants.attachmentUrl)))))),
+                            SurveyServiceTestConstants.attachmentUrl)))),
+            Collections.emptyList())),
         includeClosingPage
             ? new ClosingPageResponseDto(
             "closingPage",
@@ -138,6 +134,7 @@ public class SurveyServiceTestDto {
         ),
         PlainSurveyConstants.getTitle(otherValuesOfTitleAndDescription),
         PlainSurveyConstants.getDescription(otherValuesOfTitleAndDescription),
+        null,
         allSurveyOptionValues,
         allSurveyOptionValues,
         isPublished,

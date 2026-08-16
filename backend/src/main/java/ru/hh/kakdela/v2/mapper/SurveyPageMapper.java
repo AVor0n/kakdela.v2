@@ -1,10 +1,11 @@
 package ru.hh.kakdela.v2.mapper;
 
-import java.util.Comparator;
+import java.util.Collections;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import ru.hh.kakdela.v2.dto.survey.page.SurveyPagePublicResponseDto;
 import ru.hh.kakdela.v2.dto.survey.page.SurveyPageResponseDto;
-import ru.hh.kakdela.v2.model.Question;
+import ru.hh.kakdela.v2.dto.survey.page.SurveyPageShortResponseDto;
 import ru.hh.kakdela.v2.model.SurveyPage;
 
 @Component
@@ -21,9 +22,26 @@ public class SurveyPageMapper {
         surveyPage.getTitle(),
         surveyPage.getDescription(),
         surveyPage.getQuestions().stream()
-            .sorted(Comparator.comparingInt(Question::getSerialNumber))
             .map(questionMapper::questionToDto)
-            .toList()
-    );
+            .toList(),
+        Collections.emptyList());
+  }
+
+  public SurveyPagePublicResponseDto surveyPageToPublicDto(SurveyPage surveyPage) {
+    return new SurveyPagePublicResponseDto(
+        surveyPage.getId(),
+        surveyPage.getSurvey().getId(),
+        surveyPage.getSerialNumber(),
+        surveyPage.getTitle(),
+        surveyPage.getDescription(),
+        surveyPage.getQuestions().stream()
+            .map(questionMapper::questionToDto)
+            .toList());
+  }
+
+  public SurveyPageShortResponseDto surveyPageToShortDto(SurveyPage surveyPage) {
+    return new SurveyPageShortResponseDto(
+        surveyPage.getId(),
+        surveyPage.getSerialNumber());
   }
 }

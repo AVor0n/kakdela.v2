@@ -31,8 +31,19 @@ public class AnswerOptionController {
   private final AnswerOptionService answerOptionService;
 
   @GetMapping("/questions/{questionId}/answer-options")
-  public List<AnswerOptionResponseDto> getAllByQuestionId(@PathVariable UUID questionId) {
-    return answerOptionService.getAllByQuestionId(questionId);
+  public List<AnswerOptionResponseDto> getAllByQuestionId(
+      @PathVariable UUID questionId,
+      @AuthenticationPrincipal CustomUserDetails currentUser) {
+    return answerOptionService.getAllByQuestionId(
+        questionId, currentUser != null ? currentUser.getId() : null);
+  }
+
+  @GetMapping("answer-options/{answerOptionId}")
+  public AnswerOptionResponseDto getById(
+      @PathVariable UUID answerOptionId,
+      @AuthenticationPrincipal CustomUserDetails currentUser) {
+    return answerOptionService.getById(
+        answerOptionId, currentUser != null ? currentUser.getId() : null);
   }
 
   @PostMapping("/questions/{questionId}/answer-options")
@@ -42,24 +53,27 @@ public class AnswerOptionController {
       @Valid @RequestBody AnswerOptionCreateDto createDto,
       @AuthenticationPrincipal CustomUserDetails currentUser
   ) {
-    return answerOptionService.create(questionId, createDto, currentUser.getId());
+    return answerOptionService.create(
+        questionId, createDto, currentUser != null ? currentUser.getId() : null);
   }
 
-  @PutMapping("answer-options/{optionId}")
+  @PutMapping("answer-options/{answerOptionId}")
   public AnswerOptionResponseDto update(
-      @PathVariable UUID optionId,
+      @PathVariable UUID answerOptionId,
       @Valid @RequestBody AnswerOptionUpdateDto updateDto,
       @AuthenticationPrincipal CustomUserDetails currentUser
   ) {
-    return answerOptionService.update(optionId, updateDto, currentUser.getId());
+    return answerOptionService.update(
+        answerOptionId, updateDto, currentUser != null ? currentUser.getId() : null);
   }
 
-  @DeleteMapping("answer-options/{optionId}")
+  @DeleteMapping("answer-options/{answerOptionId}")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void delete(
-      @PathVariable UUID optionId,
+      @PathVariable UUID answerOptionId,
       @AuthenticationPrincipal CustomUserDetails currentUser
   ) {
-    answerOptionService.delete(optionId, currentUser.getId());
+    answerOptionService.delete(
+        answerOptionId, currentUser != null ? currentUser.getId() : null);
   }
 }

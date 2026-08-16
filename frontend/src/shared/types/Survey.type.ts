@@ -1,5 +1,6 @@
 import type { Question } from './Question.type';
 import type { Account } from './Account.type';
+import type { Condition } from './Condition.type';
 
 export type SurveyRole = 'AUTHOR' | 'EDITOR' | 'ANALYST';
 
@@ -34,6 +35,25 @@ export type Survey = {
     expireAtAtTargetTimezone: string | null;
 };
 
+export type SurveyPageShort = Pick<Page, 'id' | 'serialNumber'>;
+
+export type SurveyPublic = Pick<
+    Survey,
+    | 'id'
+    | 'author'
+    | 'title'
+    | 'description'
+    | 'isAuthorizedOnly'
+    | 'isLimitedToOneResponse'
+    | 'expireAt'
+    | 'targetTimezone'
+    | 'expireAtAtTargetTimezone'
+> & {
+    pages: SurveyPageShort[];
+    hasCustomClosingPage: boolean;
+    hasConditions: boolean;
+};
+
 export type Page = {
     id: string;
     title: string | null;
@@ -41,7 +61,10 @@ export type Page = {
     surveyId: string;
     serialNumber: number;
     questions: Question[];
+    conditions: Condition[];
 };
+
+export type SurveyPagePublic = Omit<Page, 'conditions'>;
 
 export type SurveyListItem = Pick<Survey, 'id' | 'title' | 'description' | 'createdAt' | 'isPublished'> & {
     userRole: SurveyRole;

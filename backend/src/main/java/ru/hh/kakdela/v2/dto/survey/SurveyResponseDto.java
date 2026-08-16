@@ -17,16 +17,14 @@ import ru.hh.kakdela.v2.dto.survey.page.SurveyPageResponseDto;
 @Getter
 @EqualsAndHashCode
 @ToString
-@Schema(
-    name = "SurveyResponse",
-    title = "DTO для получения данных опроса"
-)
+@Schema(name = "Survey.Response")
 public class SurveyResponseDto {
 
   private final UUID id;
   private final AccountResponseDto author;
   private final String title;
   private final String description;
+  private String attachmentObjectKey;
   private final Boolean isAuthorizedOnly;
   private final Boolean isLimitedToOneResponse;
   private final Boolean isPublished;

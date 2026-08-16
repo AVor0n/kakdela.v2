@@ -170,3 +170,18 @@
     display: flex;
     gap: 5px;
 }
+
+.temporalInput {
+    width: min(100%, 260px);
+    min-height: 44px;
+    padding: 0 12px;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    background: #fff;
+    box-sizing: border-box;
+}
+
+.temporalInput:focus {
+    border-color: var(--color-primary);
+    outline: none;
+}

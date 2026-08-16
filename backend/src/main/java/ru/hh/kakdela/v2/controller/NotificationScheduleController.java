@@ -1,5 +1,6 @@
 package ru.hh.kakdela.v2.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
@@ -24,6 +25,7 @@ import ru.hh.kakdela.v2.service.NotificationScheduleService;
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
+@Tag(name = "Notification Schedules", description = "Управление расписаниями напоминаний")
 public class NotificationScheduleController {
 
   private final NotificationScheduleService notificationScheduleService;

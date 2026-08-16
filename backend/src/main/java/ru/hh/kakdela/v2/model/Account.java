@@ -50,12 +50,21 @@ public class Account {
   @Column(name = "is_deleted", nullable = false)
   private Boolean isDeleted;
 
-
-  @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
+  @OneToMany(
+      mappedBy = "author",
+      cascade = {
+          CascadeType.PERSIST,
+          CascadeType.MERGE},
+      orphanRemoval = true)
   @Builder.Default
   private List<Survey> authoredSurveys = new ArrayList<>();
 
-  @OneToMany(mappedBy = "account", cascade = CascadeType.ALL, orphanRemoval = true)
+  @OneToMany(
+      mappedBy = "account",
+      cascade = {
+          CascadeType.PERSIST,
+          CascadeType.MERGE},
+      orphanRemoval = true)
   @Builder.Default
   private List<Permission> permissions = new ArrayList<>();
 
@@ -63,7 +72,7 @@ public class Account {
   @Builder.Default
   private List<Response> responses = new ArrayList<>();
 
-  @OneToMany(mappedBy = "account", cascade = CascadeType.ALL, orphanRemoval = true)
+  @OneToMany(mappedBy = "account")
   @Builder.Default
   private List<RefreshToken> refreshTokens = new ArrayList<>();
 }

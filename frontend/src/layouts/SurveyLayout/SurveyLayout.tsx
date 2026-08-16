@@ -2,7 +2,7 @@ import { Link, Outlet, useLocation, useNavigate, useParams, useSearchParams } fr
 import { routePatterns, routes } from '@/app/routes';
 import { Link as LinkHH, Button } from '@hh.ru/magritte-ui';
 import style from './SurveyLayout.module.css';
-import { getMySurveys, getSurveyById, updateSurvey } from '@/api/survey';
+import { getMySurveys, getSurveyForEditById, updateSurvey } from '@/api/survey';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { setSelectedSurvey } from '@/entities/Survey/Survey.slice';
@@ -16,6 +16,7 @@ import type { SurveyNavigationItem, SurveySection } from './SurveyLayout.types';
 import { getTemplateById, saveTemplate, updateTemplate } from '@/api/template';
 import { addTemplate, setSelectedTemplate } from '@/entities/Template/Template.slice';
 import { setPages } from '@/entities/Pages/Pages.slice';
+import { validateActiveSurveyConditions } from '@/shared/utils/conditions';
 
 type SurveyAccess = {
     surveyId: string;
@@ -36,6 +37,7 @@ export function SurveyLayout() {
     const { selectedSurvey } = useAppSelector((state) => state.survey);
     const { selectedTemplate } = useAppSelector((state) => state.template);
     const { account } = useAppSelector((state) => state.account);
+    const { pages } = useAppSelector((state) => state.pages);
     const [searchParams] = useSearchParams();
     const [isLoading, setIsLoading] = useState<boolean>(true);
 
@@ -98,7 +100,7 @@ export function SurveyLayout() {
                 });
             return;
         } else {
-            getSurveyById(id)
+            getSurveyForEditById(id)
                 .then((data) => {
                     dispatch(setSelectedSurvey({ survey: data }));
                     dispatch(setPages({ pages: data.pages }));
@@ -153,12 +155,37 @@ export function SurveyLayout() {
     }, [id, isAnalystRestrictedRoute, navigate]);
 
     const publishingHandler = () => {
-        if (id && selectedSurvey)
-            updateSurvey(id, { isPublished: !selectedSurvey.isPublished })
-                .then((data) => {
-                    dispatch(setSelectedSurvey({ survey: data }));
-                })
-                .catch(() => dispatch(setErrorMessage({ message: 'Не удалось опубликовать опрос' })));
+        if (!id || !selectedSurvey) return;
+
+        if (!selectedSurvey.isPublished && pages.length === 0) {
+            dispatch(setErrorMessage({ message: 'Добавьте хотя бы одну страницу перед публикацией опроса' }));
+            return;
+        }
+
+        if (!selectedSurvey.isPublished) {
+            const conditionIssues = validateActiveSurveyConditions(pages);
+            if (conditionIssues.length > 0) {
+                const pageNumbers = [...new Set(conditionIssues.map(({ pageSerialNumber }) => pageSerialNumber))].sort(
+                    (firstPageNumber, secondPageNumber) => firstPageNumber - secondPageNumber,
+                );
+                const pageLabel =
+                    pageNumbers.length === 1 ? `странице ${pageNumbers[0]}` : `страницах ${pageNumbers.join(', ')}`;
+                dispatch(
+                    setErrorMessage({
+                        message: `Проверьте активные правила на ${pageLabel} перед публикацией опроса`,
+                    }),
+                );
+                return;
+            }
+        }
+
+        updateSurvey(id, { isPublished: !selectedSurvey.isPublished })
+            .then((data) => {
+                dispatch(setSelectedSurvey({ survey: data }));
+            })
+            .catch(() => {
+                dispatch(setErrorMessage({ message: 'Не удалось изменить статус публикации опроса' }));
+            });
     };
 
     const publishingTemplateHandler = () => {

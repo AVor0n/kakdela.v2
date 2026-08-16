@@ -13,17 +13,22 @@ import java.io.IOException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.CredentialsExpiredException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
+import ru.hh.kakdela.v2.exception.security.AccountDeletedException;
+import ru.hh.kakdela.v2.exception.security.ExpiredAccessTokenException;
+import ru.hh.kakdela.v2.exception.security.InvalidAccessTokenAccountIdException;
+import ru.hh.kakdela.v2.exception.security.InvalidAccessTokenException;
+import ru.hh.kakdela.v2.exception.security.InvalidAccessTokenVersionException;
 import ru.hh.kakdela.v2.service.AuthCookieService;
 
 @Slf4j
@@ -35,6 +40,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
   private final CustomUserDetailsService customUserDetailsService;
   private final AuthenticationEntryPoint authenticationEntryPoint;
   private final AuthCookieService authCookieService;
+  private final AntPathMatcher pathMatcher;
 
   @Override
   protected void doFilterInternal(
@@ -56,11 +62,11 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         CustomUserDetails userDetails = customUserDetailsService.loadUserByUsername(login);
 
         if (!userDetails.getId().equals(accountId)) {
-          throw new BadCredentialsException("ID пользователя не совпадает");
+          throw new InvalidAccessTokenAccountIdException();
         }
 
         if (userDetails.getTokenVersion() != tokenVersionFromToken) {
-          throw new CredentialsExpiredException("Версия токена устарела");
+          throw new InvalidAccessTokenVersionException();
         }
 
         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
@@ -73,39 +79,42 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
       chain.doFilter(request, response);
 
-    } catch (UsernameNotFoundException ex) {
-      log.warn("Аккаунт не найден: login={}", ex.getName());
-      SecurityContextHolder.clearContext();
-      authenticationEntryPoint.commence(request, response,
-          new UsernameNotFoundException("Account not found: login=%s".formatted(ex.getName())));
     } catch (DisabledException ex) {
-      log.warn("Аккаунт удалён: {}", ex.getMessage());
+      String login;
+
+      if (ex instanceof CustomDisabledException) {
+        login = ((CustomDisabledException) ex).getName();
+      } else {
+        login = null;
+      }
+
       SecurityContextHolder.clearContext();
       authenticationEntryPoint.commence(request, response,
-          new DisabledException("Account disabled", ex));
-    } catch (BadCredentialsException ex) {
-      log.warn("Неверные учётные данные: {}", ex.getMessage());
+          new AccountDeletedException(login));
+    } catch (ExpiredJwtException ex) {
+      SecurityContextHolder.clearContext();
+      authenticationEntryPoint.commence(request, response,
+          new ExpiredAccessTokenException(ex));
+    } catch (InvalidAccessTokenVersionException | InvalidAccessTokenAccountIdException
+             | UsernameNotFoundException | MalformedJwtException | SignatureException ex) {
+      SecurityContextHolder.clearContext();
+      authenticationEntryPoint.commence(request, response,
+          new InvalidAccessTokenException(ex));
+    } catch (AuthenticationException ex) {
       SecurityContextHolder.clearContext();
       authenticationEntryPoint.commence(request, response, ex);
-    } catch (CredentialsExpiredException ex) {
-      log.warn("Срок действия токена истёк: {}", ex.getMessage());
-      SecurityContextHolder.clearContext();
-      authenticationEntryPoint.commence(request, response,
-          new CredentialsExpiredException("Token expired", ex));
-    } catch (ExpiredJwtException ex) {
-      log.warn("Срок действия токена JWT для пользователя истек: {}", ex.getClaims().getSubject());
-      SecurityContextHolder.clearContext();
-      authenticationEntryPoint.commence(request, response,
-          new CredentialsExpiredException("Expired JWT"));
-    } catch (MalformedJwtException | SignatureException ex) {
-      log.warn("Неверный токен JWT");
-      SecurityContextHolder.clearContext();
-      authenticationEntryPoint.commence(request, response,
-          new BadCredentialsException("Invalid JWT"));
     } catch (JwtException ex) {
       SecurityContextHolder.clearContext();
       authenticationEntryPoint.commence(request, response,
-          new InternalAuthenticationServiceException("Unexpected JWT processing error"));
+          new InternalAuthenticationServiceException(
+              "Неожиданная внутренняя ошибка обработки access token", ex));
     }
+  }
+
+  @Override
+  protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+    String requestUri = request.getRequestURI();
+
+    return pathMatcher.match("/api/auth/**", requestUri);
   }
 }
