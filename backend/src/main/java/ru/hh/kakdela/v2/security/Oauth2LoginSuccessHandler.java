@@ -46,8 +46,8 @@ public class Oauth2LoginSuccessHandler implements AuthenticationSuccessHandler {
     String email = oauth2User.getAttribute(ATTR_EMAIL);
     Object rawHhUserId = oauth2User.getAttributes().get(ATTR_HH_USER_ID);
     String hhUserId = rawHhUserId == null ? null : String.valueOf(rawHhUserId);
-
-    boolean isLinkFlow = authCookieService.consumeHhLinkIntentCookie(request, response);
+    String linkToken = authCookieService.consumeHhLinkIntentCookie(request, response);
+    boolean isLinkFlow = linkToken != null;
 
     try {
       if (hhUserId == null || hhUserId.isBlank()) {
@@ -56,7 +56,7 @@ public class Oauth2LoginSuccessHandler implements AuthenticationSuccessHandler {
       }
 
       if (isLinkFlow) {
-        handleLink(request, hhUserId);
+        handleLink(linkToken, hhUserId);
         response.sendRedirect(buildRedirect("hh_link", "success"));
       } else {
         handleLogin(request, response, hhUserId, email);
@@ -89,8 +89,8 @@ public class Oauth2LoginSuccessHandler implements AuthenticationSuccessHandler {
     response.sendRedirect(frontendRedirectUri);
   }
 
-  private void handleLink(HttpServletRequest request, String hhUserId) {
-    UUID accountId = authService.resolveAuthenticatedAccountId(request)
+  private void handleLink(String linkToken, String hhUserId) {
+    UUID accountId = authService.resolveAccountIdFromToken(linkToken)
         .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED,
             "Сессия истекла, повторите привязку"));
 

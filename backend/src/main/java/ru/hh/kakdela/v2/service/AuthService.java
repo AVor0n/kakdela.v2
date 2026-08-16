@@ -203,8 +203,7 @@ public class AuthService {
   // Пытается определить аккаунт по access-токену из куки, ничего не бросая и не трогая
   // SecurityContext. Возвращает empty, если куки нет, токен невалиден/просрочен,
   // версия токена устарела или аккаунт удален/не найден
-  public Optional<UUID> resolveAuthenticatedAccountId(HttpServletRequest request) {
-    String token = authCookieService.getAccessToken(request);
+  public Optional<UUID> resolveAccountIdFromToken(String token) {
     if (token == null) {
       return Optional.empty();
     }
@@ -218,9 +217,13 @@ public class AuthService {
           .filter(account -> account.getTokenVersion().equals(tokenVersionFromToken))
           .map(Account::getId);
     } catch (JwtException | IllegalArgumentException ex) {
-      log.debug("Не удалось определить аккаунт по access-токену: {}", ex.getMessage());
+      log.debug("Не удалось определить аккаунт по токену: {}", ex.getMessage());
       return Optional.empty();
     }
+  }
+
+  public Optional<UUID> resolveAuthenticatedAccountId(HttpServletRequest request) {
+    return resolveAccountIdFromToken(authCookieService.getAccessToken(request));
   }
 
   private static String generateNumericCode(int codeLength) {

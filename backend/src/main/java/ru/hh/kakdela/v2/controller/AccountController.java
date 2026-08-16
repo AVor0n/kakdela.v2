@@ -1,6 +1,7 @@
 package ru.hh.kakdela.v2.controller;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import java.io.IOException;
@@ -67,8 +68,10 @@ public class AccountController {
   }
 
   @GetMapping("/accounts/me/link-hh-sso/init")
-  public void initLinkHhSso(HttpServletResponse response) throws IOException {
-    authCookieService.setHhLinkIntentCookie(response);
+  public void initLinkHhSso(HttpServletRequest request, HttpServletResponse response)
+      throws IOException {
+    String accessToken = authCookieService.getAccessToken(request);
+    authCookieService.setHhLinkIntentCookie(response, accessToken);
     response.sendRedirect(oauth2AuthorizationBaseUri + "/hh");
   }
 }

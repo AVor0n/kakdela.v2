@@ -22,7 +22,7 @@ public class AuthCookieService {
   public static final String RESPONSES_PATH = "/api/responses";
   public static final String HH_LINK_INTENT_PATH = "/api/auth/oauth2";
 
-  private static final long HH_LINK_INTENT_MAX_AGE = 300;
+  private static final long HH_LINK_INTENT_MAX_AGE = 120;
 
   @Value("${app.tokens.access.max-age}")
   private long accessTokenMaxAge;
@@ -80,18 +80,18 @@ public class AuthCookieService {
     CookieUtil.addCookie(response, cookie);
   }
 
-  public void setHhLinkIntentCookie(HttpServletResponse response) {
+  public void setHhLinkIntentCookie(HttpServletResponse response, String accessToken) {
     ResponseCookie cookie = CookieUtil.buildHttpOnlyLaxCookie(
-        HH_LINK_INTENT_COOKIE_NAME, "1", HH_LINK_INTENT_PATH, HH_LINK_INTENT_MAX_AGE);
+        HH_LINK_INTENT_COOKIE_NAME, accessToken, HH_LINK_INTENT_PATH, HH_LINK_INTENT_MAX_AGE);
     CookieUtil.addCookie(response, cookie);
   }
 
-  public boolean consumeHhLinkIntentCookie(HttpServletRequest request,
-                                           HttpServletResponse response) {
-    boolean present = CookieUtil.getCookieValueByName(request, HH_LINK_INTENT_COOKIE_NAME) != null;
+  public String consumeHhLinkIntentCookie(HttpServletRequest request,
+                                          HttpServletResponse response) {
+    String value = CookieUtil.getCookieValueByName(request, HH_LINK_INTENT_COOKIE_NAME);
     CookieUtil.addCookie(response,
         CookieUtil.buildExpiredCookie(HH_LINK_INTENT_COOKIE_NAME, HH_LINK_INTENT_PATH));
-    return present;
+    return value;
   }
 
   public void clearAccessTokenCookie(HttpServletResponse response) {
