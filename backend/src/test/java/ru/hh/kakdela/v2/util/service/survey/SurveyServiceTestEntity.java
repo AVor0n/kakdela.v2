@@ -26,7 +26,7 @@ public class SurveyServiceTestEntity {
       "account1",
       "account1@example.com",
       null,
-      false,
+      null,
       Instant.now(),
       1,
       false,
@@ -40,7 +40,7 @@ public class SurveyServiceTestEntity {
       "account2",
       "account2@example.com",
       null,
-      false,
+      null,
       Instant.now(),
       1,
       false,
@@ -49,6 +49,7 @@ public class SurveyServiceTestEntity {
       null,
       null
   );
+
   private static Account getAuthorFor(boolean isClone) {
     return isClone
         ? account2
