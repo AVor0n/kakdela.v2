@@ -9,6 +9,8 @@ public interface QuestionDao {
 
   Optional<Question> findById(UUID id);
 
+  Optional<Question> findWithParentPageById(UUID id);
+
   UUID findParentPageIdById(UUID id);
 
   UUID findParentSurveyIdById(UUID id);

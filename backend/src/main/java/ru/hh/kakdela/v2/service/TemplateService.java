@@ -1,9 +1,5 @@
 package ru.hh.kakdela.v2.service;
 
-import java.nio.file.Paths;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -20,29 +16,23 @@ import ru.hh.kakdela.v2.dto.template.TemplateUpdateDto;
 import ru.hh.kakdela.v2.mapper.SurveyMapper;
 import ru.hh.kakdela.v2.mapper.TemplateMapper;
 import ru.hh.kakdela.v2.model.Account;
-import ru.hh.kakdela.v2.model.AnswerOption;
-import ru.hh.kakdela.v2.model.ClosingPage;
-import ru.hh.kakdela.v2.model.Question;
 import ru.hh.kakdela.v2.model.Survey;
-import ru.hh.kakdela.v2.model.SurveyPage;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class TemplateService {
 
+  private final SurveyService surveyService;
+  private final PermissionService permissionService;
   private final SurveyDao surveyDao;
   private final AccountDao accountDao;
   private final SurveyMapper surveyMapper;
   private final TemplateMapper templateMapper;
-  private final PermissionService permissionService;
-  private final ObjectStorageService objectStorageService;
 
   @Transactional
   public TemplateResponseDto createTemplate(UUID surveyId, UUID accountId) {
-    Survey source = surveyDao.findById(surveyId)
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Опрос не найден: id=" + surveyId));
+    Survey source = surveyService.getEntityById(surveyId);
 
     if (source.isTemplate()) {
       throw new ResponseStatusException(
@@ -55,9 +45,7 @@ public class TemplateService {
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Аккаунт не найден: " + accountId));
 
-    Survey template = cloneSurvey(source, author, true, source.getTitle(), false);
-
-    surveyDao.save(template);
+    Survey template = surveyService.cloneSurvey(source, author, true, source.getTitle());
     log.info("Создан шаблон из опроса sourceId={} templateId={}", surveyId, template.getId());
 
     return templateMapper.templateToDto(template);
@@ -93,9 +81,8 @@ public class TemplateService {
             HttpStatus.NOT_FOUND, "Аккаунт не найден"));
 
     String newTitle = "Копия — " + source.getTitle() + " от " + source.getAuthor().getLogin();
-    Survey copy = cloneSurvey(source, account, true, newTitle, false);
 
-    surveyDao.save(copy);
+    Survey copy = surveyService.cloneSurvey(source, account, true, newTitle);
     log.info("Создана копия шаблона templateId={} copyId={} accountId={}",
         templateId, copy.getId(), accountId);
 
@@ -185,9 +172,7 @@ public class TemplateService {
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Аккаунт не найден"));
 
-    Survey survey = cloneSurvey(template, newAuthor, false, template.getTitle(), false);
-
-    surveyDao.save(survey);
+    Survey survey = surveyService.cloneSurvey(template, newAuthor, false, template.getTitle());
     log.info("Создан опрос из шаблона templateId={} surveyId={}", templateId, survey.getId());
 
     return surveyMapper.surveyToDto(survey);
@@ -211,138 +196,5 @@ public class TemplateService {
 
     surveyDao.delete(template);
     log.info("Удалён шаблон id={}", templateId);
-  }
-
-  private Survey cloneSurvey(Survey source, Account newAuthor, boolean asTemplate,
-                             String customTitle, boolean preservePublished) {
-
-    Account author = newAuthor != null ? newAuthor : source.getAuthor();
-
-    Survey cloned = Survey.builder()
-        .id(UUID.randomUUID())
-        .author(author)
-        .title(customTitle != null ? customTitle : source.getTitle())
-        .description(source.getDescription())
-        .isAuthorizedOnly(asTemplate ? false : source.isAuthorizedOnly())
-        .isLimitedToOneResponse(asTemplate ? false : source.isLimitedToOneResponse())
-        .doNotify(asTemplate ? false : source.doNotify())
-        .expireAt(asTemplate ? null : source.getExpireAt())
-        .targetTimezone(asTemplate ? "Europe/Moscow" : source.getTargetTimezone())
-        .createdAt(Instant.now().truncatedTo(ChronoUnit.SECONDS))
-        .isTemplate(asTemplate)
-        .isPublished(asTemplate ? false : (preservePublished ? source.isPublished() : false))
-        .build();
-
-    for (SurveyPage originalPage : source.getPages()) {
-      SurveyPage pageCopy = clonePage(originalPage, cloned);
-      cloned.getPages().add(pageCopy);
-    }
-
-    if (source.getClosingPage() != null) {
-      ClosingPage closingPageCopy = cloneClosingPage(source.getClosingPage(), cloned);
-      cloned.setClosingPage(closingPageCopy);
-    }
-
-    if (asTemplate) {
-      cloned.setPermissions(new ArrayList<>());
-      cloned.setResponses(new ArrayList<>());
-    }
-
-    log.debug("Клонирован опрос sourceId={} cloneId={} asTemplate={}",
-        source.getId(), cloned.getId(), asTemplate);
-
-    return cloned;
-  }
-
-  private SurveyPage clonePage(SurveyPage originalPage, Survey newSurvey) {
-    SurveyPage pageCopy = SurveyPage.builder()
-        .id(UUID.randomUUID())
-        .survey(newSurvey)
-        .serialNumber(originalPage.getSerialNumber())
-        .title(originalPage.getTitle())
-        .description(originalPage.getDescription())
-        .build();
-
-    for (Question originalQuestion : originalPage.getQuestions()) {
-      Question questionCopy = cloneQuestion(originalQuestion, pageCopy);
-      pageCopy.getQuestions().add(questionCopy);
-    }
-
-    return pageCopy;
-  }
-
-  private Question cloneQuestion(Question originalQuestion, SurveyPage newPage) {
-    UUID questionId = UUID.randomUUID();
-
-    Question questionCopy = Question.builder()
-        .id(questionId)
-        .surveyPage(newPage)
-        .serialNumber(originalQuestion.getSerialNumber())
-        .text(originalQuestion.getText())
-        .description(originalQuestion.getDescription())
-        .type(originalQuestion.getType())
-        .answerOptionOrder(originalQuestion.getAnswerOptionOrder())
-        .hasOtherOption(originalQuestion.hasOtherOption())
-        .isMandatory(originalQuestion.isMandatory())
-        .build();
-
-    if (originalQuestion.getAttachmentObjectKey() != null) {
-      String newKey = "questions/%s/%s".formatted(questionId, UUID.randomUUID());
-      objectStorageService.copyObject(originalQuestion.getAttachmentObjectKey(), newKey);
-      questionCopy.setAttachmentObjectKey(newKey);
-    }
-
-    for (AnswerOption originalOption : originalQuestion.getAnswerOptions()) {
-      AnswerOption optionCopy = cloneAnswerOption(originalOption, questionCopy);
-      questionCopy.getAnswerOptions().add(optionCopy);
-    }
-
-    return questionCopy;
-  }
-
-  private AnswerOption cloneAnswerOption(AnswerOption originalOption, Question newQuestion) {
-    UUID optionId = UUID.randomUUID();
-
-    AnswerOption optionCopy = AnswerOption.builder()
-        .id(optionId)
-        .question(newQuestion)
-        .serialNumber(originalOption.getSerialNumber())
-        .text(originalOption.getText())
-        .build();
-
-    if (originalOption.getAttachmentObjectKey() != null) {
-      String newKey = "answer-options/%s/%s".formatted(optionId, UUID.randomUUID());
-      objectStorageService.copyObject(originalOption.getAttachmentObjectKey(), newKey);
-      optionCopy.setAttachmentObjectKey(newKey);
-    }
-
-    return optionCopy;
-  }
-
-  private ClosingPage cloneClosingPage(ClosingPage originalClosingPage, Survey newSurvey) {
-    UUID closingPageId = UUID.randomUUID();
-
-    ClosingPage closingPageCopy = ClosingPage.builder()
-        .id(closingPageId)
-        .survey(newSurvey)
-        .title(originalClosingPage.getTitle())
-        .description(originalClosingPage.getDescription())
-        .websiteUrl(originalClosingPage.getWebsiteUrl())
-        .build();
-
-    if (originalClosingPage.getAttachmentObjectKey() != null) {
-      String newKey = "closing-pages/%s/%s".formatted(closingPageId, UUID.randomUUID());
-      objectStorageService.copyObject(originalClosingPage.getAttachmentObjectKey(), newKey);
-      closingPageCopy.setAttachmentObjectKey(newKey);
-    }
-
-    if (originalClosingPage.getFileObjectKey() != null) {
-      String originalKey = originalClosingPage.getFileObjectKey();
-      String fileName = Paths.get(originalKey).getFileName().toString();
-      String newKey = "closing-pages/%s/%s".formatted(closingPageId, fileName);
-      objectStorageService.copyObject(originalKey, newKey);
-      closingPageCopy.setFileObjectKey(newKey);
-    }
-    return closingPageCopy;
   }
 }

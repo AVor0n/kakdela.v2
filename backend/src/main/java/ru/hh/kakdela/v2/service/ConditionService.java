@@ -29,7 +29,7 @@ import ru.hh.kakdela.v2.model.condition.Condition;
 public class ConditionService {
 
   private final ConditionDao conditionDao;
-  private final ConditionConflictService conditionConflictService;
+  private final ConditionToolsService conditionToolsService;
   private final SurveyPageService surveyPageService;
   private final PermissionService permissionService;
   private final ResponseService responseService;
@@ -161,7 +161,7 @@ public class ConditionService {
     condition.setIsActive(dto.getIsActive());
 
     if (dto.getIsActive()) {
-      conditionConflictService.validatePageConditions(condition.getSurveyPage());
+      conditionToolsService.validatePageConditions(condition.getSurveyPage());
     }
 
     condition.setNextPage(nextPage);

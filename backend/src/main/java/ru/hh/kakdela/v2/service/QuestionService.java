@@ -18,7 +18,6 @@ import ru.hh.kakdela.v2.dto.question.QuestionResponseDto;
 import ru.hh.kakdela.v2.dto.question.QuestionUpdateDto;
 import ru.hh.kakdela.v2.exception.question.QuestionNotFoundException;
 import ru.hh.kakdela.v2.mapper.QuestionMapper;
-import ru.hh.kakdela.v2.model.AnswerOption;
 import ru.hh.kakdela.v2.model.Question;
 import ru.hh.kakdela.v2.model.SurveyPage;
 
@@ -31,18 +30,19 @@ public class QuestionService {
   private long attachmentUrlMaxAge;
 
   private final QuestionDao questionDao;
+  private final SurveyService surveyService;
   private final SurveyPageService surveyPageService;
   private final PermissionService permissionService;
   private final ObjectStorageService objectStorageService;
-  private final QuestionMapper questionMapper;
   private final ImageProcessingService imageProcessingService;
+  private final QuestionMapper questionMapper;
 
   @Transactional(readOnly = true)
   public QuestionResponseDto getById(UUID questionId, UUID accountId) {
     Question question = getEntityById(questionId);
 
     permissionService.checkHasAnyPermission(
-        question.getSurveyPage().getSurvey().getId(), accountId);
+        questionDao.findParentSurveyIdById(questionId), accountId);
 
     return questionMapper.questionToDto(question);
   }
@@ -98,56 +98,14 @@ public class QuestionService {
 
   @Transactional
   public QuestionResponseDto clone(UUID questionId, UUID accountId) {
-    Question originalQuestion = getEntityById(questionId);
+    Question originalQuestion = getEntityWithParentPageById(questionId);
 
-    permissionService.checkCanEdit(
-        originalQuestion.getSurveyPage().getSurvey().getId(), accountId);
+    permissionService.checkCanEdit(originalQuestion.getSurveyPage().getSurvey().getId(), accountId);
 
-    UUID questionCopyId = UUID.randomUUID();
-
-    Question questionCopy = Question.builder()
-        .id(questionCopyId)
-        .surveyPage(originalQuestion.getSurveyPage())
-        .serialNumber(originalQuestion.getSerialNumber() + 1)
-        .text(originalQuestion.getText())
-        .description(originalQuestion.getDescription())
-        .type(originalQuestion.getType())
-        .answerOptionOrder(originalQuestion.getAnswerOptionOrder())
-        .hasOtherOption(originalQuestion.hasOtherOption())
-        .isMandatory(originalQuestion.isMandatory())
-        .build();
-
-    if (originalQuestion.getAttachmentObjectKey() != null) {
-      String questionAttachmentObjectKey =
-          "questions/%s/%s".formatted(questionCopyId, UUID.randomUUID());
-      objectStorageService.copyObject(
-          originalQuestion.getAttachmentObjectKey(),
-          questionAttachmentObjectKey
-      );
-      questionCopy.setAttachmentObjectKey(questionAttachmentObjectKey);
-    }
-
-    for (AnswerOption originalOption : originalQuestion.getAnswerOptions()) {
-      UUID optionId = UUID.randomUUID();
-
-      AnswerOption optionCopy = AnswerOption.builder()
-          .id(optionId)
-          .question(questionCopy)
-          .serialNumber(originalOption.getSerialNumber())
-          .text(originalOption.getText())
-          .build();
-
-      if (originalOption.getAttachmentObjectKey() != null) {
-        String optionAttachmentObjectKey =
-            "answer-options/%s/%s".formatted(optionId, UUID.randomUUID());
-        objectStorageService.copyObject(
-            originalOption.getAttachmentObjectKey(),
-            optionAttachmentObjectKey
-        );
-        optionCopy.setAttachmentObjectKey(optionAttachmentObjectKey);
-      }
-      questionCopy.getAnswerOptions().add(optionCopy);
-    }
+    Question questionCopy = surveyService.cloneQuestion(
+        originalQuestion,
+        originalQuestion.getSurveyPage(),
+        true);
 
     questionDao.increaseSerialNumbers(
         originalQuestion.getSurveyPage().getId(),
@@ -162,7 +120,7 @@ public class QuestionService {
   public QuestionResponseDto update(UUID questionId, QuestionUpdateDto dto, UUID accountId) {
     Question question = getEntityById(questionId);
 
-    permissionService.checkCanEdit(question.getSurveyPage().getSurvey().getId(), accountId);
+    permissionService.checkCanEdit(questionDao.findParentSurveyIdById(questionId), accountId);
 
     UUID pageId = question.getSurveyPage().getId();
     int oldSerial = question.getSerialNumber();
@@ -212,8 +170,7 @@ public class QuestionService {
   public void delete(UUID questionId, UUID accountId) {
     Question question = getEntityById(questionId);
 
-    permissionService.checkCanEdit(
-        question.getSurveyPage().getSurvey().getId(), accountId);
+    permissionService.checkCanEdit(questionDao.findParentSurveyIdById(questionId), accountId);
 
     UUID pageId = question.getSurveyPage().getId();
     int deletedSerial = question.getSerialNumber();
@@ -230,8 +187,7 @@ public class QuestionService {
   public ObjectUrlResponseDto addAttachment(UUID questionId, UUID accountId, MultipartFile file) {
     Question question = getEntityById(questionId);
 
-    permissionService.checkCanEdit(
-        question.getSurveyPage().getSurvey().getId(), accountId);
+    permissionService.checkCanEdit(questionDao.findParentSurveyIdById(questionId), accountId);
 
     if (question.getAttachmentObjectKey() != null) {
       throw new ResponseStatusException(
@@ -259,8 +215,7 @@ public class QuestionService {
                                                MultipartFile file) {
     Question question = getEntityById(questionId);
 
-    permissionService.checkCanEdit(
-        question.getSurveyPage().getSurvey().getId(), accountId);
+    permissionService.checkCanEdit(questionDao.findParentSurveyIdById(questionId), accountId);
 
     ProcessedImage image = imageProcessingService.process(file);
 
@@ -286,8 +241,7 @@ public class QuestionService {
   public void deleteAttachment(UUID questionId, UUID accountId) {
     Question question = getEntityById(questionId);
 
-    permissionService.checkCanEdit(
-        question.getSurveyPage().getSurvey().getId(), accountId);
+    permissionService.checkCanEdit(questionDao.findParentSurveyIdById(questionId), accountId);
 
     if (question.getAttachmentObjectKey() == null) {
       throw new ResponseStatusException(
@@ -305,6 +259,11 @@ public class QuestionService {
 
   Question getEntityById(UUID id) {
     return questionDao.findById(id)
+        .orElseThrow(() -> new QuestionNotFoundException(id));
+  }
+
+  Question getEntityWithParentPageById(UUID id) {
+    return questionDao.findWithParentPageById(id)
         .orElseThrow(() -> new QuestionNotFoundException(id));
   }
 

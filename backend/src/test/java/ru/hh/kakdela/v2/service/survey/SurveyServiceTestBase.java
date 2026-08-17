@@ -40,7 +40,7 @@ class SurveyServiceTestBase {
   @Mock
   protected ObjectStorageService objectStorageService;
   @Mock
-  protected ConditionService conditionService;
+  protected ConditionToolsService conditionToolsService;
   @Mock
   protected ImageProcessingService imageProcessingService;
 
@@ -268,7 +268,7 @@ class SurveyServiceTestBase {
         permissionService,
         notificationService,
         objectStorageService,
-        conditionService,
+        conditionToolsService,
         imageProcessingService,
         surveyMapper
     );

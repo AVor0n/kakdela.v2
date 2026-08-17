@@ -24,6 +24,18 @@ public class QuestionDaoImpl implements QuestionDao {
   }
 
   @Override
+  public Optional<Question> findWithParentPageById(UUID id) {
+    return Optional.ofNullable(entityManager.createQuery(
+        """
+        FROM Question q
+        LEFT JOIN FETCH q.surveyPage
+        WHERE q.id = :id
+        """, Question.class)
+        .setParameter("id", id)
+        .getSingleResultOrNull());
+  }
+
+  @Override
   public UUID findParentPageIdById(UUID id) {
     return entityManager.createQuery(
             """

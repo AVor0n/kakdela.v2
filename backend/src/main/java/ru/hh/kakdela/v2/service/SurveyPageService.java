@@ -32,7 +32,7 @@ public class SurveyPageService {
   private final SurveyDao surveyDao;
   private final PermissionService permissionService;
   private final ResponseService responseService;
-  private final ConditionConflictService conditionConflictService;
+  private final ConditionToolsService conditionToolsService;
   private final SurveyPageMapper surveyPageMapper;
 
   @Transactional(readOnly = true)
@@ -143,7 +143,7 @@ public class SurveyPageService {
 
       page.setSerialNumber(newSerial);
 
-      conditionConflictService.makeConditionsConsistent(pageId, newSerial);
+      conditionToolsService.makeConditionsConsistent(pageId, newSerial);
     }
 
     if (dto.getTitle() != null) {

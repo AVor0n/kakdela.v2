@@ -17,19 +17,22 @@ import java.util.List;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.jsoup.Jsoup;
 import ru.hh.kakdela.v2.model.condition.Condition;
 
-@Data
-@Builder
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
+@Builder
+@Getter
+@Setter
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Entity
 @Table(name = "survey_page",
     indexes = {
@@ -43,12 +46,12 @@ public class SurveyPage {
 
   @Id
   @Column(name = "id", updatable = false, nullable = false)
+  @EqualsAndHashCode.Include
   private UUID id;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "survey_id", nullable = false)
   @OnDelete(action = OnDeleteAction.CASCADE)
-  @EqualsAndHashCode.Exclude
   @ToString.Exclude
   private Survey survey;
 

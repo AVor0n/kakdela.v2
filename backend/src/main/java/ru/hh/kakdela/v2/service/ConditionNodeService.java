@@ -42,7 +42,7 @@ public class ConditionNodeService {
   private static final int MAX_CONDITION_TREE_HEIGHT = 3;
 
   private final ConditionService conditionService;
-  private final ConditionConflictService conditionConflictService;
+  private final ConditionToolsService conditionToolsService;
   private final ConditionDao conditionDao;
   private final ConditionNodeDao conditionNodeDao;
   private final QuestionService questionService;
@@ -100,7 +100,7 @@ public class ConditionNodeService {
     checkConditionTreeHeight(condition);
 
     if (condition.getIsActive()) {
-      conditionConflictService.validatePageConditions(condition.getSurveyPage());
+      conditionToolsService.validatePageConditions(condition.getSurveyPage());
     }
 
     if (node.getParentNode() == null) {
@@ -133,7 +133,7 @@ public class ConditionNodeService {
     node.setOperator(dto.getOperator());
 
     if (node.getCondition().getIsActive()) {
-      conditionConflictService.validatePageConditions(node.getCondition().getSurveyPage());
+      conditionToolsService.validatePageConditions(node.getCondition().getSurveyPage());
     }
 
     conditionNodeDao.update(node);
@@ -220,7 +220,7 @@ public class ConditionNodeService {
     node.setAtom(atom);
 
     if (condition.getIsActive()) {
-      conditionConflictService.validatePageConditions(condition.getSurveyPage());
+      conditionToolsService.validatePageConditions(condition.getSurveyPage());
     }
 
     if (parentNode == null) {
@@ -279,7 +279,7 @@ public class ConditionNodeService {
     node.getAtom().setOperator(dto.getOperator());
 
     if (node.getCondition().getIsActive()) {
-      conditionConflictService.validatePageConditions(node.getCondition().getSurveyPage());
+      conditionToolsService.validatePageConditions(node.getCondition().getSurveyPage());
     }
 
     conditionNodeDao.update(node);
@@ -313,7 +313,7 @@ public class ConditionNodeService {
     }
 
     if (node.getCondition().getIsActive()) {
-      conditionConflictService.validatePageConditions(node.getCondition().getSurveyPage());
+      conditionToolsService.validatePageConditions(node.getCondition().getSurveyPage());
     }
 
     conditionNodeDao.delete(nodeToDelete);
