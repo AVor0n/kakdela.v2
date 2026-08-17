@@ -26,7 +26,7 @@ export function Cta({ onCreateClick }: Props) {
                         Создать опрос
                     </Button>
                     <Button mode='secondary' style='constant' size='large' onClick={() => navigate(routes.survey())}>
-                        Смотреть опросы
+                        Мои опросы
                     </Button>
                 </div>
             </div>
