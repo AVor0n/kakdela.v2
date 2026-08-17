@@ -18,5 +18,6 @@ public class HhLinkConfirmDto {
   // Обязателен, только если пользователь не авторизован в момент подтверждения -
   // проверяется в сервисе (AccountService.confirmLinkHhSso), не через @NotBlank,
   // т.к. для авторизованного пользователя пароль не нужен
+  @NullOrNotBlank
   private String password;
 }
