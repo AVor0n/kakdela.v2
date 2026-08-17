@@ -92,7 +92,7 @@ public class JwtService {
 
   public HhLinkTokenPayload extractHhLinkToken(String token) {
     Claims claims = extractAllClaims(token);
-    if (!HH_LINK_TOKEN_TYPE.equals(claims.get(CLAIM_TYPE, String.class))) {
+    if (!claims.get(CLAIM_TYPE, String.class).equals(HH_LINK_TOKEN_TYPE)) {
       throw new JwtException("Токен привязки недействителен");
     }
     return new HhLinkTokenPayload(claims.getSubject(), claims.get(CLAIM_HH_USER_ID, String.class));
