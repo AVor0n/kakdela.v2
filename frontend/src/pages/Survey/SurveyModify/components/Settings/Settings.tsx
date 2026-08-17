@@ -81,7 +81,7 @@ export function Settings() {
                         dispatch(
                             setErrorMessage({
                                 message:
-                                    'Не удалось изменить настройку "Прохождение только для авторизированных пользователей"',
+                                    'Не удалось изменить настройку "Запретить анонимное прохождение"',
                             }),
                         );
                     }
@@ -101,7 +101,7 @@ export function Settings() {
                     if (err.response) {
                         dispatch(
                             setErrorMessage({
-                                message: 'Не удалось изменить настройку "Разрешить проходить опрос только один раз"',
+                                message: 'Не удалось изменить настройку "Запретить проходить более одного раза"',
                             }),
                         );
                     }
@@ -121,7 +121,7 @@ export function Settings() {
                     if (err.response) {
                         dispatch(
                             setErrorMessage({
-                                message: 'Не удалось изменить настройку "Дата окончания прохождения опроса"',
+                                message: 'Не удалось изменить настройку "Дата и время окончания приёма ответов"',
                             }),
                         );
                     }
@@ -155,7 +155,7 @@ export function Settings() {
                     if (err.response) {
                         dispatch(
                             setErrorMessage({
-                                message: 'Не удалось изменить настройку "Присылать сообщение о прохождении опроса"',
+                                message: 'Не удалось изменить настройку "Дата и время окончания приёма ответов"',
                             }),
                         );
                     }
@@ -175,7 +175,7 @@ export function Settings() {
                 if (err.response) {
                     dispatch(
                         setErrorMessage({
-                            message: 'Не удалось изменить настройку "Присылать сообщение о прохождении опроса"',
+                            message: 'Не удалось изменить настройку "Присылать уведомления о новых ответах"',
                         }),
                     );
                 }
@@ -248,7 +248,7 @@ export function Settings() {
                             updateIsAuthorizedOnlyHandler(!isAuthorizedOnly);
                         }}
                     />
-                    <span>Прохождение только для авторизированных пользователей</span>
+                    <span>Запретить анонимное прохождение</span>
                 </div>
                 <div className={style.option}>
                     <Checkbox
@@ -257,7 +257,7 @@ export function Settings() {
                             updateIsLimitedToOneResponseHandler(!isLimitedToOneResponse);
                         }}
                     />
-                    <span>Разрешить проходить опрос только один раз</span>
+                    <span>Запретить проходить более одного раза</span>
                 </div>
 
                 <div className={style.option}>
@@ -276,7 +276,7 @@ export function Settings() {
                         value={expireAt ?? ''}
                         onChange={(e) => setExpireAt(e)}
                         elevatePlaceholder
-                        placeholder='Дата окончания прохождения опроса'
+                        placeholder='Дата и время окончания приёма ответов'
                         dateMask='dd.mm.yyyy'
                         timeMask
                         onBlur={() => {

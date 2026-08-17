@@ -1,5 +1,6 @@
 package ru.hh.kakdela.v2.dto.notification.schedule;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -30,6 +31,7 @@ public class NotificationScheduleCreateDto {
   @NullOrNotBlank
   private String cronExpression;
 
+  @JsonFormat(pattern = "H:mm")
   private LocalTime executionTime;
   @NullOrNotBlank
   private String targetTimezone = DefaultValues.TARGET_TIMEZONE_DEFAULT;

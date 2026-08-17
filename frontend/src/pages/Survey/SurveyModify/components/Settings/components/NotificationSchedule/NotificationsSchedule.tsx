@@ -23,14 +23,14 @@ export function NotificationsSchedule({ surveyId }: Props) {
                 dispatch(setNotificationsSchedule(data));
             })
             .catch(() =>
-                dispatch(setErrorMessage({ message: 'Не удалось получить настройки переодических уведомлений' })),
+                dispatch(setErrorMessage({ message: 'Не удалось получить расписания для напоминаний' })),
             );
     }, [surveyId]);
 
     const createNotificationScheduleHandler = () => {
         if (notificationsSchedule.length + 1 > 3) {
             dispatch(
-                setErrorMessage({ message: 'Невозможно создать больше 3 настроек для переодичесуих уведомлений' }),
+                setErrorMessage({ message: 'Невозможно создать больше 3 расписаний для напоминаний' }),
             );
             return;
         }
@@ -47,7 +47,7 @@ export function NotificationsSchedule({ surveyId }: Props) {
                 dispatch(addNotificationSchedule(data));
             })
             .catch(() =>
-                dispatch(setErrorMessage({ message: 'Не удалось создать настройки переодических уведомлений' })),
+                dispatch(setErrorMessage({ message: 'Не удалось создать расписание для напоминаний' })),
             );
     };
 
@@ -55,7 +55,7 @@ export function NotificationsSchedule({ surveyId }: Props) {
         <div className={style.container}>
             {notificationsSchedule.length === 0 ? (
                 <Button type='button' mode='secondary' style='accent' onClick={createNotificationScheduleHandler}>
-                    Добавить отправку переодических уведомлений
+                    Настроить отправку напоминаний
                 </Button>
             ) : (
                 <>
