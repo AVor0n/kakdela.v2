@@ -86,7 +86,7 @@ public class SurveyPageService {
 
   @Transactional
   public SurveyPageResponseDto create(UUID surveyId, SurveyPageCreateDto dto, UUID accountId) {
-    Survey survey = surveyDao.findById(surveyId)
+    final Survey survey = surveyDao.findById(surveyId)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
 

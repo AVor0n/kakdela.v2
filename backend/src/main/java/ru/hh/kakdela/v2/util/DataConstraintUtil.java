@@ -1,6 +1,12 @@
 package ru.hh.kakdela.v2.util;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Node;
+import org.jsoup.nodes.TextNode;
 import ru.hh.kakdela.v2.constants.ConstraintMessages;
 import ru.hh.kakdela.v2.constants.TextValueLengthLimits;
 import ru.hh.kakdela.v2.exception.Kd2DataValidationException;
@@ -42,5 +48,54 @@ public class DataConstraintUtil {
       throw new Kd2DataValidationException(
           fieldName, ConstraintMessages.TEXT_VALUE_UPPER_LENGTH_LIMIT_VIOLATED + limit);
     }
+  }
+
+  public static String truncateHtmlToUpperLengthLimit(String html, int limit) {
+    Document document = Jsoup.parseBodyFragment(html);
+
+    truncate(document.body(), limit);
+
+    return document.body().html();
+  }
+
+  private static int truncate(Element element, int remaining) {
+    List<Node> children = new ArrayList<>(element.childNodes());
+
+    for (int i = 0; i < children.size(); i++) {
+      Node node = children.get(i);
+
+      if (node instanceof TextNode textNode) {
+        String text = textNode.getWholeText();
+
+        if (text.length() <= remaining) {
+          remaining -= text.length();
+          continue;
+        }
+
+        textNode.text(text.substring(0, remaining - 3) + "...");
+
+        for (int j = i + 1; j < children.size(); j++) {
+          children.get(j).remove();
+        }
+
+        return -1;
+      }
+
+      if (node instanceof Element child) {
+        int result = truncate(child, remaining);
+
+        if (result < 0) {
+          for (int j = i + 1; j < children.size(); j++) {
+            children.get(j).remove();
+          }
+
+          return -1;
+        }
+
+        remaining = result;
+      }
+    }
+
+    return remaining;
   }
 }

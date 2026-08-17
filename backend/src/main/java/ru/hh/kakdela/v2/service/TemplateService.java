@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+import ru.hh.kakdela.v2.constants.TextValueLengthLimits;
 import ru.hh.kakdela.v2.dao.AccountDao;
 import ru.hh.kakdela.v2.dao.SurveyDao;
 import ru.hh.kakdela.v2.dto.survey.SurveyResponseDto;
@@ -81,9 +82,18 @@ public class TemplateService {
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Аккаунт не найден"));
 
-    String newTitle = "Копия — " + source.getTitle() + " от " + source.getAuthor().getLogin();
+    final String copyTitlePrefix = "Копия — ";
+    final String copyTitlePostfix = " от " + source.getAuthor().getLogin();
+    final String copyTitle = "<p>" + copyTitlePrefix
+        + DataConstraintUtil.truncateHtmlToUpperLengthLimit(
+            source.getTitle(),
+            TextValueLengthLimits.TITLE_MAX_LENGTH
+                - copyTitlePrefix.length()
+                - copyTitlePostfix.length())
+        .replaceFirst("^<p>(.*)</p>$", "$1")
+        + copyTitlePostfix + "</p>";
 
-    Survey copy = surveyService.cloneSurvey(source, account, true, newTitle);
+    Survey copy = surveyService.cloneSurvey(source, account, true, copyTitle);
     log.info("Создана копия шаблона templateId={} copyId={} accountId={}",
         templateId, copy.getId(), accountId);
 

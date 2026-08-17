@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import ru.hh.kakdela.v2.constants.DefaultValues;
+import ru.hh.kakdela.v2.constants.TextValueLengthLimits;
 import ru.hh.kakdela.v2.dao.AccountDao;
 import ru.hh.kakdela.v2.dao.SurveyDao;
 import ru.hh.kakdela.v2.dao.SurveyNotificationSubscriptionDao;
@@ -246,11 +247,19 @@ public class SurveyService {
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Аккаунт не найден: " + accountId));
 
+    final String copyTitlePrefix = "Копия — ";
+    final String copyTitle = "<p>" + copyTitlePrefix
+        + DataConstraintUtil.truncateHtmlToUpperLengthLimit(
+            originalSurvey.getTitle(),
+            TextValueLengthLimits.TITLE_MAX_LENGTH - copyTitlePrefix.length())
+        .replaceFirst("^<p>(.*)</p>$", "$1")
+        + "</p>";
+
     Survey surveyCopy = cloneSurvey(
         originalSurvey,
         account,
         false,
-        "Копия — " + originalSurvey.getTitle());
+        copyTitle);
 
     return surveyMapper.surveyToDto(surveyCopy);
   }
