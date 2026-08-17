@@ -100,7 +100,7 @@ public class NotificationScheduleService {
         .cronExpression(dto.getCronExpression())
         .executionTime(dto.getExecutionTime())
         .targetTimezone(dto.getTargetTimezone())
-        .isActive(dto.isActive())
+        .isActive(dto.getIsActive())
         .build();
 
     notificationSchedule.getScheduleType().verifyType(notificationSchedule);

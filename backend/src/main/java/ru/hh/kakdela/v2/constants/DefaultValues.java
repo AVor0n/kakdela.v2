@@ -13,7 +13,12 @@ public class DefaultValues {
   public static final Boolean DO_NOTIFY_DEFAULT = true;
   public static final String TARGET_TIMEZONE_DEFAULT = "Europe/Moscow";
 
+  // NotificationSchedule
+
+  public static final Boolean NOTIFICATION_SCHEDULE_IS_ACTIVE = true;
+
   // Condition
 
   public static final Boolean CONDITION_IS_ACTIVE = false;
+
 }

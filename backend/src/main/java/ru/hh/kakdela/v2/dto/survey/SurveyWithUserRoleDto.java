@@ -8,6 +8,7 @@ import ru.hh.kakdela.v2.model.Survey;
 @AllArgsConstructor
 @Getter
 public class SurveyWithUserRoleDto {
+
   Survey survey;
   Permission.SurveyRole role;
 }

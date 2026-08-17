@@ -12,9 +12,7 @@ import lombok.ToString;
 @EqualsAndHashCode
 @ToString  
 @AllArgsConstructor
-@Schema(
-    name = "FileUpload.Response"
-)
+@Schema(name = "FileUpload.Response")
 public class FileResponseDto {
 
   private final String fileName;

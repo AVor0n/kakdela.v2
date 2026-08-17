@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.openapitools.jackson.nullable.JsonNullable;
-import ru.hh.kakdela.v2.validator.JsonNullableSize;
+import ru.hh.kakdela.v2.constants.Messages;
 import ru.hh.kakdela.v2.validator.JsonNullableUndefinedOrNotNullAndNotBlank;
 
 @NoArgsConstructor
@@ -15,15 +15,29 @@ import ru.hh.kakdela.v2.validator.JsonNullableUndefinedOrNotNullAndNotBlank;
 @Schema(name = "Survey.Update")
 public class SurveyUpdateDto {
 
-  @JsonNullableUndefinedOrNotNullAndNotBlank(message = "Заголовок не должен быть пустым")
-  @JsonNullableSize(max = 200, message = "Заголовок не должен быть длиннее 200 символов")
+  @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonNullableUndefinedOrNotNullAndNotBlank(message = Messages.FIELD_SHOULD_NOT_BE_EMPTY)
   private JsonNullable<String> title = JsonNullable.undefined();
+
+  @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED)
   private JsonNullable<String> description = JsonNullable.undefined();
+
+  @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED)
   private JsonNullable<Boolean> isAuthorizedOnly = JsonNullable.undefined();
+
+  @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED)
   private JsonNullable<Boolean> isLimitedToOneResponse = JsonNullable.undefined();
+
+  @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED)
   private JsonNullable<Boolean> isPublished = JsonNullable.undefined();
+
+  @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED)
   private JsonNullable<Boolean> doNotify = JsonNullable.undefined();
+
+  @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED)
   private JsonNullable<LocalDateTime> expireAtAtTargetTimezone = JsonNullable.undefined();
-  @JsonNullableUndefinedOrNotNullAndNotBlank(message = "Часовой пояс не может быть пустым")
+
+  @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @JsonNullableUndefinedOrNotNullAndNotBlank(message = Messages.FIELD_SHOULD_NOT_BE_EMPTY)
   private JsonNullable<String> targetTimezone = JsonNullable.undefined();
 }

@@ -13,9 +13,7 @@ import ru.hh.kakdela.v2.dto.answer.option.AnswerOptionResponseDto;
 @Getter
 @EqualsAndHashCode
 @ToString
-@Schema(
-    name = "Question.Response"
-)
+@Schema(name = "Question.Response")
 public class QuestionResponseDto {
 
   private final UUID id;

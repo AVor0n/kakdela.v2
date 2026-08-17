@@ -15,10 +15,7 @@ import ru.hh.kakdela.v2.dto.answer.AnswerResponseDto;
 @Getter
 @EqualsAndHashCode
 @ToString
-@Schema(
-    name = " ResponseResponse",
-    title = "DTO для получения данных ответа на опрос"
-)
+@Schema(name = " Response.Response")
 public class ResponseResponseDto {
 
   private final UUID id;

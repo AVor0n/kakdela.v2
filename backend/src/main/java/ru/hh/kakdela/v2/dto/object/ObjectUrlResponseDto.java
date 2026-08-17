@@ -6,10 +6,8 @@ import lombok.Getter;
 
 @AllArgsConstructor
 @Getter
-@Schema(
-    name = "ObjectUrlResponse",
-    title = "DTO URL объекта"
-)
+@Schema(name = "Object.UrlResponse")
 public class ObjectUrlResponseDto {
+
   private final String attachmentUrl;
 }

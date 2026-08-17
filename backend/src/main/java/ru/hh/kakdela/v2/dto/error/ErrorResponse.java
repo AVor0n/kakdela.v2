@@ -11,8 +11,8 @@ import ru.hh.kakdela.v2.exception.ErrorCode;
 @AllArgsConstructor
 @Getter
 @Schema(name = "Error.Response")
-
 public class ErrorResponse {
+
   private final LocalDateTime timestamp;
   private final ErrorCode internalErrorCode;
   private final UUID errorId;

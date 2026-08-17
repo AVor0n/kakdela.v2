@@ -17,8 +17,8 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.hh.kakdela.v2.dto.account.AccountCreateDto;
 import ru.hh.kakdela.v2.dto.account.AccountResponseDto;
 import ru.hh.kakdela.v2.dto.auth.AuthTokensDto;
-import ru.hh.kakdela.v2.dto.auth.LoginDto;
-import ru.hh.kakdela.v2.dto.auth.PasswordResetDto;
+import ru.hh.kakdela.v2.dto.auth.LoginRequestDto;
+import ru.hh.kakdela.v2.dto.auth.PasswordResetRequestDto;
 import ru.hh.kakdela.v2.dto.auth.VerifyCodeRequestDto;
 import ru.hh.kakdela.v2.security.CustomUserDetails;
 import ru.hh.kakdela.v2.service.AccountService;
@@ -44,7 +44,7 @@ public class AuthController {
   @PostMapping("/auth/login")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void login(
-      @RequestBody LoginDto dto,
+      @RequestBody LoginRequestDto dto,
       HttpServletRequest request,
       HttpServletResponse response) {
 
@@ -115,7 +115,7 @@ public class AuthController {
   }
 
   @PatchMapping("/auth/reset-password")
-  public void resetPassword(PasswordResetDto dto) {
+  public void resetPassword(PasswordResetRequestDto dto) {
     authService.resetPassword(dto);
   }
 }
