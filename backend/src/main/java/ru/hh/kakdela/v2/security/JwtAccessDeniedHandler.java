@@ -1,10 +1,11 @@
 package ru.hh.kakdela.v2.security;
 
+import static ru.hh.kakdela.v2.mapper.ErrorMapper.getTimestamp;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -35,7 +36,7 @@ public class JwtAccessDeniedHandler implements AccessDeniedHandler {
     log.error("Доступ запрещён (errorId={}):", id, accessDeniedException);
 
     ErrorResponse errorResponse = new ErrorResponse(
-        LocalDateTime.now(),
+        getTimestamp(),
         ErrorCode.ACCESS_DENIED,
         id,
         "Доступ запрещён",

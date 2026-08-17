@@ -1,5 +1,8 @@
 package ru.hh.kakdela.v2.exception.handler;
 
+import static ru.hh.kakdela.v2.mapper.ErrorMapper.getPath;
+import static ru.hh.kakdela.v2.mapper.ErrorMapper.getTimestamp;
+
 import jakarta.validation.ConstraintViolationException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -14,6 +17,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.server.ResponseStatusException;
@@ -257,7 +261,7 @@ public class GlobalExceptionHandler {
   ) {
     LinkedHashMap<String, String> result = new LinkedHashMap<>();
 
-    result.put("timestamp", LocalDateTime.now().toString());
+    result.put("timestamp", getTimestamp().toString());
     result.put("internalErrorCode", errorCode.name());
     result.put("errorId", id.toString());
     result.put("message", message);

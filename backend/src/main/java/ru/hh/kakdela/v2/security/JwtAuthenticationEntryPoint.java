@@ -1,10 +1,11 @@
 package ru.hh.kakdela.v2.security;
 
+import static ru.hh.kakdela.v2.mapper.ErrorMapper.getTimestamp;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -36,7 +37,6 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
     UUID id = UUID.randomUUID();
-    LocalDateTime now = LocalDateTime.now();
 
     if (authException instanceof Kd2AuthenticationException
         && ((Kd2AuthenticationException) authException).getObjectDetails() != null) {
@@ -55,7 +55,7 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
     if (authException instanceof Kd2AuthenticationException) {
       errorResponse = new ErrorResponse(
-          now,
+          getTimestamp(),
           ((Kd2AuthenticationException) authException).getErrorCode(),
           id,
           authException.getMessage(),
@@ -76,7 +76,7 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
       }
 
       errorResponse = new ErrorResponse(
-          now,
+          getTimestamp(),
           errorCode,
           id,
           message,
