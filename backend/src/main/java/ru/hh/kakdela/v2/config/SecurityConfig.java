@@ -82,6 +82,7 @@ public class SecurityConfig {
                 .requestMatchers("/swagger-ui/**", "/swagger-ui.html",
                     "/api-docs/**", "/v3/api-docs/**").permitAll()
                 .requestMatchers("/api/auth/logout").authenticated()
+                .requestMatchers("/api/auth/logout-everywhere").authenticated() 
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers(HttpMethod.GET,
                     "/api/surveys/{surveyId}/my-incompleted-responses").authenticated()
