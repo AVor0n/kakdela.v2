@@ -50,7 +50,7 @@ public class Survey {
   @ToString.Exclude
   private Account author;
 
-  @Column(name = "title", length = 200, nullable = false)
+  @Column(name = "title", columnDefinition = "text", nullable = false)
   private String title;
 
   @Column(name = "description", columnDefinition = "text")

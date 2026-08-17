@@ -5,16 +5,15 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import ru.hh.kakdela.v2.constants.ConstraintMessages;
 
 @NoArgsConstructor
 @Getter
 @Setter
-@Schema(
-    name = "AccountDelete",
-    title = "DTO для удаления аккаунта"
-)
+@Schema(name = "Account.Delete")
 public class AccountDeleteDto {
+
   @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
-  @NotBlank(message = "Операция должна быть подтверждена вводом текущего пароля")
+  @NotBlank(message = ConstraintMessages.PASSWORD_CONFIRMATION_NEEDED)
   private String password;
 }

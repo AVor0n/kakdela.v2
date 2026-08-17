@@ -12,7 +12,7 @@ CREATE TABLE account (
 CREATE TABLE survey (
     id uuid PRIMARY KEY,
     author_id uuid REFERENCES account (id) ON DELETE CASCADE NOT NULL,
-    title varchar(200) NOT NULL,
+    title text NOT NULL,
     description text,
     attachment_object_key varchar(1024),
     is_authorized_only bool DEFAULT FALSE NOT NULL,
@@ -40,7 +40,7 @@ CREATE TABLE survey_page (
     id uuid PRIMARY KEY,
     survey_id uuid REFERENCES survey (id) ON DELETE CASCADE NOT NULL,
     serial_number int NOT NULL,
-    title varchar(200),
+    title text,
     description text,
     CONSTRAINT uk_page_survey_serial UNIQUE (survey_id, serial_number) DEFERRABLE INITIALLY IMMEDIATE
 );
@@ -55,7 +55,7 @@ CREATE TABLE question (
     id uuid PRIMARY KEY,
     survey_page_id uuid REFERENCES survey_page (id) ON DELETE CASCADE NOT NULL,
     serial_number int NOT NULL,
-    text varchar(200) NOT NULL,
+    text text NOT NULL,
     description text,
     attachment_object_key varchar(1024),
     type varchar(255) NOT NULL,
@@ -80,7 +80,7 @@ CREATE TABLE answer_option (
 
 CREATE TABLE closing_page (
     survey_id uuid PRIMARY KEY REFERENCES survey (id) ON DELETE CASCADE,
-    title varchar(200),
+    title text,
     description text,
     attachment_object_key varchar(1024),
     file_object_key varchar(1024),

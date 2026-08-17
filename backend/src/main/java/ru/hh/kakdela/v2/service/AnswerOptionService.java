@@ -22,6 +22,7 @@ import ru.hh.kakdela.v2.exception.question.AnswerOptionNotFoundException;
 import ru.hh.kakdela.v2.mapper.AnswerOptionMapper;
 import ru.hh.kakdela.v2.model.AnswerOption;
 import ru.hh.kakdela.v2.model.Question;
+import ru.hh.kakdela.v2.util.DataConstraintUtil;
 
 @Slf4j
 @Service
@@ -74,13 +75,12 @@ public class AnswerOptionService {
 
     if (dto.getSerialNumber() != null
         && !dto.getSerialNumber().equals(maxAvailableSerial)) {
-      if (dto.getSerialNumber() > maxAvailableSerial) {
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-            "Порядковый номер должен быть не больше " + maxAvailableSerial);
-      }
+      DataConstraintUtil.checkSerialNumberUpperLimit(dto.getSerialNumber(), maxAvailableSerial);
 
       answerOptionDao.increaseSerialNumbers(questionId, dto.getSerialNumber());
     }
+
+    DataConstraintUtil.checkAnswerOptionTextLength(dto.getText());
 
     AnswerOption option = AnswerOption.builder()
         .id(UUID.randomUUID())
@@ -113,10 +113,8 @@ public class AnswerOptionService {
     if (dto.getSerialNumber() != null && !dto.getSerialNumber().equals(oldSerial)) {
       int newSerial = dto.getSerialNumber();
       int maxAvailableSerial = answerOptionDao.findMaxSerialNumber(questionId);
-      if (newSerial > maxAvailableSerial) {
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-            "Новый номер должен быть не больше " + maxAvailableSerial);
-      }
+
+      DataConstraintUtil.checkSerialNumberUpperLimit(newSerial, maxAvailableSerial);
 
       if (oldSerial > newSerial) {
         answerOptionDao.increaseSerialNumbers(questionId, newSerial, oldSerial - 1);
@@ -128,6 +126,7 @@ public class AnswerOptionService {
     }
 
     if (dto.getText() != null) {
+      DataConstraintUtil.checkAnswerOptionTextLength(dto.getText());
       option.setText(dto.getText());
     }
     answerOptionDao.update(option);

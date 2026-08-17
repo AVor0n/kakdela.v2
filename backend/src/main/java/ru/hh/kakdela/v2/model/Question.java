@@ -62,7 +62,7 @@ public class Question {
   @Column(name = "serial_number", nullable = false)
   private Integer serialNumber;
 
-  @Column(name = "text", length = 200, nullable = false)
+  @Column(name = "text", columnDefinition = "text", nullable = false)
   private String text;
 
   @Column(name = "description", columnDefinition = "text")

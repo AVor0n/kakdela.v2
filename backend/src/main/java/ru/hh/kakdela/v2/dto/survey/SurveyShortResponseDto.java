@@ -12,11 +12,9 @@ import lombok.ToString;
 @Getter
 @EqualsAndHashCode
 @ToString
-@Schema(
-    name = "SurveyShortResponseDto",
-    title = "Survey.response.short"
-)
+@Schema(name = "Survey.ShortResponse")
 public class SurveyShortResponseDto {
+
   private final UUID id;
   private final String title;
   private final String description;

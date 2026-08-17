@@ -11,10 +11,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @Getter
 @Setter
-@Schema(
-    name = "SubscriptionResponse",
-    title = "DTO для получения данных о подписчиках опроса для уведомлений"
-)
+@Schema(name = "Subscription.Response")
 public class SubscriptionResponseDto {
 
   private List<String> subscribedEmails;

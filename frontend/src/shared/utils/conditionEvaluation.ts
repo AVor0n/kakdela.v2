@@ -35,14 +35,16 @@ export function evaluateConditionNode(node: ConditionNode | null, answers: Condi
 }
 
 export function resolvePreviewNextPageId(currentPage: Page, pages: Page[], answers: ConditionAnswers): string | null {
-    const matchedCondition = currentPage.conditions
-        .filter(({ isActive, root }) => isActive && root)
-        .find((condition) => evaluateConditionNode(condition.root, answers));
+    const activeConditions = currentPage.conditions.filter(({ isActive }) => isActive);
+    const matchedCondition = activeConditions.find((condition) => evaluateConditionNode(condition.root, answers));
     if (matchedCondition) return matchedCondition.nextPageId;
+
+    const conditionTargetPageIds = new Set(activeConditions.map(({ nextPageId }) => nextPageId));
 
     return (
         [...pages]
             .sort((firstPage, secondPage) => firstPage.serialNumber - secondPage.serialNumber)
-            .find((page) => page.serialNumber > currentPage.serialNumber)?.id ?? null
+            .find((page) => page.serialNumber > currentPage.serialNumber && !conditionTargetPageIds.has(page.id))?.id ??
+        null
     );
 }

@@ -5,17 +5,16 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import ru.hh.kakdela.v2.constants.ConstraintMessages;
 import ru.hh.kakdela.v2.model.Permission;
 
 @NoArgsConstructor
 @Getter
 @Setter
-@Schema(
-    name = "Permission.Update"
-)
+@Schema(name = "Permission.Update")
 public class PermissionUpdateDto {
 
   @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
-  @NotNull(message = "Роль обязательна")
+  @NotNull(message = ConstraintMessages.FIELD_SHOULD_NOT_BE_EMPTY)
   private Permission.SurveyRole role;
 }

@@ -9,6 +9,8 @@ import java.util.UUID;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import ru.hh.kakdela.v2.constants.ConstraintMessages;
+import ru.hh.kakdela.v2.constants.TextValueLengthLimits;
 import ru.hh.kakdela.v2.validator.NullOrNotBlank;
 
 @NoArgsConstructor
@@ -20,8 +22,10 @@ import ru.hh.kakdela.v2.validator.NullOrNotBlank;
 public class AnswerRequestDto {
 
   @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @NullOrNotBlank(message = "Текст ответа не должен быть пустым")
-  @Size(max = 5000, message = "Текст ответа не должен быть длиннее 5000 символов")
+  @NullOrNotBlank(message = ConstraintMessages.FIELD_SHOULD_NOT_BE_EMPTY)
+  @Size(max = TextValueLengthLimits.ANSWER_MAX_LENGTH,
+      message = ConstraintMessages.TEXT_VALUE_UPPER_LENGTH_LIMIT_VIOLATED
+          + TextValueLengthLimits.ANSWER_MAX_LENGTH)
   private String textValue;
 
   @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED)

@@ -11,9 +11,7 @@ import ru.hh.kakdela.v2.dto.file.FileResponseDto;
 @Getter
 @EqualsAndHashCode
 @ToString
-@Schema(
-    name = "ClosingPage.Response"
-)
+@Schema(name = "ClosingPage.Response")
 public class ClosingPageResponseDto {
 
   private final String title;

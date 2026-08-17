@@ -1,7 +1,8 @@
 package ru.hh.kakdela.v2.mapper;
 
 import jakarta.servlet.http.HttpServletRequest;
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
@@ -20,7 +21,7 @@ public class ErrorMapper {
       WebRequest request
   ) {
     return new ErrorResponse(
-        LocalDateTime.now(),
+        getTimestamp(),
         errorCode,
         id,
         message,
@@ -38,32 +39,12 @@ public class ErrorMapper {
       WebRequest request
   ) {
     return new ErrorResponse(
-        LocalDateTime.now(),
+        getTimestamp(),
         errorCode,
         id,
         message,
         null,
         null,
-        objectDetails,
-        getPath(request));
-  }
-
-  public static ErrorResponse getErrorResponse(
-      UUID id,
-      ErrorCode errorCode,
-      String message,
-      UUID object1Id,
-      UUID object2Id,
-      String objectDetails,
-      WebRequest request
-  ) {
-    return new ErrorResponse(
-        LocalDateTime.now(),
-        errorCode,
-        id,
-        message,
-        object1Id,
-        object2Id,
         objectDetails,
         getPath(request));
   }
@@ -73,7 +54,7 @@ public class ErrorMapper {
       Kd2Exception ex,
       WebRequest request) {
     return new ErrorResponse(
-        LocalDateTime.now(),
+        getTimestamp(),
         ex.getErrorCode(),
         id,
         ex.getMessage(),
@@ -88,7 +69,7 @@ public class ErrorMapper {
       Kd2AuthenticationException ex,
       WebRequest request) {
     return new ErrorResponse(
-        LocalDateTime.now(),
+        getTimestamp(),
         ex.getErrorCode(),
         id,
         ex.getMessage(),
@@ -103,7 +84,7 @@ public class ErrorMapper {
       Kd2ObjectRelatedException ex,
       WebRequest request) {
     return new ErrorResponse(
-        LocalDateTime.now(),
+        getTimestamp(),
         ex.getErrorCode(),
         id,
         ex.getMessage(),
@@ -113,11 +94,15 @@ public class ErrorMapper {
         getPath(request));
   }
 
-  private static String getPath(WebRequest request) {
+  public static String getPath(WebRequest request) {
     if (request instanceof ServletWebRequest) {
       HttpServletRequest servletRequest = ((ServletWebRequest) request).getRequest();
       return servletRequest.getRequestURI();
     }
     return null;
+  }
+
+  public static Instant getTimestamp() {
+    return Instant.now().truncatedTo(ChronoUnit.SECONDS);
   }
 }

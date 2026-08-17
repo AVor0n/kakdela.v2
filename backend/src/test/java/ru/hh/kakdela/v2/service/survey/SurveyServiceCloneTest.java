@@ -103,7 +103,7 @@ public class SurveyServiceCloneTest extends SurveyServiceTestBase {
 
       survey.setCreatedAt(null);
 
-      assertTrue(survey.getTitle().matches("^Копия — .*$"),
+      assertTrue(survey.getTitle().matches("^<p>Копия — .*$"),
           "Копия опроса должна иметь префикс \"Копия —\" в названии");
       assertFalse(survey.isPublished(),
           "Копия опроса не должна быть опубликована");
@@ -208,7 +208,7 @@ public class SurveyServiceCloneTest extends SurveyServiceTestBase {
 
       survey.setCreatedAt(null);
 
-      assertTrue(survey.getTitle().matches("^Копия — .*$"),
+      assertTrue(survey.getTitle().matches("^<p>Копия — .*$"),
           "Копия опроса должна иметь префикс \"Копия —\" в названии");
       assertFalse(survey.isPublished(), "Копия опроса не должна быть опубликована");
       assertEquals(Collections.emptyList(), survey.getResponses(),
