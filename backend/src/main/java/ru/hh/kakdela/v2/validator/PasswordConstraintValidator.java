@@ -8,6 +8,6 @@ public class PasswordConstraintValidator
   @Override
   public boolean isValid(CharSequence password, ConstraintValidatorContext context) {
     return password.toString()
-        .matches("^(?=.*[0-9])(?=.*[a-zA-Zа-яА-Я])(?=.*[!@#&()–\\[{}\\]:;',?/*~$^+=<>]).{8,}$");
+        .matches("^(?=.*[0-9])(?=.*[a-zA-Zа-яА-Я])(?=.*[!@#&()–\\[{}\\]:;'.,?/*~$^+=_<>]).{8,}$");
   }
 }
