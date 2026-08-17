@@ -12,19 +12,12 @@ import { ImageAttachmentControl } from '@/shared/ui/ImageAttachmentControl/Image
 
 interface Props {
     item: Pick<Survey | Template, 'id' | 'title' | 'description'>;
-    attachmentUrl?: string | null;
+    attachmentUrl: string | null;
     canEditImage?: boolean;
-    replaceImageWithoutUrl?: boolean;
     onAttachmentUrlChange: (_attachmentUrl: string | null) => void;
 }
 
-export function SurveyDetail({
-    item,
-    attachmentUrl,
-    canEditImage = false,
-    replaceImageWithoutUrl = false,
-    onAttachmentUrlChange,
-}: Props) {
+export function SurveyDetail({ item, attachmentUrl, canEditImage = false, onAttachmentUrlChange }: Props) {
     const [title, setTitle] = useState<string>(item.title);
     const [description, setDescription] = useState<string>(item.description ? item.description : '');
     const [isImagePending, setIsImagePending] = useState(false);
@@ -37,11 +30,7 @@ export function SurveyDetail({
 
         setIsImagePending(true);
         try {
-            const response = await saveOpeningPageImage(
-                item.id,
-                file,
-                replaceImageWithoutUrl || Boolean(attachmentUrl),
-            );
+            const response = await saveOpeningPageImage(item.id, file, Boolean(attachmentUrl));
             onAttachmentUrlChange(response.attachmentUrl);
         } catch {
             dispatch(setErrorMessage({ message: 'Не удалось загрузить изображение приветственной страницы' }));

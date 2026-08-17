@@ -72,10 +72,12 @@ export type SurveyListItem = Pick<Survey, 'id' | 'title' | 'description' | 'crea
     userRole: SurveyRole;
 };
 
-export type Template = Pick<Survey, 'id' | 'title' | 'description' | 'createdAt' | 'pages' | 'closingPage'> & {
+export type Template = Pick<
+    Survey,
+    'id' | 'title' | 'description' | 'attachmentUrl' | 'createdAt' | 'pages' | 'closingPage'
+> & {
     authorId: string;
     authorName: string;
-    attachmentUrl?: string | null;
     published: boolean;
 };
 export type TemplateListItem = Pick<Template, 'id' | 'title' | 'description' | 'createdAt'> & {

@@ -117,7 +117,6 @@ export function SurveyModify() {
                     item={isTemplate ? selectedTemplate! : selectedSurvey!}
                     attachmentUrl={isTemplate ? selectedTemplate!.attachmentUrl : selectedSurvey!.attachmentUrl}
                     canEditImage
-                    replaceImageWithoutUrl={isTemplate}
                     onAttachmentUrlChange={(attachmentUrl) =>
                         dispatch(
                             isTemplate
