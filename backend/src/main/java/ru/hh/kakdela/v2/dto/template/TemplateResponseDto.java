@@ -18,6 +18,7 @@ public class TemplateResponseDto {
   private final UUID id;
   private final String title;
   private final String description;
+  private String attachmentUrl;
   private final UUID authorId;
   private final String authorName;
   private final boolean isPublished;
