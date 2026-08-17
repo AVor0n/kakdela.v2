@@ -286,13 +286,12 @@ export function PageConditionsEditor({ page }: Props) {
                                     </Button>
                                 </div>
                             </div>
-                            {!condition.isActive && (
-                                activationBlockReason ? (
+                            {!condition.isActive &&
+                                (activationBlockReason ? (
                                     <p className={style.hint}>Правило нельзя активировать: {activationBlockReason}</p>
                                 ) : (
                                     <p className={style.hint}>Активируйте правило, когда закончите изменения.</p>
-                                )
-                            )}
+                                ))}
                             {isTargetInvalid && (
                                 <p className={style.error}>После изменения порядка страниц переход ведёт назад.</p>
                             )}

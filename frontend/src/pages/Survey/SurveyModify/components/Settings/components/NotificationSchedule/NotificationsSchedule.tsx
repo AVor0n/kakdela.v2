@@ -22,16 +22,12 @@ export function NotificationsSchedule({ surveyId }: Props) {
             .then((data) => {
                 dispatch(setNotificationsSchedule(data));
             })
-            .catch(() =>
-                dispatch(setErrorMessage({ message: 'Не удалось получить расписания для напоминаний' })),
-            );
+            .catch(() => dispatch(setErrorMessage({ message: 'Не удалось получить расписания для напоминаний' })));
     }, [surveyId]);
 
     const createNotificationScheduleHandler = () => {
         if (notificationsSchedule.length + 1 > 3) {
-            dispatch(
-                setErrorMessage({ message: 'Невозможно создать больше 3 расписаний для напоминаний' }),
-            );
+            dispatch(setErrorMessage({ message: 'Невозможно создать больше 3 расписаний для напоминаний' }));
             return;
         }
 
@@ -46,9 +42,7 @@ export function NotificationsSchedule({ surveyId }: Props) {
             .then((data) => {
                 dispatch(addNotificationSchedule(data));
             })
-            .catch(() =>
-                dispatch(setErrorMessage({ message: 'Не удалось создать расписание для напоминаний' })),
-            );
+            .catch(() => dispatch(setErrorMessage({ message: 'Не удалось создать расписание для напоминаний' })));
     };
 
     return (
