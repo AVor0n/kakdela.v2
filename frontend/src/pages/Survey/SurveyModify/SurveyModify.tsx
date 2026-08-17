@@ -1,6 +1,5 @@
 import { SurveyDetail } from './components/SurveyDetail/SurveyDetail';
 import { useAppSelector } from '@/hooks/useAppSelector';
-import { Sidebar } from './components/Sidebar/Sidebar';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { reorderPages, setSurveyPages } from '@/entities/Pages/Pages.slice';
 import { clonePage } from '@/entities/Survey/Survey.utils';
@@ -25,6 +24,7 @@ import { ClosingPageEditor } from './components/ClosingPageEditor/ClosingPageEdi
 import { useSearchParams } from 'react-router-dom';
 import type { Page } from '@/shared/types/Survey.type';
 import { validateActiveSurveyConditions } from '@/shared/utils/conditions';
+import { AddPageSeparator } from './components/PageSeparator/AddPageSeparator';
 
 function getReorderedPages(pages: Page[], activePageId: string, overPageId: string): Page[] {
     const reorderedPages = pages.map(clonePage);
@@ -124,12 +124,12 @@ export function SurveyModify() {
                         ))}
                     </SortableContext>
                 </DndContext>
+                <AddPageSeparator surveyId={isTemplate ? selectedTemplate!.id : selectedSurvey!.id} />
                 <ClosingPageEditor
                     surveyId={isTemplate ? selectedTemplate!.id : selectedSurvey!.id}
                     closingPage={isTemplate ? selectedTemplate!.closingPage : selectedSurvey!.closingPage}
                 />
             </div>
-            <Sidebar />
         </div>
     );
 }

@@ -1,0 +1,44 @@
+.card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 150px;
+    padding: 20px;
+    border: 2px dashed var(--color-border);
+    border-radius: 24px;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+}
+
+.plus {
+    font-size: 80px;
+    font-weight: 300;
+    line-height: 0.75;
+}
+
+.label {
+    margin-top: 16px;
+    font-size: 20px;
+    font-weight: 500;
+    line-height: 1.2;
+}
+
+@media (max-width: 768px) {
+    .card {
+        min-height: 140px;
+        padding: 16px 14px;
+        border-radius: 16px;
+    }
+
+    .plus {
+        font-size: 72px;
+    }
+
+    .label {
+        font-size: 18px;
+    }
+}

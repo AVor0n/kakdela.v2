@@ -9,6 +9,7 @@ import style from './PageSeparator.module.css';
 import { PageDetail } from './components/PageDetail/PageDetail';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { findPageConditionReferences } from '@/shared/utils/conditions';
+import { PageSeparatorFrame } from './PageSeparatorFrame';
 
 interface Props {
     page: Page;
@@ -80,48 +81,53 @@ export function PageSeparator({
 
     return (
         <>
-            <div className={style.separator}>
-                <div
-                    ref={dragHandleRef}
-                    className={style.dragHandle}
-                    onClick={stopClickPropagation}
-                    {...dragHandleAttributes}
-                    {...dragHandleListeners}
-                >
-                    <svg className={style.dragHandleIcon} viewBox='0 0 16 8' fill='none' aria-hidden='true'>
-                        <circle cx='4' cy='2' r='1.5' fill='currentColor' />
-                        <circle cx='8' cy='2' r='1.5' fill='currentColor' />
-                        <circle cx='12' cy='2' r='1.5' fill='currentColor' />
-                        <circle cx='4' cy='6' r='1.5' fill='currentColor' />
-                        <circle cx='8' cy='6' r='1.5' fill='currentColor' />
-                        <circle cx='12' cy='6' r='1.5' fill='currentColor' />
-                    </svg>
-                </div>
-                <button
-                    className={`${style.action} ${style.deleteAction}`}
-                    type='button'
-                    aria-label={`Удалить страницу ${page.serialNumber}`}
-                    onClick={deletePageHandler}
-                >
-                    <img src='/trash.svg' alt='' />
-                </button>
-                <span className={style.line} aria-hidden='true' />
-                <span className={style.content}>Страница {page.serialNumber}</span>
-                <span className={style.line} aria-hidden='true' />
-                <button
-                    className={`${style.action} ${style.logicAction}`}
-                    type='button'
-                    aria-label={`${isConditionsEditorOpen ? 'Закрыть' : 'Открыть'} логику перехода`}
-                    aria-expanded={isConditionsEditorOpen}
-                    aria-controls={conditionsEditorId}
-                    onClick={(event) => {
-                        event.stopPropagation();
-                        onToggleConditions();
-                    }}
-                >
-                    <LogicIcon />
-                </button>
-            </div>
+            <PageSeparatorFrame
+                overlay={
+                    <div
+                        ref={dragHandleRef}
+                        className={style.dragHandle}
+                        onClick={stopClickPropagation}
+                        {...dragHandleAttributes}
+                        {...dragHandleListeners}
+                    >
+                        <svg className={style.dragHandleIcon} viewBox='0 0 16 8' fill='none' aria-hidden='true'>
+                            <circle cx='4' cy='2' r='1.5' fill='currentColor' />
+                            <circle cx='8' cy='2' r='1.5' fill='currentColor' />
+                            <circle cx='12' cy='2' r='1.5' fill='currentColor' />
+                            <circle cx='4' cy='6' r='1.5' fill='currentColor' />
+                            <circle cx='8' cy='6' r='1.5' fill='currentColor' />
+                            <circle cx='12' cy='6' r='1.5' fill='currentColor' />
+                        </svg>
+                    </div>
+                }
+                leadingAction={
+                    <button
+                        className={`${style.action} ${style.deleteAction}`}
+                        type='button'
+                        aria-label={`Удалить страницу ${page.serialNumber}`}
+                        onClick={deletePageHandler}
+                    >
+                        <img src='/trash.svg' alt='' />
+                    </button>
+                }
+                trailingAction={
+                    <button
+                        className={`${style.action} ${style.logicAction}`}
+                        type='button'
+                        aria-label={`${isConditionsEditorOpen ? 'Закрыть' : 'Открыть'} логику перехода`}
+                        aria-expanded={isConditionsEditorOpen}
+                        aria-controls={conditionsEditorId}
+                        onClick={(event) => {
+                            event.stopPropagation();
+                            onToggleConditions();
+                        }}
+                    >
+                        <LogicIcon />
+                    </button>
+                }
+            >
+                Страница {page.serialNumber}
+            </PageSeparatorFrame>
             <PageDetail page={page} />
         </>
     );

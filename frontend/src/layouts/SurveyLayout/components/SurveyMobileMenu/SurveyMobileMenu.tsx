@@ -110,7 +110,12 @@ export function SurveyMobileMenu({
                     )}
 
                     {canEditSurvey && (
-                        <Button mode='tertiary' style='accent' onClick={handlePublish} disabled={!hasSelectedSurvey}>
+                        <Button
+                            mode={isPublished ? 'secondary' : 'tertiary'}
+                            style={isPublished ? 'positive' : 'accent'}
+                            onClick={handlePublish}
+                            disabled={!hasSelectedSurvey}
+                        >
                             {isPublished ? 'Снять с публикации' : 'Опубликовать'}
                         </Button>
                     )}
