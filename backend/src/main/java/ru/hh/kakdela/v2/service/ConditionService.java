@@ -125,6 +125,7 @@ public class ConditionService {
         .id(UUID.randomUUID())
         .surveyPage(page)
         .nextPage(nextPage)
+        .isActive(dto.getIsActive())
         .build();
 
     conditionDao.save(condition);
@@ -155,12 +156,15 @@ public class ConditionService {
 
     if (dto.getIsActive()) {
       checkNoDubbingCondition(condition.getSurveyPage().getId(), dto.getNextPageId());
+    }
 
+    condition.setIsActive(dto.getIsActive());
+
+    if (dto.getIsActive()) {
       conditionConflictService.validatePageConditions(condition.getSurveyPage());
     }
 
     condition.setNextPage(nextPage);
-    condition.setIsActive(dto.getIsActive());
 
     conditionDao.update(condition);
 

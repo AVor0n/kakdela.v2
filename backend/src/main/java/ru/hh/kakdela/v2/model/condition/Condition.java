@@ -19,6 +19,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+import ru.hh.kakdela.v2.constants.DefaultValues;
 import ru.hh.kakdela.v2.model.Response;
 import ru.hh.kakdela.v2.model.SurveyPage;
 
@@ -60,7 +61,7 @@ public class Condition {
 
   @Column(name = "is_active", nullable = false)
   @Builder.Default
-  private Boolean isActive = false;
+  private Boolean isActive = DefaultValues.CONDITION_IS_ACTIVE;
 
   public boolean evaluate(Response response) {
     return root != null && root.evaluate(response);

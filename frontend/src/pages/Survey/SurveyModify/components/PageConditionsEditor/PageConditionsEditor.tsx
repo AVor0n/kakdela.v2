@@ -35,7 +35,8 @@ const CONDITION_VALIDATION_MESSAGES: Record<ConditionValidationIssueCode, string
     TARGET_PAGE_NOT_FOUND: 'Выберите существующую страницу перехода.',
     TARGET_PAGE_NOT_FORWARD: 'Переход должен вести на следующую страницу.',
 };
-const LOGICAL_CONFLICT_MESSAGE = 'Обнаружен конфликт правил. Измените выделенные правила.';
+const LOGICAL_CONFLICT_MESSAGE =
+    'Обнаружен конфликт правил. Измените выделенные правила, чтобы они не могли выполняться одновременно.';
 const DUPLICATE_TARGET_REASON = 'Для выбранной страницы перехода уже существует активное правило.';
 const DUPLICATE_TARGET_MESSAGE =
     'Для выбранной страницы перехода уже существует активное правило. Сначала измените или отключите выделенное правило.';
@@ -209,7 +210,7 @@ export function PageConditionsEditor({ page }: Props) {
                         findActiveConditionWithTarget(page.conditions, option.value, condition.id)
                             ? {
                                   ...option,
-                                  text: `${String(option.text)} — используется активным правилом`,
+                                  text: `${String(option.text)} (используется активным правилом)`,
                               }
                             : option,
                     );
@@ -285,11 +286,12 @@ export function PageConditionsEditor({ page }: Props) {
                                     </Button>
                                 </div>
                             </div>
-                            {!condition.isActive && activationBlockReason && (
-                                <p className={style.hint}>Правило нельзя активировать: {activationBlockReason}</p>
-                            )}
                             {!condition.isActive && (
-                                <p className={style.hint}>Активируйте правило, когда закончите изменения.</p>
+                                activationBlockReason ? (
+                                    <p className={style.hint}>Правило нельзя активировать: {activationBlockReason}</p>
+                                ) : (
+                                    <p className={style.hint}>Активируйте правило, когда закончите изменения.</p>
+                                )
                             )}
                             {isTargetInvalid && (
                                 <p className={style.error}>После изменения порядка страниц переход ведёт назад.</p>

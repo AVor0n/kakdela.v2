@@ -32,6 +32,7 @@ public class ConditionConflictService {
     List<DnfExpression> dnfs = activeConditions.stream()
         .map(DnfConverter::convert)
         .toList();
+    log.debug(dnfs.toString());
 
     for (int i = 0; i < dnfs.size(); i++) {
       for (int j = i + 1; j < dnfs.size(); j++) {

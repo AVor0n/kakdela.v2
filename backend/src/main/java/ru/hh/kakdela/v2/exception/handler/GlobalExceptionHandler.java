@@ -38,6 +38,8 @@ public class GlobalExceptionHandler {
       Kd2ObjectRelatedException ex, WebRequest request
   ) {
     UUID id = UUID.randomUUID();
+
+    logError("Ошибка API", id, ex);
     return ResponseEntity
         .status(ex.getHttpStatus())
         .body(ErrorMapper.getErrorResponse(id, ex, request));
@@ -48,6 +50,8 @@ public class GlobalExceptionHandler {
       Kd2Exception ex, WebRequest request
   ) {
     UUID id = UUID.randomUUID();
+
+    logError("Ошибка API", id, ex);
     return ResponseEntity
         .status(ex.getHttpStatus())
         .body(ErrorMapper.getErrorResponse(id, ex, request));
@@ -58,6 +62,8 @@ public class GlobalExceptionHandler {
       Kd2AuthenticationException ex, WebRequest request
   ) {
     UUID id = UUID.randomUUID();
+
+    logError(AUTHENTICATION_ERROR_MESSAGE, id, ex);
     return ResponseEntity
         .status(HttpStatus.UNAUTHORIZED)
         .body(ErrorMapper.getErrorResponse(id, ex, request));

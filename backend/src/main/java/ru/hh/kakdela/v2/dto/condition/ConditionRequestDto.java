@@ -6,6 +6,7 @@ import java.util.UUID;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import ru.hh.kakdela.v2.constants.DefaultValues;
 
 @NoArgsConstructor
 @Getter
@@ -16,5 +17,5 @@ public class ConditionRequestDto {
   @NotNull
   private UUID nextPageId;
   @NotNull
-  private Boolean isActive = false;
+  private Boolean isActive = DefaultValues.CONDITION_IS_ACTIVE;
 }
