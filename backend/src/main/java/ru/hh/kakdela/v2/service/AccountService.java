@@ -110,7 +110,7 @@ public class AccountService {
   }
 
   private Account requireActiveAccount(Account account) {
-    if (Boolean.TRUE.equals(account.getIsDeleted())) {
+    if (account.getIsDeleted()) {
       throw new ResponseStatusException(HttpStatus.FORBIDDEN,
           "Аккаунт удалён: login=" + account.getLogin());
     }
