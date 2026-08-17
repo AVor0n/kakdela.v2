@@ -115,6 +115,11 @@ public class JwtRequestFilter extends OncePerRequestFilter {
   protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
     String requestUri = request.getRequestURI();
 
+    if (pathMatcher.match("/api/auth/logout", requestUri)
+        || pathMatcher.match("/api/auth/logout-everywhere", requestUri)) {
+      return false;
+    }
+
     return pathMatcher.match("/api/auth/**", requestUri);
   }
 }
