@@ -24,6 +24,42 @@ public class QuestionDaoImpl implements QuestionDao {
   }
 
   @Override
+  public Optional<Question> findWithParentPageById(UUID id) {
+    return Optional.ofNullable(entityManager.createQuery(
+        """
+        FROM Question q
+        LEFT JOIN FETCH q.surveyPage
+        WHERE q.id = :id
+        """, Question.class)
+        .setParameter("id", id)
+        .getSingleResultOrNull());
+  }
+
+  @Override
+  public UUID findParentPageIdById(UUID id) {
+    return entityManager.createQuery(
+            """
+            SELECT q.surveyPage.id
+            FROM Question q
+            WHERE q.id = :id
+            """, UUID.class)
+        .setParameter("id", id)
+        .getSingleResult();
+  }
+
+  @Override
+  public UUID findParentSurveyIdById(UUID id) {
+    return entityManager.createQuery(
+        """
+        SELECT q.surveyPage.survey.id
+        FROM Question q
+        WHERE q.id = :id
+        """, UUID.class)
+        .setParameter("id", id)
+        .getSingleResult();
+  }
+
+  @Override
   public List<Question> findAllByPageId(UUID pageId) {
     return entityManager.createQuery(
             """
@@ -33,6 +69,18 @@ public class QuestionDaoImpl implements QuestionDao {
             """, Question.class)
         .setParameter("pageId", pageId)
         .getResultList();
+  }
+
+  @Override
+  public int findParentPageSerialNumberById(UUID id) {
+    return entityManager.createQuery(
+        """
+        SELECT q.surveyPage.serialNumber
+        FROM Question q
+        WHERE q.id = :id
+        """, Integer.class)
+        .setParameter("id", id)
+        .getSingleResult();
   }
 
   @Override

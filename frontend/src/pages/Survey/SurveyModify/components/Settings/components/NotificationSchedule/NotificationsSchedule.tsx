@@ -1,7 +1,7 @@
 import { createNotificationSchedule, getNotificationBySurveyId } from '@/api/notification';
 import { setErrorMessage } from '@/entities/Error/Error.slice';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { Button, FormLabel } from '@hh.ru/magritte-ui';
+import { Button, Flex, Text } from '@hh.ru/magritte-ui';
 import { useEffect } from 'react';
 import { NotificationItem } from './components/NotificationItem';
 import { useAppSelector } from '@/hooks/useAppSelector';
@@ -22,16 +22,12 @@ export function NotificationsSchedule({ surveyId }: Props) {
             .then((data) => {
                 dispatch(setNotificationsSchedule(data));
             })
-            .catch(() =>
-                dispatch(setErrorMessage({ message: 'Не удалось получить настройки переодических уведомлений' })),
-            );
+            .catch(() => dispatch(setErrorMessage({ message: 'Не удалось получить расписания для напоминаний' })));
     }, [surveyId]);
 
     const createNotificationScheduleHandler = () => {
         if (notificationsSchedule.length + 1 > 3) {
-            dispatch(
-                setErrorMessage({ message: 'Невозможно создать больше 3 настроек для переодичесуих уведомлений' }),
-            );
+            dispatch(setErrorMessage({ message: 'Невозможно создать больше 3 расписаний для напоминаний' }));
             return;
         }
 
@@ -46,36 +42,39 @@ export function NotificationsSchedule({ surveyId }: Props) {
             .then((data) => {
                 dispatch(addNotificationSchedule(data));
             })
-            .catch(() =>
-                dispatch(setErrorMessage({ message: 'Не удалось создать настройки переодических уведомлений' })),
-            );
+            .catch(() => dispatch(setErrorMessage({ message: 'Не удалось создать расписание для напоминаний' })));
     };
 
     return (
         <div className={style.container}>
             {notificationsSchedule.length === 0 ? (
                 <Button type='button' mode='secondary' style='accent' onClick={createNotificationScheduleHandler}>
-                    Добавить отправку переодических уведомлений
+                    Настроить отправку напоминаний
                 </Button>
             ) : (
                 <>
                     <div className={style.header}>
-                        <FormLabel>Настройка переодических уведомлений</FormLabel>
-                        {notificationsSchedule.length < 3 && (
-                            <Button
-                                type='button'
-                                mode='secondary'
-                                style='accent'
-                                onClick={createNotificationScheduleHandler}
-                                icon={<img src='/add.svg' alt='+' />}
-                            ></Button>
-                        )}
+                        <Text typography='title-4-semibold'>Настройка напоминаний о прохождении</Text>
                     </div>
                     <div className={style.content}>
                         {notificationsSchedule.map((notification) => {
                             return <NotificationItem key={notification.id} notificationSchedule={notification} />;
                         })}
                     </div>
+                    {notificationsSchedule.length < 3 && (
+                        <Flex gap={10} direction={'column'}>
+                            <Button
+                                type='button'
+                                size='small'
+                                mode='secondary'
+                                style='accent'
+                                onClick={createNotificationScheduleHandler}
+                                icon={<img src='/add.svg' alt='+' />}
+                            >
+                                Добавить{' '}
+                            </Button>
+                        </Flex>
+                    )}
                 </>
             )}
         </div>

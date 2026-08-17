@@ -7,7 +7,7 @@
 .formRow,
 .permissionRow {
     display: grid;
-    grid-template-columns: minmax(160px, 0.35fr) minmax(240px, 1fr) auto;
+    grid-template-columns: minmax(160px, 0.1fr) minmax(240px, 1fr) auto;
     align-items: center;
     gap: 8px;
 }

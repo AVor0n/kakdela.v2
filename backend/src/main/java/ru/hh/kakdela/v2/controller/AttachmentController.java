@@ -8,6 +8,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -22,6 +23,7 @@ import ru.hh.kakdela.v2.security.CustomUserDetails;
 import ru.hh.kakdela.v2.service.AnswerOptionService;
 import ru.hh.kakdela.v2.service.ClosingPageService;
 import ru.hh.kakdela.v2.service.QuestionService;
+import ru.hh.kakdela.v2.service.SurveyService;
 
 @RestController
 @RequestMapping("/api")
@@ -32,6 +34,7 @@ public class AttachmentController {
   private final QuestionService questionService;
   private final AnswerOptionService answerOptionService;
   private final ClosingPageService closingPageService;
+  private final SurveyService surveyService;
 
   // Question attachment
 
@@ -198,5 +201,41 @@ public class AttachmentController {
     return closingPageService.getFileUrl(
         surveyId,
         currentUser != null ? currentUser.getId() : null);
+  }
+
+  // Opening-page attachment
+
+  @PostMapping(
+      value = "/surveys/{surveyId}/opening-page/media-attachment",
+      consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+  )
+  @ResponseStatus(HttpStatus.CREATED)
+  public ObjectUrlResponseDto addPreviewAttachment(
+      @PathVariable UUID surveyId,
+      @RequestParam("file") MultipartFile file,
+      @AuthenticationPrincipal CustomUserDetails currentUser
+  ) {
+    return surveyService.addAttachment(surveyId, currentUser.getId(), file);
+  }
+
+  @PatchMapping(
+      value = "/surveys/{surveyId}/opening-page/media-attachment",
+      consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+  )
+  public ObjectUrlResponseDto updatePreviewAttachment(
+      @PathVariable UUID surveyId,
+      @RequestParam("file") MultipartFile file,
+      @AuthenticationPrincipal CustomUserDetails currentUser
+  ) {
+    return surveyService.updateAttachment(surveyId, currentUser.getId(), file);
+  }
+
+  @DeleteMapping("/surveys/{surveyId}/opening-page/media-attachment")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void deletePreviewAttachment(
+      @PathVariable UUID surveyId,
+      @AuthenticationPrincipal CustomUserDetails currentUser
+  ) {
+    surveyService.deleteAttachment(surveyId, currentUser.getId());
   }
 }

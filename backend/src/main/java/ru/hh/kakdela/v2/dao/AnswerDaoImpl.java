@@ -41,6 +41,7 @@ public class AnswerDaoImpl implements AnswerDao {
             FROM Answer a
             LEFT JOIN FETCH a.selectedAnswerOptions
             WHERE a.response.id = :responseId
+            ORDER BY a.pageSerialNumber ASC, a.questionSerialNumber ASC
             """, Answer.class)
         .setParameter("responseId", responseId)
         .getResultList();

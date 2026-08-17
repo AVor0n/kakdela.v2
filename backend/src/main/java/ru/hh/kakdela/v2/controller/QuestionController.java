@@ -31,13 +31,20 @@ public class QuestionController {
   private final QuestionService questionService;
 
   @GetMapping("/pages/{pageId}/questions")
-  public List<QuestionResponseDto> getAllByPageId(@PathVariable UUID pageId) {
-    return questionService.getAllByPageId(pageId);
+  public List<QuestionResponseDto> getAllByPageId(
+      @PathVariable UUID pageId,
+      @AuthenticationPrincipal CustomUserDetails currentUser) {
+    return questionService.getAllByPageId(
+        pageId, currentUser != null ? currentUser.getId() : null);
   }
 
   @GetMapping("/questions/{questionId}")
-  public QuestionResponseDto getById(@PathVariable UUID questionId) {
-    return questionService.getById(questionId);
+  public QuestionResponseDto getById(
+      @PathVariable UUID questionId,
+      @AuthenticationPrincipal CustomUserDetails currentUser
+  ) {
+    return questionService.getById(
+        questionId, currentUser != null ? currentUser.getId() : null);
   }
 
   @PostMapping("/pages/{pageId}/questions")
@@ -47,7 +54,8 @@ public class QuestionController {
       @Valid @RequestBody QuestionCreateDto createDto,
       @AuthenticationPrincipal CustomUserDetails currentUser
   ) {
-    return questionService.create(pageId, createDto, currentUser.getId());
+    return questionService.create(
+        pageId, createDto, currentUser != null ? currentUser.getId() : null);
   }
 
   @PostMapping("/questions/{questionId}/clone")
@@ -56,7 +64,8 @@ public class QuestionController {
       @PathVariable UUID questionId,
       @AuthenticationPrincipal CustomUserDetails currentUser
   ) {
-    return questionService.clone(questionId, currentUser.getId());
+    return questionService.clone(
+        questionId, currentUser != null ? currentUser.getId() : null);
   }
 
   @PutMapping("/questions/{questionId}")
@@ -65,7 +74,8 @@ public class QuestionController {
       @Valid @RequestBody QuestionUpdateDto updateDto,
       @AuthenticationPrincipal CustomUserDetails currentUser
   ) {
-    return questionService.update(questionId, updateDto, currentUser.getId());
+    return questionService.update(
+        questionId, updateDto, currentUser != null ? currentUser.getId() : null);
   }
 
   @DeleteMapping("/questions/{questionId}")
@@ -74,6 +84,7 @@ public class QuestionController {
       @PathVariable UUID questionId,
       @AuthenticationPrincipal CustomUserDetails currentUser
   ) {
-    questionService.delete(questionId, currentUser.getId());
+    questionService.delete(
+        questionId, currentUser != null ? currentUser.getId() : null);
   }
 }

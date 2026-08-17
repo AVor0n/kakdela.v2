@@ -1,7 +1,7 @@
 import { addSubscriber, deleteSubscriber, getSubscribers } from '@/api/subscribers';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import type { Subscribers } from '@/shared/types/Subscribers.type';
-import { FormLabel, Input } from '@hh.ru/magritte-ui';
+import { Input, Text } from '@hh.ru/magritte-ui';
 import { useEffect, useState, type KeyboardEvent } from 'react';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { setErrorMessage } from '@/entities/Error/Error.slice';
@@ -92,29 +92,33 @@ export function SubscribersInput() {
 
     return (
         <div className={style.content}>
-            <FormLabel>Пользователи для обязательного прохождения</FormLabel>
+            <Text typography='title-4-semibold'>Управление участниками</Text>
             <Input
                 value={subscribersInput}
                 onChange={(e) => setSubscribersInput(e)}
-                placeholder='Email'
+                placeholder='Email пользователя'
                 type='email'
                 onKeyDown={handleKeyDown}
                 elevatePlaceholder
             />
             <div className={style.list}>
-                {subscribers.map((sub) => (
-                    <div key={sub.id} className={style.tag}>
-                        <p>
-                            {sub.login}: {sub.email}
-                        </p>
-                        <img
-                            className={style.img}
-                            src='/X.svg'
-                            alt='x'
-                            onClick={() => deleteSubscribeHandler(sub.email)}
-                        />
-                    </div>
-                ))}
+                {subscribers.length > 0 ? (
+                    subscribers.map((sub) => (
+                        <div key={sub.id} className={style.tag}>
+                            <p>
+                                {sub.login}: {sub.email}
+                            </p>
+                            <img
+                                className={style.img}
+                                src='/X.svg'
+                                alt='x'
+                                onClick={() => deleteSubscribeHandler(sub.email)}
+                            />
+                        </div>
+                    ))
+                ) : (
+                    <p className={style.empty}>Обязательные участники ещё не добавлены</p>
+                )}
             </div>
         </div>
     );

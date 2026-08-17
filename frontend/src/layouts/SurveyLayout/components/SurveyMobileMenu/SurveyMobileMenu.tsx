@@ -12,8 +12,11 @@ type Props = {
     canEditSurvey: boolean;
     isAccessLoading: boolean;
     hasSelectedSurvey: boolean;
+    isCopied: boolean;
     isPublished?: boolean;
     onPublish: () => void;
+    copyClick: () => void;
+    isTemplate: boolean;
 };
 
 export function SurveyMobileMenu({
@@ -25,6 +28,9 @@ export function SurveyMobileMenu({
     hasSelectedSurvey,
     isPublished,
     onPublish,
+    copyClick,
+    isCopied,
+    isTemplate,
 }: Props) {
     const [isOpen, setIsOpen] = useState(false);
     const buttonRef = useRef<HTMLButtonElement>(null!);
@@ -69,21 +75,26 @@ export function SurveyMobileMenu({
                         Обратно в меню
                     </Button>
 
-                    {navigationItems.map((item) => (
-                        <Button
-                            key={item.section}
-                            mode={activeSection === item.section ? 'primary' : 'tertiary'}
-                            style='accent'
-                            Element={Link}
-                            to={item.path}
-                            disabled={item.disabled}
-                            title={item.disabled ? item.disabledTitle : undefined}
-                            aria-label={item.disabled ? item.disabledAriaLabel : item.label}
-                            onClick={closeMenu}
-                        >
-                            {item.label}
-                        </Button>
-                    ))}
+                    {!isTemplate &&
+                        navigationItems.map((item) => (
+                            <Button
+                                key={item.section}
+                                mode={activeSection === item.section ? 'primary' : 'tertiary'}
+                                style='accent'
+                                Element={Link}
+                                to={item.path}
+                                disabled={item.disabled}
+                                title={item.disabled ? item.disabledTitle : undefined}
+                                aria-label={item.disabled ? item.disabledAriaLabel : item.label}
+                                onClick={closeMenu}
+                            >
+                                {item.label}
+                            </Button>
+                        ))}
+
+                    <Button mode='tertiary' style={isCopied ? 'positive' : 'neutral'} onClick={copyClick}>
+                        {isCopied ? 'Ссылка скопирована' : 'Скопировать ссылку на опрос'}
+                    </Button>
 
                     {surveyId && (
                         <Button

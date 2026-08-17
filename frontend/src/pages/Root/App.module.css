@@ -13,6 +13,10 @@
     z-index: 10;
 }
 
+.registrationButtonText {
+    font-size: 16px;
+}
+
 .logo {
     display: flex;
     align-items: center;
@@ -51,7 +55,7 @@
     position: absolute;
     z-index: 0;
     border-radius: 50%;
-    filter: blur(60px);
+    filter: blur(200px);
     opacity: 0.35;
     pointer-events: none;
     animation: float 9s ease-in-out infinite alternate;
@@ -60,16 +64,16 @@
 .blobOne {
     top: -120px;
     left: -100px;
-    width: 360px;
-    height: 360px;
+    width: 400px;
+    height: 400px;
     background: radial-gradient(circle, #ff6a3d 0%, #d6001c 100%);
 }
 
 .blobTwo {
     bottom: -140px;
     right: -120px;
-    width: 420px;
-    height: 420px;
+    width: 450px;
+    height: 450px;
     background: radial-gradient(circle, #6a5cff 0%, #2f2b8f 100%);
     animation-delay: 1.5s;
 }
@@ -79,6 +83,7 @@
     z-index: 1;
     display: flex;
     justify-content: center;
+    margin-top: 24px;
 }
 
 .heroCard {

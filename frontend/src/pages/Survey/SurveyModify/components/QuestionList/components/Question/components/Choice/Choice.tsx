@@ -3,7 +3,7 @@ import {
     reorderAnswerOptions,
     setQuestion,
     setQuestionAnswerOptions,
-} from '@/entities/Survey/Survey.slice';
+} from '@/entities/Pages/Pages.slice';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { Button, Checkbox, Link, Radio } from '@hh.ru/magritte-ui';
 import { addAnswerOption, updateAnswerOption } from '@/api/answer-option';

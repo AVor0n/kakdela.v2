@@ -36,8 +36,6 @@ public class QuestionMapper {
         question.getAnswerOptionOrder().name(),
         question.hasOtherOption(),
         question.isMandatory(),
-        question.isVisible(),
-        question.getCondition(),
         question.getAnswerOptions().stream()
             .map(answerOptionMapper::answerOptionToDto)
             .collect(Collectors.collectingAndThen(

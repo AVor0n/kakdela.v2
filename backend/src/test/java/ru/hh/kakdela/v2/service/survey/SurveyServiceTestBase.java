@@ -19,11 +19,7 @@ import ru.hh.kakdela.v2.mapper.QuestionMapper;
 import ru.hh.kakdela.v2.mapper.SurveyMapper;
 import ru.hh.kakdela.v2.mapper.SurveyPageMapper;
 import ru.hh.kakdela.v2.model.Survey;
-import ru.hh.kakdela.v2.service.ClosingPageService;
-import ru.hh.kakdela.v2.service.NotificationService;
-import ru.hh.kakdela.v2.service.ObjectStorageService;
-import ru.hh.kakdela.v2.service.PermissionService;
-import ru.hh.kakdela.v2.service.SurveyService;
+import ru.hh.kakdela.v2.service.*;
 import ru.hh.kakdela.v2.util.service.survey.SurveyServiceTestDto;
 import ru.hh.kakdela.v2.util.service.survey.SurveyServiceTestEntity;
 import ru.hh.kakdela.v2.util.service.survey.SurveyServiceTestConstants;
@@ -43,9 +39,10 @@ class SurveyServiceTestBase {
   protected NotificationService notificationService;
   @Mock
   protected ObjectStorageService objectStorageService;
-
   @Mock
-  protected ClosingPageService closingPageService;
+  protected ConditionToolsService conditionToolsService;
+  @Mock
+  protected ImageProcessingService imageProcessingService;
 
   protected SurveyService surveyService;
 
@@ -271,7 +268,8 @@ class SurveyServiceTestBase {
         permissionService,
         notificationService,
         objectStorageService,
-        closingPageService,
+        conditionToolsService,
+        imageProcessingService,
         surveyMapper
     );
   }

@@ -35,6 +35,11 @@ public class NotificationService {
       return;
     }
 
+    if (survey.isTemplate()) {
+      log.debug("Уведомления не отправляются для шаблона id={}", surveyId);
+      return;
+    }
+
     List<Account> teamMembers = getTeamMembers(surveyId);
     if (!teamMembers.isEmpty()) {
       sendTeamNotifications(survey, teamMembers);
@@ -52,6 +57,11 @@ public class NotificationService {
 
   @Async
   public void sendNotificationForNewSubscribers(Survey survey, List<String> emails) {
+    if (survey.isTemplate()) {
+      log.debug("Уведомления не отправляются для шаблона");
+      return;
+    }
+
     log.info("Отправка {} уведомлений новым подписчикам опроса {}",
         emails.size(), survey.getId());
     for (String email : emails) {
@@ -63,6 +73,11 @@ public class NotificationService {
   public void sendNotificationForUsersWithUncompletedResponse(UUID surveyId) {
     Survey survey = checkSurvey(surveyId);
     if (survey == null) {
+      return;
+    }
+
+    if (survey.isTemplate()) {
+      log.debug("Уведомления о незавершённых ответах не отправляются для шаблона id={}", surveyId);
       return;
     }
 

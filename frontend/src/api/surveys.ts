@@ -1,2 +1,2 @@
-export { createSurvey, getMySurveys, getSurveyById, getSurveys } from './survey';
+export { createSurvey, getMySurveys, getPublicSurveyById, getSurveyForEditById, getSurveys } from './survey';
 export type { SurveyResponse } from './survey';

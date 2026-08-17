@@ -1,6 +1,7 @@
 package ru.hh.kakdela.v2.controller;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -14,12 +15,14 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import ru.hh.kakdela.v2.dto.closing.ClosingPageCreateDto;
 import ru.hh.kakdela.v2.dto.closing.ClosingPageResponseDto;
 import ru.hh.kakdela.v2.dto.closing.ClosingPageUpdateDto;
 import ru.hh.kakdela.v2.security.CustomUserDetails;
+import ru.hh.kakdela.v2.service.AuthCookieService;
 import ru.hh.kakdela.v2.service.ClosingPageService;
 
 @Slf4j
@@ -30,13 +33,28 @@ import ru.hh.kakdela.v2.service.ClosingPageService;
 public class ClosingPageController {
 
   private final ClosingPageService closingPageService;
+  private final AuthCookieService authCookieService;
 
   @GetMapping("/surveys/{surveyId}/closing-page")
+  public ClosingPageResponseDto getPublicBySurveyId(
+      @PathVariable UUID surveyId,
+      @RequestParam UUID responseId,
+      @AuthenticationPrincipal CustomUserDetails currentUser,
+      HttpServletRequest request
+  ) {
+    String token = authCookieService.getResponseToken(request, responseId);
+
+    return closingPageService.getPublicBySurveyId(
+        surveyId, responseId, currentUser != null ? currentUser.getId() : null, token);
+  }
+  
+  @GetMapping("/surveys/{surveyId}/closing-page/edit")
   public ClosingPageResponseDto getBySurveyId(
       @PathVariable UUID surveyId,
       @AuthenticationPrincipal CustomUserDetails currentUser
   ) {
-    return closingPageService.getBySurveyId(surveyId, currentUser.getId());
+    return closingPageService.getBySurveyId(
+        surveyId, currentUser != null ? currentUser.getId() : null);
   }
 
   @GetMapping("/surveys/{surveyId}/closing-page/exists")
@@ -44,7 +62,8 @@ public class ClosingPageController {
       @PathVariable UUID surveyId,
       @AuthenticationPrincipal CustomUserDetails currentUser
   ) {
-    return closingPageService.existsBySurveyId(surveyId, currentUser.getId());
+    return closingPageService.existsBySurveyId(
+        surveyId, currentUser != null ? currentUser.getId() : null);
   }
 
   @PostMapping("/surveys/{surveyId}/closing-page")
@@ -54,7 +73,8 @@ public class ClosingPageController {
       @Valid @RequestBody ClosingPageCreateDto createDto,
       @AuthenticationPrincipal CustomUserDetails currentUser
   ) {
-    return closingPageService.create(surveyId, createDto, currentUser.getId());
+    return closingPageService.create(
+        surveyId, createDto, currentUser != null ? currentUser.getId() : null);
   }
 
   @PatchMapping("/surveys/{surveyId}/closing-page")
@@ -63,7 +83,8 @@ public class ClosingPageController {
       @Valid @RequestBody ClosingPageUpdateDto updateDto,
       @AuthenticationPrincipal CustomUserDetails currentUser
   ) {
-    return closingPageService.update(surveyId, updateDto, currentUser.getId());
+    return closingPageService.update(
+        surveyId, updateDto, currentUser != null ? currentUser.getId() : null);
   }
 
   @DeleteMapping("/surveys/{surveyId}/closing-page")
@@ -72,6 +93,7 @@ public class ClosingPageController {
       @PathVariable UUID surveyId,
       @AuthenticationPrincipal CustomUserDetails currentUser
   ) {
-    closingPageService.delete(surveyId, currentUser.getId());
+    closingPageService.delete(
+        surveyId, currentUser != null ? currentUser.getId() : null);
   }
 }

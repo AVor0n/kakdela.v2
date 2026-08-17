@@ -2,7 +2,7 @@ import type { Question } from '@/shared/types/Question.type';
 import { Question as QuestionComponent } from './components/Question/Question';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { reorderQuestions, setPageQuestions, setSelectedQuestion } from '@/entities/Survey/Survey.slice';
+import { reorderQuestions, setPageQuestions, setSelectedQuestion } from '@/entities/Pages/Pages.slice';
 import { cloneQuestion } from '@/entities/Survey/Survey.utils';
 import { updateQuestion } from '@/api/question';
 import { setErrorMessage } from '@/entities/Error/Error.slice';
@@ -30,7 +30,7 @@ interface Props {
 }
 
 export function QuestionList({ questions, pageIndex }: Props) {
-    const { selectedQuestion } = useAppSelector((state) => state.survey);
+    const { selectedQuestion } = useAppSelector((state) => state.pages);
     const editQuestionId = useMemo(() => selectedQuestion?.id, [selectedQuestion]);
     const dispatch = useAppDispatch();
     const [activeQuestionId, setActiveQuestionId] = useState<string | null>(null);

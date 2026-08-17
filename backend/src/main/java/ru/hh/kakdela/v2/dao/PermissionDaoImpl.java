@@ -1,7 +1,6 @@
 package ru.hh.kakdela.v2.dao;
 
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
 import java.util.List;
 import java.util.Optional;
@@ -24,19 +23,15 @@ public class PermissionDaoImpl implements PermissionDao {
 
   @Override
   public Optional<Permission> findBySurveyIdAndAccountId(UUID surveyId, UUID accountId) {
-    try {
-      return Optional.of(entityManager
-          .createQuery(
-              """
-              FROM Permission p
-              WHERE p.id.surveyId = :surveyId AND p.id.accountId = :accountId
-              """, Permission.class)
-          .setParameter("surveyId", surveyId)
-          .setParameter("accountId", accountId)
-          .getSingleResultOrNull());
-    } catch (NoResultException e) {
-      return Optional.empty();
-    }
+    return Optional.ofNullable(entityManager
+        .createQuery(
+            """
+            FROM Permission p
+            WHERE p.id.surveyId = :surveyId AND p.id.accountId = :accountId
+            """, Permission.class)
+        .setParameter("surveyId", surveyId)
+        .setParameter("accountId", accountId)
+        .getSingleResultOrNull());
   }
 
   @Override
@@ -59,6 +54,19 @@ public class PermissionDaoImpl implements PermissionDao {
             .createQuery("FROM Permission p WHERE p.id.surveyId = :surveyId", Permission.class)
             .setParameter("surveyId", surveyId)
             .getResultList();
+  }
+
+  @Override
+  public List<Permission> findAllWithSurveysBySurveyId(UUID surveyId) {
+    return entityManager.createQuery(
+        """
+        SELECT DISTINCT p
+        FROM Permission p
+        LEFT JOIN FETCH p.survey
+        WHERE p.id.surveyId = :surveyId
+        """, Permission.class)
+        .setParameter("surveyId", surveyId)
+        .getResultList();
   }
 
   @Override
@@ -115,18 +123,5 @@ public class PermissionDaoImpl implements PermissionDao {
   public void delete(Permission permission) {
     log.debug("Удалены права доступа id={}", permission.getId());
     entityManager.remove(permission);
-  }
-
-  @Override
-  public void deleteBySurveyIdAndAccountId(UUID surveyId, UUID accountId) {
-    entityManager
-        .createQuery(
-            """
-            DELETE FROM Permission p
-            WHERE p.id.surveyId = :surveyId AND p.id.accountId = :accountId
-            """)
-        .setParameter("surveyId", surveyId)
-        .setParameter("accountId", accountId)
-        .executeUpdate();
   }
 }

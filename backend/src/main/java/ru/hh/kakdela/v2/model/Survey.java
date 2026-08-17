@@ -56,6 +56,10 @@ public class Survey {
   @Column(name = "description", columnDefinition = "text")
   private String description;
 
+  // для изображения на превью опроса
+  @Column(name = "attachment_object_key", length = 1024)
+  private String attachmentObjectKey;
+
   @Column(name = "is_authorized_only", nullable = false)
   @Builder.Default
   private boolean isAuthorizedOnly = DefaultValues.IS_AUTHORIZED_ONLY_DEFAULT;
@@ -91,20 +95,35 @@ public class Survey {
   @Column(name = "created_at", updatable = false, nullable = false)
   private Instant createdAt;
 
-  @OneToMany(mappedBy = "survey", cascade = CascadeType.ALL, orphanRemoval = true)
-  @Builder.Default
-  private List<Permission> permissions = new ArrayList<>();
-
-  @OneToMany(mappedBy = "survey", cascade = CascadeType.ALL, orphanRemoval = true)
+  @OneToMany(
+      mappedBy = "survey",
+      cascade = {
+          CascadeType.PERSIST,
+          CascadeType.MERGE},
+      orphanRemoval = true)
   @OrderBy("serialNumber ASC")
   @Builder.Default
   private List<SurveyPage> pages = new ArrayList<>();
 
-  @OneToOne(mappedBy = "survey", cascade = CascadeType.ALL,
-      orphanRemoval = true, fetch = FetchType.LAZY)
+  @OneToOne(
+      mappedBy = "survey",
+      cascade = {
+          CascadeType.PERSIST,
+          CascadeType.MERGE},
+      orphanRemoval = true,
+      fetch = FetchType.LAZY)
   private ClosingPage closingPage;
 
-  @OneToMany(mappedBy = "survey", cascade = CascadeType.ALL, orphanRemoval = true)
+  @OneToMany(
+      mappedBy = "survey",
+      cascade = {
+          CascadeType.PERSIST,
+          CascadeType.MERGE},
+      orphanRemoval = true)
+  @Builder.Default
+  private List<Permission> permissions = new ArrayList<>();
+
+  @OneToMany(mappedBy = "survey")
   @Builder.Default
   private List<Response> responses = new ArrayList<>();
 

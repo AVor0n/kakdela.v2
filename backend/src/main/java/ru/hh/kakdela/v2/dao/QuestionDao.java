@@ -9,7 +9,15 @@ public interface QuestionDao {
 
   Optional<Question> findById(UUID id);
 
+  Optional<Question> findWithParentPageById(UUID id);
+
+  UUID findParentPageIdById(UUID id);
+
+  UUID findParentSurveyIdById(UUID id);
+
   List<Question> findAllByPageId(UUID pageId);
+
+  int findParentPageSerialNumberById(UUID id);
 
   void save(Question question);
 

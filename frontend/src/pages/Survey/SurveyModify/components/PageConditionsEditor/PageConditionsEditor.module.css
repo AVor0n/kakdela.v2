@@ -1,0 +1,369 @@
+.editor {
+    margin: 16px 0 20px;
+    border: 1px solid #d8dee6;
+    border-radius: 16px;
+    background: #f7f9fb;
+    overflow: hidden;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    padding: 16px 20px;
+    color: #1f2937;
+    font: inherit;
+    font-weight: 600;
+}
+
+.summary {
+    color: #657386;
+    font-weight: 400;
+}
+
+.content {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 0 20px 20px;
+}
+
+.condition {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    border: 1px solid #d8dee6;
+    border-radius: 12px;
+    background: #fff;
+}
+
+.conditionConflict {
+    border-color: #c62828;
+    box-shadow: 0 0 0 1px rgb(198 40 40 / 18%);
+}
+
+.conditionHeader,
+.groupHeader,
+.inlineActions,
+.wrapActions,
+.formActions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.conditionHeader {
+    gap: 16px;
+    justify-content: space-between;
+}
+
+.targetField,
+.field {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.targetField {
+    flex: 0 0 auto;
+    justify-content: flex-end;
+    min-width: 0;
+    color: #657386;
+    font-size: 13px;
+}
+
+.targetField > span {
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+.targetField > :last-child {
+    width: 220px;
+}
+
+.activeField {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.activeField:has(input:disabled) {
+    cursor: default;
+}
+
+.editor select {
+    min-height: 36px;
+    padding: 6px 10px;
+    border: 1px solid #b8c1cc;
+    border-radius: 8px;
+    background: #fff;
+    color: #1f2937;
+}
+
+.atomForm {
+    display: grid;
+    grid-template-columns: minmax(240px, 2fr) minmax(150px, 0.8fr) minmax(220px, 1.5fr) auto;
+    align-items: center;
+    gap: 12px;
+}
+
+.atomQuestion,
+.atomOperator,
+.atomValue {
+    min-width: 0;
+}
+
+.atomQuestion > *,
+.atomOperator > *,
+.atomValue > * {
+    width: 100%;
+}
+
+.formActions {
+    min-width: 44px;
+    justify-content: flex-end;
+}
+
+.additionalActions {
+    grid-column: 1 / -1;
+}
+
+.trashIcon {
+    width: 24px;
+    height: 24px;
+    opacity: 0.58;
+    filter: grayscale(1);
+}
+
+.groupNode {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: start;
+    min-width: 0;
+}
+
+.groupOperator {
+    position: relative;
+    z-index: 1;
+    padding-top: 9px;
+}
+
+.groupOperator label {
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+}
+
+.groupOperator select {
+    min-height: 34px;
+    padding: 5px 9px;
+    border-color: #d8dee6;
+    border-radius: 10px;
+    background: #eef1f5;
+    font-weight: 600;
+}
+
+.groupBranch {
+    position: relative;
+    min-width: 0;
+    padding-left: 32px;
+}
+
+.groupBranch::before {
+    position: absolute;
+    top: 26px;
+    bottom: 28px;
+    left: 14px;
+    border-left: 1px solid #aeb7c2;
+    content: '';
+    pointer-events: none;
+}
+
+.groupBranch::after {
+    position: absolute;
+    top: 26px;
+    left: 0;
+    width: 14px;
+    border-top: 1px solid #aeb7c2;
+    content: '';
+    pointer-events: none;
+}
+
+.groupHeader {
+    justify-content: flex-start;
+    min-height: 36px;
+}
+
+.groupTitle {
+    min-width: 0;
+    color: #657386;
+    font-size: 13px;
+}
+
+.groupDeleteButton {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+}
+
+.groupDeleteButton:disabled {
+    cursor: default;
+    opacity: 0.5;
+}
+
+.groupDeleteIcon {
+    display: block;
+    width: 24px;
+    height: 24px;
+}
+
+.children {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.treeChild {
+    position: relative;
+    min-width: 0;
+}
+
+.treeChild::before {
+    position: absolute;
+    top: 26px;
+    left: -18px;
+    width: 18px;
+    border-top: 1px solid #aeb7c2;
+    content: '';
+    pointer-events: none;
+}
+
+.treeChild:last-child::after {
+    position: absolute;
+    top: 27px;
+    bottom: 0;
+    left: -19px;
+    width: 3px;
+    background: #fff;
+    content: '';
+    pointer-events: none;
+}
+
+.addTreeChild {
+    min-height: 54px;
+}
+
+.conditionRow {
+    min-width: 0;
+    padding: 10px 12px;
+    border: 1px solid #e1e6ec;
+    border-radius: 12px;
+    background: #f8fbff;
+}
+
+.treeRoot {
+    min-width: 0;
+    overflow-x: auto;
+    padding: 4px 0;
+}
+
+.wrapActions {
+    margin-top: 10px;
+    color: #657386;
+    font-size: 13px;
+}
+
+.hint {
+    margin: 0;
+    color: #657386;
+}
+
+.error {
+    margin: 0;
+    color: #c62828;
+}
+
+@media (max-width: 768px) {
+    .conditionHeader {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .inlineActions {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .atomForm {
+        grid-template-columns: minmax(0, 1fr) auto;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .atomQuestion,
+    .atomOperator,
+    .atomValue {
+        grid-column: 1 / -1;
+        width: 100%;
+    }
+
+    .additionalActions {
+        grid-row: 4;
+        grid-column: 1;
+        align-self: center;
+        justify-self: start;
+        min-width: 0;
+    }
+
+    .formActionsWithAdditional {
+        grid-row: 4;
+        grid-column: 2;
+        align-self: center;
+        justify-self: end;
+        min-width: 0;
+    }
+
+    .targetField {
+        align-items: stretch;
+        flex-direction: column;
+        flex-basis: auto;
+        width: 100%;
+    }
+
+    .targetField > :last-child {
+        width: 100%;
+    }
+
+    .wrapActions {
+        flex-wrap: nowrap;
+        margin-top: 0;
+    }
+
+    .wrapActionsLabel {
+        display: none;
+    }
+
+    .groupNode {
+        min-width: 0;
+        width: 100%;
+    }
+
+    .groupBranch,
+    .treeChild,
+    .conditionRow {
+        min-width: 0;
+        width: 100%;
+    }
+}
