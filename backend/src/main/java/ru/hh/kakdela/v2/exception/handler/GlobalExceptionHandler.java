@@ -14,7 +14,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -22,6 +21,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
+import ru.hh.kakdela.v2.constants.ErrorMessages;
 import ru.hh.kakdela.v2.dto.error.ErrorResponse;
 import ru.hh.kakdela.v2.exception.ErrorCode;
 import ru.hh.kakdela.v2.exception.Kd2AuthenticationException;
@@ -36,16 +36,13 @@ import ru.hh.kakdela.v2.security.CustomDisabledException;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-  private static final String AUTHENTICATION_ERROR_MESSAGE = "Ошибка аутентификации";
-  private static final String WRONG_LOGIN_OR_PASSWORD_MESSAGE = "Неверный логин или пароль";
-
   @ExceptionHandler(Kd2ObjectRelatedException.class)
   public ResponseEntity<ErrorResponse> handleKd2ObjectRelatedException(
       Kd2ObjectRelatedException ex, WebRequest request
   ) {
     UUID id = UUID.randomUUID();
 
-    logError("Ошибка API", id, ex);
+    logError(ErrorMessages.API_ERROR_MESSAGE, id, ex);
     return ResponseEntity
         .status(ex.getHttpStatus())
         .body(ErrorMapper.getErrorResponse(id, ex, request));
@@ -57,7 +54,7 @@ public class GlobalExceptionHandler {
   ) {
     UUID id = UUID.randomUUID();
 
-    logError("Ошибка API", id, ex);
+    logError(ErrorMessages.API_ERROR_MESSAGE, id, ex);
     return ResponseEntity
         .status(ex.getHttpStatus())
         .body(ErrorMapper.getErrorResponse(id, ex, request));
@@ -69,7 +66,7 @@ public class GlobalExceptionHandler {
   ) {
     UUID id = UUID.randomUUID();
 
-    logError(AUTHENTICATION_ERROR_MESSAGE, id, ex);
+    logError(ErrorMessages.AUTHENTICATION_ERROR_MESSAGE, id, ex);
     return ResponseEntity
         .status(HttpStatus.UNAUTHORIZED)
         .body(ErrorMapper.getErrorResponse(id, ex, request));
@@ -81,11 +78,11 @@ public class GlobalExceptionHandler {
       Kd2DataValidationException ex, WebRequest request) {
     UUID id = UUID.randomUUID();
 
-    logError("Нарушение ограничений в данных", id, ex);
+    logError(ErrorMessages.DATA_CONSTRAINT_VIOLATION_MESSAGE, id, ex);
     return getErrorResponseAsHashMap(
         ErrorCode.DATA_CONSTRAINT_VIOLATION,
         id,
-        "Нарушение ограничений в данных",
+        ErrorMessages.DATA_CONSTRAINT_VIOLATION_MESSAGE,
         Map.of(ex.getFieldName(), ex.getConstraintMessage()),
         getPath(request));
   }
@@ -97,14 +94,14 @@ public class GlobalExceptionHandler {
     UUID id = UUID.randomUUID();
 
     Map<String, String> errors = new HashMap<>();
-    ex.getBindingResult().getAllErrors()
-        .forEach(e -> errors.put(((FieldError) e).getField(), e.getDefaultMessage()));
+    ex.getBindingResult().getFieldErrors()
+        .forEach(e -> errors.put(e.getField(), e.getDefaultMessage()));
 
-    logError("Нарушение ограничений в данных", id, ex);
+    logError(ErrorMessages.DATA_CONSTRAINT_VIOLATION_MESSAGE, id, ex);
     return getErrorResponseAsHashMap(
         ErrorCode.DATA_CONSTRAINT_VIOLATION,
         id,
-        "Нарушение ограничений в данных",
+        ErrorMessages.DATA_CONSTRAINT_VIOLATION_MESSAGE,
         errors,
         getPath(request));
   }
@@ -119,11 +116,11 @@ public class GlobalExceptionHandler {
     ex.getConstraintViolations()
         .forEach(cv -> errors.put(cv.getPropertyPath().toString(), cv.getMessage()));
 
-    logError("Нарушение ограничений в данных", id, ex);
+    logError(ErrorMessages.DATA_CONSTRAINT_VIOLATION_MESSAGE, id, ex);
     return getErrorResponseAsHashMap(
         ErrorCode.DATA_CONSTRAINT_VIOLATION,
         id,
-        "Нарушение ограничений в данных",
+        ErrorMessages.DATA_CONSTRAINT_VIOLATION_MESSAGE,
         errors,
         getPath(request));
   }
@@ -133,7 +130,7 @@ public class GlobalExceptionHandler {
       jakarta.persistence.EntityNotFoundException ex, WebRequest request
   ) {
     UUID id = UUID.randomUUID();
-    logError("Сущность не найдена", id, ex);
+    logError(ErrorMessages.ENTITY_NOT_FOUND_MESSAGE, id, ex);
     return ResponseEntity
         .status(HttpStatus.NOT_FOUND)
         .body(ErrorMapper.getErrorResponse(
@@ -147,15 +144,15 @@ public class GlobalExceptionHandler {
     UUID id = UUID.randomUUID();
 
     if (ex.getName() != null) {
-      logError(AUTHENTICATION_ERROR_MESSAGE, id, ex.getName(), ex);
+      logError(ErrorMessages.AUTHENTICATION_ERROR_MESSAGE, id, ex.getName(), ex);
     } else {
-      logError(AUTHENTICATION_ERROR_MESSAGE, id, ex);
+      logError(ErrorMessages.AUTHENTICATION_ERROR_MESSAGE, id, ex);
     }
 
     return ResponseEntity
         .status(HttpStatus.UNAUTHORIZED)
         .body(ErrorMapper.getErrorResponse(
-            id, ErrorCode.BAD_CREDENTIALS, WRONG_LOGIN_OR_PASSWORD_MESSAGE, request));
+            id, ErrorCode.BAD_CREDENTIALS, ErrorMessages.WRONG_LOGIN_OR_PASSWORD_MESSAGE, request));
   }
 
   @ExceptionHandler(BadCredentialsException.class)
@@ -163,11 +160,11 @@ public class GlobalExceptionHandler {
       BadCredentialsException ex, WebRequest request
   ) {
     UUID id = UUID.randomUUID();
-    logError(AUTHENTICATION_ERROR_MESSAGE, id, ex);
+    logError(ErrorMessages.AUTHENTICATION_ERROR_MESSAGE, id, ex);
     return ResponseEntity
         .status(HttpStatus.UNAUTHORIZED)
         .body(ErrorMapper.getErrorResponse(
-            id, ErrorCode.BAD_CREDENTIALS, WRONG_LOGIN_OR_PASSWORD_MESSAGE, request));
+            id, ErrorCode.BAD_CREDENTIALS, ErrorMessages.WRONG_LOGIN_OR_PASSWORD_MESSAGE, request));
   }
 
   @ExceptionHandler({DisabledException.class, CustomDisabledException.class})
@@ -177,10 +174,10 @@ public class GlobalExceptionHandler {
 
     if (ex instanceof CustomDisabledException) {
       login = ((CustomDisabledException) ex).getName();
-      logError(AUTHENTICATION_ERROR_MESSAGE, id, login, ex);
+      logError(ErrorMessages.AUTHENTICATION_ERROR_MESSAGE, id, login, ex);
     } else {
       login = null;
-      logError(AUTHENTICATION_ERROR_MESSAGE, id, ex);
+      logError(ErrorMessages.AUTHENTICATION_ERROR_MESSAGE, id, ex);
     }
 
     return ResponseEntity
@@ -188,7 +185,7 @@ public class GlobalExceptionHandler {
         .body(ErrorMapper.getErrorResponse(
             id,
             ErrorCode.ACCOUNT_DELETED,
-            "Аккаунт удалён",
+            ErrorMessages.ACCOUNT_DELETED_MESSAGE,
             login,
             request));
   }
@@ -198,11 +195,11 @@ public class GlobalExceptionHandler {
       NoResourceFoundException ex, WebRequest request
   ) {
     UUID id = UUID.randomUUID();
-    logError("Ресурс не найден", id, ex);
+    logError(ErrorMessages.RESOURCE_NOT_FOUND_MESSAGE, id, ex);
     return ResponseEntity
         .status(HttpStatus.NOT_FOUND)
         .body(ErrorMapper.getErrorResponse(
-            id, ErrorCode.RESOURCE_NOT_FOUND, "Ресурс не найден", request));
+            id, ErrorCode.RESOURCE_NOT_FOUND, ErrorMessages.RESOURCE_NOT_FOUND_MESSAGE, request));
   }
 
   @ExceptionHandler(ResponseStatusException.class)
@@ -234,11 +231,14 @@ public class GlobalExceptionHandler {
       Exception ex, WebRequest request
   ) {
     UUID id = UUID.randomUUID();
-    logError("Неожиданная ошибка", id, ex);
+    logError(ErrorMessages.INTERNAL_SERVER_ERROR_MESSAGE, id, ex);
     return ResponseEntity
         .status(HttpStatus.INTERNAL_SERVER_ERROR)
         .body(ErrorMapper.getErrorResponse(
-            id, ErrorCode.INTERNAL_SERVER_ERROR, "Неожиданная внутренняя ошибка", request));
+            id,
+            ErrorCode.INTERNAL_SERVER_ERROR,
+            ErrorMessages.INTERNAL_SERVER_ERROR_MESSAGE,
+            request));
   }
 
   private void logError(String message, UUID id, Exception ex) {

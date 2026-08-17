@@ -7,7 +7,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import ru.hh.kakdela.v2.constants.Messages;
+import ru.hh.kakdela.v2.constants.ConstraintMessages;
 import ru.hh.kakdela.v2.model.Permission;
 
 @NoArgsConstructor
@@ -17,11 +17,11 @@ import ru.hh.kakdela.v2.model.Permission;
 public class PermissionCreateDto {
 
   @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
-  @NotBlank(message = Messages.FIELD_SHOULD_NOT_BE_EMPTY)
-  @Email(message = Messages.FIELD_FORMAT_VIOLATED)
+  @NotBlank(message = ConstraintMessages.FIELD_SHOULD_NOT_BE_EMPTY)
+  @Email(message = ConstraintMessages.FIELD_FORMAT_VIOLATED)
   private String email;
 
   @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
-  @NotNull(message = Messages.FIELD_SHOULD_NOT_BE_EMPTY)
+  @NotNull(message = ConstraintMessages.FIELD_SHOULD_NOT_BE_EMPTY)
   private Permission.SurveyRole role;
 }

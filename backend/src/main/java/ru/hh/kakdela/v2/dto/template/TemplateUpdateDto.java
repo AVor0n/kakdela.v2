@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.hh.kakdela.v2.constants.Messages;
+import ru.hh.kakdela.v2.constants.ConstraintMessages;
 import ru.hh.kakdela.v2.validator.NullOrNotBlank;
 
 @Data
@@ -16,7 +16,7 @@ import ru.hh.kakdela.v2.validator.NullOrNotBlank;
 public class TemplateUpdateDto {
 
   @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @NullOrNotBlank(message = Messages.FIELD_SHOULD_NOT_BE_EMPTY)
+  @NullOrNotBlank(message = ConstraintMessages.FIELD_SHOULD_NOT_BE_EMPTY)
   private String title;
 
   @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED)

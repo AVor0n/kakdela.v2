@@ -1,7 +1,7 @@
 package ru.hh.kakdela.v2.util;
 
 import org.jsoup.Jsoup;
-import ru.hh.kakdela.v2.constants.Messages;
+import ru.hh.kakdela.v2.constants.ConstraintMessages;
 import ru.hh.kakdela.v2.constants.TextValueLengthLimits;
 import ru.hh.kakdela.v2.exception.Kd2DataValidationException;
 
@@ -10,7 +10,7 @@ public class DataConstraintUtil {
   public static void checkSerialNumberUpperLimit(int value, int limit) {
     if (value > limit) {
       throw new Kd2DataValidationException(
-          "serialNumber", Messages.SERIAL_NUMBER_UPPER_LIMIT_VIOLATED + limit);
+          "serialNumber", ConstraintMessages.SERIAL_NUMBER_UPPER_LIMIT_VIOLATED + limit);
     }
   }
 
@@ -40,7 +40,7 @@ public class DataConstraintUtil {
 
     if (cleanedValue.length() > limit) {
       throw new Kd2DataValidationException(
-          fieldName, Messages.TEXT_VALUE_UPPER_LENGTH_LIMIT_VIOLATED + limit);
+          fieldName, ConstraintMessages.TEXT_VALUE_UPPER_LENGTH_LIMIT_VIOLATED + limit);
     }
   }
 }

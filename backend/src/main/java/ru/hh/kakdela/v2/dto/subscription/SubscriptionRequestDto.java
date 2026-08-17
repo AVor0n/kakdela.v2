@@ -6,7 +6,7 @@ import java.util.List;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import ru.hh.kakdela.v2.constants.Messages;
+import ru.hh.kakdela.v2.constants.ConstraintMessages;
 
 @NoArgsConstructor
 @Getter
@@ -15,6 +15,6 @@ import ru.hh.kakdela.v2.constants.Messages;
 public class SubscriptionRequestDto {
 
   @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
-  @NotNull(message = Messages.FIELD_SHOULD_NOT_BE_EMPTY)
+  @NotNull(message = ConstraintMessages.FIELD_SHOULD_NOT_BE_EMPTY)
   private List<String> emails;
 }

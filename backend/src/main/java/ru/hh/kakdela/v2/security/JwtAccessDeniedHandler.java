@@ -13,6 +13,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.stereotype.Component;
+import ru.hh.kakdela.v2.constants.ErrorMessages;
 import ru.hh.kakdela.v2.dto.error.ErrorResponse;
 import ru.hh.kakdela.v2.exception.ErrorCode;
 import tools.jackson.databind.ObjectMapper;
@@ -33,13 +34,13 @@ public class JwtAccessDeniedHandler implements AccessDeniedHandler {
 
     UUID id = UUID.randomUUID();
 
-    log.error("Доступ запрещён (errorId={}):", id, accessDeniedException);
+    log.error(ErrorMessages.ACCESS_DENIED_MESSAGE + " (errorId={}):", id, accessDeniedException);
 
     ErrorResponse errorResponse = new ErrorResponse(
         getTimestamp(),
         ErrorCode.ACCESS_DENIED,
         id,
-        "Доступ запрещён",
+        ErrorMessages.ACCESS_DENIED_MESSAGE,
         null,
         null,
         null,

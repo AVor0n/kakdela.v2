@@ -7,8 +7,8 @@ import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import ru.hh.kakdela.v2.constants.ConstraintMessages;
 import ru.hh.kakdela.v2.constants.DefaultValues;
-import ru.hh.kakdela.v2.constants.Messages;
 import ru.hh.kakdela.v2.validator.NullOrNotBlank;
 
 @NoArgsConstructor
@@ -18,29 +18,29 @@ import ru.hh.kakdela.v2.validator.NullOrNotBlank;
 public class SurveyCreateDto {
 
   @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
-  @NotBlank(message = Messages.FIELD_SHOULD_NOT_BE_EMPTY)
+  @NotBlank(message = ConstraintMessages.FIELD_SHOULD_NOT_BE_EMPTY)
   private String title;
 
   @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @NullOrNotBlank(message = Messages.FIELD_SHOULD_NOT_BE_EMPTY)
+  @NullOrNotBlank(message = ConstraintMessages.FIELD_SHOULD_NOT_BE_EMPTY)
   private String description;
 
   @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @NotNull(message = Messages.FIELD_SHOULD_NOT_BE_EMPTY)
+  @NotNull(message = ConstraintMessages.FIELD_SHOULD_NOT_BE_EMPTY)
   private Boolean isAuthorizedOnly = DefaultValues.IS_AUTHORIZED_ONLY_DEFAULT;
 
   @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @NotNull(message = Messages.FIELD_SHOULD_NOT_BE_EMPTY)
+  @NotNull(message = ConstraintMessages.FIELD_SHOULD_NOT_BE_EMPTY)
   private Boolean isLimitedToOneResponse = DefaultValues.IS_LIMITED_TO_ONE_RESPONSE_DEFAULT;
 
   @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @NotNull(message = Messages.FIELD_SHOULD_NOT_BE_EMPTY)
+  @NotNull(message = ConstraintMessages.FIELD_SHOULD_NOT_BE_EMPTY)
   private Boolean doNotify = DefaultValues.DO_NOTIFY_DEFAULT;
 
   @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED)
   private LocalDateTime expireAtAtTargetTimezone;
 
   @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @NullOrNotBlank(message = Messages.FIELD_SHOULD_NOT_BE_EMPTY)
+  @NullOrNotBlank(message = ConstraintMessages.FIELD_SHOULD_NOT_BE_EMPTY)
   private String targetTimezone = DefaultValues.TARGET_TIMEZONE_DEFAULT;
 }

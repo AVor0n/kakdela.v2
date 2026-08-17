@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import ru.hh.kakdela.v2.constants.Messages;
+import ru.hh.kakdela.v2.constants.ConstraintMessages;
 
 @NoArgsConstructor
 @Getter
@@ -14,10 +14,10 @@ import ru.hh.kakdela.v2.constants.Messages;
 public class VerifyCodeRequestDto {
 
   @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
-  @NotBlank(message = Messages.FIELD_SHOULD_NOT_BE_EMPTY)
+  @NotBlank(message = ConstraintMessages.FIELD_SHOULD_NOT_BE_EMPTY)
   String email;
 
   @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
-  @NotBlank(message = Messages.FIELD_SHOULD_NOT_BE_EMPTY)
+  @NotBlank(message = ConstraintMessages.FIELD_SHOULD_NOT_BE_EMPTY)
   String code;
 }

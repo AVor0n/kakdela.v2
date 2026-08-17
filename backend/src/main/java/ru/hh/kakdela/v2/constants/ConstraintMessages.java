@@ -1,6 +1,6 @@
 package ru.hh.kakdela.v2.constants;
 
-public class Messages {
+public class ConstraintMessages {
 
   public static final String FIELD_SHOULD_NOT_BE_EMPTY = "Поле не должно быть пустым";
   public static final String FIELD_FORMAT_VIOLATED =

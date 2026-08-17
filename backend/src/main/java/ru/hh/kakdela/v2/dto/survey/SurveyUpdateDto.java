@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.openapitools.jackson.nullable.JsonNullable;
-import ru.hh.kakdela.v2.constants.Messages;
+import ru.hh.kakdela.v2.constants.ConstraintMessages;
 import ru.hh.kakdela.v2.validator.JsonNullableUndefinedOrNotNullAndNotBlank;
 
 @NoArgsConstructor
@@ -16,7 +16,7 @@ import ru.hh.kakdela.v2.validator.JsonNullableUndefinedOrNotNullAndNotBlank;
 public class SurveyUpdateDto {
 
   @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonNullableUndefinedOrNotNullAndNotBlank(message = Messages.FIELD_SHOULD_NOT_BE_EMPTY)
+  @JsonNullableUndefinedOrNotNullAndNotBlank(message = ConstraintMessages.FIELD_SHOULD_NOT_BE_EMPTY)
   private JsonNullable<String> title = JsonNullable.undefined();
 
   @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED)
@@ -38,6 +38,6 @@ public class SurveyUpdateDto {
   private JsonNullable<LocalDateTime> expireAtAtTargetTimezone = JsonNullable.undefined();
 
   @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @JsonNullableUndefinedOrNotNullAndNotBlank(message = Messages.FIELD_SHOULD_NOT_BE_EMPTY)
+  @JsonNullableUndefinedOrNotNullAndNotBlank(message = ConstraintMessages.FIELD_SHOULD_NOT_BE_EMPTY)
   private JsonNullable<String> targetTimezone = JsonNullable.undefined();
 }

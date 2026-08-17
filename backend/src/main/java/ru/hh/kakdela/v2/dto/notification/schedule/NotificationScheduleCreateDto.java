@@ -11,8 +11,8 @@ import java.time.LocalTime;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import ru.hh.kakdela.v2.constants.ConstraintMessages;
 import ru.hh.kakdela.v2.constants.DefaultValues;
-import ru.hh.kakdela.v2.constants.Messages;
 import ru.hh.kakdela.v2.constants.TextValueLengthLimits;
 import ru.hh.kakdela.v2.model.NotificationSchedule;
 import ru.hh.kakdela.v2.validator.NullOrNotBlank;
@@ -24,14 +24,14 @@ import ru.hh.kakdela.v2.validator.NullOrNotBlank;
 public class NotificationScheduleCreateDto {
 
   @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
-  @NotBlank(message = Messages.FIELD_SHOULD_NOT_BE_EMPTY)
+  @NotBlank(message = ConstraintMessages.FIELD_SHOULD_NOT_BE_EMPTY)
   @Size(max = TextValueLengthLimits.DEFAULT_MAX_LENGTH,
-      message = Messages.TEXT_VALUE_UPPER_LENGTH_LIMIT_VIOLATED
+      message = ConstraintMessages.TEXT_VALUE_UPPER_LENGTH_LIMIT_VIOLATED
           + TextValueLengthLimits.DEFAULT_MAX_LENGTH)
   private String name;
 
   @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
-  @NotNull(message = Messages.FIELD_SHOULD_NOT_BE_EMPTY)
+  @NotNull(message = ConstraintMessages.FIELD_SHOULD_NOT_BE_EMPTY)
   private NotificationSchedule.ScheduleType type;
 
   @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED)
@@ -43,7 +43,7 @@ public class NotificationScheduleCreateDto {
   private Integer dayOfMonth;
 
   @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @NullOrNotBlank(message = Messages.FIELD_SHOULD_NOT_BE_EMPTY)
+  @NullOrNotBlank(message = ConstraintMessages.FIELD_SHOULD_NOT_BE_EMPTY)
   private String cronExpression;
 
   @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED)
@@ -51,10 +51,10 @@ public class NotificationScheduleCreateDto {
   private LocalTime executionTime;
 
   @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @NullOrNotBlank(message = Messages.FIELD_SHOULD_NOT_BE_EMPTY)
+  @NullOrNotBlank(message = ConstraintMessages.FIELD_SHOULD_NOT_BE_EMPTY)
   private String targetTimezone = DefaultValues.TARGET_TIMEZONE_DEFAULT;
 
   @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @NotNull(message = Messages.FIELD_SHOULD_NOT_BE_EMPTY)
+  @NotNull(message = ConstraintMessages.FIELD_SHOULD_NOT_BE_EMPTY)
   private Boolean isActive = DefaultValues.NOTIFICATION_SCHEDULE_IS_ACTIVE;
 }
