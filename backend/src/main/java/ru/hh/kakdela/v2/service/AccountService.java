@@ -1,6 +1,5 @@
 package ru.hh.kakdela.v2.service;
 
-import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.time.Clock;
@@ -22,6 +21,7 @@ import ru.hh.kakdela.v2.dto.account.AccountPatchDto;
 import ru.hh.kakdela.v2.dto.account.AccountPutDto;
 import ru.hh.kakdela.v2.dto.account.AccountResponseDto;
 import ru.hh.kakdela.v2.dto.account.HhLinkConfirmDto;
+import ru.hh.kakdela.v2.dto.account.HhLinkConfirmResultDto;
 import ru.hh.kakdela.v2.dto.auth.AuthTokensDto;
 import ru.hh.kakdela.v2.mapper.AccountMapper;
 import ru.hh.kakdela.v2.model.Account;
@@ -138,16 +138,13 @@ public class AccountService {
   }
 
   @Transactional
-  public void linkHhSso(UUID accountId, String hhUserId) {
+  public void linkHhSso(Account account, String hhUserId) {
     if (accountDao.findByHhUserId(hhUserId).isPresent()) {
       throw new ResponseStatusException(HttpStatus.CONFLICT,
           "Этот аккаунт hh.ru уже привязан к другому пользователю");
     }
 
-    Account account = accountDao.findById(accountId)
-        .map(this::requireActiveAccount)
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-            "Аккаунт не найден: " + accountId));
+    requireActiveAccount(account);
 
     if (account.isHhSso()) {
       throw new ResponseStatusException(HttpStatus.CONFLICT, "Аккаунт уже привязан к hh.ru");
@@ -155,7 +152,7 @@ public class AccountService {
 
     account.setHhUserId(hhUserId);
     accountDao.update(account);
-    log.info("Аккаунт id={} привязан к hh.ru", accountId);
+    log.info("Аккаунт id={} привязан к hh.ru", account.getId());
   }
 
   // Подтверждение привязки hh-аккаунта по hhLinkToken, выданному Oauth2LoginSuccessHandler
@@ -163,31 +160,24 @@ public class AccountService {
   // Если нет - находим аккаунт по email из токена, проверяем пароль и логиним пользователя
   // (как handleLogin в success handler'е), только потом линкуем
   @Transactional
-  public AccountResponseDto confirmLinkHhSso(
+  public HhLinkConfirmResultDto confirmLinkHhSso(
       HhLinkConfirmDto dto,
-      CustomUserDetails currentUser,
+      UUID currentUserId,
       HttpServletRequest request,
       HttpServletResponse response) {
 
-    HhLinkTokenPayload payload;
-    try {
-      payload = jwtService.extractHhLinkToken(dto.getHhLinkToken());
-    } catch (JwtException ex) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-          "Токен привязки недействителен или истёк");
-    }
+    HhLinkTokenPayload payload = jwtService.extractHhLinkToken(dto.getHhLinkToken());
 
     Account account;
-    boolean needsLogin;
+    AuthTokensDto tokens = null;
 
-    if (currentUser != null) {
-      account = accountDao.findById(currentUser.getId())
+    if (currentUserId != null) {
+      account = accountDao.findById(currentUserId)
           .map(this::requireActiveAccount)
           .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-              "Аккаунт не найден: " + currentUser.getId()));
-      needsLogin = false;
+              "Аккаунт не найден: " + currentUserId));
     } else {
-      if (dto.getPassword() == null) {
+      if (dto.getPassword() == null || dto.getPassword().isBlank()) {
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
             "Для привязки без активной сессии нужен пароль");
       }
@@ -198,20 +188,15 @@ public class AccountService {
       if (!passwordEncoder.matches(dto.getPassword(), account.getPasswordHash())) {
         throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Предоставлен неверный пароль");
       }
-      needsLogin = true;
-    }
 
-    linkHhSso(account.getId(), payload.hhUserId());
-
-    if (needsLogin) {
       String deviceId = authCookieService.getOrCreateDeviceId(request, response);
-      AuthTokensDto tokens = authService.issueTokens(
+      tokens = authService.issueTokens(
           account, deviceId, request.getHeader("User-Agent"), request.getRemoteAddr());
-      authCookieService.setAccessTokenCookie(response, tokens.getAccessToken());
-      authCookieService.setRefreshTokenCookie(response, tokens.getRefreshToken());
     }
 
-    return AccountMapper.accountToDto(account);
+    linkHhSso(account, payload.hhUserId());
+
+    return new HhLinkConfirmResultDto(AccountMapper.accountToDto(account), tokens);
   }
 
   private String generateUniqueLoginFromEmail(String email) {

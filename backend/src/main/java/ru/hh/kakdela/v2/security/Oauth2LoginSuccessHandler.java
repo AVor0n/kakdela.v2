@@ -5,9 +5,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Optional;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
@@ -40,13 +40,14 @@ public class Oauth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
   @Override
   public void onAuthenticationSuccess(
-      HttpServletRequest request,
-      HttpServletResponse response,
+      @NonNull HttpServletRequest request,
+      @NonNull HttpServletResponse response,
       Authentication authentication) throws IOException, ServletException {
 
     OAuth2User oauth2User = (OAuth2User) authentication.getPrincipal();
-    String email = oauth2User.getAttribute(ATTR_EMAIL);
-    Object rawHhUserId = oauth2User.getAttributes().get(ATTR_HH_USER_ID);
+    String email = oauth2User != null ? oauth2User.getAttribute(ATTR_EMAIL) : null;
+    Object rawHhUserId =
+        oauth2User != null ? oauth2User.getAttributes().get(ATTR_HH_USER_ID) : null;
     String hhUserId = rawHhUserId == null ? null : String.valueOf(rawHhUserId);
 
     // Кука ставится только явным флоу "привязать hh к текущему аккаунту" (/link-hh-sso/init).
@@ -95,12 +96,12 @@ public class Oauth2LoginSuccessHandler implements AuthenticationSuccessHandler {
   }
 
   private void handleExplicitLink(String carriedAccessToken, String hhUserId) {
-    UUID accountId = authService.resolveAccountIdFromToken(carriedAccessToken)
+    Account account = authService.resolveAccountFromToken(carriedAccessToken)
         .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED,
             "Сессия истекла, повторите привязку"));
 
-    accountService.linkHhSso(accountId, hhUserId);
-    log.info("Аккаунт id={} привязан к hh.ru через колбэк", accountId);
+    accountService.linkHhSso(account, hhUserId);
+    log.info("Аккаунт id={} привязан к hh.ru через колбэк", account.getId());
   }
 
   private void handleNewSsoSignup(HttpServletRequest request, HttpServletResponse response,

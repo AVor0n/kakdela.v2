@@ -2,7 +2,6 @@ package ru.hh.kakdela.v2.service;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
-import jakarta.servlet.http.HttpServletRequest;
 import java.security.SecureRandom;
 import java.util.Optional;
 import java.util.UUID;
@@ -13,7 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,8 +21,6 @@ import ru.hh.kakdela.v2.dto.auth.AuthTokensDto;
 import ru.hh.kakdela.v2.dto.auth.LoginDto;
 import ru.hh.kakdela.v2.dto.auth.PasswordResetDto;
 import ru.hh.kakdela.v2.dto.auth.VerifyCodeRequestDto;
-import ru.hh.kakdela.v2.exception.security.AccountDeletedException;
-import ru.hh.kakdela.v2.exception.security.WrongPasswordException;
 import ru.hh.kakdela.v2.model.Account;
 import ru.hh.kakdela.v2.security.JwtService;
 
@@ -40,7 +36,6 @@ public class AuthService {
   private final VerificationCodeService verificationCodeService;
   private final JwtService jwtService;
   private final RefreshTokenService refreshTokenService;
-  private final AuthCookieService authCookieService;
 
   @Transactional
   public AuthTokensDto issueTokens(
@@ -73,7 +68,7 @@ public class AuthService {
       String ipAddress) {
 
     Account account = accountDao.findByLogin(loginDto.getLogin()).orElseThrow(() ->
-        UsernameNotFoundException.fromUsername(loginDto.getLogin()));
+        new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Неверный логин или пароль"));
 
     authenticationManagerProvider.getObject().authenticate(
         new UsernamePasswordAuthenticationToken(
@@ -86,7 +81,8 @@ public class AuthService {
         account,
         deviceId,
         userAgent,
-        ipAddress);
+        ipAddress
+    );
   }
 
   @Transactional
@@ -131,12 +127,38 @@ public class AuthService {
     log.info("Выход везде для accountId={}", accountId);
   }
 
+  public void checkPassword(UserDetails userDetails, String providedPassword) {
+    if (!passwordEncoder.matches(providedPassword, userDetails.getPassword())) {
+      throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Предоставлен неверный пароль");
+    }
+  }
+
+  @Transactional
+  public void incrementTokenVersion(UUID accountId) {
+    Account account = accountDao.findById(accountId).orElseThrow(() ->
+        new ResponseStatusException(HttpStatus.NOT_FOUND, "Аккаунт не найден: " + accountId));
+
+    int newVersion = account.getTokenVersion() + 1;
+    account.setTokenVersion(newVersion);
+
+    accountDao.update(account);
+
+    log.info(
+        "Повышена версия токена для accountId={}: {} → {}",
+        accountId,
+        account.getTokenVersion() - 1,
+        newVersion);
+  }
+
   @Transactional(readOnly = true)
   public void sendPasswordResetEmail(String email) {
     Account account = accountDao.findByEmail(email).orElseThrow(() ->
         new ResponseStatusException(HttpStatus.NOT_FOUND, "Аккаунт не найден: " + email));
     if (account.getIsDeleted()) {
-      throw new AccountDeletedException(email);
+      throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST,
+          "Данный аккаунт удален"
+      );
     }
 
     String code = generateNumericCode(6);
@@ -164,7 +186,10 @@ public class AuthService {
     Account account = accountDao.findByEmail(dto.getEmail()).orElseThrow(() ->
         new ResponseStatusException(HttpStatus.NOT_FOUND, "Аккаунт не найден: " + dto.getEmail()));
     if (account.getIsDeleted()) {
-      throw new AccountDeletedException(dto.getEmail());
+      throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST,
+          "Данный аккаунт удален"
+      );
     }
 
     logoutEverywhere(account.getId());
@@ -176,7 +201,7 @@ public class AuthService {
   // Пытается определить аккаунт по access-токену из куки, ничего не бросая и не трогая
   // SecurityContext. Возвращает empty, если куки нет, токен невалиден/просрочен,
   // версия токена устарела или аккаунт удален/не найден
-  public Optional<UUID> resolveAccountIdFromToken(String token) {
+  public Optional<Account> resolveAccountFromToken(String token) {
     if (token == null) {
       return Optional.empty();
     }
@@ -186,17 +211,12 @@ public class AuthService {
       Integer tokenVersionFromToken = claims.get("tokenVersion", Integer.class);
 
       return accountDao.findById(accountId)
-          .filter(account -> !account.getIsDeleted())
-          .filter(account -> account.getTokenVersion().equals(tokenVersionFromToken))
-          .map(Account::getId);
+          .filter(account -> account.getIsDeleted() == null || !account.getIsDeleted())
+          .filter(account -> account.getTokenVersion().equals(tokenVersionFromToken));
     } catch (JwtException | IllegalArgumentException ex) {
       log.debug("Не удалось определить аккаунт по токену: {}", ex.getMessage());
       return Optional.empty();
     }
-  }
-
-  public Optional<UUID> resolveAuthenticatedAccountId(HttpServletRequest request) {
-    return resolveAccountIdFromToken(authCookieService.getAccessToken(request));
   }
 
   private static String generateNumericCode(int codeLength) {
@@ -209,29 +229,5 @@ public class AuthService {
     }
 
     return code.toString();
-  }
-
-  // Вспомогательные методы
-
-  void incrementTokenVersion(UUID accountId) {
-    Account account = accountDao.findById(accountId).orElseThrow(() ->
-        new ResponseStatusException(HttpStatus.NOT_FOUND, "Аккаунт не найден: " + accountId));
-
-    int newVersion = account.getTokenVersion() + 1;
-    account.setTokenVersion(newVersion);
-
-    accountDao.update(account);
-
-    log.info(
-        "Повышена версия токена для accountId={}: {} → {}",
-        accountId,
-        account.getTokenVersion() - 1,
-        newVersion);
-  }
-
-  void checkPassword(UserDetails userDetails, String providedPassword) {
-    if (!passwordEncoder.matches(providedPassword, userDetails.getPassword())) {
-      throw new WrongPasswordException(userDetails.getUsername());
-    }
   }
 }

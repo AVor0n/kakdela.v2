@@ -16,7 +16,9 @@ import java.util.function.Function;
 import javax.crypto.SecretKey;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import ru.hh.kakdela.v2.model.Account;
 
 @Slf4j
@@ -72,10 +74,12 @@ public class JwtService {
         .compact();
   }
 
-  // Токен-мост для привязки hh-аккаунта: выдаётся в oauth success handler, когда почта
-  // из hh уже занята существующим аккаунтом kakdela (либо анонимно, либо у авторизованного
-  // пользователя). Несет email + hhUserId, чтобы confirm-эндпоинт мог довязать аккаунт
-  // без повторного похода на hh.ru
+  /**
+   * Токен-мост для привязки hh-аккаунта: выдаётся в oauth success handler, когда почта
+   * из hh уже занята существующим аккаунтом kakdela (либо анонимно, либо у авторизованного
+   * пользователя). Несёт email + hhUserId, чтобы confirm-эндпоинт мог довязать аккаунт
+   * без повторного похода на hh.ru.
+   */
   public String generateHhLinkToken(String email, String hhUserId) {
     Instant now = Instant.now(clock);
     Instant expiresAt = now.plus(hhLinkTokenMaxAgeSeconds, ChronoUnit.SECONDS);
@@ -91,9 +95,15 @@ public class JwtService {
   }
 
   public HhLinkTokenPayload extractHhLinkToken(String token) {
-    Claims claims = extractAllClaims(token);
+    Claims claims;
+    try {
+      claims = extractAllClaims(token);
+    } catch (JwtException ex) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+          "Токен привязки недействителен или истёк");
+    }
     if (!claims.get(CLAIM_TYPE, String.class).equals(HH_LINK_TOKEN_TYPE)) {
-      throw new JwtException("Токен привязки недействителен");
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Токен привязки недействителен");
     }
     return new HhLinkTokenPayload(claims.getSubject(), claims.get(CLAIM_HH_USER_ID, String.class));
   }
