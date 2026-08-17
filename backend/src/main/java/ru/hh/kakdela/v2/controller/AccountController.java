@@ -88,6 +88,7 @@ public class AccountController {
       @Nullable @AuthenticationPrincipal CustomUserDetails currentUser,
       HttpServletRequest request,
       HttpServletResponse response) {
-    return accountService.confirmLinkHhSso(dto, currentUser, request, response);
+    return accountService.confirmLinkHhSso(
+        dto, currentUser != null ? currentUser.getId() : null, request, response);
   }
 }
