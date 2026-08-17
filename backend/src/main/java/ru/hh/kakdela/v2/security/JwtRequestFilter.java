@@ -119,11 +119,11 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     String requestUri = request.getRequestURI();
 
     if (pathMatcher.match("/api/auth/logout", requestUri)
-            || pathMatcher.match("/api/auth/logout-everywhere", requestUri)) {
-        return false;
+        || pathMatcher.match("/api/auth/logout-everywhere", requestUri)) {
+      return false;
     }
 
     return pathMatcher.match("/api/auth/**", requestUri)
-            || pathMatcher.match(oauth2CallbackBaseUri, requestUri);
+        || pathMatcher.match(oauth2CallbackBaseUri, requestUri);
   }
 }
