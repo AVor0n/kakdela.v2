@@ -366,4 +366,46 @@
         min-width: 0;
         width: 100%;
     }
+
+    .treeRoot > .groupNode {
+        min-width: 900px;
+    }
+
+    .groupNode .conditionRow {
+        min-width: 716px;
+    }
+
+    .groupNode .atomForm {
+        grid-template-columns: minmax(240px, 2fr) minmax(150px, 0.8fr) minmax(220px, 1.5fr) auto;
+        max-width: none;
+    }
+
+    .groupNode .atomQuestion,
+    .groupNode .atomOperator,
+    .groupNode .atomValue {
+        grid-column: auto;
+    }
+
+    .groupNode .additionalActions {
+        grid-row: auto;
+        grid-column: 1 / -1;
+        align-self: auto;
+        justify-self: auto;
+    }
+
+    .groupNode .formActionsWithAdditional {
+        grid-row: auto;
+        grid-column: auto;
+        align-self: auto;
+        justify-self: auto;
+        min-width: 44px;
+    }
+
+    .groupNode .wrapActions {
+        margin-top: 10px;
+    }
+
+    .groupNode .wrapActionsLabel {
+        display: inline;
+    }
 }
