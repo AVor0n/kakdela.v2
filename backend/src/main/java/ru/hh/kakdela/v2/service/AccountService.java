@@ -187,7 +187,7 @@ public class AccountService {
               "Аккаунт не найден: " + currentUser.getId()));
       needsLogin = false;
     } else {
-      if (dto.getPassword() == null || dto.getPassword().isBlank()) {
+      if (dto.getPassword() == null) {
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
             "Для привязки без активной сессии нужен пароль");
       }
