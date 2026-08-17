@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+import ru.hh.kakdela.v2.constants.TextValueLengthLimits;
 import ru.hh.kakdela.v2.dao.AccountDao;
 import ru.hh.kakdela.v2.dao.SurveyDao;
 import ru.hh.kakdela.v2.dto.survey.SurveyResponseDto;
@@ -17,6 +18,7 @@ import ru.hh.kakdela.v2.mapper.SurveyMapper;
 import ru.hh.kakdela.v2.mapper.TemplateMapper;
 import ru.hh.kakdela.v2.model.Account;
 import ru.hh.kakdela.v2.model.Survey;
+import ru.hh.kakdela.v2.util.DataConstraintUtil;
 
 @Slf4j
 @Service
@@ -80,9 +82,18 @@ public class TemplateService {
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Аккаунт не найден"));
 
-    String newTitle = "Копия — " + source.getTitle() + " от " + source.getAuthor().getLogin();
+    final String copyTitlePrefix = "Копия — ";
+    final String copyTitlePostfix = " от " + source.getAuthor().getLogin();
+    final String copyTitle = "<p>" + copyTitlePrefix
+        + DataConstraintUtil.truncateHtmlToUpperLengthLimit(
+            source.getTitle(),
+            TextValueLengthLimits.TITLE_MAX_LENGTH
+                - copyTitlePrefix.length()
+                - copyTitlePostfix.length())
+        .replaceFirst("^<p>(.*)</p>$", "$1")
+        + copyTitlePostfix + "</p>";
 
-    Survey copy = surveyService.cloneSurvey(source, account, true, newTitle);
+    Survey copy = surveyService.cloneSurvey(source, account, true, copyTitle);
     log.info("Создана копия шаблона templateId={} copyId={} accountId={}",
         templateId, copy.getId(), accountId);
 
@@ -137,9 +148,11 @@ public class TemplateService {
     }
 
     if (dto.getTitle() != null) {
+      DataConstraintUtil.checkTitleLength(dto.getTitle());
       template.setTitle(dto.getTitle());
     }
     if (dto.getDescription() != null) {
+      DataConstraintUtil.checkDescriptionLength(dto.getDescription());
       template.setDescription(dto.getDescription());
     }
     if (dto.getIsPublished() != null) {

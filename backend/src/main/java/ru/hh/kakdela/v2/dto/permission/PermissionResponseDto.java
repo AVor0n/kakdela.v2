@@ -8,9 +8,7 @@ import ru.hh.kakdela.v2.dto.account.AccountResponseDto;
 
 @AllArgsConstructor
 @Getter
-@Schema(
-    name = "Permission.Response"
-)
+@Schema(name = "Permission.Response")
 public class PermissionResponseDto {
 
   private final UUID surveyId;

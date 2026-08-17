@@ -7,32 +7,37 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import ru.hh.kakdela.v2.constants.ConstraintMessages;
+import ru.hh.kakdela.v2.constants.TextValueLengthLimits;
 import ru.hh.kakdela.v2.validator.ValidPassword;
 
 @NoArgsConstructor
 @Getter
 @Setter
-@Schema(
-    name = "AccountPut",
-    title = "DTO для полного обновления аккаунта"
-)
+@Schema(name = "Account.Put")
 public class AccountPutDto {
 
   @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
   @NotBlank(message = "Логин не должен быть пустым")
-  @Size(max = 32, message = "Логин не должен быть длиннее 32 символов")
+  @Size(max = TextValueLengthLimits.LOGIN_MAX_LENGTH,
+      message = ConstraintMessages.TEXT_VALUE_UPPER_LENGTH_LIMIT_VIOLATED
+          + TextValueLengthLimits.LOGIN_MAX_LENGTH)
   private String login;
+
   @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
-  @NotBlank(message = "Электронная почта не должна быть пустой")
-  @Email(message = "Электронная почта должна соответствовать формату")
+  @NotBlank(message = ConstraintMessages.FIELD_SHOULD_NOT_BE_EMPTY)
+  @Email(message = ConstraintMessages.FIELD_FORMAT_VIOLATED)
   private String email;
+
   @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
-  @NotBlank(message = "Пароль не должен быть пустым")
+  @NotBlank(message = ConstraintMessages.FIELD_SHOULD_NOT_BE_EMPTY)
   @ValidPassword
   private String newPassword;
+
   @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
   private String newPasswordConfirmation;
+
   @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
-  @NotBlank(message = "Операция должна быть подтверждена вводом текущего пароля")
+  @NotBlank(message = ConstraintMessages.PASSWORD_CONFIRMATION_NEEDED)
   private String password;
 }

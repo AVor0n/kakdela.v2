@@ -16,8 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import ru.hh.kakdela.v2.dao.AccountDao;
 import ru.hh.kakdela.v2.dto.auth.AuthTokensDto;
-import ru.hh.kakdela.v2.dto.auth.LoginDto;
-import ru.hh.kakdela.v2.dto.auth.PasswordResetDto;
+import ru.hh.kakdela.v2.dto.auth.LoginRequestDto;
+import ru.hh.kakdela.v2.dto.auth.PasswordResetRequestDto;
 import ru.hh.kakdela.v2.dto.auth.VerifyCodeRequestDto;
 import ru.hh.kakdela.v2.exception.security.AccountDeletedException;
 import ru.hh.kakdela.v2.exception.security.WrongPasswordException;
@@ -62,20 +62,20 @@ public class AuthService {
 
   @Transactional
   public AuthTokensDto login(
-      LoginDto loginDto,
+      LoginRequestDto loginRequestDto,
       String deviceId,
       String userAgent,
       String ipAddress) {
 
-    Account account = accountDao.findByLogin(loginDto.getLogin()).orElseThrow(() ->
-        UsernameNotFoundException.fromUsername(loginDto.getLogin()));
+    Account account = accountDao.findByLogin(loginRequestDto.getLogin()).orElseThrow(() ->
+        UsernameNotFoundException.fromUsername(loginRequestDto.getLogin()));
 
     authenticationManagerProvider.getObject().authenticate(
             new UsernamePasswordAuthenticationToken(
-                loginDto.getLogin(),
-                loginDto.getPassword()));
+                loginRequestDto.getLogin(),
+                loginRequestDto.getPassword()));
 
-    log.info("Успешная аутентификация: login={}", loginDto.getLogin());
+    log.info("Успешная аутентификация: login={}", loginRequestDto.getLogin());
 
     return issueTokens(
         account,
@@ -146,7 +146,7 @@ public class AuthService {
   }
 
   @Transactional
-  public void resetPassword(PasswordResetDto dto) {
+  public void resetPassword(PasswordResetRequestDto dto) {
     if (!verificationCodeService
         .verifyAndDelete(dto.getEmail(), dto.getCode())) {
       throw new ResponseStatusException(

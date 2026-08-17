@@ -20,6 +20,7 @@ import ru.hh.kakdela.v2.exception.question.QuestionNotFoundException;
 import ru.hh.kakdela.v2.mapper.QuestionMapper;
 import ru.hh.kakdela.v2.model.Question;
 import ru.hh.kakdela.v2.model.SurveyPage;
+import ru.hh.kakdela.v2.util.DataConstraintUtil;
 
 @Slf4j
 @Service
@@ -69,13 +70,13 @@ public class QuestionService {
 
     if (dto.getSerialNumber() != null
         && !dto.getSerialNumber().equals(maxAvailableSerial)) {
-      if (dto.getSerialNumber() > maxAvailableSerial) {
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-            "Порядковый номер должен быть не больше " + maxAvailableSerial);
-      }
+      DataConstraintUtil.checkSerialNumberUpperLimit(dto.getSerialNumber(), maxAvailableSerial);
 
       questionDao.increaseSerialNumbers(pageId, dto.getSerialNumber());
     }
+
+    DataConstraintUtil.checkQuestionTextLength(dto.getText());
+    DataConstraintUtil.checkDescriptionLength(dto.getDescription());
 
     Question question = Question.builder()
         .id(UUID.randomUUID())
@@ -128,10 +129,8 @@ public class QuestionService {
     if (dto.getSerialNumber() != null && !dto.getSerialNumber().equals(oldSerial)) {
       int newSerial = dto.getSerialNumber();
       int maxAvailableSerial = questionDao.findMaxSerialNumber(pageId);
-      if (newSerial > maxAvailableSerial) {
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-            "Новый номер должен быть не больше " + maxAvailableSerial);
-      }
+
+      DataConstraintUtil.checkSerialNumberUpperLimit(newSerial, maxAvailableSerial);
 
       if (oldSerial > newSerial) {
         questionDao.increaseSerialNumbers(pageId, newSerial, oldSerial - 1);
@@ -143,9 +142,11 @@ public class QuestionService {
     }
 
     if (dto.getText() != null) {
+      DataConstraintUtil.checkQuestionTextLength(dto.getText());
       question.setText(dto.getText());
     }
     if (dto.getDescription() != null) {
+      DataConstraintUtil.checkDescriptionLength(dto.getDescription());
       question.setDescription(dto.getDescription());
     }
     if (dto.getType() != null) {

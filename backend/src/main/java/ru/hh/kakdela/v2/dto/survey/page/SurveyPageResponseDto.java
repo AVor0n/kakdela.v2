@@ -14,9 +14,7 @@ import ru.hh.kakdela.v2.dto.question.QuestionResponseDto;
 @Getter
 @EqualsAndHashCode
 @ToString
-@Schema(
-    name = "SurveyPage.Response"
-)
+@Schema(name = "SurveyPage.Response")
 public class SurveyPageResponseDto {
 
   private final UUID id;

@@ -10,8 +10,8 @@ import ru.hh.kakdela.v2.constants.ConstraintMessages;
 @NoArgsConstructor
 @Getter
 @Setter
-@Schema(name = "Auth.VerifyCode.Request")
-public class VerifyCodeRequestDto {
+@Schema(name = "Auth.PasswordReset.Request")
+public class PasswordResetRequestDto {
 
   @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
   @NotBlank(message = ConstraintMessages.FIELD_SHOULD_NOT_BE_EMPTY)
@@ -20,4 +20,12 @@ public class VerifyCodeRequestDto {
   @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
   @NotBlank(message = ConstraintMessages.FIELD_SHOULD_NOT_BE_EMPTY)
   String code;
+
+  @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
+  @NotBlank(message = ConstraintMessages.FIELD_SHOULD_NOT_BE_EMPTY)
+  String newPassword;
+
+  @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
+  @NotBlank(message = ConstraintMessages.FIELD_SHOULD_NOT_BE_EMPTY)
+  String passwordConfirmation;
 }

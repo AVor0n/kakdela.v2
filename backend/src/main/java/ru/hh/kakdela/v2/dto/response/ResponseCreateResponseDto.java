@@ -7,10 +7,8 @@ import lombok.Getter;
 
 @AllArgsConstructor
 @Getter
-@Schema(
-    name = "ResponseCreateResponse",
-    title = "DTO ответа при создании ответа на опрос"
-)
+@Schema(name = "Response.CreateResponse")
 public class ResponseCreateResponseDto {
+
   private final UUID id;
 }

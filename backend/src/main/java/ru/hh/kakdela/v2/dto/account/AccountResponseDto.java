@@ -11,10 +11,7 @@ import lombok.ToString;
 @Getter
 @EqualsAndHashCode
 @ToString
-@Schema(
-    name = "AccountResponse",
-    title = "DTO для получения данных аккаунта"
-)
+@Schema(name = "Account.Response")
 public class AccountResponseDto {
 
   private final UUID id;

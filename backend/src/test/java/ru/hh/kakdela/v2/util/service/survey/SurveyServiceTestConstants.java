@@ -55,7 +55,7 @@ public class SurveyServiceTestConstants {
     private static final Account cloneAuthor = SurveyServiceTestEntity.account2;
 
     private static final String originalTitle = "fullSurvey";
-    private static final String cloneTitle = "Копия — fullSurvey";
+    private static final String cloneTitle = "<p>Копия — fullSurvey</p>";
 
     public UUID getId(boolean isClone) {
       return isClone

@@ -1,12 +1,8 @@
 package ru.hh.kakdela.v2.security;
 
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.security.Keys;
-import io.jsonwebtoken.security.SignatureException;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -84,24 +80,5 @@ public class JwtService {
 
       return responseIdStr != null ? UUID.fromString(responseIdStr) : null;
     });
-  }
-
-  public boolean validateToken(String token) {
-    try {
-      extractAllClaims(token);
-      return true;
-    } catch (ExpiredJwtException e) {
-      log.debug("Токен истёк: {}", e.getMessage());
-      return false;
-    } catch (MalformedJwtException e) {
-      log.debug("Неверный формат токена: {}", e.getMessage());
-      return false;
-    } catch (SignatureException e) {
-      log.debug("Неверная подпись токена: {}", e.getMessage());
-      return false;
-    } catch (JwtException e) {
-      log.debug("Ошибка валидации токена: {}", e.getMessage());
-      return false;
-    }
   }
 }

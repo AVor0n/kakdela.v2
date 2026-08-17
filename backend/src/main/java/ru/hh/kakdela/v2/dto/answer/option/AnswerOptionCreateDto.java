@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import ru.hh.kakdela.v2.constants.ConstraintMessages;
 
 @NoArgsConstructor
 @Getter
@@ -16,10 +17,10 @@ import lombok.Setter;
 public class AnswerOptionCreateDto {
 
   @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @Min(value = 1, message = "Порядковый номер должен быть больше 0")
+  @Min(value = 1, message = ConstraintMessages.SERIAL_NUMBER_SHOULD_BE_POSITIVE)
   private Integer serialNumber;
 
   @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
-  @NotBlank(message = "Текст варианта ответа не должен быть пустым")
+  @NotBlank(message = ConstraintMessages.FIELD_SHOULD_NOT_BE_EMPTY)
   private String text;
 }

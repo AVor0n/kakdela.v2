@@ -11,10 +11,9 @@ import ru.hh.kakdela.v2.dto.survey.page.SurveyPageResponseDto;
 
 @Data
 @Builder
-@Schema(
-    name = "Template.Response"
-)
+@Schema(name = "Template.Response")
 public class TemplateResponseDto {
+
   private final UUID id;
   private final String title;
   private final String description;
