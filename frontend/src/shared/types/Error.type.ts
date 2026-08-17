@@ -10,6 +10,7 @@ export type ApiErrorCode =
     | 'ENTITY_NOT_FOUND'
     | 'BAD_REQUEST_BODY'
     | 'INTERNAL_SERVER'
+    | 'EXPIRED_ACCESS_TOKEN'
     | 'UNDEFINED';
 
 export type ApiErrorResponse = {

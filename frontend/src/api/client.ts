@@ -1,7 +1,12 @@
-import axios from 'axios';
+import axios, { type InternalAxiosRequestConfig } from 'axios';
 import { routePatterns, routes } from '@/app/routes';
-import { refreshToken } from './account';
+import { getApiError } from '@/shared/utils/apiError';
+import { refreshToken } from './refresh';
 import { matchPath } from 'react-router-dom';
+
+type RetryableRequestConfig = InternalAxiosRequestConfig & {
+    _retry?: boolean;
+};
 
 export const apiClient = axios.create({
     withCredentials: true,
@@ -33,19 +38,24 @@ apiClient.interceptors.response.use(
             return Promise.reject(error);
         }
 
-        const status = error.response?.status;
+        const requestConfig = error.config as RetryableRequestConfig | undefined;
         const requestUrl = error.config?.url ?? '';
-        const isRefreshRequest = requestUrl.includes('/api/auth/refresh');
-        const isUnauthorized = status === 401 || status === 403;
+        const isAuthRequest = requestUrl.includes('/api/auth/');
+        const isExpiredAccessToken = getApiError(error)?.internalErrorCode === 'EXPIRED_ACCESS_TOKEN';
         const isAnonymousAllowedPage = ANONYMOUS_ALLOWED_PATTERNS.some((pattern) =>
             matchPath(pattern, window.location.pathname),
         );
-        if (isUnauthorized && !isRefreshRequest && !isAnonymousAllowedPage) {
+
+        if (isExpiredAccessToken && !isAuthRequest && requestConfig && !requestConfig._retry) {
+            requestConfig._retry = true;
+
             try {
                 await getRefreshPromise();
-                return apiClient(error.config!);
+                return apiClient(requestConfig);
             } catch {
-                window.location.assign(routes.login());
+                if (!isAnonymousAllowedPage) {
+                    window.location.assign(routes.login());
+                }
             }
         }
 
