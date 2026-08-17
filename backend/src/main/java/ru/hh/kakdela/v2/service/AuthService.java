@@ -186,7 +186,7 @@ public class AuthService {
       Integer tokenVersionFromToken = claims.get("tokenVersion", Integer.class);
 
       return accountDao.findById(accountId)
-          .filter(account -> !Boolean.TRUE.equals(account.getIsDeleted()))
+          .filter(account -> !account.getIsDeleted())
           .filter(account -> account.getTokenVersion().equals(tokenVersionFromToken))
           .map(Account::getId);
     } catch (JwtException | IllegalArgumentException ex) {
