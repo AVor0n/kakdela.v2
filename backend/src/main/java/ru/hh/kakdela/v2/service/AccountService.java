@@ -150,7 +150,7 @@ public class AccountService {
             "Аккаунт не найден: " + accountId));
 
     if (account.isHhSso()) {
-      throw new ResponseStatusException(HttpStatus.CONFLICT, "Аккаунт уже привязан к HH.ru");
+      throw new ResponseStatusException(HttpStatus.CONFLICT, "Аккаунт уже привязан к hh.ru");
     }
 
     account.setHhUserId(hhUserId);
