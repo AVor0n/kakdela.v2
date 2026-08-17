@@ -30,11 +30,14 @@ export function Footer() {
                     <Link className={style.link} to='https://mattermost.pyn.ru/school-2026/channels/kakdela-v2-public'>
                         Mattermost
                     </Link>
+                    <Link className={style.link} to='https://hh.ru/services'>
+                        Все сервисы
+                    </Link>
                 </nav>
             </div>
             <div className={style.bottom}>
                 <Text Element='span' style='tertiary' typography='paragraph-3-regular'>
-                    © {new Date().getFullYear()} KakDela
+                    © {new Date().getFullYear()} ООО "Хэдхантер" - Создано в Школе программистов hh.ru
                 </Text>
             </div>
         </footer>

@@ -24,7 +24,8 @@ interface InfoItem {
 const INFO: InfoItem[] = [
     {
         title: 'Конструктор опросов',
-        description: 'Добавляйте вопросы простым перетаскиванием, настраивайте порядок и внешний вид без лишних усилий',
+        description:
+            'Добавлйяте вопросы, меняйте порядок простым перетаскиванием и настраивайте внешний вид без лишних усилий',
         imageSrc: '/images/info/constructor.png',
         serialNumber: 1,
     },
@@ -114,7 +115,7 @@ function App() {
                                 style='accent'
                                 onClick={() => navigate(routes.register())}
                             >
-                                Регистрация
+                                <span className={style.registrationButtonText}>Регистрация</span>
                             </Button>
                             <Button mode='primary' style='accent' onClick={() => navigate(routes.login())}>
                                 Войти

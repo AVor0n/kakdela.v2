@@ -80,8 +80,7 @@ export function Settings() {
                     if (err.response) {
                         dispatch(
                             setErrorMessage({
-                                message:
-                                    'Не удалось изменить настройку "Запретить анонимное прохождение"',
+                                message: 'Не удалось изменить настройку "Запретить анонимное прохождение"',
                             }),
                         );
                     }
