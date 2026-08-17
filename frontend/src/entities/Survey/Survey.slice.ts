@@ -23,6 +23,10 @@ const surveySlice = createSlice({
             const { survey } = action.payload;
             state.selectedSurvey = survey;
         },
+        patchSelectedSurvey: (state, action: PayloadAction<Partial<Survey>>) => {
+            if (!state.selectedSurvey) return;
+            Object.assign(state.selectedSurvey, action.payload);
+        },
 
         setClosingPage: (state, action: PayloadAction<{ closingPage: ClosingPage | null }>) => {
             if (!state.selectedSurvey) return;
@@ -55,6 +59,13 @@ const surveySlice = createSlice({
     },
 });
 
-export const { setSurveys, setSelectedSurvey, setClosingPage, patchClosingPage, deleteSurvey, addSurvey } =
-    surveySlice.actions;
+export const {
+    setSurveys,
+    setSelectedSurvey,
+    patchSelectedSurvey,
+    setClosingPage,
+    patchClosingPage,
+    deleteSurvey,
+    addSurvey,
+} = surveySlice.actions;
 export default surveySlice.reducer;

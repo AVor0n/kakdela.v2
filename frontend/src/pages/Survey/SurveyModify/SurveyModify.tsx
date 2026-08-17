@@ -8,6 +8,8 @@ import { updateSurveyPage } from '@/api/surveyPages';
 import { getSurveyForEditById } from '@/api/survey';
 import { getTemplateById } from '@/api/template';
 import { setErrorMessage } from '@/entities/Error/Error.slice';
+import { patchSelectedSurvey } from '@/entities/Survey/Survey.slice';
+import { patchSelectedTemplate } from '@/entities/Template/Template.slice';
 import {
     closestCenter,
     DndContext,
@@ -111,7 +113,19 @@ export function SurveyModify() {
     return (
         <div className={style.container}>
             <div className={style.content}>
-                <SurveyDetail item={isTemplate ? selectedTemplate! : selectedSurvey!} />
+                <SurveyDetail
+                    item={isTemplate ? selectedTemplate! : selectedSurvey!}
+                    attachmentUrl={isTemplate ? selectedTemplate!.attachmentUrl : selectedSurvey!.attachmentUrl}
+                    canEditImage
+                    replaceImageWithoutUrl={isTemplate}
+                    onAttachmentUrlChange={(attachmentUrl) =>
+                        dispatch(
+                            isTemplate
+                                ? patchSelectedTemplate({ attachmentUrl })
+                                : patchSelectedSurvey({ attachmentUrl }),
+                        )
+                    }
+                />
                 <DndContext
                     sensors={sensors}
                     collisionDetection={closestCenter}

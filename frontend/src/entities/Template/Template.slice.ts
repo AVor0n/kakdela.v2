@@ -29,8 +29,13 @@ export const templateSlice = createSlice({
             const { template } = action.payload;
             state.selectedTemplate = template;
         },
+        patchSelectedTemplate: (state, action: PayloadAction<Partial<Template>>) => {
+            if (!state.selectedTemplate) return;
+            Object.assign(state.selectedTemplate, action.payload);
+        },
     },
 });
 
-export const { setTemplates, setSelectedTemplate, removeTemplate, addTemplate } = templateSlice.actions;
+export const { setTemplates, setSelectedTemplate, patchSelectedTemplate, removeTemplate, addTemplate } =
+    templateSlice.actions;
 export default templateSlice.reducer;

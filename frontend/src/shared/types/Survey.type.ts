@@ -20,6 +20,7 @@ export type ClosingPage = {
 export type Survey = {
     id: string;
     author: Pick<Account, 'id' | 'login' | 'email'>;
+    attachmentUrl: string | null;
     isAuthorizedOnly: boolean;
     closingPage: ClosingPage | null;
     createdAt: string;
@@ -43,6 +44,7 @@ export type SurveyPublic = Pick<
     | 'author'
     | 'title'
     | 'description'
+    | 'attachmentUrl'
     | 'isAuthorizedOnly'
     | 'isLimitedToOneResponse'
     | 'expireAt'
@@ -73,6 +75,7 @@ export type SurveyListItem = Pick<Survey, 'id' | 'title' | 'description' | 'crea
 export type Template = Pick<Survey, 'id' | 'title' | 'description' | 'createdAt' | 'pages' | 'closingPage'> & {
     authorId: string;
     authorName: string;
+    attachmentUrl?: string | null;
     published: boolean;
 };
 export type TemplateListItem = Pick<Template, 'id' | 'title' | 'description' | 'createdAt'> & {
