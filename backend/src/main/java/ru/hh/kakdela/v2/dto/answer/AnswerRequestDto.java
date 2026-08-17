@@ -24,9 +24,8 @@ public class AnswerRequestDto {
   @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED)
   @NullOrNotBlank(message = Messages.FIELD_SHOULD_NOT_BE_EMPTY)
   @Size(max = TextValueLengthLimits.ANSWER_MAX_LENGTH,
-      message = Messages.TEXT_VALUE_UPPER_LENGTH_LIMIT_VIOLATED_1
-          + TextValueLengthLimits.ANSWER_MAX_LENGTH
-          + Messages.TEXT_VALUE_UPPER_LENGTH_LIMIT_VIOLATED_2_1)
+      message = Messages.TEXT_VALUE_UPPER_LENGTH_LIMIT_VIOLATED
+          + TextValueLengthLimits.ANSWER_MAX_LENGTH)
   private String textValue;
 
   @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED)

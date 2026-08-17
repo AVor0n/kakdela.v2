@@ -26,9 +26,8 @@ public class NotificationScheduleCreateDto {
   @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
   @NotBlank(message = Messages.FIELD_SHOULD_NOT_BE_EMPTY)
   @Size(max = TextValueLengthLimits.DEFAULT_MAX_LENGTH,
-      message = Messages.TEXT_VALUE_UPPER_LENGTH_LIMIT_VIOLATED_1
-          + TextValueLengthLimits.DEFAULT_MAX_LENGTH
-          + Messages.TEXT_VALUE_UPPER_LENGTH_LIMIT_VIOLATED_2_1)
+      message = Messages.TEXT_VALUE_UPPER_LENGTH_LIMIT_VIOLATED
+          + TextValueLengthLimits.DEFAULT_MAX_LENGTH)
   private String name;
 
   @Schema(requiredMode = Schema.RequiredMode.REQUIRED)

@@ -20,9 +20,8 @@ public class AccountCreateDto {
   @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
   @NotBlank(message = Messages.FIELD_SHOULD_NOT_BE_EMPTY)
   @Size(max = TextValueLengthLimits.LOGIN_MAX_LENGTH,
-      message = Messages.TEXT_VALUE_UPPER_LENGTH_LIMIT_VIOLATED_1
-          + TextValueLengthLimits.LOGIN_MAX_LENGTH
-          + Messages.TEXT_VALUE_UPPER_LENGTH_LIMIT_VIOLATED_2_2)
+      message = Messages.TEXT_VALUE_UPPER_LENGTH_LIMIT_VIOLATED
+          + TextValueLengthLimits.LOGIN_MAX_LENGTH)
   private String login;
 
   @Schema(requiredMode = Schema.RequiredMode.REQUIRED)

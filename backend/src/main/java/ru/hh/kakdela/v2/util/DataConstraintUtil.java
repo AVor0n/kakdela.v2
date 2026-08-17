@@ -39,26 +39,8 @@ public class DataConstraintUtil {
     String cleanedValue = Jsoup.parseBodyFragment(value).text();
 
     if (cleanedValue.length() > limit) {
-      throw new Kd2DataValidationException(fieldName, getMessage(limit));
+      throw new Kd2DataValidationException(
+          fieldName, Messages.TEXT_VALUE_UPPER_LENGTH_LIMIT_VIOLATED + limit);
     }
-  }
-
-  private static String getMessage(int limit) {
-    String result = Messages.TEXT_VALUE_UPPER_LENGTH_LIMIT_VIOLATED_1 + limit;
-    int limitLastDigit = limit % 10;
-    int limitLastTwoDigits = limit % 100;
-
-    if (limitLastTwoDigits != 11 && limitLastDigit == 1) {
-      result += Messages.TEXT_VALUE_UPPER_LENGTH_LIMIT_VIOLATED_2_3;
-    } else if (
-        limitLastTwoDigits != 11
-            && limitLastTwoDigits != 12 && limitLastTwoDigits != 13 && limitLastTwoDigits != 14
-            || limitLastDigit == 2 || limitLastDigit == 3 || limitLastDigit == 4) {
-      result += Messages.TEXT_VALUE_UPPER_LENGTH_LIMIT_VIOLATED_2_2;
-    } else {
-      result += Messages.TEXT_VALUE_UPPER_LENGTH_LIMIT_VIOLATED_2_1;
-    }
-
-    return  result;
   }
 }

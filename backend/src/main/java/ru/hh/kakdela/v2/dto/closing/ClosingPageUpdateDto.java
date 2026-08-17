@@ -25,9 +25,8 @@ public class ClosingPageUpdateDto {
 
   @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED)
   @Size(max = TextValueLengthLimits.URL_MAX_LENGTH,
-      message = Messages.TEXT_VALUE_UPPER_LENGTH_LIMIT_VIOLATED_1
-          + TextValueLengthLimits.URL_MAX_LENGTH
-          + Messages.TEXT_VALUE_UPPER_LENGTH_LIMIT_VIOLATED_2_1)
+      message = Messages.TEXT_VALUE_UPPER_LENGTH_LIMIT_VIOLATED
+          + TextValueLengthLimits.URL_MAX_LENGTH)
   @NullOrNotBlank(message = Messages.FIELD_SHOULD_NOT_BE_EMPTY)
   private String websiteUrl;
 }
