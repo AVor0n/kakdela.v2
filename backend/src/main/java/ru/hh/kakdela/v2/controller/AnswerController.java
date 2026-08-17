@@ -24,7 +24,6 @@ import ru.hh.kakdela.v2.dto.answer.AnswerResponseDtoWithStatusDto;
 import ru.hh.kakdela.v2.security.CustomUserDetails;
 import ru.hh.kakdela.v2.service.AnswerService;
 import ru.hh.kakdela.v2.service.AuthCookieService;
-import ru.hh.kakdela.v2.util.CookieUtil;
 
 @RestController
 @RequestMapping("/api")
@@ -45,8 +44,7 @@ public class AnswerController {
     return answerService.getAllByResponseId(
         responseId,
         currentUser != null ? currentUser.getId() : null,
-        CookieUtil.getCookieValueByName(
-            request, authCookieService.getResponseToken(request, responseId)));
+        authCookieService.getResponseToken(request, responseId));
   }
 
   @PutMapping("/responses/{responseId}/answers")
@@ -63,8 +61,7 @@ public class AnswerController {
         questionId,
         dto,
         currentUser != null ? currentUser.getId() : null,
-        CookieUtil.getCookieValueByName(
-            request, authCookieService.getResponseToken(request, responseId)));
+        authCookieService.getResponseToken(request, responseId));
 
     return ResponseEntity.status(result.getStatus().httpStatus)
         .body(result.getAnswer());
@@ -83,7 +80,6 @@ public class AnswerController {
         responseId,
         questionId,
         currentUser != null ? currentUser.getId() : null,
-        CookieUtil.getCookieValueByName(
-            request, authCookieService.getResponseToken(request, responseId)));
+        authCookieService.getResponseToken(request, responseId));
   }
 }

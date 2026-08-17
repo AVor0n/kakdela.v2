@@ -4,23 +4,33 @@ import java.nio.file.Paths;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import ru.hh.kakdela.v2.constants.DefaultValues;
 import ru.hh.kakdela.v2.dao.AccountDao;
 import ru.hh.kakdela.v2.dao.SurveyDao;
 import ru.hh.kakdela.v2.dao.SurveyNotificationSubscriptionDao;
+import ru.hh.kakdela.v2.dto.image.ProcessedImage;
+import ru.hh.kakdela.v2.dto.object.ObjectUrlResponseDto;
 import ru.hh.kakdela.v2.dto.survey.SurveyCreateDto;
+import ru.hh.kakdela.v2.dto.survey.SurveyPublicResponseDto;
 import ru.hh.kakdela.v2.dto.survey.SurveyResponseDto;
 import ru.hh.kakdela.v2.dto.survey.SurveyShortResponseDto;
 import ru.hh.kakdela.v2.dto.survey.SurveyShortResponseWithPermissionDto;
 import ru.hh.kakdela.v2.dto.survey.SurveyUpdateDto;
+import ru.hh.kakdela.v2.exception.survey.SurveyNotFoundException;
 import ru.hh.kakdela.v2.mapper.SurveyMapper;
 import ru.hh.kakdela.v2.model.Account;
 import ru.hh.kakdela.v2.model.AnswerOption;
@@ -28,6 +38,7 @@ import ru.hh.kakdela.v2.model.ClosingPage;
 import ru.hh.kakdela.v2.model.Question;
 import ru.hh.kakdela.v2.model.Survey;
 import ru.hh.kakdela.v2.model.SurveyPage;
+import ru.hh.kakdela.v2.model.condition.Condition;
 import ru.hh.kakdela.v2.util.JsonNullableUtil;
 
 @Slf4j
@@ -35,17 +46,21 @@ import ru.hh.kakdela.v2.util.JsonNullableUtil;
 @RequiredArgsConstructor
 public class SurveyService {
 
+  @Value("${app.attachments.url-max-age}")
+  private long attachmentUrlMaxAge;
+
   private final SurveyDao surveyDao;
   private final AccountDao accountDao;
   private final SurveyNotificationSubscriptionDao subscriptionDao;
   private final PermissionService permissionService;
   private final NotificationService notificationService;
   private final ObjectStorageService objectStorageService;
-  private final ClosingPageService closingPageService;
+  private final ConditionToolsService conditionToolsService;
+  private final ImageProcessingService imageProcessingService;
   private final SurveyMapper surveyMapper;
 
   @Transactional(readOnly = true)
-  public SurveyResponseDto getById(UUID surveyId, UUID accountId) {
+  public SurveyPublicResponseDto getPublicById(UUID surveyId, UUID accountId) {
     Survey survey = surveyDao.findById(surveyId)
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Опрос не найден: id=" + surveyId));
@@ -53,6 +68,18 @@ public class SurveyService {
     if (!survey.isPublished()) {
       permissionService.checkHasAnyPermission(surveyId, accountId);
     }
+
+    return surveyMapper.surveyToPublicDto(
+        survey, conditionToolsService.doSurveyHaveConditions(surveyId));
+  }
+
+  @Transactional(readOnly = true)
+  public SurveyResponseDto getById(UUID surveyId, UUID accountId) {
+    Survey survey = surveyDao.findById(surveyId)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Опрос не найден: id=" + surveyId));
+
+    permissionService.checkHasAnyPermission(surveyId, accountId);
 
     return surveyMapper.surveyToDto(survey);
   }
@@ -67,6 +94,7 @@ public class SurveyService {
   @Transactional(readOnly = true)
   public List<SurveyShortResponseDto> getMyAssignedSurveys(UUID accountId) {
     return subscriptionDao.findSurveysBySubscriberId(accountId).stream()
+        .sorted(Comparator.comparing(Survey::getCreatedAt).reversed())
         .map(surveyMapper::surveyToShortDto)
         .toList();
   }
@@ -207,122 +235,11 @@ public class SurveyService {
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.NOT_FOUND, "Аккаунт не найден: " + accountId));
 
-    Survey surveyCopy = Survey.builder()
-        .id(UUID.randomUUID())
-        .author(account)
-        .title("Копия — " + originalSurvey.getTitle())
-        .description(originalSurvey.getDescription())
-        .isAuthorizedOnly(originalSurvey.isAuthorizedOnly())
-        .isLimitedToOneResponse(originalSurvey.isLimitedToOneResponse())
-        .doNotify(originalSurvey.doNotify())
-        .expireAt(originalSurvey.getExpireAt())
-        .targetTimezone(originalSurvey.getTargetTimezone())
-        .createdAt(Instant.now().truncatedTo(ChronoUnit.SECONDS))
-        .build();
-
-    for (SurveyPage originalPage : originalSurvey.getPages()) {
-      SurveyPage pageCopy = SurveyPage.builder()
-          .id(UUID.randomUUID())
-          .survey(surveyCopy)
-          .serialNumber(originalPage.getSerialNumber())
-          .title(originalPage.getTitle())
-          .description(originalPage.getDescription())
-          .build();
-
-      for (Question originalQuestion : originalPage.getQuestions()) {
-        UUID questionId = UUID.randomUUID();
-
-        Question questionCopy = Question.builder()
-            .id(questionId)
-            .surveyPage(pageCopy)
-            .serialNumber(originalQuestion.getSerialNumber())
-            .text(originalQuestion.getText())
-            .description(originalQuestion.getDescription())
-            .type(originalQuestion.getType())
-            .answerOptionOrder(originalQuestion.getAnswerOptionOrder())
-            .hasOtherOption(originalQuestion.hasOtherOption())
-            .isMandatory(originalQuestion.isMandatory())
-            .isVisible(originalQuestion.isVisible())
-            .condition(originalQuestion.getCondition())
-            .build();
-
-        if (originalQuestion.getAttachmentObjectKey() != null) {
-          String questionAttachmentObjectKey =
-              "questions/%s/%s".formatted(questionId, UUID.randomUUID());
-          objectStorageService.copyObject(
-              originalQuestion.getAttachmentObjectKey(),
-              questionAttachmentObjectKey
-          );
-          questionCopy.setAttachmentObjectKey(questionAttachmentObjectKey);
-        }
-
-        for (AnswerOption originalOption : originalQuestion.getAnswerOptions()) {
-          UUID optionId = UUID.randomUUID();
-
-          AnswerOption optionCopy = AnswerOption.builder()
-              .id(optionId)
-              .question(questionCopy)
-              .serialNumber(originalOption.getSerialNumber())
-              .text(originalOption.getText())
-              .build();
-
-          if (originalOption.getAttachmentObjectKey() != null) {
-            String optionAttachmentObjectKey =
-                "answer-options/%s/%s".formatted(optionId, UUID.randomUUID());
-            objectStorageService.copyObject(
-                originalOption.getAttachmentObjectKey(),
-                optionAttachmentObjectKey
-            );
-            optionCopy.setAttachmentObjectKey(optionAttachmentObjectKey);
-          }
-          questionCopy.getAnswerOptions().add(optionCopy);
-        }
-
-        pageCopy.getQuestions().add(questionCopy);
-      }
-
-      surveyCopy.getPages().add(pageCopy);
-    }
-
-    if (originalSurvey.getClosingPage() != null) {
-      UUID closingPageId = UUID.randomUUID();
-
-      ClosingPage closingPageCopy = ClosingPage.builder()
-          .id(closingPageId)
-          .survey(surveyCopy)
-          .title(originalSurvey.getClosingPage().getTitle())
-          .description(originalSurvey.getClosingPage().getDescription())
-          .websiteUrl(originalSurvey.getClosingPage().getWebsiteUrl())
-          .build();
-
-      if (originalSurvey.getClosingPage().getAttachmentObjectKey() != null) {
-        String closingAttachmentObjectKey =
-            "closing-pages/%s/%s".formatted(closingPageId, UUID.randomUUID());
-        objectStorageService.copyObject(
-            originalSurvey.getClosingPage().getAttachmentObjectKey(),
-            closingAttachmentObjectKey
-        );
-        closingPageCopy.setAttachmentObjectKey(closingAttachmentObjectKey);
-      }
-
-      if (originalSurvey.getClosingPage().getFileObjectKey() != null) {
-        String originalFileKey = originalSurvey.getClosingPage().getFileObjectKey();
-        String fileName =  Paths.get(originalFileKey).getFileName().toString();
-
-        String closingFileObjectKey =
-            "closing-pages/%s/%s".formatted(closingPageId, fileName);
-        objectStorageService.copyObject(
-            originalSurvey.getClosingPage().getFileObjectKey(),
-            closingFileObjectKey
-        );
-        closingPageCopy.setFileObjectKey(closingFileObjectKey);
-      }
-      surveyCopy.setClosingPage(closingPageCopy);
-    }
-
-    surveyDao.save(surveyCopy);
-    log.info("Клонирован опрос originalId={} copyId={} accountId={}",
-        surveyId, surveyCopy.getId(), accountId);
+    Survey surveyCopy = cloneSurvey(
+        originalSurvey,
+        account,
+        false,
+        "Копия — " + originalSurvey.getTitle());
 
     return surveyMapper.surveyToDto(surveyCopy);
   }
@@ -337,7 +254,251 @@ public class SurveyService {
     log.info("Удален опрос id={} accountId={}", id, accountId);
   }
 
+  // Attachment management
+
+  @Transactional
+  public ObjectUrlResponseDto addAttachment(UUID surveyId, UUID accountId, MultipartFile file) {
+    Survey survey = surveyDao.findById(surveyId)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
+
+    permissionService.checkCanEdit(survey.getId(), accountId);
+
+    if (survey.getAttachmentObjectKey() != null) {
+      throw new ResponseStatusException(
+          HttpStatus.CONFLICT, "К опросу уже прикреплено вложение");
+    }
+
+    ProcessedImage image = imageProcessingService.process(file);
+
+    String objectKey = "opening-pages/%s/%s".formatted(surveyId, UUID.randomUUID());
+    objectStorageService.putObject(
+        objectKey,
+        image.getContent(),
+        image.getContentType());
+
+    survey.setAttachmentObjectKey(objectKey);
+    surveyDao.update(survey);
+    return new ObjectUrlResponseDto(
+        objectStorageService.generateObjectUrl(objectKey, attachmentUrlMaxAge).toString());
+  }
+
+  @Transactional
+  public ObjectUrlResponseDto updateAttachment(UUID surveyId,
+                                               UUID accountId,
+                                               MultipartFile file) {
+    Survey survey = surveyDao.findById(surveyId)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
+
+    permissionService.checkCanEdit(survey.getId(), accountId);
+
+    ProcessedImage image = imageProcessingService.process(file);
+
+    if (survey.getAttachmentObjectKey() != null) {
+      objectStorageService.deleteObject(
+          survey.getAttachmentObjectKey());
+    }
+
+    String objectKey = "opening-pages/%s/%s".formatted(surveyId, UUID.randomUUID());
+    objectStorageService.putObject(
+        objectKey,
+        image.getContent(),
+        image.getContentType());
+
+    survey.setAttachmentObjectKey(objectKey);
+    surveyDao.update(survey);
+    return new ObjectUrlResponseDto(
+        objectStorageService.generateObjectUrl(objectKey, attachmentUrlMaxAge).toString());
+  }
+
+  @Transactional
+  public void deleteAttachment(UUID surveyId, UUID accountId) {
+    Survey survey = surveyDao.findById(surveyId)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Опрос не найден: " + surveyId));
+
+    permissionService.checkCanEdit(survey.getId(), accountId);
+
+    if (survey.getAttachmentObjectKey() == null) {
+      throw new ResponseStatusException(
+          HttpStatus.NOT_FOUND, "Опрос не содержит вложения");
+    }
+
+    objectStorageService.deleteObject(survey.getAttachmentObjectKey());
+
+    survey.setAttachmentObjectKey(null);
+    surveyDao.update(survey);
+  }
+
   // Вспомогательные методы
+
+  Survey cloneSurvey(
+      Survey source,
+      Account newAuthor,
+      boolean asTemplate,
+      String customTitle
+  ) {
+    Account author = newAuthor != null ? newAuthor : source.getAuthor();
+
+    Survey cloned = Survey.builder()
+        .id(UUID.randomUUID())
+        .author(author)
+        .title(customTitle != null ? customTitle : source.getTitle())
+        .description(source.getDescription())
+        .isAuthorizedOnly(asTemplate
+            ? DefaultValues.IS_AUTHORIZED_ONLY_DEFAULT
+            : source.isAuthorizedOnly())
+        .isLimitedToOneResponse(asTemplate
+            ? DefaultValues.IS_LIMITED_TO_ONE_RESPONSE_DEFAULT
+            : source.isLimitedToOneResponse())
+        .doNotify(asTemplate
+            ? DefaultValues.DO_NOTIFY_DEFAULT
+            : source.doNotify())
+        .expireAt(asTemplate ? null : source.getExpireAt())
+        .targetTimezone(asTemplate
+            ? DefaultValues.TARGET_TIMEZONE_DEFAULT
+            : source.getTargetTimezone())
+        .createdAt(Instant.now().truncatedTo(ChronoUnit.SECONDS))
+        .isTemplate(asTemplate)
+        .build();
+
+    if (source.getClosingPage() != null) {
+      ClosingPage closingPageCopy = cloneClosingPage(source.getClosingPage(), cloned);
+      cloned.setClosingPage(closingPageCopy);
+    }
+
+    Map<Integer, SurveyPage> pageMap = new HashMap<>();
+
+    for (SurveyPage originalPage : source.getPages()) {
+      SurveyPage pageCopy = clonePage(originalPage, cloned);
+      cloned.getPages().add(pageCopy);
+
+      pageMap.put(pageCopy.getSerialNumber(), pageCopy);
+    }
+
+    List<ConditionToolsService.ConditionAndRoot> conditionCopiesAndTheirRoots = new ArrayList<>();
+
+    for (SurveyPage originalPage : source.getPages()) {
+      for (Condition condition : originalPage.getConditions()) {
+        ConditionToolsService.ConditionAndRoot conditionCopyAndItsRoot =
+            conditionToolsService.cloneCondition(condition, pageMap);
+
+        pageMap.get(condition.getSurveyPage().getSerialNumber())
+            .getConditions().add(conditionCopyAndItsRoot.condition());
+        conditionCopiesAndTheirRoots.add(conditionCopyAndItsRoot);
+      }
+    }
+
+    surveyDao.save(cloned);
+
+    for (ConditionToolsService.ConditionAndRoot conditionAndRoot : conditionCopiesAndTheirRoots) {
+      conditionAndRoot.condition().setRoot(conditionAndRoot.root());
+    }
+
+    surveyDao.update(cloned);
+
+    log.debug("Клонирован опрос: sourceId={}, cloneId={}, asTemplate={}",
+        source.getId(), cloned.getId(), asTemplate);
+
+    return cloned;
+  }
+
+  private SurveyPage clonePage(SurveyPage originalPage, Survey newSurvey) {
+    SurveyPage pageCopy = SurveyPage.builder()
+        .id(UUID.randomUUID())
+        .survey(newSurvey)
+        .serialNumber(originalPage.getSerialNumber())
+        .title(originalPage.getTitle())
+        .description(originalPage.getDescription())
+        .build();
+
+    for (Question originalQuestion : originalPage.getQuestions()) {
+      Question questionCopy = cloneQuestion(originalQuestion, pageCopy, false);
+      pageCopy.getQuestions().add(questionCopy);
+    }
+
+    return pageCopy;
+  }
+
+  Question cloneQuestion(
+      Question originalQuestion,
+      SurveyPage newPage,
+      boolean increaseSerialNumber
+  ) {
+    UUID questionId = UUID.randomUUID();
+
+    Question questionCopy = Question.builder()
+        .id(questionId)
+        .surveyPage(newPage)
+        .serialNumber(originalQuestion.getSerialNumber() + (increaseSerialNumber ? 1 : 0))
+        .text(originalQuestion.getText())
+        .description(originalQuestion.getDescription())
+        .type(originalQuestion.getType())
+        .answerOptionOrder(originalQuestion.getAnswerOptionOrder())
+        .hasOtherOption(originalQuestion.hasOtherOption())
+        .isMandatory(originalQuestion.isMandatory())
+        .build();
+
+    if (originalQuestion.getAttachmentObjectKey() != null) {
+      String newKey = "questions/%s/%s".formatted(questionId, UUID.randomUUID());
+      objectStorageService.copyObject(originalQuestion.getAttachmentObjectKey(), newKey);
+      questionCopy.setAttachmentObjectKey(newKey);
+    }
+
+    for (AnswerOption originalOption : originalQuestion.getAnswerOptions()) {
+      AnswerOption optionCopy = cloneAnswerOption(originalOption, questionCopy);
+      questionCopy.getAnswerOptions().add(optionCopy);
+    }
+
+    return questionCopy;
+  }
+
+  private AnswerOption cloneAnswerOption(AnswerOption originalOption, Question newQuestion) {
+    UUID optionId = UUID.randomUUID();
+
+    AnswerOption optionCopy = AnswerOption.builder()
+        .id(optionId)
+        .question(newQuestion)
+        .serialNumber(originalOption.getSerialNumber())
+        .text(originalOption.getText())
+        .build();
+
+    if (originalOption.getAttachmentObjectKey() != null) {
+      String newKey = "answer-options/%s/%s".formatted(optionId, UUID.randomUUID());
+      objectStorageService.copyObject(originalOption.getAttachmentObjectKey(), newKey);
+      optionCopy.setAttachmentObjectKey(newKey);
+    }
+
+    return optionCopy;
+  }
+
+  private ClosingPage cloneClosingPage(ClosingPage originalClosingPage, Survey newSurvey) {
+    UUID closingPageId = UUID.randomUUID();
+
+    ClosingPage closingPageCopy = ClosingPage.builder()
+        .id(closingPageId)
+        .survey(newSurvey)
+        .title(originalClosingPage.getTitle())
+        .description(originalClosingPage.getDescription())
+        .websiteUrl(originalClosingPage.getWebsiteUrl())
+        .build();
+
+    if (originalClosingPage.getAttachmentObjectKey() != null) {
+      String newKey = "closing-pages/%s/%s".formatted(closingPageId, UUID.randomUUID());
+      objectStorageService.copyObject(originalClosingPage.getAttachmentObjectKey(), newKey);
+      closingPageCopy.setAttachmentObjectKey(newKey);
+    }
+
+    if (originalClosingPage.getFileObjectKey() != null) {
+      String originalKey = originalClosingPage.getFileObjectKey();
+      String fileName = Paths.get(originalKey).getFileName().toString();
+      String newKey = "closing-pages/%s/%s".formatted(closingPageId, fileName);
+      objectStorageService.copyObject(originalKey, newKey);
+      closingPageCopy.setFileObjectKey(newKey);
+    }
+    return closingPageCopy;
+  }
 
   private void validateAuthorizationConsistency(Survey survey) {
     if (survey.isLimitedToOneResponse() && !survey.isAuthorizedOnly()) {
@@ -358,6 +519,18 @@ public class SurveyService {
     if (expireAt.isBefore(Instant.now())) {
       throw new ResponseStatusException(
           HttpStatus.BAD_REQUEST, "Дедлайн в указанном часовом поясе уже прошёл");
+    }
+  }
+
+  Survey getEntityById(UUID id) {
+    return surveyDao.findById(id)
+        .orElseThrow(() -> new SurveyNotFoundException(id));
+  }
+
+  void checkSurveyExistsAndIsNotTemplate(UUID id) {
+    if (surveyDao.findIsTemplateById(id)
+        .orElseThrow(() -> new SurveyNotFoundException(id))) {
+      throw new SurveyNotFoundException(id);
     }
   }
 }

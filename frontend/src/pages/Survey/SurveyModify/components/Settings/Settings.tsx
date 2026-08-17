@@ -12,14 +12,16 @@ import style from './Settings.module.css';
 import { Button, Checkbox, DateTimeInput } from '@hh.ru/magritte-ui';
 import classNames from 'classnames';
 import { NotificationsSchedule } from './components/NotificationSchedule/NotificationsSchedule';
+import { createTemplateFromSurvey } from '@/api/template';
 
 function convertDateFromISO(isoStr: string): string {
     if (!isoStr) return '';
     const date = new Date(isoStr);
 
-    const result = date.toLocaleDateString('ru-RU');
+    const datePart = date.toLocaleDateString('ru-RU');
+    const timePart = date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
 
-    return result;
+    return `${datePart}, ${timePart}`;
 }
 
 export function Settings() {
@@ -28,6 +30,7 @@ export function Settings() {
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
     const isAuthor = account?.id === selectedSurvey?.author.id;
+    const [isTemplateCreated, setIsTemplateCreated] = useState(false);
 
     const [isAuthorizedOnly, setIsAuthorizedOnly] = useState<boolean>(selectedSurvey?.isAuthorizedOnly ?? false);
     const [isLimitedToOneResponse, setIsLimitedToOneResponse] = useState<boolean>(
@@ -41,9 +44,6 @@ export function Settings() {
 
         return null;
     });
-
-    // Состояние для отслеживания успешного копирования
-    const [isCopied, setIsCopied] = useState(false);
 
     const skipSaveOnUnmountRef = useRef<boolean>(false);
     const expireAtRef = useRef<HTMLInputElement>(null);
@@ -80,8 +80,7 @@ export function Settings() {
                     if (err.response) {
                         dispatch(
                             setErrorMessage({
-                                message:
-                                    'Не удалось изменить настройку "Прохождение только для авторизированных пользователей"',
+                                message: 'Не удалось изменить настройку "Запретить анонимное прохождение"',
                             }),
                         );
                     }
@@ -101,7 +100,7 @@ export function Settings() {
                     if (err.response) {
                         dispatch(
                             setErrorMessage({
-                                message: 'Не удалось изменить настройку "Разрешить проходить опрос только один раз"',
+                                message: 'Не удалось изменить настройку "Запретить проходить более одного раза"',
                             }),
                         );
                     }
@@ -121,7 +120,7 @@ export function Settings() {
                     if (err.response) {
                         dispatch(
                             setErrorMessage({
-                                message: 'Не удалось изменить настройку "Дата окончания прохождения опроса"',
+                                message: 'Не удалось изменить настройку "Дата и время окончания приёма ответов"',
                             }),
                         );
                     }
@@ -135,11 +134,14 @@ export function Settings() {
             let isoString = '';
             const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
             if (expireAt) {
-                const [day, month, year] = expireAt.split('.').map(Number);
+                const [datePart, timePart] = expireAt.split(',').map((part) => part.trim());
+                const [day, month, year] = datePart.split('.').map(Number);
                 if (!day || !month || !year) {
                     return;
                 }
-                isoString = new Date(year, month - 1, day, 10, 0, 0).toISOString();
+                const [hours, minutes] = timePart ? timePart.split(':').map(Number) : [10, 0];
+                const pad = (value: number) => String(value).padStart(2, '0');
+                isoString = `${year}-${pad(month)}-${pad(day)}T${pad(hours || 0)}:${pad(minutes || 0)}:00`;
             }
             updateSurvey(selectedSurvey.id, {
                 expireAtAtTargetTimezone: isoString,
@@ -152,7 +154,7 @@ export function Settings() {
                     if (err.response) {
                         dispatch(
                             setErrorMessage({
-                                message: 'Не удалось изменить настройку "Присылать сообщение о прохождении опроса"',
+                                message: 'Не удалось изменить настройку "Дата и время окончания приёма ответов"',
                             }),
                         );
                     }
@@ -172,7 +174,7 @@ export function Settings() {
                 if (err.response) {
                     dispatch(
                         setErrorMessage({
-                            message: 'Не удалось изменить настройку "Присылать сообщение о прохождении опроса"',
+                            message: 'Не удалось изменить настройку "Присылать уведомления о новых ответах"',
                         }),
                     );
                 }
@@ -215,25 +217,29 @@ export function Settings() {
             });
     };
 
-    const handleCopyClick = async (valueForCopy: string) => {
-        try {
-            // Копируем значение в буфер обмена
-            await navigator.clipboard.writeText(valueForCopy);
-            setIsCopied(true);
-
-            // Возвращаем исходный текст кнопки через 2 секунды
-            setTimeout(() => {
-                setIsCopied(false);
-            }, 2000);
-        } catch (err) {
-            dispatch(setErrorMessage({ message: 'Ошибка при копировании: ' + err }));
-        }
+    const makeTemplateHandler = () => {
+        if (!selectedSurvey) return;
+        createTemplateFromSurvey(selectedSurvey.id)
+            .then(() => {
+                setIsTemplateCreated(true);
+            })
+            .catch(() => dispatch(setErrorMessage({ message: 'Не удалось создать шаблон из этого опроса' })));
     };
+
+    useEffect(() => {
+        if (!isTemplateCreated) return;
+        const handler = setTimeout(() => {
+            setIsTemplateCreated(false);
+        }, 2000);
+
+        return () => {
+            clearTimeout(handler);
+        };
+    }, [isTemplateCreated]);
 
     return (
         <section className={style.container}>
             <div className={style.content}>
-                <p className={style.title}>Настройки</p>
                 <div className={style.option}>
                     <Checkbox
                         checked={isAuthorizedOnly}
@@ -241,7 +247,7 @@ export function Settings() {
                             updateIsAuthorizedOnlyHandler(!isAuthorizedOnly);
                         }}
                     />
-                    <span>Прохождение только для авторизированных пользователей</span>
+                    <span>Запретить анонимное прохождение</span>
                 </div>
                 <div className={style.option}>
                     <Checkbox
@@ -250,7 +256,7 @@ export function Settings() {
                             updateIsLimitedToOneResponseHandler(!isLimitedToOneResponse);
                         }}
                     />
-                    <span>Разрешить проходить опрос только один раз</span>
+                    <span>Запретить проходить более одного раза</span>
                 </div>
 
                 <div className={style.option}>
@@ -260,7 +266,7 @@ export function Settings() {
                             updateDoNotifyHandler(!doNotify);
                         }}
                     />
-                    <span>Присылать сообщение о прохождении опроса</span>
+                    <span>Присылать уведомления о новых ответах</span>
                 </div>
 
                 <div className={classNames(style.option, style.dateOption)}>
@@ -269,8 +275,9 @@ export function Settings() {
                         value={expireAt ?? ''}
                         onChange={(e) => setExpireAt(e)}
                         elevatePlaceholder
-                        placeholder='Дата окончания прохождения опроса'
+                        placeholder='Дата и время окончания приёма ответов'
                         dateMask='dd.mm.yyyy'
+                        timeMask
                         onBlur={() => {
                             changeExpireAt();
                         }}
@@ -289,11 +296,11 @@ export function Settings() {
                     )}
                 </div>
 
+                <NotificationsSchedule surveyId={selectedSurvey.id} />
+
                 <SubscribersInput />
 
                 {isAuthor && <Permissions surveyId={selectedSurvey.id} />}
-
-                <NotificationsSchedule surveyId={selectedSurvey.id} />
 
                 <div className={style.buttons}>
                     <Button mode='secondary' style='neutral' onClick={resetSettings}>
@@ -306,14 +313,10 @@ export function Settings() {
                     )}
                     <Button
                         mode='secondary'
-                        style='neutral'
-                        onClick={() =>
-                            handleCopyClick(
-                                `https://${window.location.hostname}:${window.location.port}/surveys/${selectedSurvey.id}?responde=true`,
-                            )
-                        }
+                        style={isTemplateCreated ? 'positive' : 'neutral'}
+                        onClick={!isTemplateCreated ? makeTemplateHandler : () => {}}
                     >
-                        {isCopied ? 'Ссылка скопирована' : 'Скопировать ссылку на опрос'}
+                        {!isTemplateCreated ? 'Создать шаблон из этого опроса' : 'Шаблон создан'}
                     </Button>
                 </div>
             </div>

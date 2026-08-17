@@ -19,13 +19,10 @@ public class AuthCookieService {
 
   public static final String MAIN_PATH = "/api";
   public static final String REFRESH_PATH = "/api/auth/refresh";
-  public static final String RESPONSES_PATH = "/api/responses";
   public static final String HH_LINK_INTENT_PATH = "/api/auth/oauth2";
-
-  private static final long HH_LINK_INTENT_MAX_AGE = 120;
-
-  @Value("${app.tokens.access.max-age}")
-  private long accessTokenMaxAge;
+  
+  @Value("${app.tokens.hh-link.max-age}")
+  private long hhLinkTokenMaxAge;
 
   @Value("${app.tokens.refresh.max-age}")
   private long refreshTokenMaxAge;
@@ -55,7 +52,7 @@ public class AuthCookieService {
 
   public void setAccessTokenCookie(HttpServletResponse response, String token) {
     ResponseCookie cookie = CookieUtil.buildHttpOnlyStrictCookie(
-        ACCESS_TOKEN_COOKIE_NAME, token, MAIN_PATH, accessTokenMaxAge
+        ACCESS_TOKEN_COOKIE_NAME, token, MAIN_PATH, refreshTokenMaxAge
     );
     CookieUtil.addCookie(response, cookie);
   }
@@ -76,13 +73,13 @@ public class AuthCookieService {
   public void setResponseTokenCookie(HttpServletResponse response, UUID responseId, String token) {
     String cookieName = RESPONSE_TOKEN_PREFIX + responseId;
     ResponseCookie cookie = CookieUtil.buildHttpOnlyStrictCookie(
-        cookieName, token, RESPONSES_PATH, responseTokenMaxAge);
+        cookieName, token, MAIN_PATH, responseTokenMaxAge);
     CookieUtil.addCookie(response, cookie);
   }
 
   public void setHhLinkIntentCookie(HttpServletResponse response, String accessToken) {
     ResponseCookie cookie = CookieUtil.buildHttpOnlyLaxCookie(
-        HH_LINK_INTENT_COOKIE_NAME, accessToken, HH_LINK_INTENT_PATH, HH_LINK_INTENT_MAX_AGE);
+        HH_LINK_INTENT_COOKIE_NAME, accessToken, HH_LINK_INTENT_PATH, hhLinkTokenMaxAge);
     CookieUtil.addCookie(response, cookie);
   }
 
@@ -112,7 +109,7 @@ public class AuthCookieService {
   public void clearResponseTokenCookie(HttpServletResponse response, UUID responseId) {
     String cookieName = RESPONSE_TOKEN_PREFIX + responseId;
     CookieUtil.addCookie(response,
-        CookieUtil.buildExpiredCookie(cookieName, RESPONSES_PATH));
+        CookieUtil.buildExpiredCookie(cookieName, MAIN_PATH));
   }
 
   public void clearAllAuthCookies(HttpServletResponse response) {

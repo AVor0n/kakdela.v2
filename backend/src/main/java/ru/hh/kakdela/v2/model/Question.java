@@ -16,7 +16,6 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Function;
@@ -94,19 +93,17 @@ public class Question {
   @Builder.Default
   private boolean isMandatory = true;
 
-  @Column(name = "is_visible", nullable = false)
-  @Builder.Default
-  private boolean isVisible = true;
-
-  @Column(name = "condition", columnDefinition = "text")
-  private String condition;
-
-  @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
+  @OneToMany(
+      mappedBy = "question",
+      cascade = {
+          CascadeType.PERSIST,
+          CascadeType.MERGE},
+      orphanRemoval = true)
   @OrderBy("serialNumber ASC")
   @Builder.Default
   private List<AnswerOption> answerOptions = new ArrayList<>();
 
-  @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
+  @OneToMany(mappedBy = "question")
   @Builder.Default
   private List<Answer> answers = new ArrayList<>();
 
@@ -139,10 +136,7 @@ public class Question {
   @AllArgsConstructor(access = AccessLevel.PRIVATE)
   public enum AnswerOptionOrder {
     ORIGINAL(
-        aords -> {
-          aords.sort(Comparator.comparingInt(AnswerOptionResponseDto::getSerialNumber));
-          return aords;
-        }),
+        aords -> aords),
     RANDOM(
         aords -> {
           Collections.shuffle(aords);

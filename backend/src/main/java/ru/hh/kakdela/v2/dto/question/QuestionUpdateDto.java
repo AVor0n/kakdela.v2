@@ -27,6 +27,4 @@ public class QuestionUpdateDto {
   private Question.AnswerOptionOrder answerOptionOrder;
   private Boolean hasOtherOption;
   private Boolean isMandatory;
-  private Boolean isVisible;
-  private String condition;
 }

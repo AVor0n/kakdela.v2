@@ -24,3 +24,8 @@
     width: 18px;
     height: 18px;
 }
+
+.empty {
+    color: #0000006d;
+    font-size: 14px;
+}

@@ -9,7 +9,11 @@ public interface SurveyPageDao {
 
   Optional<SurveyPage> findById(UUID id);
 
+  Optional<SurveyPage> findByIdWithAllConditionsAndParentSurveyWithPagesAndQuestions(UUID id);
+
   List<SurveyPage> findAllBySurveyId(UUID surveyId);
+
+  Optional<SurveyPage> findFirstBySurveyId(UUID surveyId);
 
   void save(SurveyPage page);
 

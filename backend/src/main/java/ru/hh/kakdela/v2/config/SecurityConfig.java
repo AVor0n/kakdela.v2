@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -24,7 +23,9 @@ import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequ
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.cors.CorsConfigurationSource;
 import ru.hh.kakdela.v2.security.JwtRequestFilter;
 import ru.hh.kakdela.v2.security.Oauth2LoginFailureHandler;
@@ -50,6 +51,7 @@ public class SecurityConfig {
   private final OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest>
       hhTokenResponseClient;
   private final OAuth2UserService<OAuth2UserRequest, OAuth2User> hhUserService;
+  private final AccessDeniedHandler accessDeniedHandler;
 
   @Bean
   public OAuth2AuthorizationRequestResolver authorizationRequestResolver(
@@ -80,6 +82,7 @@ public class SecurityConfig {
                 .requestMatchers("/swagger-ui/**", "/swagger-ui.html",
                     "/api-docs/**", "/v3/api-docs/**").permitAll()
                 .requestMatchers("/api/auth/logout").authenticated()
+                .requestMatchers("/api/auth/logout-everywhere").authenticated() 
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers(HttpMethod.POST,
                     "/api/accounts/me/link-hh-sso/confirm").permitAll()
@@ -98,10 +101,7 @@ public class SecurityConfig {
                 .anyRequest().authenticated())
         .exceptionHandling(exception -> exception
             .authenticationEntryPoint(authenticationEntryPoint)
-            .accessDeniedHandler((request, response, ex) ->
-                response.sendError(HttpStatus.FORBIDDEN.value(), ex.getMessage())))
-        // Отдельно эндпоинты /api/auth/oauth2/** не перечисляем - они уже покрыты
-        // существующим правилом .requestMatchers("/api/auth/**").permitAll() выше
+            .accessDeniedHandler(accessDeniedHandler))
         .oauth2Login(oauth2 -> oauth2
             .authorizationEndpoint(a -> a
                 .baseUri(oauth2AuthorizationBaseUri)

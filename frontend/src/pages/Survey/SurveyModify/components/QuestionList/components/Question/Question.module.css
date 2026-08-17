@@ -118,6 +118,27 @@
     justify-self: end;
 }
 
+.yesNoPreview {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.yesNoPreview label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.temporalInput {
+    width: min(100%, 260px);
+    min-height: 44px;
+    padding: 0 12px;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    box-sizing: border-box;
+}
+
 @media (max-width: 768px) {
     .container {
         padding: 24px 14px 16px;

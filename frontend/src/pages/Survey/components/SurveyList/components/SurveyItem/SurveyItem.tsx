@@ -91,15 +91,15 @@ export function SurveyItem({ survey, onClick }: SurveyItemProps) {
                         <div className={style.deleteButtons}>
                             <Button
                                 mode='secondary'
-                                style='neutral'
-                                icon={<CrossOutlinedSize24 />}
-                                onClick={() => setIsDeleteSurvey(false)}
-                            />
-                            <Button
-                                mode='secondary'
                                 style='accent'
                                 icon={<CheckOutlinedSize24 />}
                                 onClick={deleteSurveyHandler}
+                            />
+                            <Button
+                                mode='secondary'
+                                style='neutral'
+                                icon={<CrossOutlinedSize24 />}
+                                onClick={() => setIsDeleteSurvey(false)}
                             />
                         </div>
                     ) : (

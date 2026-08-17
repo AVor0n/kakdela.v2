@@ -62,6 +62,7 @@ public class SurveyServiceTestEntity {
         getAuthorFor(isClone),
         FullSurveyConstants.getTitle(isClone),
         "description",
+        null,
         false,
         false,
         !isClone,
@@ -71,8 +72,8 @@ public class SurveyServiceTestEntity {
         "Europe/Moscow",
         null,
         new ArrayList<>(),
-        new ArrayList<>(),
         null,
+        new ArrayList<>(),
         new ArrayList<>());
 
     if (!isClone) {
@@ -106,7 +107,8 @@ public class SurveyServiceTestEntity {
         1,
         "surveyPage",
         "description",
-        new ArrayList<>());
+        new ArrayList<>(),
+        Collections.emptyList());
     Question question1 = new Question(
         FullSurveyConstants.QUESTION1.getId(isClone),
         surveyPage1,
@@ -118,8 +120,6 @@ public class SurveyServiceTestEntity {
         Question.AnswerOptionOrder.ORIGINAL,
         false,
         true,
-        true,
-        "condition",
         Collections.emptyList(),
         new ArrayList<>());
     Question question2 = new Question(
@@ -133,8 +133,6 @@ public class SurveyServiceTestEntity {
         Question.AnswerOptionOrder.ORIGINAL,
         false,
         true,
-        true,
-        "condition",
         null,
         new ArrayList<>());
     List<AnswerOption> question2AnswerOptionList = List.of(
@@ -162,8 +160,6 @@ public class SurveyServiceTestEntity {
         Question.AnswerOptionOrder.ORIGINAL,
         false,
         true,
-        true,
-        "condition",
         null,
         new ArrayList<>());
     List<AnswerOption> question3AnswerOptionList = List.of(
@@ -194,11 +190,13 @@ public class SurveyServiceTestEntity {
           survey,
           false,
           null,
-          new ArrayList<>());
+          new ArrayList<>(),
+          null);
       Answer answer1 = new Answer(
           FullSurveyConstants.getQuestion1AnswerId(),
           response1,
           question1,
+          1,
           1,
           "question1",
           "answer1",
@@ -211,6 +209,7 @@ public class SurveyServiceTestEntity {
           FullSurveyConstants.getQuestion2AnswerId(),
           response1,
           question2,
+          1,
           2,
           "question2",
           null,
@@ -239,6 +238,7 @@ public class SurveyServiceTestEntity {
           FullSurveyConstants.getQuestion3AnswerId(),
           response1,
           question3,
+          1,
           3,
           "question3",
           null,
@@ -284,6 +284,7 @@ public class SurveyServiceTestEntity {
         account1,
         PlainSurveyConstants.getTitle(otherValuesOfTitleAndDescription),
         PlainSurveyConstants.getDescription(otherValuesOfTitleAndDescription),
+        null,
         allSurveyOptionValues,
         allSurveyOptionValues,
         isPublished,
@@ -293,8 +294,8 @@ public class SurveyServiceTestEntity {
         targetTimezone,
         null,
         Collections.emptyList(),
-        Collections.emptyList(),
         null,
+        Collections.emptyList(),
         Collections.emptyList()
     );
   }

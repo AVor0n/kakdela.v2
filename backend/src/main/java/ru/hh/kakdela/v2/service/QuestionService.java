@@ -11,14 +11,13 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import ru.hh.kakdela.v2.dao.QuestionDao;
-import ru.hh.kakdela.v2.dao.SurveyPageDao;
 import ru.hh.kakdela.v2.dto.image.ProcessedImage;
 import ru.hh.kakdela.v2.dto.object.ObjectUrlResponseDto;
 import ru.hh.kakdela.v2.dto.question.QuestionCreateDto;
 import ru.hh.kakdela.v2.dto.question.QuestionResponseDto;
 import ru.hh.kakdela.v2.dto.question.QuestionUpdateDto;
+import ru.hh.kakdela.v2.exception.question.QuestionNotFoundException;
 import ru.hh.kakdela.v2.mapper.QuestionMapper;
-import ru.hh.kakdela.v2.model.AnswerOption;
 import ru.hh.kakdela.v2.model.Question;
 import ru.hh.kakdela.v2.model.SurveyPage;
 
@@ -31,22 +30,30 @@ public class QuestionService {
   private long attachmentUrlMaxAge;
 
   private final QuestionDao questionDao;
+  private final SurveyService surveyService;
+  private final SurveyPageService surveyPageService;
   private final PermissionService permissionService;
-  private final SurveyPageDao surveyPageDao;
   private final ObjectStorageService objectStorageService;
-  private final QuestionMapper questionMapper;
   private final ImageProcessingService imageProcessingService;
+  private final QuestionMapper questionMapper;
 
   @Transactional(readOnly = true)
-  public QuestionResponseDto getById(UUID id) {
-    Question question = questionDao.findById(id)
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Вопрос не найден: " + id));
+  public QuestionResponseDto getById(UUID questionId, UUID accountId) {
+    Question question = getEntityById(questionId);
+
+    permissionService.checkHasAnyPermission(
+        questionDao.findParentSurveyIdById(questionId), accountId);
+
     return questionMapper.questionToDto(question);
   }
 
   @Transactional(readOnly = true)
-  public List<QuestionResponseDto> getAllByPageId(UUID pageId) {
+  public List<QuestionResponseDto> getAllByPageId(UUID pageId, UUID accountId) {
+    SurveyPage page = surveyPageService.getEntityById(pageId);
+
+    permissionService.checkHasAnyPermission(
+        page.getSurvey().getId(), accountId);
+
     return questionDao.findAllByPageId(pageId).stream()
         .map(questionMapper::questionToDto)
         .toList();
@@ -54,9 +61,7 @@ public class QuestionService {
 
   @Transactional
   public QuestionResponseDto create(UUID pageId, QuestionCreateDto dto, UUID accountId) {
-    SurveyPage page = surveyPageDao.findById(pageId)
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Страница не найдена: " + pageId));
+    SurveyPage page = surveyPageService.getEntityById(pageId);
 
     permissionService.checkCanEdit(page.getSurvey().getId(), accountId);
 
@@ -84,8 +89,6 @@ public class QuestionService {
         .answerOptionOrder(dto.getAnswerOptionOrder())
         .hasOtherOption(dto.getHasOtherOption())
         .isMandatory(dto.getIsMandatory())
-        .isVisible(dto.getIsVisible())
-        .condition(dto.getCondition())
         .build();
 
     questionDao.save(question);
@@ -95,64 +98,14 @@ public class QuestionService {
 
   @Transactional
   public QuestionResponseDto clone(UUID questionId, UUID accountId) {
-    Question originalQuestion = questionDao.findById(questionId)
-        .orElseThrow(
-            () -> new ResponseStatusException(
-                HttpStatus.NOT_FOUND,
-                "Вопрос " + questionId + " не найден"
-            )
-        );
+    Question originalQuestion = getEntityWithParentPageById(questionId);
 
-    permissionService.checkCanEdit(
-        originalQuestion.getSurveyPage().getSurvey().getId(), accountId);
+    permissionService.checkCanEdit(originalQuestion.getSurveyPage().getSurvey().getId(), accountId);
 
-    UUID questionCopyId = UUID.randomUUID();
-
-    Question questionCopy = Question.builder()
-        .id(questionCopyId)
-        .surveyPage(originalQuestion.getSurveyPage())
-        .serialNumber(originalQuestion.getSerialNumber() + 1)
-        .text(originalQuestion.getText())
-        .description(originalQuestion.getDescription())
-        .type(originalQuestion.getType())
-        .answerOptionOrder(originalQuestion.getAnswerOptionOrder())
-        .hasOtherOption(originalQuestion.hasOtherOption())
-        .isMandatory(originalQuestion.isMandatory())
-        .isVisible(originalQuestion.isVisible())
-        .condition(originalQuestion.getCondition())
-        .build();
-
-    if (originalQuestion.getAttachmentObjectKey() != null) {
-      String questionAttachmentObjectKey =
-          "questions/%s/%s".formatted(questionCopyId, UUID.randomUUID());
-      objectStorageService.copyObject(
-          originalQuestion.getAttachmentObjectKey(),
-          questionAttachmentObjectKey
-      );
-      questionCopy.setAttachmentObjectKey(questionAttachmentObjectKey);
-    }
-
-    for (AnswerOption originalOption : originalQuestion.getAnswerOptions()) {
-      UUID optionId = UUID.randomUUID();
-
-      AnswerOption optionCopy = AnswerOption.builder()
-          .id(optionId)
-          .question(questionCopy)
-          .serialNumber(originalOption.getSerialNumber())
-          .text(originalOption.getText())
-          .build();
-
-      if (originalOption.getAttachmentObjectKey() != null) {
-        String optionAttachmentObjectKey =
-            "answer-options/%s/%s".formatted(optionId, UUID.randomUUID());
-        objectStorageService.copyObject(
-            originalOption.getAttachmentObjectKey(),
-            optionAttachmentObjectKey
-        );
-        optionCopy.setAttachmentObjectKey(optionAttachmentObjectKey);
-      }
-      questionCopy.getAnswerOptions().add(optionCopy);
-    }
+    Question questionCopy = surveyService.cloneQuestion(
+        originalQuestion,
+        originalQuestion.getSurveyPage(),
+        true);
 
     questionDao.increaseSerialNumbers(
         originalQuestion.getSurveyPage().getId(),
@@ -165,11 +118,9 @@ public class QuestionService {
 
   @Transactional
   public QuestionResponseDto update(UUID questionId, QuestionUpdateDto dto, UUID accountId) {
-    Question question = questionDao.findById(questionId)
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Вопрос не найден: " + questionId));
+    Question question = getEntityById(questionId);
 
-    permissionService.checkCanEdit(question.getSurveyPage().getSurvey().getId(), accountId);
+    permissionService.checkCanEdit(questionDao.findParentSurveyIdById(questionId), accountId);
 
     UUID pageId = question.getSurveyPage().getId();
     int oldSerial = question.getSerialNumber();
@@ -209,12 +160,6 @@ public class QuestionService {
     if (dto.getIsMandatory() != null) {
       question.setMandatory(dto.getIsMandatory());
     }
-    if (dto.getIsVisible() != null) {
-      question.setVisible(dto.getIsVisible());
-    }
-    if (dto.getCondition() != null) {
-      question.setCondition(dto.getCondition());
-    }
 
     questionDao.update(question);
     log.info("Изменен вопрос id={}", questionId);
@@ -222,12 +167,10 @@ public class QuestionService {
   }
 
   @Transactional
-  public void delete(UUID id, UUID accountId) {
-    Question question = questionDao.findById(id)
-        .orElseThrow(
-            () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Вопрос не найден: " + id));
-    permissionService.checkCanEdit(
-        question.getSurveyPage().getSurvey().getId(), accountId);
+  public void delete(UUID questionId, UUID accountId) {
+    Question question = getEntityById(questionId);
+
+    permissionService.checkCanEdit(questionDao.findParentSurveyIdById(questionId), accountId);
 
     UUID pageId = question.getSurveyPage().getId();
     int deletedSerial = question.getSerialNumber();
@@ -235,19 +178,16 @@ public class QuestionService {
     questionDao.delete(question);
 
     questionDao.decreaseSerialNumbers(pageId, deletedSerial + 1);
-    log.info("Удален вопрос id={}", id);
+    log.info("Удален вопрос id={}", questionId);
   }
 
   // Attachment management
 
   @Transactional
   public ObjectUrlResponseDto addAttachment(UUID questionId, UUID accountId, MultipartFile file) {
-    Question question = questionDao.findById(questionId)
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Вопрос не найден: " + questionId));
+    Question question = getEntityById(questionId);
 
-    permissionService.checkCanEdit(
-        question.getSurveyPage().getSurvey().getId(), accountId);
+    permissionService.checkCanEdit(questionDao.findParentSurveyIdById(questionId), accountId);
 
     if (question.getAttachmentObjectKey() != null) {
       throw new ResponseStatusException(
@@ -273,12 +213,9 @@ public class QuestionService {
   public ObjectUrlResponseDto updateAttachment(UUID questionId,
                                                UUID accountId,
                                                MultipartFile file) {
-    Question question = questionDao.findById(questionId)
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Вопрос не найден: " + questionId));
+    Question question = getEntityById(questionId);
 
-    permissionService.checkCanEdit(
-        question.getSurveyPage().getSurvey().getId(), accountId);
+    permissionService.checkCanEdit(questionDao.findParentSurveyIdById(questionId), accountId);
 
     ProcessedImage image = imageProcessingService.process(file);
 
@@ -302,12 +239,9 @@ public class QuestionService {
 
   @Transactional
   public void deleteAttachment(UUID questionId, UUID accountId) {
-    Question question = questionDao.findById(questionId)
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Вопрос не найден: " + questionId));
+    Question question = getEntityById(questionId);
 
-    permissionService.checkCanEdit(
-        question.getSurveyPage().getSurvey().getId(), accountId);
+    permissionService.checkCanEdit(questionDao.findParentSurveyIdById(questionId), accountId);
 
     if (question.getAttachmentObjectKey() == null) {
       throw new ResponseStatusException(
@@ -319,5 +253,29 @@ public class QuestionService {
     question.setAttachmentObjectKey(null);
     questionDao.update(question);
     log.info("Удалено вложение вопроса id={}", questionId);
+  }
+
+  // Вспомогательные методы
+
+  Question getEntityById(UUID id) {
+    return questionDao.findById(id)
+        .orElseThrow(() -> new QuestionNotFoundException(id));
+  }
+
+  Question getEntityWithParentPageById(UUID id) {
+    return questionDao.findWithParentPageById(id)
+        .orElseThrow(() -> new QuestionNotFoundException(id));
+  }
+
+  UUID getParentSurveyIdById(UUID id) {
+    return questionDao.findParentSurveyIdById(id);
+  }
+
+  UUID getParentPageIdById(UUID id) {
+    return questionDao.findParentPageIdById(id);
+  }
+
+  int getParentPageSerialNumberById(UUID id) {
+    return questionDao.findParentPageSerialNumberById(id);
   }
 }
