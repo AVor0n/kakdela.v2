@@ -39,7 +39,7 @@ export function AddQuestionCard({ pageId, pageIndex, serialNumber }: Props) {
             <span className={style.plus} aria-hidden='true'>
                 +
             </span>
-            <span className={style.label}>Создать вопрос</span>
+            <span className={style.label}>Добавить вопрос</span>
         </button>
     );
 }

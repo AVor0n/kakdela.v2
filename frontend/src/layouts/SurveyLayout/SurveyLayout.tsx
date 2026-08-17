@@ -17,7 +17,7 @@ import { getTemplateById, saveTemplate, updateTemplate } from '@/api/template';
 import { addTemplate, setSelectedTemplate } from '@/entities/Template/Template.slice';
 import { setPages } from '@/entities/Pages/Pages.slice';
 import { validateActiveSurveyConditions } from '@/shared/utils/conditions';
-import { EyeOutlinedSize24, LinkOutlinedSize24, MegaphoneOutlinedSize24 } from '@hh.ru/magritte-ui/icon';
+import { EyeOutlinedSize24, LinkOutlinedSize24 } from '@hh.ru/magritte-ui/icon';
 
 type SurveyAccess = {
     surveyId: string;
@@ -297,24 +297,22 @@ export function SurveyLayout() {
                             <Button
                                 mode={selectedSurvey?.isPublished ? 'secondary' : 'tertiary'}
                                 style={selectedSurvey?.isPublished ? 'positive' : 'accent'}
-                                icon={<MegaphoneOutlinedSize24 />}
-                                hideLabel
-                                aria-label={selectedSurvey?.isPublished ? 'Снять с публикации' : 'Опубликовать'}
                                 title={selectedSurvey?.isPublished ? 'Снять с публикации' : 'Опубликовать'}
                                 onClick={publishingHandler}
                                 disabled={!selectedSurvey}
-                            />
+                            >
+                                {selectedSurvey?.isPublished ? 'Опубликовано' : 'Опубликовать'}
+                            </Button>
                         ) : (
                             <Button
                                 mode={selectedTemplate?.published ? 'secondary' : 'tertiary'}
                                 style={selectedTemplate?.published ? 'positive' : 'accent'}
-                                icon={<MegaphoneOutlinedSize24 />}
-                                hideLabel
-                                aria-label={selectedTemplate?.published ? 'Снять с публикации' : 'Опубликовать'}
                                 title={selectedTemplate?.published ? 'Снять с публикации' : 'Опубликовать'}
                                 onClick={publishingTemplateHandler}
                                 disabled={!selectedTemplate}
-                            />
+                            >
+                                {selectedTemplate?.published ? 'Опубликовано' : 'Опубликовать'}
+                            </Button>
                         )
                     ) : (
                         <Button
