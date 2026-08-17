@@ -9,10 +9,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
-@Schema(
-    name = "HhLinkConfirm",
-    title = "DTO для привязки аккаунта HH"
-)
+@Schema(name = "Auth.HhLink.Confirm")
 public class HhLinkConfirmDto {
 
   @NotBlank(message = "Токен привязки обязателен")
