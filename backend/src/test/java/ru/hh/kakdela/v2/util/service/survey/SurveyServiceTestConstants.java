@@ -81,6 +81,12 @@ public class SurveyServiceTestConstants {
           : originalAuthor.getEmail();
     }
 
+    public static Boolean getAuthorIsHhSso(boolean isClone) {
+      return isClone
+          ? cloneAuthor.isHhSso()
+          : originalAuthor.isHhSso();
+    }
+
     public static String getTitle(boolean isClone) {
       return isClone
           ? cloneTitle
