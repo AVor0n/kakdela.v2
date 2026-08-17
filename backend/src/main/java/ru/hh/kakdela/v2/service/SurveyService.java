@@ -341,8 +341,10 @@ public class SurveyService {
   ) {
     Account author = newAuthor != null ? newAuthor : source.getAuthor();
 
+    UUID surveyCopyId = UUID.randomUUID();
+
     Survey cloned = Survey.builder()
-        .id(UUID.randomUUID())
+        .id(surveyCopyId)
         .author(author)
         .title(customTitle != null ? customTitle : source.getTitle())
         .description(source.getDescription())
@@ -362,6 +364,12 @@ public class SurveyService {
         .createdAt(Instant.now().truncatedTo(ChronoUnit.SECONDS))
         .isTemplate(asTemplate)
         .build();
+
+    if (source.getAttachmentObjectKey() != null) {
+      String newKey = "opening-pages/%s/%s".formatted(surveyCopyId, UUID.randomUUID());
+      objectStorageService.copyObject(source.getAttachmentObjectKey(), newKey);
+      cloned.setAttachmentObjectKey(newKey);
+    }
 
     if (source.getClosingPage() != null) {
       ClosingPage closingPageCopy = cloneClosingPage(source.getClosingPage(), cloned);
