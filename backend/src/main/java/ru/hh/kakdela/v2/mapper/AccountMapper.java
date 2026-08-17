@@ -9,7 +9,8 @@ public class AccountMapper {
     return new AccountResponseDto(
         account.getId(),
         account.getLogin(),
-        account.getEmail()
+        account.getEmail(),
+        account.isHhSso()
     );
   }
 }

@@ -23,19 +23,26 @@ import ru.hh.kakdela.v2.model.Account;
 @Service
 public class JwtService {
 
+  private static final String CLAIM_TYPE = "type";
+  private static final String CLAIM_HH_USER_ID = "hhUserId";
+  private static final String HH_LINK_TOKEN_TYPE = "hh_link";
+
   private final SecretKey secretKey;
   private final long accessTokenMaxAgeSeconds;
   private final long responseTokenMaxAgeSeconds;
+  private final long hhLinkTokenMaxAgeSeconds;
   private final Clock clock;
 
   public JwtService(
       @Value("${app.jwt.secret}") String secret,
       @Value("${app.tokens.access.max-age}") long accessTokenMaxAge,
       @Value("${app.tokens.response-access.max-age}") long responseTokenMaxAge,
+      @Value("${app.tokens.hh-link.max-age}") long hhLinkTokenMaxAge,
       Clock clock) {
     this.secretKey = Keys.hmacShaKeyFor(secret.getBytes());
     this.accessTokenMaxAgeSeconds = accessTokenMaxAge;
     this.responseTokenMaxAgeSeconds = responseTokenMaxAge;
+    this.hhLinkTokenMaxAgeSeconds = hhLinkTokenMaxAge;
     this.clock = clock;
   }
 
@@ -63,6 +70,32 @@ public class JwtService {
         .expiration(Date.from(expireAt))
         .signWith(secretKey)
         .compact();
+  }
+
+  // Токен-мост для привязки hh-аккаунта: выдаётся в oauth success handler, когда почта
+  // из hh уже занята существующим аккаунтом kakdela (либо анонимно, либо у авторизованного
+  // пользователя). Несет email + hhUserId, чтобы confirm-эндпоинт мог довязать аккаунт
+  // без повторного похода на hh.ru
+  public String generateHhLinkToken(String email, String hhUserId) {
+    Instant now = Instant.now(clock);
+    Instant expiresAt = now.plus(hhLinkTokenMaxAgeSeconds, ChronoUnit.SECONDS);
+
+    return Jwts.builder()
+        .subject(email)
+        .claim(CLAIM_TYPE, HH_LINK_TOKEN_TYPE)
+        .claim(CLAIM_HH_USER_ID, hhUserId)
+        .issuedAt(Date.from(now))
+        .expiration(Date.from(expiresAt))
+        .signWith(secretKey)
+        .compact();
+  }
+
+  public HhLinkTokenPayload extractHhLinkToken(String token) {
+    Claims claims = extractAllClaims(token);
+    if (!HH_LINK_TOKEN_TYPE.equals(claims.get(CLAIM_TYPE, String.class))) {
+      throw new JwtException("Токен привязки недействителен");
+    }
+    return new HhLinkTokenPayload(claims.getSubject(), claims.get(CLAIM_HH_USER_ID, String.class));
   }
 
   public Claims extractAllClaims(String token) {

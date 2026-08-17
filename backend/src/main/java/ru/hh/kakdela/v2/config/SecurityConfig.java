@@ -81,6 +81,8 @@ public class SecurityConfig {
                     "/api-docs/**", "/v3/api-docs/**").permitAll()
                 .requestMatchers("/api/auth/logout").authenticated()
                 .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers(HttpMethod.POST,
+                    "/api/accounts/me/link-hh-sso/confirm").permitAll()
                 .requestMatchers(HttpMethod.GET,
                     "/api/surveys/{surveyId}/my-incompleted-responses").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/surveys/{surveyId}/**").permitAll()

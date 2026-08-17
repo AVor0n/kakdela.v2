@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -21,6 +22,7 @@ import ru.hh.kakdela.v2.dto.account.AccountDeleteDto;
 import ru.hh.kakdela.v2.dto.account.AccountPatchDto;
 import ru.hh.kakdela.v2.dto.account.AccountPutDto;
 import ru.hh.kakdela.v2.dto.account.AccountResponseDto;
+import ru.hh.kakdela.v2.dto.account.HhLinkConfirmDto;
 import ru.hh.kakdela.v2.security.CustomUserDetails;
 import ru.hh.kakdela.v2.service.AccountService;
 import ru.hh.kakdela.v2.service.AuthCookieService;
@@ -73,5 +75,19 @@ public class AccountController {
     String accessToken = authCookieService.getAccessToken(request);
     authCookieService.setHhLinkIntentCookie(response, accessToken);
     response.sendRedirect(oauth2AuthorizationBaseUri + "/hh");
+  }
+
+  // ВАЖНО: этот путь должен быть добавлен в permitAll в SecurityConfig - его обязан уметь
+  // вызывать анонимный пользователь (сценарий 1, email-конфликт без активной сессии).
+  // @AuthenticationPrincipal здесь принципиально nullable: Spring Security не бросит 401
+  // сам, если маршрут в permitAll, а внутри accountService.confirmLinkHhSso сами решаем,
+  // авторизован пользователь или нет.
+  @PostMapping("/accounts/me/link-hh-sso/confirm")
+  public AccountResponseDto confirmLinkHhSso(
+      @Valid @RequestBody HhLinkConfirmDto dto,
+      @Nullable @AuthenticationPrincipal CustomUserDetails currentUser,
+      HttpServletRequest request,
+      HttpServletResponse response) {
+    return accountService.confirmLinkHhSso(dto, currentUser, request, response);
   }
 }

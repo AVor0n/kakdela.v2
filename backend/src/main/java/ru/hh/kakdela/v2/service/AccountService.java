@@ -1,8 +1,12 @@
 package ru.hh.kakdela.v2.service;
 
+import io.jsonwebtoken.JwtException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,9 +21,13 @@ import ru.hh.kakdela.v2.dto.account.AccountDeleteDto;
 import ru.hh.kakdela.v2.dto.account.AccountPatchDto;
 import ru.hh.kakdela.v2.dto.account.AccountPutDto;
 import ru.hh.kakdela.v2.dto.account.AccountResponseDto;
+import ru.hh.kakdela.v2.dto.account.HhLinkConfirmDto;
+import ru.hh.kakdela.v2.dto.auth.AuthTokensDto;
 import ru.hh.kakdela.v2.mapper.AccountMapper;
 import ru.hh.kakdela.v2.model.Account;
 import ru.hh.kakdela.v2.security.CustomUserDetails;
+import ru.hh.kakdela.v2.security.HhLinkTokenPayload;
+import ru.hh.kakdela.v2.security.JwtService;
 
 @Slf4j
 @Service
@@ -31,6 +39,8 @@ public class AccountService {
   private final PasswordEncoder passwordEncoder;
   private final RefreshTokenService refreshTokenService;
   private final Clock clock;
+  private final JwtService jwtService;
+  private final AuthCookieService authCookieService;
 
   @Transactional(readOnly = true)
   public AccountResponseDto getById(UUID id) {
@@ -72,6 +82,16 @@ public class AccountService {
     accountDao.save(account);
     log.info("Создан аккаунт id={} login={}", account.getId(), account.getLogin());
     return AccountMapper.accountToDto(account);
+  }
+
+  @Transactional(readOnly = true)
+  public Optional<Account> findByHhUserId(String hhUserId) {
+    return accountDao.findByHhUserId(hhUserId);
+  }
+
+  @Transactional(readOnly = true)
+  public boolean existsByEmail(String email) {
+    return accountDao.existsByEmail(email);
   }
 
   // Возвращает существующий аккаунт, привязанный к данному пользователю hh.ru,
@@ -136,6 +156,62 @@ public class AccountService {
     account.setHhUserId(hhUserId);
     accountDao.update(account);
     log.info("Аккаунт id={} привязан к hh.ru", accountId);
+  }
+
+  // Подтверждение привязки hh-аккаунта по hhLinkToken, выданному Oauth2LoginSuccessHandler
+  // в кейсе email-конфликта. Если currentUser авторизован - просто линкуем его аккаунт.
+  // Если нет - находим аккаунт по email из токена, проверяем пароль и логиним пользователя
+  // (как handleLogin в success handler'е), только потом линкуем
+  @Transactional
+  public AccountResponseDto confirmLinkHhSso(
+      HhLinkConfirmDto dto,
+      CustomUserDetails currentUser,
+      HttpServletRequest request,
+      HttpServletResponse response) {
+
+    HhLinkTokenPayload payload;
+    try {
+      payload = jwtService.extractHhLinkToken(dto.getHhLinkToken());
+    } catch (JwtException ex) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+          "Токен привязки недействителен или истёк");
+    }
+
+    Account account;
+    boolean needsLogin;
+
+    if (currentUser != null) {
+      account = accountDao.findById(currentUser.getId())
+          .map(this::requireActiveAccount)
+          .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+              "Аккаунт не найден: " + currentUser.getId()));
+      needsLogin = false;
+    } else {
+      if (dto.getPassword() == null || dto.getPassword().isBlank()) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+            "Для привязки без активной сессии нужен пароль");
+      }
+      account = accountDao.findByEmail(payload.email())
+          .map(this::requireActiveAccount)
+          .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+              "Аккаунт не найден: " + payload.email()));
+      if (!passwordEncoder.matches(dto.getPassword(), account.getPasswordHash())) {
+        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Предоставлен неверный пароль");
+      }
+      needsLogin = true;
+    }
+
+    linkHhSso(account.getId(), payload.hhUserId());
+
+    if (needsLogin) {
+      String deviceId = authCookieService.getOrCreateDeviceId(request, response);
+      AuthTokensDto tokens = authService.issueTokens(
+          account, deviceId, request.getHeader("User-Agent"), request.getRemoteAddr());
+      authCookieService.setAccessTokenCookie(response, tokens.getAccessToken());
+      authCookieService.setRefreshTokenCookie(response, tokens.getRefreshToken());
+    }
+
+    return AccountMapper.accountToDto(account);
   }
 
   private String generateUniqueLoginFromEmail(String email) {
