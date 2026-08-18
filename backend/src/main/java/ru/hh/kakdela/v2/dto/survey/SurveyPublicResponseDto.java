@@ -32,4 +32,5 @@ public class SurveyPublicResponseDto {
   private final List<SurveyPageShortResponseDto> pages;
   private final boolean hasCustomClosingPage;
   private final boolean hasConditions;
+  private final Boolean isPublished;
 }
