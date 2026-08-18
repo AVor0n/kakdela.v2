@@ -83,7 +83,8 @@ public class SurveyMapper {
             .map(surveyPageMapper::surveyPageToShortDto)
             .toList(),
         survey.getClosingPage() != null,
-        hasConditions);
+        hasConditions,
+        survey.isPublished());
   }
 
   public SurveyShortResponseDto surveyToShortDto(Survey survey) {
