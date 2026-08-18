@@ -161,12 +161,13 @@ public class AccountService {
   // (как handleLogin в success handler'е), только потом линкуем
   @Transactional
   public HhLinkConfirmResultDto confirmLinkHhSso(
+      String hhLinkToken,
       HhLinkConfirmDto dto,
       UUID currentUserId,
       HttpServletRequest request,
       HttpServletResponse response) {
 
-    HhLinkTokenPayload payload = jwtService.extractHhLinkToken(dto.getHhLinkToken());
+    HhLinkTokenPayload payload = jwtService.extractHhLinkToken(hhLinkToken);
 
     Account account;
     AuthTokensDto tokens = null;

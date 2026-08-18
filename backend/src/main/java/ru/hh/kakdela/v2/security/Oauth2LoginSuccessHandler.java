@@ -82,7 +82,8 @@ public class Oauth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
       if (accountService.existsByEmail(email)) {
         String hhLinkToken = jwtService.generateHhLinkToken(email, hhUserId);
-        response.sendRedirect(buildRedirect("hh_link_token", hhLinkToken));
+        authCookieService.setHhLinkTokenCookie(response, hhLinkToken);
+        response.sendRedirect(buildRedirect("hh_link_required", "true"));
         return;
       }
 

@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 import ru.hh.kakdela.v2.dto.account.AccountDeleteDto;
 import ru.hh.kakdela.v2.dto.account.AccountPatchDto;
 import ru.hh.kakdela.v2.dto.account.AccountPutDto;
@@ -88,8 +89,14 @@ public class AccountController {
       @AuthenticationPrincipal CustomUserDetails currentUser,
       HttpServletRequest request,
       HttpServletResponse response) {
+    String hhLinkToken = authCookieService.consumeHhLinkTokenCookie(request, response);
+    if (hhLinkToken == null) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+          "Токен привязки не найден или истёк, повторите попытку входа через hh.ru");
+    }
     HhLinkConfirmResultDto result =
-        accountService.confirmLinkHhSso(dto, currentUser != null ? currentUser.getId() : null,
+        accountService.confirmLinkHhSso(hhLinkToken, dto,
+            currentUser != null ? currentUser.getId() : null,
             request, response);
 
     if (result.tokens() != null) {
