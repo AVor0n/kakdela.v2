@@ -43,7 +43,7 @@ export function SortablePage({ page, pageIndex }: SortablePageProps) {
                     <PageConditionsEditor page={page} />
                 </div>
             )}
-            <QuestionList questions={page.questions} pageNumber={page.serialNumber} pageIndex={pageIndex} />
+            <QuestionList pageId={page.id} questions={page.questions} pageIndex={pageIndex} />
         </div>
     );
 }
