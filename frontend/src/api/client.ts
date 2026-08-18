@@ -38,17 +38,20 @@ apiClient.interceptors.response.use(
             return Promise.reject(error);
         }
 
-        const requestConfig = error.config as RetryableRequestConfig | undefined;
+        const status = error.response?.status;
+        const internalErrorCode = error.response?.data?.internalErrorCode;
         const requestUrl = error.config?.url ?? '';
         const isAuthRequest = requestUrl.includes('/api/auth/');
         const isExpiredAccessToken = getApiError(error)?.internalErrorCode === 'EXPIRED_ACCESS_TOKEN';
         const isAnonymousAllowedPage = ANONYMOUS_ALLOWED_PATTERNS.some((pattern) =>
             matchPath(pattern, window.location.pathname),
         );
-
-        if (isExpiredAccessToken && !isAuthRequest && requestConfig && !requestConfig._retry) {
-            requestConfig._retry = true;
-
+        if (
+            isUnauthorized &&
+            !isRefreshRequest &&
+            !isAnonymousAllowedPage &&
+            internalErrorCode === 'EXPIRED_ACCESS_TOKEN'
+        ) {
             try {
                 await getRefreshPromise();
                 return apiClient(requestConfig);

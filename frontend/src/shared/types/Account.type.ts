@@ -3,4 +3,5 @@ export type Account = {
     login: string;
     email: string;
     registeredAt: string;
+    hhSso: boolean;
 };

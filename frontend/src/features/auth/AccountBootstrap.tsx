@@ -25,12 +25,11 @@ export function AccountBootstrap({ children }: Props) {
         const isAnonymousAllowedPage = ANONYMOUS_ALLOWED_PATTERNS.some((pattern) =>
             matchPath(pattern, window.location.pathname),
         );
-        if (isAnonymousAllowedPage) {
-            dispatch(setLoading(false));
-            return;
+
+        if (!isAnonymousAllowedPage) {
+            dispatch(setLoading(true));
         }
 
-        dispatch(setLoading(true));
         getAccountDetails()
             .then((data) => {
                 dispatch(setAccount(data));

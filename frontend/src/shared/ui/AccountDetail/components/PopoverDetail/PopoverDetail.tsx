@@ -8,7 +8,8 @@ import { routes } from '@/app/routes';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { setErrorMessage } from '@/entities/Error/Error.slice';
 import style from './PopoverDetail.module.css';
-import { clearAccount } from '@/entities/Account/Account.slice';
+import { clearAccount, setLoading } from '@/entities/Account/Account.slice';
+import { useEffect } from 'react';
 
 interface Props {
     onMouseLeave: () => void;
@@ -17,6 +18,10 @@ export function PopoverDetail({ onMouseLeave }: Props) {
     const { account, loading } = useAppSelector((state) => state.account);
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
+
+    useEffect(() => {
+        if (!loading && account) dispatch(setLoading(false));
+    }, []);
     const logoutHandler = () => {
         logout()
             .then(() => {
