@@ -265,7 +265,7 @@ class SurveyServiceTestBase {
     QuestionMapper questionMapper = new QuestionMapper(objectStorageService, answerOptionMapper);
     SurveyPageMapper surveyPageMapper = new SurveyPageMapper(questionMapper);
     ClosingPageMapper closingPageMapper = new ClosingPageMapper(objectStorageService);
-    SurveyMapper surveyMapper = new SurveyMapper(surveyPageMapper, closingPageMapper);
+    SurveyMapper surveyMapper = new SurveyMapper(surveyPageMapper, closingPageMapper, objectStorageService);
     surveyService = new SurveyService(
         surveyDao,
         accountDao,

@@ -3,6 +3,7 @@ package ru.hh.kakdela.v2.mapper;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import ru.hh.kakdela.v2.dto.survey.SurveyPublicResponseDto;
 import ru.hh.kakdela.v2.dto.survey.SurveyResponseDto;
@@ -11,21 +12,32 @@ import ru.hh.kakdela.v2.dto.survey.SurveyShortResponseWithPermissionDto;
 import ru.hh.kakdela.v2.dto.survey.SurveyWithUserRoleDto;
 import ru.hh.kakdela.v2.model.Permission;
 import ru.hh.kakdela.v2.model.Survey;
+import ru.hh.kakdela.v2.service.ObjectStorageService;
 
 @Component
 @RequiredArgsConstructor
 public class SurveyMapper {
 
+  @Value("${app.attachments.url-max-age}")
+  private long attachmentUrlMaxAge;
+
   private final SurveyPageMapper surveyPageMapper;
   private final ClosingPageMapper closingPageMapper;
+  private final ObjectStorageService objectStorageService;
 
   public SurveyResponseDto surveyToDto(Survey survey) {
+    String attachmentUrl = survey.getAttachmentObjectKey() != null
+        ? objectStorageService.generateObjectUrl(
+        survey.getAttachmentObjectKey(),
+        attachmentUrlMaxAge).toString()
+        : null;
+
     return new SurveyResponseDto(
         survey.getId(),
         AccountMapper.accountToDto(survey.getAuthor()),
         survey.getTitle(),
         survey.getDescription(),
-        survey.getAttachmentObjectKey(),
+        attachmentUrl,
         survey.isAuthorizedOnly(),
         survey.isLimitedToOneResponse(),
         survey.isPublished(),
@@ -47,12 +59,18 @@ public class SurveyMapper {
   }
 
   public SurveyPublicResponseDto surveyToPublicDto(Survey survey, boolean hasConditions) {
+    String attachmentUrl = survey.getAttachmentObjectKey() != null
+        ? objectStorageService.generateObjectUrl(
+        survey.getAttachmentObjectKey(),
+        attachmentUrlMaxAge).toString()
+        : null;
+
     return new SurveyPublicResponseDto(
         survey.getId(),
         AccountMapper.accountToDto(survey.getAuthor()),
         survey.getTitle(),
         survey.getDescription(),
-        survey.getAttachmentObjectKey(),
+        attachmentUrl,
         survey.isAuthorizedOnly(),
         survey.isLimitedToOneResponse(),
         survey.getExpireAt(),

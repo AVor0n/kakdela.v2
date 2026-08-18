@@ -23,7 +23,7 @@ public class SurveyPublicResponseDto {
   private final AccountResponseDto author;
   private final String title;
   private final String description;
-  private String attachmentObjectKey;
+  private String attachmentUrl;
   private final Boolean isAuthorizedOnly;
   private final Boolean isLimitedToOneResponse;
   private final Instant expireAt;

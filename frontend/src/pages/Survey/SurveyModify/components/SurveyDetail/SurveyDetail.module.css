@@ -7,3 +7,38 @@
     border: 1px solid var(--color-border);
     margin-bottom: 20px;
 }
+
+.fieldsWithImageControl {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 20px;
+}
+
+.fields {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    min-width: 0;
+}
+
+.image {
+    display: block;
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 400px;
+    margin-inline: auto;
+    object-fit: contain;
+    border-radius: 16px;
+}
+
+@media (max-width: 768px) {
+    .fieldsWithImageControl {
+        gap: 8px;
+    }
+
+    .fields {
+        gap: 20px;
+    }
+}

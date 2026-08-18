@@ -14,9 +14,12 @@ type Props = {
 export function WelcomePageView({ survey, onStart, isStarting = false, startError }: Props) {
     const deadline = survey.expireAtAtTargetTimezone ?? survey.expireAt;
     const authorName = survey.author.login || survey.author.email;
+    const image = survey.attachmentUrl ? (
+        <img className={style.image} src={survey.attachmentUrl} alt='Изображение приветственной страницы' />
+    ) : undefined;
 
     return (
-        <SurveyFlowPage title={survey.title} description={survey.description}>
+        <SurveyFlowPage title={survey.title} description={survey.description} media={image}>
             <dl className={style.metadata}>
                 <div className={style.metadataRow}>
                     <dt>Автор</dt>
