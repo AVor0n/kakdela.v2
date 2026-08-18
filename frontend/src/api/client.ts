@@ -34,13 +34,19 @@ apiClient.interceptors.response.use(
         }
 
         const status = error.response?.status;
+        const internalErrorCode = error.response?.data?.internalErrorCode;
         const requestUrl = error.config?.url ?? '';
         const isRefreshRequest = requestUrl.includes('/api/auth/refresh');
         const isUnauthorized = status === 401 || status === 403;
         const isAnonymousAllowedPage = ANONYMOUS_ALLOWED_PATTERNS.some((pattern) =>
             matchPath(pattern, window.location.pathname),
         );
-        if (isUnauthorized && !isRefreshRequest && !isAnonymousAllowedPage) {
+        if (
+            isUnauthorized &&
+            !isRefreshRequest &&
+            !isAnonymousAllowedPage &&
+            internalErrorCode === 'EXPIRED_ACCESS_TOKEN'
+        ) {
             try {
                 await getRefreshPromise();
                 return apiClient(error.config!);

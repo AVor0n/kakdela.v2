@@ -1,4 +1,6 @@
 .container {
     position: relative;
+    display: flex;
+    gap: 1rem;
     z-index: var(--z-popover);
 }

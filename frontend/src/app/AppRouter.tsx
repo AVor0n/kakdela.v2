@@ -1,6 +1,6 @@
-import { BrowserRouter, Navigate, Outlet, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Outlet, Route, Routes } from 'react-router-dom';
 import App from '@/pages/Root/App';
-import { routePatterns, routes } from '@/app/routes';
+import { routePatterns } from '@/app/routes';
 import { Login } from '@/pages/Auth/Login/Login';
 import { Register } from '@/pages/Auth/Register/Register';
 import { SurveyList } from '@/pages/Survey/components/SurveyList/SurveyList';
@@ -13,19 +13,27 @@ import { Settings } from '@/pages/Survey/SurveyModify/components/Settings/Settin
 import { NotFound } from '@/pages/Errors/NotFound';
 import { Answers } from '@/pages/Survey/SurveyModify/components/Answers/Answers';
 import { AccountBootstrap } from '@/features/auth/AccountBootstrap';
+import { CallbackSso } from './CallbackSso';
+import { ResetPassword } from '@/pages/Auth/ResetPassword/ResetPassword';
 import { ForgotPassword } from '@/pages/Auth/ForgotPassword/ForgotPassword';
 import { VerifyCode } from '@/pages/Auth/VerifyCode/VerifyCode';
-import { ResetPassword } from '@/pages/Auth/ResetPassword/ResetPassword';
 
 export function AppRouter() {
     return (
         <BrowserRouter>
             <Routes>
-                <Route path={routePatterns.root} element={<App />} />
                 <Route path={routePatterns.forgotPassword} element={<ForgotPassword />} />
                 <Route path={routePatterns.resetPassword} element={<ResetPassword />} />
                 <Route path={routePatterns.verifyCode} element={<VerifyCode />} />
-                <Route path={routePatterns.authCallback} element={<Navigate to={routes.root()} />} />
+                <Route
+                    path={routePatterns.root}
+                    element={
+                        <AccountBootstrap>
+                            <App />
+                        </AccountBootstrap>
+                    }
+                />
+                <Route path={routePatterns.authCallback} element={<CallbackSso />} />
                 <Route path={routePatterns.auth}>
                     <Route path={routePatterns.authLogin} element={<Login />} />
                     <Route path={routePatterns.authRegister} element={<Register />} />
