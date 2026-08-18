@@ -1,5 +1,5 @@
 import { useAppSelector } from '@/hooks/useAppSelector';
-import { Avatar } from '@hh.ru/magritte-ui';
+import { Avatar, Button, Flex } from '@hh.ru/magritte-ui';
 import { useEffect, useState } from 'react';
 import { PopoverDetail } from './components/PopoverDetail/PopoverDetail';
 import style from './AccountDetail.module.css';
@@ -14,6 +14,7 @@ export function AccountDetail() {
     const [letters, setLetters] = useState<string>('');
     const [isOpenModal, setIsOpenModal] = useState<boolean>();
     const { account } = useAppSelector((state) => state.account);
+
     useEffect(() => {
         if (!account) return;
         setLetters(getLetters(account.login));
@@ -21,6 +22,13 @@ export function AccountDetail() {
 
     return (
         <div className={style.container}>
+            {!account?.hhSso && (
+                <Button Element='a' href='/api/accounts/me/link-hh-sso/init' mode='primary' style='negative'>
+                    <Flex align={'center'} gap='0.5rem'>
+                        <p>Подключить</p> <img width={28} src='/hh_logo_white.png' alt='hh' />
+                    </Flex>
+                </Button>
+            )}
             <Avatar
                 Element='button'
                 mode='letters'
