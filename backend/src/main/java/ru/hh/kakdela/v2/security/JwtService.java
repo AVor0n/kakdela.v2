@@ -1,6 +1,7 @@
 package ru.hh.kakdela.v2.security;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import java.time.Clock;
@@ -12,26 +13,35 @@ import java.util.function.Function;
 import javax.crypto.SecretKey;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import ru.hh.kakdela.v2.model.Account;
 
 @Slf4j
 @Service
 public class JwtService {
 
+  private static final String CLAIM_TYPE = "type";
+  private static final String CLAIM_HH_USER_ID = "hhUserId";
+  private static final String HH_LINK_TOKEN_TYPE = "hh_link";
+
   private final SecretKey secretKey;
   private final long accessTokenMaxAgeSeconds;
   private final long responseTokenMaxAgeSeconds;
+  private final long hhLinkTokenMaxAgeSeconds;
   private final Clock clock;
 
   public JwtService(
       @Value("${app.jwt.secret}") String secret,
       @Value("${app.tokens.access.max-age}") long accessTokenMaxAge,
       @Value("${app.tokens.response-access.max-age}") long responseTokenMaxAge,
+      @Value("${app.tokens.hh-link.max-age}") long hhLinkTokenMaxAge,
       Clock clock) {
     this.secretKey = Keys.hmacShaKeyFor(secret.getBytes());
     this.accessTokenMaxAgeSeconds = accessTokenMaxAge;
     this.responseTokenMaxAgeSeconds = responseTokenMaxAge;
+    this.hhLinkTokenMaxAgeSeconds = hhLinkTokenMaxAge;
     this.clock = clock;
   }
 
@@ -59,6 +69,40 @@ public class JwtService {
         .expiration(Date.from(expireAt))
         .signWith(secretKey)
         .compact();
+  }
+
+  /**
+   * Токен-мост для привязки hh-аккаунта: выдаётся в oauth success handler, когда почта
+   * из hh уже занята существующим аккаунтом kakdela (либо анонимно, либо у авторизованного
+   * пользователя). Несёт email + hhUserId, чтобы confirm-эндпоинт мог довязать аккаунт
+   * без повторного похода на hh.ru.
+   */
+  public String generateHhLinkToken(String email, String hhUserId) {
+    Instant now = Instant.now(clock);
+    Instant expiresAt = now.plus(hhLinkTokenMaxAgeSeconds, ChronoUnit.SECONDS);
+
+    return Jwts.builder()
+        .subject(email)
+        .claim(CLAIM_TYPE, HH_LINK_TOKEN_TYPE)
+        .claim(CLAIM_HH_USER_ID, hhUserId)
+        .issuedAt(Date.from(now))
+        .expiration(Date.from(expiresAt))
+        .signWith(secretKey)
+        .compact();
+  }
+
+  public HhLinkTokenPayload extractHhLinkToken(String token) {
+    Claims claims;
+    try {
+      claims = extractAllClaims(token);
+    } catch (JwtException ex) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+          "Токен привязки недействителен или истёк");
+    }
+    if (!claims.get(CLAIM_TYPE, String.class).equals(HH_LINK_TOKEN_TYPE)) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Токен привязки недействителен");
+    }
+    return new HhLinkTokenPayload(claims.getSubject(), claims.get(CLAIM_HH_USER_ID, String.class));
   }
 
   public Claims extractAllClaims(String token) {

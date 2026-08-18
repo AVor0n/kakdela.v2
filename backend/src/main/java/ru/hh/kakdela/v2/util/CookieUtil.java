@@ -40,7 +40,7 @@ public final class CookieUtil {
         .maxAge(maxAgeSeconds)
         .build();
   }
-  
+
   public static ResponseCookie buildHttpOnlyLaxCookie(
       String name,
       String value,

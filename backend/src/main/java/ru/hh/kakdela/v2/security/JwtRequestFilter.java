@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -40,6 +41,8 @@ public class JwtRequestFilter extends OncePerRequestFilter {
   private final CustomUserDetailsService customUserDetailsService;
   private final AuthenticationEntryPoint authenticationEntryPoint;
   private final AuthCookieService authCookieService;
+  @Value("${app.oauth2.callback-base-uri:/api/auth/oauth2/callback/*}")
+  private String oauth2CallbackBaseUri;
   private final AntPathMatcher pathMatcher;
 
   @Override
@@ -120,6 +123,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
       return false;
     }
 
-    return pathMatcher.match("/api/auth/**", requestUri);
+    return pathMatcher.match("/api/auth/**", requestUri)
+        || pathMatcher.match(oauth2CallbackBaseUri, requestUri);
   }
 }

@@ -3,7 +3,7 @@ CREATE TABLE account (
     login varchar(32) NOT NULL UNIQUE,
     email varchar(254) NOT NULL UNIQUE,
     password_hash text NOT NULL,
-    is_hh_sso bool NOT NULL DEFAULT FALSE,
+    hh_user_id varchar(255) UNIQUE,
     registered_at timestamptz NOT NULL,
     token_version int NOT NULL,
     is_deleted bool NOT NULL

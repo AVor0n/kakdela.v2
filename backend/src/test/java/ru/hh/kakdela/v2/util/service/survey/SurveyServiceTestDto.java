@@ -33,7 +33,8 @@ public class SurveyServiceTestDto {
         new AccountResponseDto(
             FullSurveyConstants.getAuthorId(isClone),
             FullSurveyConstants.getAuthorLogin(isClone),
-            FullSurveyConstants.getAuthorEmail(isClone)
+            FullSurveyConstants.getAuthorEmail(isClone),
+            FullSurveyConstants.getAuthorIsHhSso(isClone)
         ),
         FullSurveyConstants.getTitle(isClone),
         "description",
@@ -130,7 +131,8 @@ public class SurveyServiceTestDto {
         new AccountResponseDto(
             SurveyServiceTestEntity.account1.getId(),
             SurveyServiceTestEntity.account1.getLogin(),
-            SurveyServiceTestEntity.account1.getEmail()
+            SurveyServiceTestEntity.account1.getEmail(),
+            SurveyServiceTestEntity.account1.isHhSso()
         ),
         PlainSurveyConstants.getTitle(otherValuesOfTitleAndDescription),
         PlainSurveyConstants.getDescription(otherValuesOfTitleAndDescription),

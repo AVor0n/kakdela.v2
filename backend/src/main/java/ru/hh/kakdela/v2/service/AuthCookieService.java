@@ -15,9 +15,16 @@ public class AuthCookieService {
   public static final String REFRESH_TOKEN_COOKIE_NAME = "refreshToken";
   public static final String DEVICE_ID_COOKIE_NAME = "deviceId";
   public static final String RESPONSE_TOKEN_PREFIX = "responseAccessToken_";
+  public static final String HH_LINK_INTENT_COOKIE_NAME = "hhLinkIntent";
+  public static final String HH_LINK_TOKEN_COOKIE_NAME = "hhLinkToken";
 
   public static final String MAIN_PATH = "/api";
   public static final String REFRESH_PATH = "/api/auth/refresh";
+  public static final String HH_LINK_INTENT_PATH = "/api/auth/oauth2";
+  public static final String HH_LINK_TOKEN_PATH = "/api/accounts/me/link-hh-sso";
+  
+  @Value("${app.tokens.hh-link.max-age}")
+  private long hhLinkTokenMaxAge;
 
   @Value("${app.tokens.refresh.max-age}")
   private long refreshTokenMaxAge;
@@ -70,6 +77,34 @@ public class AuthCookieService {
     ResponseCookie cookie = CookieUtil.buildHttpOnlyStrictCookie(
         cookieName, token, MAIN_PATH, responseTokenMaxAge);
     CookieUtil.addCookie(response, cookie);
+  }
+
+  public void setHhLinkIntentCookie(HttpServletResponse response, String accessToken) {
+    ResponseCookie cookie = CookieUtil.buildHttpOnlyLaxCookie(
+        HH_LINK_INTENT_COOKIE_NAME, accessToken, HH_LINK_INTENT_PATH, hhLinkTokenMaxAge);
+    CookieUtil.addCookie(response, cookie);
+  }
+
+  public String consumeHhLinkIntentCookie(HttpServletRequest request,
+                                          HttpServletResponse response) {
+    String value = CookieUtil.getCookieValueByName(request, HH_LINK_INTENT_COOKIE_NAME);
+    CookieUtil.addCookie(response,
+        CookieUtil.buildExpiredCookie(HH_LINK_INTENT_COOKIE_NAME, HH_LINK_INTENT_PATH));
+    return value;
+  }
+
+  public void setHhLinkTokenCookie(HttpServletResponse response, String hhLinkToken) {
+    ResponseCookie cookie = CookieUtil.buildHttpOnlyStrictCookie(
+        HH_LINK_TOKEN_COOKIE_NAME, hhLinkToken, HH_LINK_TOKEN_PATH, hhLinkTokenMaxAge);
+    CookieUtil.addCookie(response, cookie);
+  }
+
+  public String consumeHhLinkTokenCookie(HttpServletRequest request,
+                                         HttpServletResponse response) {
+    String value = CookieUtil.getCookieValueByName(request, HH_LINK_TOKEN_COOKIE_NAME);
+    CookieUtil.addCookie(response,
+        CookieUtil.buildExpiredCookie(HH_LINK_TOKEN_COOKIE_NAME, HH_LINK_TOKEN_PATH));
+    return value;
   }
 
   public void clearAccessTokenCookie(HttpServletResponse response) {

@@ -1,8 +1,11 @@
 package ru.hh.kakdela.v2.service;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,9 +20,14 @@ import ru.hh.kakdela.v2.dto.account.AccountDeleteDto;
 import ru.hh.kakdela.v2.dto.account.AccountPatchDto;
 import ru.hh.kakdela.v2.dto.account.AccountPutDto;
 import ru.hh.kakdela.v2.dto.account.AccountResponseDto;
+import ru.hh.kakdela.v2.dto.account.HhLinkConfirmDto;
+import ru.hh.kakdela.v2.dto.account.HhLinkConfirmResultDto;
+import ru.hh.kakdela.v2.dto.auth.AuthTokensDto;
 import ru.hh.kakdela.v2.mapper.AccountMapper;
 import ru.hh.kakdela.v2.model.Account;
 import ru.hh.kakdela.v2.security.CustomUserDetails;
+import ru.hh.kakdela.v2.security.HhLinkTokenPayload;
+import ru.hh.kakdela.v2.security.JwtService;
 
 @Slf4j
 @Service
@@ -31,6 +39,8 @@ public class AccountService {
   private final PasswordEncoder passwordEncoder;
   private final RefreshTokenService refreshTokenService;
   private final Clock clock;
+  private final JwtService jwtService;
+  private final AuthCookieService authCookieService;
 
   @Transactional(readOnly = true)
   public AccountResponseDto getById(UUID id) {
@@ -74,28 +84,40 @@ public class AccountService {
     return AccountMapper.accountToDto(account);
   }
 
+  @Transactional(readOnly = true)
+  public Optional<Account> findByHhUserId(String hhUserId) {
+    return accountDao.findByHhUserId(hhUserId);
+  }
+
+  @Transactional(readOnly = true)
+  public boolean existsByEmail(String email) {
+    return accountDao.existsByEmail(email);
+  }
+
   // Возвращает существующий аккаунт, привязанный к данному пользователю hh.ru,
   // либо создает новый (с автосгенерированными login и паролем), если это первый вход
   @Transactional
-  public Account findOrCreateByHhSso(String email) {
-    return accountDao.findByEmail(email)
-        .map(this::requireHhSsoAccount)
-        .orElseGet(() -> createFromHhSso(email));
+  public Account findOrCreateByHhSso(String hhUserId, String email) {
+    return accountDao.findByHhUserId(hhUserId)
+        .map(this::requireActiveAccount)
+        .orElseGet(() -> {
+          if (accountDao.existsByEmail(email)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                "Такой email уже зарегистрирован: " + email);
+          }
+          return createFromHhSso(hhUserId, email);
+        });
   }
 
-  private Account requireHhSsoAccount(Account account) {
-    if (!account.isHhSso()) {
-      throw new ResponseStatusException(HttpStatus.CONFLICT,
-          "Такой email уже зарегистрирован: " + account.getEmail());
-    }
-    if (Boolean.TRUE.equals(account.getIsDeleted())) {
+  private Account requireActiveAccount(Account account) {
+    if (account.getIsDeleted()) {
       throw new ResponseStatusException(HttpStatus.FORBIDDEN,
           "Аккаунт удалён: login=" + account.getLogin());
     }
     return account;
   }
 
-  private Account createFromHhSso(String email) {
+  private Account createFromHhSso(String hhUserId, String email) {
     String login = generateUniqueLoginFromEmail(email);
     String randomPassword = UUID.randomUUID().toString();
 
@@ -104,15 +126,78 @@ public class AccountService {
         .login(login)
         .email(email)
         .passwordHash(passwordEncoder.encode(randomPassword))
-        .isHhSso(true)
+        .hhUserId(hhUserId)
         .tokenVersion(1)
         .isDeleted(false)
-        .registeredAt(Instant.now())
+        .registeredAt(Instant.now(clock))
         .build();
 
     accountDao.save(account);
     log.info("Создан аккаунт через hh.ru SSO id={} login={}", account.getId(), account.getLogin());
     return account;
+  }
+
+  @Transactional
+  public void linkHhSso(Account account, String hhUserId) {
+    if (accountDao.findByHhUserId(hhUserId).isPresent()) {
+      throw new ResponseStatusException(HttpStatus.CONFLICT,
+          "Этот аккаунт hh.ru уже привязан к другому пользователю");
+    }
+
+    requireActiveAccount(account);
+
+    if (account.isHhSso()) {
+      throw new ResponseStatusException(HttpStatus.CONFLICT, "Аккаунт уже привязан к hh.ru");
+    }
+
+    account.setHhUserId(hhUserId);
+    accountDao.update(account);
+    log.info("Аккаунт id={} привязан к hh.ru", account.getId());
+  }
+
+  // Подтверждение привязки hh-аккаунта по hhLinkToken, выданному Oauth2LoginSuccessHandler
+  // в кейсе email-конфликта. Если currentUser авторизован - просто линкуем его аккаунт.
+  // Если нет - находим аккаунт по email из токена, проверяем пароль и логиним пользователя
+  // (как handleLogin в success handler'е), только потом линкуем
+  @Transactional
+  public HhLinkConfirmResultDto confirmLinkHhSso(
+      String hhLinkToken,
+      HhLinkConfirmDto dto,
+      UUID currentUserId,
+      HttpServletRequest request,
+      HttpServletResponse response) {
+
+    HhLinkTokenPayload payload = jwtService.extractHhLinkToken(hhLinkToken);
+
+    Account account;
+    AuthTokensDto tokens = null;
+
+    if (currentUserId != null) {
+      account = accountDao.findById(currentUserId)
+          .map(this::requireActiveAccount)
+          .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+              "Аккаунт не найден: " + currentUserId));
+    } else {
+      if (dto.getPassword() == null || dto.getPassword().isBlank()) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+            "Для привязки без активной сессии нужен пароль");
+      }
+      account = accountDao.findByEmail(payload.email())
+          .map(this::requireActiveAccount)
+          .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+              "Аккаунт не найден: " + payload.email()));
+      if (!passwordEncoder.matches(dto.getPassword(), account.getPasswordHash())) {
+        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Предоставлен неверный пароль");
+      }
+
+      String deviceId = authCookieService.getOrCreateDeviceId(request, response);
+      tokens = authService.issueTokens(
+          account, deviceId, request.getHeader("User-Agent"), request.getRemoteAddr());
+    }
+
+    linkHhSso(account, payload.hhUserId());
+
+    return new HhLinkConfirmResultDto(AccountMapper.accountToDto(account), tokens);
   }
 
   private String generateUniqueLoginFromEmail(String email) {
