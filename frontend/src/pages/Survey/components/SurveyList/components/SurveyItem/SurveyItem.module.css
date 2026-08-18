@@ -22,6 +22,10 @@
     flex: 1 1 0;
     min-width: 0;
 }
+.title {
+    max-width: 60%;
+}
+
 .description {
     max-width: 80%;
     overflow: hidden;
@@ -76,6 +80,10 @@
 
     .info > svg {
         display: none;
+    }
+
+    .title {
+        max-width: 100%;
     }
 
     .description {

@@ -47,8 +47,14 @@ export function SurveyView() {
                 setLoadedSurvey(data);
                 setError(null);
             })
-            .catch(() => {
-                if (isActive) setError('Не удалось загрузить опрос');
+            .catch((error) => {
+                if (error.response) {
+                    const status = error.response.status;
+                    if (status === 403 && isActive) {
+                        dispatch(setErrorMessage({ message: 'Не удалось загрузить опрос' }));
+                        navigate(routes.root());
+                    }
+                }
             })
             .finally(() => {
                 if (isActive) setIsLoading(false);

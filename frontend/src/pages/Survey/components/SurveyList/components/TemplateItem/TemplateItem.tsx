@@ -57,9 +57,11 @@ export function TemplateItem({ template, onClick }: Props) {
         <div className={style.container}>
             <button className={style.details} onClick={onClick}>
                 <div className={style.detail}>
-                    <Text typography='title-4-semibold' style='primary'>
-                        {htmlToText(template.title)}
-                    </Text>
+                    <div className={style.title}>
+                        <Text typography='title-4-semibold' style='primary' maxLines={2}>
+                            {htmlToText(template.title)}
+                        </Text>
+                    </div>
                     <div className={style.info}>
                         {template.published ? <p>Опубликован</p> : <p>Не опубликован</p>}
                         <DotFilledSize16 fill='#777777' color='#777777' />

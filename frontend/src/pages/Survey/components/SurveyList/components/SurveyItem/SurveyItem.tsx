@@ -66,9 +66,11 @@ export function SurveyItem({ survey, onClick }: SurveyItemProps) {
         <div className={style.container}>
             <button type='button' onClick={onClick} className={style.details}>
                 <div className={style.detail}>
-                    <Text typography='title-4-semibold' style='primary'>
-                        {htmlToText(survey.title)}
-                    </Text>
+                    <div className={style.title}>
+                        <Text typography='title-4-semibold' style='primary' maxLines={2}>
+                            {htmlToText(survey.title)}
+                        </Text>
+                    </div>
                     <div className={style.info}>
                         <p>{getRussianLetterForRole(survey.userRole)}</p>
                         <DotFilledSize16 fill='#777777' color='#777777' />
