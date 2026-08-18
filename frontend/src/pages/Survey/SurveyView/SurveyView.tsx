@@ -39,21 +39,18 @@ export function SurveyView() {
         setLoadedSurvey(null);
         const surveyRequest: Promise<LoadedSurvey> =
             mode === 'preview'
-                ? getSurveyForEditById(id).then((survey) => ({ mode, survey }))
-                : getPublicSurveyById(id).then((survey) => ({ mode, survey }));
+                ? getSurveyForEditById(id).then((survey): LoadedSurvey => ({ mode: 'preview', survey }))
+                : getPublicSurveyById(id).then((survey): LoadedSurvey => ({ mode: 'respond', survey }));
+
         surveyRequest
             .then((data) => {
                 if (!isActive) return;
                 setLoadedSurvey(data);
                 setError(null);
             })
-            .catch((error) => {
-                if (error.response) {
-                    const status = error.response.status;
-                    if (status === 403 && isActive) {
-                        dispatch(setErrorMessage({ message: 'Не удалось загрузить опрос' }));
-                        navigate(routes.root());
-                    }
+            .catch(() => {
+                if (isActive) {
+                    setError('Не удалось получить опрос');
                 }
             })
             .finally(() => {
@@ -71,6 +68,9 @@ export function SurveyView() {
         if (isAccountChecked && !account && survey && survey.isAuthorizedOnly) {
             dispatch(setErrorMessage({ message: 'Этот опрос только для зарегистрированных пользователей' }));
             navigate(routes.login(), { state: { from: location } });
+        } else if (mode === 'respond' && survey && !survey.isPublished) {
+            dispatch(setErrorMessage({ message: 'Такого опроса не существует или опрос не опубликован' }));
+            navigate(routes.root());
         }
     }, [account, dispatch, isAccountChecked, location, mode, navigate, survey]);
 

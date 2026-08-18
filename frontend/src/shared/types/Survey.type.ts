@@ -48,6 +48,7 @@ export type SurveyPublic = Pick<
     | 'expireAt'
     | 'targetTimezone'
     | 'expireAtAtTargetTimezone'
+    | 'isPublished'
 > & {
     pages: SurveyPageShort[];
     hasCustomClosingPage: boolean;
