@@ -17,6 +17,7 @@ import { getTemplateById, saveTemplate, updateTemplate } from '@/api/template';
 import { addTemplate, setSelectedTemplate } from '@/entities/Template/Template.slice';
 import { setPages } from '@/entities/Pages/Pages.slice';
 import { validateActiveSurveyConditions } from '@/shared/utils/conditions';
+import { EyeOutlinedSize24, LinkOutlinedSize24 } from '@hh.ru/magritte-ui/icon';
 
 type SurveyAccess = {
     surveyId: string;
@@ -265,46 +266,52 @@ export function SurveyLayout() {
                     <div className={style.copyLink}>
                         <Button
                             mode='secondary'
-                            style='neutral'
+                            style={isCopied ? 'positive' : 'neutral'}
+                            icon={<LinkOutlinedSize24 />}
+                            hideLabel
+                            aria-label={isCopied ? 'Ссылка скопирована' : 'Скопировать ссылку на опрос'}
+                            title={isCopied ? 'Ссылка скопирована' : 'Скопировать ссылку на опрос'}
                             onClick={() =>
                                 handleCopyClick(
                                     `https://${window.location.hostname}:${window.location.port}/surveys/${selectedSurvey?.id}?responde=true`,
                                 )
                             }
-                        >
-                            {isCopied ? 'Ссылка скопирована' : 'Скопировать ссылку на опрос'}
-                        </Button>
+                        />
                     </div>
                     {id && (
                         <Button
                             mode='secondary'
                             style='neutral'
+                            icon={<EyeOutlinedSize24 />}
+                            hideLabel
+                            aria-label='Предпросмотр'
+                            title='Предпросмотр'
                             Element={Link}
                             to={routes.surveyPreview(id)}
                             disabled={!selectedSurvey || isAccessLoading}
-                        >
-                            Предпросмотр
-                        </Button>
+                        />
                     )}
 
                     {canEditSurvey || account?.id === selectedTemplate?.authorId ? (
                         !isTemplate ? (
                             <Button
-                                mode='tertiary'
-                                style='accent'
+                                mode={selectedSurvey?.isPublished ? 'secondary' : 'tertiary'}
+                                style={selectedSurvey?.isPublished ? 'positive' : 'accent'}
+                                title={selectedSurvey?.isPublished ? 'Снять с публикации' : 'Опубликовать'}
                                 onClick={publishingHandler}
                                 disabled={!selectedSurvey}
                             >
-                                {selectedSurvey?.isPublished ? 'Снять с публикации' : 'Опубликовать'}
+                                {selectedSurvey?.isPublished ? 'Опубликовано' : 'Опубликовать'}
                             </Button>
                         ) : (
                             <Button
-                                mode='tertiary'
-                                style='accent'
+                                mode={selectedTemplate?.published ? 'secondary' : 'tertiary'}
+                                style={selectedTemplate?.published ? 'positive' : 'accent'}
+                                title={selectedTemplate?.published ? 'Снять с публикации' : 'Опубликовать'}
                                 onClick={publishingTemplateHandler}
                                 disabled={!selectedTemplate}
                             >
-                                {selectedTemplate?.published ? 'Снять с публикации' : 'Опубликовать'}
+                                {selectedTemplate?.published ? 'Опубликовано' : 'Опубликовать'}
                             </Button>
                         )
                     ) : (

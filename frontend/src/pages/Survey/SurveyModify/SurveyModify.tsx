@@ -1,6 +1,5 @@
 import { SurveyDetail } from './components/SurveyDetail/SurveyDetail';
 import { useAppSelector } from '@/hooks/useAppSelector';
-import { Sidebar } from './components/Sidebar/Sidebar';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { reorderPages, setSurveyPages } from '@/entities/Pages/Pages.slice';
 import { clonePage } from '@/entities/Survey/Survey.utils';
@@ -8,6 +7,8 @@ import { updateSurveyPage } from '@/api/surveyPages';
 import { getSurveyForEditById } from '@/api/survey';
 import { getTemplateById } from '@/api/template';
 import { setErrorMessage } from '@/entities/Error/Error.slice';
+import { patchSelectedSurvey } from '@/entities/Survey/Survey.slice';
+import { patchSelectedTemplate } from '@/entities/Template/Template.slice';
 import {
     closestCenter,
     DndContext,
@@ -25,6 +26,7 @@ import { ClosingPageEditor } from './components/ClosingPageEditor/ClosingPageEdi
 import { useSearchParams } from 'react-router-dom';
 import type { Page } from '@/shared/types/Survey.type';
 import { validateActiveSurveyConditions } from '@/shared/utils/conditions';
+import { AddPageSeparator } from './components/PageSeparator/AddPageSeparator';
 
 function getReorderedPages(pages: Page[], activePageId: string, overPageId: string): Page[] {
     const reorderedPages = pages.map(clonePage);
@@ -111,7 +113,18 @@ export function SurveyModify() {
     return (
         <div className={style.container}>
             <div className={style.content}>
-                <SurveyDetail item={isTemplate ? selectedTemplate! : selectedSurvey!} />
+                <SurveyDetail
+                    item={isTemplate ? selectedTemplate! : selectedSurvey!}
+                    attachmentUrl={isTemplate ? selectedTemplate!.attachmentUrl : selectedSurvey!.attachmentUrl}
+                    canEditImage
+                    onAttachmentUrlChange={(attachmentUrl) =>
+                        dispatch(
+                            isTemplate
+                                ? patchSelectedTemplate({ attachmentUrl })
+                                : patchSelectedSurvey({ attachmentUrl }),
+                        )
+                    }
+                />
                 <DndContext
                     sensors={sensors}
                     collisionDetection={closestCenter}
@@ -124,12 +137,12 @@ export function SurveyModify() {
                         ))}
                     </SortableContext>
                 </DndContext>
+                <AddPageSeparator surveyId={isTemplate ? selectedTemplate!.id : selectedSurvey!.id} />
                 <ClosingPageEditor
                     surveyId={isTemplate ? selectedTemplate!.id : selectedSurvey!.id}
                     closingPage={isTemplate ? selectedTemplate!.closingPage : selectedSurvey!.closingPage}
                 />
             </div>
-            <Sidebar />
         </div>
     );
 }

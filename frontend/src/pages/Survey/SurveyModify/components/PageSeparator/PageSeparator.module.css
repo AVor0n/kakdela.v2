@@ -4,10 +4,16 @@
     grid-template-columns: 32px minmax(0, 1fr) auto minmax(0, 1fr) 32px;
     align-items: center;
     width: 100%;
+    max-width: 100%;
     min-width: 0;
+    box-sizing: border-box;
     text-align: center;
     gap: 8px;
     padding: 15px 0;
+}
+
+.separatorWithoutActions {
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
 }
 
 .separator:hover .dragHandle,
@@ -22,7 +28,30 @@
 }
 
 .content {
+    min-width: 0;
     white-space: nowrap;
+}
+
+.addPageButton {
+    max-width: 100%;
+    padding: 6px 10px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.addPageButton:hover:not(:disabled) {
+    background: #f1f4f9;
+}
+
+.addPageButton:disabled {
+    cursor: wait;
+    opacity: 0.6;
 }
 
 .action {

@@ -21,15 +21,16 @@ import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrate
 import { restrictToParentElement } from '@dnd-kit/modifiers';
 import { useMemo, useState } from 'react';
 import { SortableQuestion } from './components/SortableQuestion/SortableQuestion';
+import { AddQuestionCard } from './components/AddQuestionCard/AddQuestionCard';
 import style from './QuestionList.module.css';
 
 interface Props {
+    pageId: string;
     questions: Question[];
-    pageNumber: number;
     pageIndex: number;
 }
 
-export function QuestionList({ questions, pageIndex }: Props) {
+export function QuestionList({ pageId, questions, pageIndex }: Props) {
     const { selectedQuestion } = useAppSelector((state) => state.pages);
     const editQuestionId = useMemo(() => selectedQuestion?.id, [selectedQuestion]);
     const dispatch = useAppDispatch();
@@ -96,6 +97,7 @@ export function QuestionList({ questions, pageIndex }: Props) {
                             isEditMode={editQuestionId === question.id}
                         />
                     ))}
+                    <AddQuestionCard pageId={pageId} pageIndex={pageIndex} serialNumber={questions.length + 1} />
                 </div>
             </SortableContext>
             <DragOverlay>

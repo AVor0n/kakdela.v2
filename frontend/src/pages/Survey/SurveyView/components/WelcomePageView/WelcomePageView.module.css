@@ -1,3 +1,14 @@
+.image {
+    display: block;
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 400px;
+    margin-inline: auto;
+    object-fit: contain;
+    border-radius: 16px;
+}
+
 .metadata {
     display: flex;
     flex-direction: column;
