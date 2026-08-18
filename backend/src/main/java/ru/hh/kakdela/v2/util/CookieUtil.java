@@ -15,7 +15,8 @@ public final class CookieUtil {
   private static final String STRICT = "Strict";
   private static final String LAX = "Lax";
 
-  // На http-стендах (без TLS) браузер отбрасывает Secure-cookie - управляется через app.cookie.secure
+  // На http-стендах (без TLS) браузер отбрасывает Secure-cookie -
+  // управляется через app.cookie.secure
   private static boolean secure;
 
   @Value("${app.cookie.secure:false}")
