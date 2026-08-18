@@ -287,7 +287,7 @@ export function SurveyRunner(props: Props) {
                                             <HTMLRender className={style.title} html={currentPage.title} />
                                         )}
                                         {currentPage.description && (
-                                            <HTMLRender className={style.title} html={currentPage.description} />
+                                            <HTMLRender className={style.description} html={currentPage.description} />
                                         )}
                                     </section>
                                 )}
